@@ -1,79 +1,80 @@
-Return-Path: <linux-aspeed+bounces-4193-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4194-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 351F0CD8C8E
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2B1CCD8C92
 	for <linux-aspeed@archiver.kernel.org>; Mon,  8 Jun 2026 04:16:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gYdyL3qWhz2ytV;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gYdyL6DMtz2ysb;
 	Mon, 08 Jun 2026 14:16:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780886441;
-	cv=none; b=CYFxe5GTCmAy0rUJpY6EL+8LiC5R6YbBU7thtRXQvWKe7AFNjgaMGvFtUTgBHvMnL2g01rEzkmS8BbHvwPASEK9iUXBRN//iKaFZB8bVGj+/+n9QxPwaMMZ1gwyHXbTQyxwKAQIi40PZXp0Nu//Ms8UmuaafTRQzTD6wAy6vVBN3PTbgoDMetc5hQ6xtfhEAV+WnS7H19lE2hLO5b1C7jf4TlTY4PtRlBnw5TRlt96XX25PItenXDXmnlLa4JXqlVUX7zTAfawrOM1l+o7ipei1ZRgR+wOIJrLsqzdEB7L1Rs2uqAZrUY/fmgX/WlKxkkxsnS6ClPujW+zDOhcE0vg==
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780886445;
+	cv=none; b=GbT4ISqAcLoP3QSY1F0o51BwaglY5pG3ky0nkbz0u0U2iR9WYBPNG9NI0eB0WvE5PiYAysJi6oNe3MQOfqq2urGHvy/3+eWU6Hefxs//FjU896e4ZERY8Y8QKtNe6kafAl3ho5D+JbqdZTORHjNl8k+j1cq2h58Oq9XFhHfHMIfItiDU3ZOiOnB5IXzUkGuNeh19s2E8X72zWKN7y0lnB+CVyytGqAh8Z/9U+FS8o/LURclNqsVzmBnI+QzTYVOYtTkx/46UuIDrdTtiSvE2MxC+GZj5K9cDCxP5omCluiIVIjDb5YkOgvtZNdwM0lVkeOcD/f7fDnMopS22HGngOA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780886441; c=relaxed/relaxed;
-	bh=38SrOSOGK3sCwLNpHejTdRoa1jMmte3Iy/3zoqwAvic=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=Ol0DEfsgpqGdk2jdA+j36Su1dYHPLq+bxVLBKY8z0EM0uJVNGTRp9psTr6Vs7T1AjNtDcOQVVAGZAeDrBVX8m5tL4B8BrE+cd7o5AMy8d/L7kbbG8op9Wq1SwdbwWxvKtlEGvXvbSMxeQvI2Lc2n7XxwjBsocBJVux5eaL/DpiuTeGwXqbUZQNWdI0wzmVHgPefOtkbqq+S5iF1GmjAsNoc5Wr1BBgI40YLGw6OL8AsHeGZ4Jc4bjY9WliMVTxT37ScjFw9UdLr0uxCFkvjaMpI4DM2C6VEIfyVFcos7cAQnwkQJsuKKfNp9twnVbsy8W9ryP46tT+IOTkhtq722rQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=NHqCgg53; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42e; helo=mail-pf1-x42e.google.com; envelope-from=kylehsieh1995@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1780886445; c=relaxed/relaxed;
+	bh=GSmol40N2jInduEnlxRutdqHadGXn/6EMALE+325z/w=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=lhc4V8XMfiI2/lUeLy53X9eLH1ojCMJQI11Wo47FbDlEqlqfI+TrDOA140xh6Hitbc9uCQ7vU9o1KFm1LcSOokwrLcBgQ+UFRRsTQJ1ltrxFZdqjB5HcjxR5vfZUm6p183Zq3CWqa6tiBhmgB4P/elyvppSTfaD9nwWrpPghzd0VOXRy0/XdRGB26Q8H6ffFlVCh95sN7XKcv8lIKKgr02OToewMRvWXPggKXcLt/yCBecsE+o6sBlIJK2pTjvhR57OZ1JHJtbIrhvuyYfEr9NJI6O+JVWEzzrDJ+QXNglIqL5VDiC92mwDZ8H1funBelWfNRwQvy6AADI9vMK46Qw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=CZ97iCYH; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42d; helo=mail-pf1-x42d.google.com; envelope-from=kylehsieh1995@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=NHqCgg53;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=CZ97iCYH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42e; helo=mail-pf1-x42e.google.com; envelope-from=kylehsieh1995@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42e.google.com (mail-pf1-x42e.google.com [IPv6:2607:f8b0:4864:20::42e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42d; helo=mail-pf1-x42d.google.com; envelope-from=kylehsieh1995@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x42d.google.com (mail-pf1-x42d.google.com [IPv6:2607:f8b0:4864:20::42d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gYbr76bGpz2xqv
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 08 Jun 2026 12:40:38 +1000 (AEST)
-Received: by mail-pf1-x42e.google.com with SMTP id d2e1a72fcca58-842358aaf36so1313679b3a.2
-        for <linux-aspeed@lists.ozlabs.org>; Sun, 07 Jun 2026 19:40:38 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gYbrC1c5Bz2ytV
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 08 Jun 2026 12:40:43 +1000 (AEST)
+Received: by mail-pf1-x42d.google.com with SMTP id d2e1a72fcca58-84234c83142so1460676b3a.1
+        for <linux-aspeed@lists.ozlabs.org>; Sun, 07 Jun 2026 19:40:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1780886435; x=1781491235; darn=lists.ozlabs.org;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=38SrOSOGK3sCwLNpHejTdRoa1jMmte3Iy/3zoqwAvic=;
-        b=NHqCgg53yuc0YtgGMnKfqSyJJnJZQ+ZOM1tbdZHnJi0zRz/FXMh2DqWJEoM/aB874e
-         Xy+QOhhKrlddUvkG38H1f2GF5U6q775nHcdt4Hq9vHW4DIuGXdDQ/apHVR6rJEAstCII
-         3Dt0HQdPFgjKYeovhksS8bJTR2wF4UN8GAe1Lo3fJJANDauw4lRibUv7DQT7Q8sw9ZOk
-         dXxSLi20asN+lw7C3X6ptE+dtvp6uKa/orb+KMAmIPCEDZUgeWXTo7WhIKU8vvSLvLW3
-         XjZcPrwonMlFDuR/jZ/1SAyrZXM1tDEw9JCUx6Pi7JkxXWAsjgxqPETlSAUMyoyi8FWH
-         Q0zA==
+        d=gmail.com; s=20251104; t=1780886441; x=1781491241; darn=lists.ozlabs.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=GSmol40N2jInduEnlxRutdqHadGXn/6EMALE+325z/w=;
+        b=CZ97iCYHn/6s/BK3kWWdadgvz3EGecENOM2eYeXq9kUZLjyZImho1EvSRJ6x+ovcMM
+         /7nXiIK6cIPD5g4LEvceN2zZYsbthHJqnyml/Fh9qad7ptZZgSl6T0KZiW0WZXS146d+
+         dGR08JpC7Xjx21eQ1njDHcUUZjsOO7lc8KFtGJdnoY3pIArnzr/rB5VLLnHfcV2kF6Px
+         8VlaPVb68fPbj/P0ZzcvOrkpAlbpu1hu3g7IZGGF0anv9IKrZwE0rkieyex7Whxo4DPk
+         Ey6a09b/UbL5nQ+cCU4P3mMKwJRE7sU4v3C6p48vQlBNaqe3nd5D3W/v5wjSkEayBzd2
+         f5HA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780886435; x=1781491235;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=38SrOSOGK3sCwLNpHejTdRoa1jMmte3Iy/3zoqwAvic=;
-        b=J/g/ieYrQg3o8IIx9ZMSch5jrzmWKRdq7+RO85K6cigqxzzW4rYnw/ET7xHHoXZ5KA
-         5NZH1HkwV2s+a0rIGNd/bAsg0Fk7u7B61vKSUKxnPiej4GQmHmlibmcjwOLsm5P01edQ
-         XhBeV4cMAwPmfnR3po/4rj7KLInJpO4CysBeg5C4HIww3oYjDIX1Qu4yaVv0WioI1HyD
-         3xEKlJOs1k7OxEqW3rgUUv/CoSmeYFYLPRJORREfesOhceKWwtYdfNk/Qi0JyYT+ic96
-         ARrQrhqezQEQD8yVMKLsDLpmeUV4Uxd0Gv+KKxfid2d/zOmXPCiuYPw0irYRh31mTIDd
-         VVCg==
-X-Forwarded-Encrypted: i=1; AFNElJ+oyuDVt+zEblU/DvgPGzCc1bXNHRg8JgEbbeAAZQbJmffXOJeHTxnBfmW/ijDt0hWNIW71Ns5SB+jvNC4=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yz/DdlM+T2/jw3fna2pf6Vc5U8crMJGV1Pp4plcPFWAsCjNiIh4
-	mDwSleLZpquk9b0IoxpSYVO6Y/KniXugCGXOn3U6a0CQ5t8nhL5NcsVh
-X-Gm-Gg: Acq92OFA8HKyVQ7iTDTjj1EPshXJkMuOW+X3gKJAGQ0K9ioXSJa9SGT7/zlfrP+uIiA
-	0T7AehheRrJtDvp8oaC2UeyF1TrkJ8GP/i8z75VHqOzGNfw9R1FY0/q+J/N2sR09HJL3vifjK4g
-	NS0mF1jqtm8rt7BNChupNVu+GyAJ6T1mdnMhTsakgGREZBCU0x8OXne7GzBGGho8qoMRhHuqKni
-	IvAC5DyD/oGIlFzlHsMrXp5VF8DgDtbPRUE3AtJKpbsYSy2qfphG0OOf6DXCuQjE7d8eTTzdKI2
-	L0zmLBHUR5mL5Ii9QGmyyE2bfckl6JHnnXcZ9LaLr48ukUxunrRbmSPAlAR89VoxFTnumVcuykB
-	lSxY1InpAyyCoM/MrJQmsD5sTjaS48UcYjFFw+yijhFKuQkut2cegCcBEgpoPLPfe0Ajrul2I1q
-	H6gMPRk9mNeCGC2VKtEGWD8bQsS9jusGzOrtr8NKVKXMDp5s8e0MbtzcIv2GRstjAo5AflKf/xV
+        d=1e100.net; s=20251104; t=1780886441; x=1781491241;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=GSmol40N2jInduEnlxRutdqHadGXn/6EMALE+325z/w=;
+        b=oRG+2FV+Dbl7/AQrw7Apuf08/0GtFxrH6lRFQGq9DSKXRY7yFtGZljhMVLsnX0LwuX
+         Pjwm2fRkrp9KURCFmKpobuQdijjTdYgXa1jtRAcIJJADKydCcV2JhoGrmhhXto/aPOSp
+         gCefIaIDQ2GOoR7ytDSZ0LNZChMUj305tAdsQvz96hEgb26oJQvfUzwvAeFdgFrMSm0D
+         vzj0FsALOjyyI/CtQhwezoJzzNqv0sLjlVLyE3NVX/h/T93ucabkvbouw1TeuJQeB/dE
+         IuNuIfBLNXmqlsVkADNYe+VVZMtQxhysehw3o7ALoPoUxFQLLPW1Vn3ePHj3I+m3ldwi
+         fcVg==
+X-Forwarded-Encrypted: i=1; AFNElJ91P10tsGmiLjKmNux56e9B1/KP5iForxlrAUdtzM4QUZ6trfWYdUqGUp/ViE6PmGvCTTnICNs65gn0NKU=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyLe8aDLsuogNxbWXUF/2cdMbNE3e2Xf7az+iYGLfW2pwUuw1pL
+	ntDIIUMHSk9CQPXSHAp2jyWRp9gFr0JbrcZg0w56lIt3kRR2VIPF6aM6
+X-Gm-Gg: Acq92OHQJOqE+bVAclnw5igSJmv9y4Qml6FEw8UYG4n7pCWrErAsUED225NLFAQ/Cye
+	XAt2vILDahVLgIKFNdIZU9bx3MvQOhJ8MlZFqn0HfHiUpqGQRpjc5r0qDOsUJXNh2A8P5Qq7tAj
+	D3K08wXp7173UNcua8peVObfVKbKvfu+zsqMriwghoV402sonGf01pBOKN7V/rrfub8FaPnwabp
+	KXio0W/NMT5lW/LeJCZhmriKwd4a6GxTLE3Lb14kpY3ItF7Ign4IxiDRPOLGrOIYtcd1ymUVajP
+	ISrf/Yd2PNKmFRXpjCEPhv328Pzjk/7vk0DNWvBfZ6oT1brtjpDlDfzgerNeEXAkF1+UWKwVpgH
+	6o1KZ3avFQgI+JjYJPrRBWntOR5Q2KRRSxCKEYlCTO9fDIWlaOGt+utmZ2lRU2xELocIeC3e9Kr
+	3cP/X7/W9zTgc/GX3OgYuP93ZKnjPi4iM/ndqAwZ4cH1n+HptacWaCW+xbP+nAvj7oNCe/jL69J
 	g==
-X-Received: by 2002:a05:6a00:844:b0:835:405a:7e6d with SMTP id d2e1a72fcca58-842b0ea14f4mr13899922b3a.21.1780886434827;
-        Sun, 07 Jun 2026 19:40:34 -0700 (PDT)
+X-Received: by 2002:a05:6a00:3e05:b0:842:5711:9a44 with SMTP id d2e1a72fcca58-842b0fb8bfbmr12895918b3a.36.1780886440637;
+        Sun, 07 Jun 2026 19:40:40 -0700 (PDT)
 Received: from [127.0.1.1] (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-842824a1cb4sm19310520b3a.26.2026.06.07.19.40.32
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-842824a1cb4sm19310520b3a.26.2026.06.07.19.40.37
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 07 Jun 2026 19:40:34 -0700 (PDT)
+        Sun, 07 Jun 2026 19:40:40 -0700 (PDT)
 From: Kyle Hsieh <kylehsieh1995@gmail.com>
-Subject: [PATCH v5 0/2] Add Meta(Facebook) ventura2 BMC(AST2600)
-Date: Mon, 08 Jun 2026 10:42:07 +0800
-Message-Id: <20260608-ventura2_initial_dts-v5-0-37ee5bcf58b6@gmail.com>
+Date: Mon, 08 Jun 2026 10:42:09 +0800
+Subject: [PATCH v5 2/2] ARM: dts: aspeed: ventura2: Add Meta ventura2 BMC
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -89,91 +90,2947 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAP8rJmoC/4XO22rDMAyA4Vcpvp6HLJ+aXe09Rily7LSCNhl2a
- jZK3n1uYaxshF3+An3SVZSUORXxsrmKnCoXnsYW9mkj+iONhyQ5thYIaBUiyprG+ZIJ9zzyzHT
- ax7nIDrqg0fvonBVt9T2ngT/u7Nuu9ZHLPOXP+5WqbtN/wKokSDWAU871fkv69XAmPj3301ncw
- IqPiFlBsCGD6nQgGw34P4j+RhwopVcQ3RCMYYjkyAbjfyPmBzGrn5iGbMEFgERGK/OILMvyBYq
- Xx9SHAQAA
-X-Change-ID: 20251222-ventura2_initial_dts-909b3277d665
+Message-Id: <20260608-ventura2_initial_dts-v5-2-37ee5bcf58b6@gmail.com>
+References: <20260608-ventura2_initial_dts-v5-0-37ee5bcf58b6@gmail.com>
+In-Reply-To: <20260608-ventura2_initial_dts-v5-0-37ee5bcf58b6@gmail.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
  Andrew Jeffery <andrew@codeconstruct.com.au>
 Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
  linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- Kyle Hsieh <kylehsieh1995@gmail.com>, 
- Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+ Kyle Hsieh <kylehsieh1995@gmail.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2830;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=81123;
  i=kylehsieh1995@gmail.com; h=from:subject:message-id;
- bh=Gi78jGqhca4I3YcILxH9j+RePrTUjsAyMzxkhn6QReQ=;
- b=owEBbQGS/pANAwAKAaWDQrcJVsSBAcsmYgBqJiwEBeVbdsZIqyr8QR4WZFHc+4DWcWIpgMLHD
- L4ZxmsorE6JATMEAAEKAB0WIQTJHsaNZOdY+THGqJelg0K3CVbEgQUCaiYsBAAKCRClg0K3CVbE
- gfajCACvzmERcaUA5uZwA+10S/TWH6Nt3JMJnEm+URle13QSepXcDkTNb0eQmi4RsfL4iVmNsoc
- /HrrnqUGJS4o41K7I2CL0WynKLmUiv4gJQx4v5jymkNb09RR4n3mHvvXI8BdNz4VOZBoS0tusQi
- zAsZD4NI9x+3U+rCzFfRt5VdWzbutkScoAIOT9XF1kk5UdiR4MRy5LqpoS9UDPQRnhNmI0fewMU
- MxixylKyvMS7KPizt0rf59y9QmhNnq9BXaQG9zWX/PCWIJzlVAKJHQMRwrxVThJ69V9z+MdpIXz
- hDeKrlubXoPM2vXYsHHpku5Y4zXSK0vPfeBqgjBVmp56DV8T
+ bh=mnNu8tGoWDezbYhWL5QH1L8Y+9BpcW5uKDbSJJO90Ws=;
+ b=owEBbQGS/pANAwAKAaWDQrcJVsSBAcsmYgBqJiwEBbS1hbhml2L46IBwmw71bWTdbRS0SdHUp
+ 56ppwhCPXaJATMEAAEKAB0WIQTJHsaNZOdY+THGqJelg0K3CVbEgQUCaiYsBAAKCRClg0K3CVbE
+ gVMACACg/mtfDaavHuvYGh8wqoCG6ifgaJpoGD7pc1nImLUIcLNckkdYZ4MMDwjSiLcQ5TuzPKy
+ O7SLR2Mb7L9RHm6hbRPS4WM4cbEa7prxxnE3P8uv6Bsdc5++BdO/zx3/8UHE1lrHCKlZUnbsuXG
+ 7iDbwFanKYZ3wtMBuFk4zVLjFRuP5826Y9+Cmq3EinFxEIjxjRIcSvy9HO+EJtlkrAJJxORmjXN
+ fAYhSlJLMJeXbxHGvH111TQnAV0u7VaL1tYrE0ygGoZlDYoo1SiP361EPPVnW1aqkjTHuFbtA5A
+ KO4Webu9TCXBSArOLFcfrouXpwhDxpRmb1RcsVgE60KH5mOi
 X-Developer-Key: i=kylehsieh1995@gmail.com; a=openpgp;
  fpr=C91EC68D64E758F931C6A897A58342B70956C481
 
-Summary:
-Add linux device tree entry related to Meta(Facebook) ventura2.
-specific devices connected to BMC(AST2600) SoC.
+Add linux device tree entry related to the Meta(Facebook) rmc-node.
+The system use an AT2600 BMC.
+This node is named "ventura2".
 
 Signed-off-by: Kyle Hsieh <kylehsieh1995@gmail.com>
 ---
-Changes in v5:
-- Addressed review comments:
-  * Added comments explaining the necessity of 'legacy_' prefixes (hardware label collision), pre-allocated I2C aliases (future expansions), and the 'ledd1' naming convention (schematic alignment).
-  * Removed the empty `&mdio0` node to comply with upstream networking subsystem guidelines.
-  * Removed the redundant `&peci0` node.
-  * Sorted `&kcs3` and `&lpc_ctrl` nodes in strict alphabetical order.
-- Hardware/DT alignment updates:
-  * Removed unpopulated sensors (adi,adt7461, infineon,tda38640, ti,ina230, ti,ina238) to accurately reflect the current board population.
-  * Added the secondary flash node (flash@1 labeled "e810") under the &spi2 bus.
-- Link to v4: https://lore.kernel.org/r/20260424-ventura2_initial_dts-v4-0-806b00ea4314@gmail.com
-
-Changes in v4:
-- Fixed capitalization: "ventura2" -> "Ventura2".
-- Reordered I2C child nodes in ascending order of unit addresses.
-- Enable PECI, LPC control, and KCS3 interfaces for host communication.
-- Configure MCTP controller on I2C4 and enable MCTP support for specific mux channels.
-- Add Infineon TDA38640 and TI INA230 power monitor nodes.
-- GPIO and Pinmux cleanup for PVT:
-    - Aligned gpio-line-names as requested.
-    - Remove unused or non-existent GPIO line names to align with Ventura2 PVT.
-    - Update specific GPIO pins to empty strings where signals were removed or consolidated.
-- Adjust SGPIOM frequency to 200kHz and update signal line names.
-- Enable UART3 and add serial2 alias.
-- Link to v3: https://lore.kernel.org/r/20260113-ventura2_initial_dts-v3-0-2dbfda6a5b47@gmail.com
-
-Changes in v3:
-- Add annotation for marvel 88e6393x
-- Modify the gpio-line-name
-- Modify the node order alphabetically
-- Modify dt-bindings document for rmc instead of bmc
-- Move the gpio-line-names to original node
-- Link to v2: https://lore.kernel.org/r/20251224-ventura2_initial_dts-v2-0-f193ba5d4073@gmail.com
-
-Changes in v2:
-- Remove unused mdio
-- Link to v1: https://lore.kernel.org/r/20251222-ventura2_initial_dts-v1-0-1f06166c78a3@gmail.com
-
----
-Kyle Hsieh (2):
-      dt-bindings: arm: aspeed: add Meta ventura2 board
-      ARM: dts: aspeed: ventura2: Add Meta ventura2 BMC
-
- .../devicetree/bindings/arm/aspeed/aspeed.yaml     |    1 +
  arch/arm/boot/dts/aspeed/Makefile                  |    1 +
  .../dts/aspeed/aspeed-bmc-facebook-ventura2.dts    | 2888 ++++++++++++++++++++
- 3 files changed, 2890 insertions(+)
----
-base-commit: 9448598b22c50c8a5bb77a9103e2d49f134c9578
-change-id: 20251222-ventura2_initial_dts-909b3277d665
+ 2 files changed, 2889 insertions(+)
 
-Best regards,
+diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
+index 9adf9278dc94..6b96997629d4 100644
+--- a/arch/arm/boot/dts/aspeed/Makefile
++++ b/arch/arm/boot/dts/aspeed/Makefile
+@@ -32,6 +32,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+ 	aspeed-bmc-facebook-minipack.dtb \
+ 	aspeed-bmc-facebook-santabarbara.dtb \
+ 	aspeed-bmc-facebook-tiogapass.dtb \
++	aspeed-bmc-facebook-ventura2.dtb \
+ 	aspeed-bmc-facebook-wedge40.dtb \
+ 	aspeed-bmc-facebook-wedge100.dtb \
+ 	aspeed-bmc-facebook-wedge400-data64.dtb \
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura2.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura2.dts
+new file mode 100644
+index 000000000000..9bf7d6e52e40
+--- /dev/null
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura2.dts
+@@ -0,0 +1,2888 @@
++// SPDX-License-Identifier: GPL-2.0
++// Copyright (c) 2023 Facebook Inc.
++/dts-v1/;
++
++#include "aspeed-g6.dtsi"
++#include <dt-bindings/i2c/i2c.h>
++#include <dt-bindings/gpio/aspeed-gpio.h>
++
++/ {
++	model = "Facebook Ventura2 RMC";
++	compatible = "facebook,ventura2-rmc", "aspeed,ast2600";
++	aliases {
++		serial2 = &uart3;
++		serial4 = &uart5;
++
++		/*
++		 * Pre-allocate I2C bus aliases for userspace predictability.
++		 * Several I2C channels are intentionally left empty in this DTS
++		 * as they are strictly reserved for future hardware feature expansions
++		 * and add-on boards that will interface with these busses.
++		 */
++		/*
++		 * i2c switch 0-0077, pca9548, 8 child channels assigned
++		 * with bus number 16-23.
++		 */
++		i2c16 = &i2c0mux0ch0;
++		i2c17 = &i2c0mux0ch1;
++		i2c18 = &i2c0mux0ch2;
++		i2c19 = &i2c0mux0ch3;
++		i2c20 = &i2c0mux0ch4;
++		i2c21 = &i2c0mux0ch5;
++		i2c22 = &i2c0mux0ch6;
++		i2c23 = &i2c0mux0ch7;
++
++		/*
++		 * i2c switch 1-0077, pca9548, 8 child channels assigned
++		 * with bus number 24-31.
++		 */
++		i2c24 = &i2c1mux0ch0;
++		i2c25 = &i2c1mux0ch1;
++		i2c26 = &i2c1mux0ch2;
++		i2c27 = &i2c1mux0ch3;
++		i2c28 = &i2c1mux0ch4;
++		i2c29 = &i2c1mux0ch5;
++		i2c30 = &i2c1mux0ch6;
++		i2c31 = &i2c1mux0ch7;
++
++		/*
++		 * i2c switch 4-0077, pca9548, 8 child channels assigned
++		 * with bus number 32-39.
++		 */
++		i2c32 = &i2c4mux0ch0;
++		i2c33 = &i2c4mux0ch1;
++		i2c34 = &i2c4mux0ch2;
++		i2c35 = &i2c4mux0ch3;
++		i2c36 = &i2c4mux0ch4;
++		i2c37 = &i2c4mux0ch5;
++		i2c38 = &i2c4mux0ch6;
++		i2c39 = &i2c4mux0ch7;
++
++		/*
++		 * i2c switch 5-0077, pca9548, 8 child channels assigned
++		 * with bus number 40-47.
++		 */
++		i2c40 = &i2c5mux0ch0;
++		i2c41 = &i2c5mux0ch1;
++		i2c42 = &i2c5mux0ch2;
++		i2c43 = &i2c5mux0ch3;
++		i2c44 = &i2c5mux0ch4;
++		i2c45 = &i2c5mux0ch5;
++		i2c46 = &i2c5mux0ch6;
++		i2c47 = &i2c5mux0ch7;
++
++		/*
++		 * i2c switch 8-0077, pca9548, 8 child channels assigned
++		 * with bus number 48-55.
++		 */
++		i2c48 = &i2c8mux0ch0;
++		i2c49 = &i2c8mux0ch1;
++		i2c50 = &i2c8mux0ch2;
++		i2c51 = &i2c8mux0ch3;
++		i2c52 = &i2c8mux0ch4;
++		i2c53 = &i2c8mux0ch5;
++		i2c54 = &i2c8mux0ch6;
++		i2c55 = &i2c8mux0ch7;
++
++		/*
++		 * i2c switch 11-0077, pca9548, 8 child channels assigned
++		 * with bus number 56-63.
++		 */
++		i2c56 = &i2c11mux0ch0;
++		i2c57 = &i2c11mux0ch1;
++		i2c58 = &i2c11mux0ch2;
++		i2c59 = &i2c11mux0ch3;
++		i2c60 = &i2c11mux0ch4;
++		i2c61 = &i2c11mux0ch5;
++		i2c62 = &i2c11mux0ch6;
++		i2c63 = &i2c11mux0ch7;
++
++		/*
++		 * i2c switch 13-0077, pca9548, 8 child channels assigned
++		 * with bus number 64-71.
++		 */
++		i2c64 = &i2c13mux0ch0;
++		i2c65 = &i2c13mux0ch1;
++		i2c66 = &i2c13mux0ch2;
++		i2c67 = &i2c13mux0ch3;
++		i2c68 = &i2c13mux0ch4;
++		i2c69 = &i2c13mux0ch5;
++		i2c70 = &i2c13mux0ch6;
++		i2c71 = &i2c13mux0ch7;
++
++		/*
++		 * i2c switch 15-0077, pca9548, 8 child channels assigned
++		 * with bus number 72-79.
++		 */
++		i2c72 = &i2c15mux0ch0;
++		i2c73 = &i2c15mux0ch1;
++		i2c74 = &i2c15mux0ch2;
++		i2c75 = &i2c15mux0ch3;
++		i2c76 = &i2c15mux0ch4;
++		i2c77 = &i2c15mux0ch5;
++		i2c78 = &i2c15mux0ch6;
++		i2c79 = &i2c15mux0ch7;
++	};
++
++	chosen {
++		stdout-path = "serial4:57600n8";
++	};
++
++	fan_leds {
++		compatible = "gpio-leds";
++
++		led-0 {
++			/* The 'ledd' intentionally matches the hardware schematic */
++			label = "fcb0fan0_ledd1_blue";
++			default-state = "off";
++			gpios = <&fan_io_expander0 0 GPIO_ACTIVE_LOW>;
++		};
++
++		led-1 {
++			label = "fcb0fan1_ledd2_blue";
++			default-state = "off";
++			gpios = <&fan_io_expander0 1 GPIO_ACTIVE_LOW>;
++		};
++
++		led-2 {
++			label = "fcb0fan2_ledd3_blue";
++			default-state = "off";
++			gpios = <&fan_io_expander1 0 GPIO_ACTIVE_LOW>;
++		};
++
++		led-3 {
++			label = "fcb0fan3_ledd4_blue";
++			default-state = "off";
++			gpios = <&fan_io_expander1 1 GPIO_ACTIVE_LOW>;
++		};
++
++		led-4 {
++			label = "fcb0fan0_ledd1_amber";
++			default-state = "off";
++			gpios = <&fan_io_expander0 4 GPIO_ACTIVE_LOW>;
++		};
++
++		led-5 {
++			label = "fcb0fan1_ledd2_amber";
++			default-state = "off";
++			gpios = <&fan_io_expander0 5 GPIO_ACTIVE_LOW>;
++		};
++
++		led-6 {
++			label = "fcb0fan2_ledd3_amber";
++			default-state = "off";
++			gpios = <&fan_io_expander1 4 GPIO_ACTIVE_LOW>;
++		};
++
++		led-7 {
++			label = "fcb0fan3_ledd4_amber";
++			default-state = "off";
++			gpios = <&fan_io_expander1 5 GPIO_ACTIVE_LOW>;
++		};
++	};
++
++	iio-hwmon {
++		compatible = "iio-hwmon";
++		io-channels = <&adc0 0>, <&adc0 1>, <&adc0 2>, <&adc0 3>,
++		<&adc0 4>, <&adc0 5>, <&adc0 6>, <&adc0 7>,
++		<&adc1 2>;
++	};
++
++	leds {
++		compatible = "gpio-leds";
++
++		led-0 {
++			label = "bmc_heartbeat_amber";
++			gpios = <&gpio0 ASPEED_GPIO(P, 7) GPIO_ACTIVE_LOW>;
++			linux,default-trigger = "heartbeat";
++		};
++
++		led-1 {
++			label = "fp_id_amber";
++			default-state = "off";
++			gpios = <&gpio0 ASPEED_GPIO(B, 5) GPIO_ACTIVE_HIGH>;
++		};
++
++		led-2 {
++			label = "bmc_ready_noled";
++			default-state = "on";
++			gpios = <&gpio0 ASPEED_GPIO(B, 3) (GPIO_ACTIVE_HIGH|GPIO_TRANSITORY)>;
++		};
++
++		led-3 {
++			label = "power_blue";
++			default-state = "off";
++			gpios = <&gpio0 ASPEED_GPIO(P, 4) GPIO_ACTIVE_HIGH>;
++		};
++	};
++
++	memory@80000000 {
++		device_type = "memory";
++		reg = <0x80000000 0x80000000>;
++	};
++
++	p1v8_bmc_aux: regulator-p1v8-bmc-aux {
++		compatible = "regulator-fixed";
++		regulator-name = "p1v8_bmc_aux";
++		regulator-min-microvolt = <1800000>;
++		regulator-max-microvolt = <1800000>;
++		regulator-always-on;
++	};
++
++	p2v5_bmc_aux: regulator-p2v5-bmc-aux {
++		compatible = "regulator-fixed";
++		regulator-name = "p2v5_bmc_aux";
++		regulator-min-microvolt = <2500000>;
++		regulator-max-microvolt = <2500000>;
++		regulator-always-on;
++	};
++
++	p5v_dac_aux: regulator-p5v-bmc-aux {
++		compatible = "regulator-fixed";
++		regulator-name = "p5v_dac_aux";
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++		regulator-always-on;
++	};
++
++	spi1_gpio: spi {
++		compatible = "spi-gpio";
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		sck-gpios = <&gpio0 ASPEED_GPIO(Z, 3) GPIO_ACTIVE_HIGH>;
++		mosi-gpios = <&gpio0 ASPEED_GPIO(Z, 4) GPIO_ACTIVE_HIGH>;
++		miso-gpios = <&gpio0 ASPEED_GPIO(Z, 5) GPIO_ACTIVE_HIGH>;
++		cs-gpios = <&gpio0 ASPEED_GPIO(Z, 0) GPIO_ACTIVE_LOW>;
++		num-chipselects = <1>;
++
++		tpm@0 {
++			compatible = "infineon,slb9670", "tcg,tpm_tis-spi";
++			spi-max-frequency = <33000000>;
++			reg = <0>;
++		};
++	};
++};
++
++&adc0 {
++	vref-supply = <&p1v8_bmc_aux>;
++	status = "okay";
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_adc0_default &pinctrl_adc1_default
++	&pinctrl_adc2_default &pinctrl_adc3_default
++	&pinctrl_adc4_default &pinctrl_adc5_default
++	&pinctrl_adc6_default &pinctrl_adc7_default>;
++};
++
++&adc1 {
++	vref-supply = <&p2v5_bmc_aux>;
++	status = "okay";
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_adc8_default &pinctrl_adc10_default>;
++};
++
++&ehci0 {
++	status = "okay";
++};
++
++&ehci1 {
++	status = "okay";
++};
++
++&fmc {
++	status = "okay";
++	flash@0 {
++		status = "okay";
++		m25p,fast-read;
++		label = "bmc";
++		spi-max-frequency = <50000000>;
++		#include "openbmc-flash-layout-128.dtsi"
++	};
++	flash@1 {
++		status = "okay";
++		m25p,fast-read;
++		label = "alt-bmc";
++		spi-max-frequency = <50000000>;
++	};
++};
++
++&gpio0 {
++	gpio-line-names =
++	/*A0-A7*/	"","","","","","","","",
++	/*B0-B7*/	"BATTERY_DETECT","","","BMC_READY_R",
++			"","FM_ID_LED","","",
++	/*C0-C7*/	"","","","","","","","",
++	/*D0-D7*/	"","","","","","","","",
++	/*E0-E7*/	"","","","","","","","",
++	/*F0-F7*/	"","","","","","","","",
++	/*G0-G7*/	"FM_MUX1_SEL_R","","","",
++			"","","","",
++	/*H0-H7*/	"","","","","","","","",
++	/*I0-I7*/	"","","","","","","","",
++	/*J0-J7*/	"","","","","","","","",
++	/*K0-K7*/	"","","","","","","","",
++	/*L0-L7*/	"","","","","","","","",
++	/*M0-M7*/	"","","","","STBY_POWER_PG_3V3","","","",
++	/*N0-N7*/	"LED_POSTCODE_0","LED_POSTCODE_1",
++			"LED_POSTCODE_2","LED_POSTCODE_3",
++			"LED_POSTCODE_4","LED_POSTCODE_5",
++			"LED_POSTCODE_6","LED_POSTCODE_7",
++	/*O0-O7*/	"","","","","","","","debug-card-mux",
++	/*P0-P7*/	"PWR_BTN_BMC_BUF_N","","ID_RST_BTN_BMC_N","",
++			"PWR_LED","","","BMC_HEARTBEAT_N",
++	/*Q0-Q7*/	"","","","","","","","",
++	/*R0-R7*/	"","","","","","","","",
++	/*S0-S7*/	"","","SYS_BMC_PWRBTN_R_N","","","","","",
++	/*T0-T7*/	"","","","","","","","",
++	/*U0-U7*/	"","","","","","","","",
++	/*V0-V7*/	"","","","","","","","",
++	/*W0-W7*/	"","","","","","","","",
++	/*X0-X7*/	"","","","","","","","",
++	/*Y0-Y7*/	"","","","","","","","",
++	/*Z0-Z7*/	"","","","","","","","";
++};
++
++&gpio1 {
++	gpio-line-names =
++	/*18A0-18A7*/	"","","","","","","","",
++	/*18B0-18B7*/	"","","","",
++			"FM_BOARD_BMC_REV_ID0","FM_BOARD_BMC_REV_ID1",
++			"FM_BOARD_BMC_REV_ID2","",
++	/*18C0-18C7*/	"SPI_BMC_BIOS_ROM_IRQ0_R_N","","","","","","","",
++	/*18D0-18D7*/	"","","","","","","","",
++	/*18E0-18E3*/	"FM_BMC_PROT_LS_EN","AC_PWR_BMC_BTN_R_N","","";
++};
++
++&i2c0 {
++	status = "okay";
++
++	i2c-mux@77 {
++		compatible = "nxp,pca9548";
++		reg = <0x77>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		i2c-mux-idle-disconnect;
++
++		i2c0mux0ch0: i2c@0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++		};
++
++		i2c0mux0ch1: i2c@1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++		};
++
++		i2c0mux0ch2: i2c@2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++		};
++
++		i2c0mux0ch3: i2c@3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++			status = "okay";
++		};
++
++		i2c0mux0ch4: i2c@4 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <4>;
++			status = "okay";
++		};
++
++		i2c0mux0ch5: i2c@5 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <5>;
++			status = "okay";
++
++			eeprom@56 {
++				compatible = "atmel,24c128";
++				reg = <0x56>;
++			};
++		};
++
++		i2c0mux0ch6: i2c@6 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <6>;
++
++			eeprom@56 {
++				compatible = "atmel,24c128";
++				reg = <0x56>;
++			};
++
++			fan_io_expander0: gpio@20 {
++				compatible = "nxp,pca9555";
++				reg = <0x20>;
++				gpio-controller;
++				#gpio-cells = <2>;
++			};
++
++			fan_io_expander1: gpio@21 {
++				compatible = "nxp,pca9555";
++				reg = <0x21>;
++				gpio-controller;
++				#gpio-cells = <2>;
++			};
++
++			adc@1d {
++				compatible = "ti,adc128d818";
++				reg = <0x1d>;
++				ti,mode = /bits/ 8 <1>;
++			};
++
++			adc@35 {
++				compatible = "maxim,max11617";
++				reg = <0x35>;
++			};
++		};
++
++		i2c0mux0ch7: i2c@7 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <7>;
++
++			fanctl0: fan-controller@20 {
++				compatible = "maxim,max31790";
++				reg = <0x20>;
++				#address-cells = <1>;
++				#size-cells = <0>;
++				channel@2 {
++					reg = <2>;
++					sensor-type = "TACH";
++				};
++				channel@5 {
++					reg = <5>;
++					sensor-type = "TACH";
++				};
++			};
++
++			fanctl1: fan-controller@23 {
++				compatible = "nuvoton,nct7363";
++				reg = <0x23>;
++				#pwm-cells = <2>;
++
++				fan-9 {
++					pwms = <&fanctl1 0 20000>;
++					tach-ch = /bits/ 8 <0x09>;
++				};
++
++				fan-11 {
++					pwms = <&fanctl1 0 20000>;
++					tach-ch = /bits/ 8 <0x0B>;
++				};
++
++				fan-10 {
++					pwms = <&fanctl1 4 20000>;
++					tach-ch = /bits/ 8 <0x0A>;
++				};
++
++				fan-13 {
++					pwms = <&fanctl1 4 20000>;
++					tach-ch = /bits/ 8 <0x0D>;
++				};
++
++				fan-15 {
++					pwms = <&fanctl1 6 20000>;
++					tach-ch = /bits/ 8 <0x0F>;
++				};
++
++				fan-1 {
++					pwms = <&fanctl1 6 20000>;
++					tach-ch = /bits/ 8 <0x01>;
++				};
++
++				fan-0 {
++					pwms = <&fanctl1 10 20000>;
++					tach-ch = /bits/ 8 <0x00>;
++				};
++
++				fan-3 {
++					pwms = <&fanctl1 10 20000>;
++					tach-ch = /bits/ 8 <0x03>;
++				};
++			};
++		};
++	};
++};
++
++&i2c1 {
++	status = "okay";
++
++	i2c-mux@77 {
++		compatible = "nxp,pca9548";
++		reg = <0x77>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		i2c-mux-idle-disconnect;
++
++		i2c1mux0ch0: i2c@0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++			status = "okay";
++		};
++
++		i2c1mux0ch1: i2c@1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++			status = "okay";
++		};
++
++		i2c1mux0ch2: i2c@2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++			status = "okay";
++		};
++
++		i2c1mux0ch3: i2c@3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++			status = "okay";
++		};
++
++		i2c1mux0ch4: i2c@4 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <4>;
++			status = "okay";
++		};
++
++		i2c1mux0ch5: i2c@5 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <5>;
++			status = "okay";
++		};
++
++		i2c1mux0ch6: i2c@6 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <6>;
++			status = "okay";
++		};
++
++		i2c1mux0ch7: i2c@7 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <7>;
++			status = "okay";
++		};
++	};
++};
++
++&i2c2 {
++	status = "okay";
++	bus-frequency = <400000>;
++};
++
++&i2c3 {
++	status = "okay";
++	bus-frequency = <400000>;
++
++	dac@c {
++		reg = <0x0c>;
++		compatible = "adi,ad5612";
++		vcc-supply = <&p5v_dac_aux>;
++	};
++
++	dac@e {
++		reg = <0x0e>;
++		compatible = "adi,ad5612";
++		vcc-supply = <&p5v_dac_aux>;
++	};
++
++	dac@f {
++		reg = <0x0f>;
++		compatible = "adi,ad5612";
++		vcc-supply = <&p5v_dac_aux>;
++	};
++
++	io_expander6: gpio@23 {
++		compatible = "nxp,pca9555";
++		reg = <0x23>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&io_expander7>;
++		interrupts = <6 IRQ_TYPE_LEVEL_LOW>;
++	};
++
++	prsnt_io_expander0: gpio@40 {
++		compatible = "nxp,pca9698";
++		reg = <0x40>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <48 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN1_TRAY1_PRSNT", "CAN1_TRAY2_PRSNT",
++			"CAN1_TRAY3_PRSNT", "CAN1_TRAY4_PRSNT",
++			"CAN1_TRAY5_PRSNT", "CAN1_TRAY6_PRSNT",
++			"CAN1_TRAY7_PRSNT", "CAN1_TRAY8_PRSNT",
++			"CAN1_TRAY9_PRSNT", "CAN1_TRAY10_PRSNT",
++			"CAN1_TRAY11_PRSNT", "CAN1_TRAY12_PRSNT",
++			"CAN1_TRAY13_PRSNT", "CAN1_TRAY14_PRSNT",
++			"CAN1_TRAY15_PRSNT", "CAN1_TRAY16_PRSNT",
++			"CAN1_TRAY17_PRSNT", "CAN1_TRAY18_PRSNT",
++			"CAN1_TRAY19_PRSNT", "CAN1_TRAY20_PRSNT",
++			"CAN1_TRAY21_PRSNT", "CAN1_TRAY22_PRSNT",
++			"CAN1_TRAY23_PRSNT", "CAN1_TRAY24_PRSNT",
++			"CAN1_TRAY25_PRSNT", "CAN1_TRAY26_PRSNT",
++			"CAN1_TRAY27_PRSNT", "CAN1_TRAY28_PRSNT",
++			"CAN1_TRAY29_PRSNT", "CAN1_TRAY30_PRSNT",
++			"CAN1_TRAY31_PRSNT", "CAN1_TRAY32_PRSNT",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	prsnt_io_expander1: gpio@41 {
++		compatible = "nxp,pca9698";
++		reg = <0x41>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <56 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN2_TRAY1_PRSNT", "CAN2_TRAY2_PRSNT",
++			"CAN2_TRAY3_PRSNT", "CAN2_TRAY4_PRSNT",
++			"CAN2_TRAY5_PRSNT", "CAN2_TRAY6_PRSNT",
++			"CAN2_TRAY7_PRSNT", "CAN2_TRAY8_PRSNT",
++			"CAN2_TRAY9_PRSNT", "CAN2_TRAY10_PRSNT",
++			"CAN2_TRAY11_PRSNT", "CAN2_TRAY12_PRSNT",
++			"CAN2_TRAY13_PRSNT", "CAN2_TRAY14_PRSNT",
++			"CAN2_TRAY15_PRSNT", "CAN2_TRAY16_PRSNT",
++			"CAN2_TRAY17_PRSNT", "CAN2_TRAY18_PRSNT",
++			"CAN2_TRAY19_PRSNT", "CAN2_TRAY20_PRSNT",
++			"CAN2_TRAY21_PRSNT", "CAN2_TRAY22_PRSNT",
++			"CAN2_TRAY23_PRSNT", "CAN2_TRAY24_PRSNT",
++			"CAN2_TRAY25_PRSNT", "CAN2_TRAY26_PRSNT",
++			"CAN2_TRAY27_PRSNT", "CAN2_TRAY28_PRSNT",
++			"CAN2_TRAY29_PRSNT", "CAN2_TRAY30_PRSNT",
++			"CAN2_TRAY31_PRSNT", "CAN2_TRAY32_PRSNT",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	prsnt_io_expander2: gpio@42 {
++		compatible = "nxp,pca9698";
++		reg = <0x42>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <64 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN3_TRAY1_PRSNT", "CAN3_TRAY2_PRSNT",
++			"CAN3_TRAY3_PRSNT", "CAN3_TRAY4_PRSNT",
++			"CAN3_TRAY5_PRSNT", "CAN3_TRAY6_PRSNT",
++			"CAN3_TRAY7_PRSNT", "CAN3_TRAY8_PRSNT",
++			"CAN3_TRAY9_PRSNT", "CAN3_TRAY10_PRSNT",
++			"CAN3_TRAY11_PRSNT", "CAN3_TRAY12_PRSNT",
++			"CAN3_TRAY13_PRSNT", "CAN3_TRAY14_PRSNT",
++			"CAN3_TRAY15_PRSNT", "CAN3_TRAY16_PRSNT",
++			"CAN3_TRAY17_PRSNT", "CAN3_TRAY18_PRSNT",
++			"CAN3_TRAY19_PRSNT", "CAN3_TRAY20_PRSNT",
++			"CAN3_TRAY21_PRSNT", "CAN3_TRAY22_PRSNT",
++			"CAN3_TRAY23_PRSNT", "CAN3_TRAY24_PRSNT",
++			"CAN3_TRAY25_PRSNT", "CAN3_TRAY26_PRSNT",
++			"CAN3_TRAY27_PRSNT", "CAN3_TRAY28_PRSNT",
++			"CAN3_TRAY29_PRSNT", "CAN3_TRAY30_PRSNT",
++			"CAN3_TRAY31_PRSNT", "CAN3_TRAY32_PRSNT",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	prsnt_io_expander3: gpio@43 {
++		compatible = "nxp,pca9698";
++		reg = <0x43>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <72 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN4_TRAY1_PRSNT", "CAN4_TRAY2_PRSNT",
++			"CAN4_TRAY3_PRSNT", "CAN4_TRAY4_PRSNT",
++			"CAN4_TRAY5_PRSNT", "CAN4_TRAY6_PRSNT",
++			"CAN4_TRAY7_PRSNT", "CAN4_TRAY8_PRSNT",
++			"CAN4_TRAY9_PRSNT", "CAN4_TRAY10_PRSNT",
++			"CAN4_TRAY11_PRSNT", "CAN4_TRAY12_PRSNT",
++			"CAN4_TRAY13_PRSNT", "CAN4_TRAY14_PRSNT",
++			"CAN4_TRAY15_PRSNT", "CAN4_TRAY16_PRSNT",
++			"CAN4_TRAY17_PRSNT", "CAN4_TRAY18_PRSNT",
++			"CAN4_TRAY19_PRSNT", "CAN4_TRAY20_PRSNT",
++			"CAN4_TRAY21_PRSNT", "CAN4_TRAY22_PRSNT",
++			"CAN4_TRAY23_PRSNT", "CAN4_TRAY24_PRSNT",
++			"CAN4_TRAY25_PRSNT", "CAN4_TRAY26_PRSNT",
++			"CAN4_TRAY27_PRSNT", "CAN4_TRAY28_PRSNT",
++			"CAN4_TRAY29_PRSNT", "CAN4_TRAY30_PRSNT",
++			"CAN4_TRAY31_PRSNT", "CAN4_TRAY32_PRSNT",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	prsnt_io_expander4: gpio@44 {
++		compatible = "nxp,pca9698";
++		reg = <0x44>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <80 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN5_TRAY1_PRSNT", "CAN5_TRAY2_PRSNT",
++			"CAN5_TRAY3_PRSNT", "CAN5_TRAY4_PRSNT",
++			"CAN5_TRAY5_PRSNT", "CAN5_TRAY6_PRSNT",
++			"CAN5_TRAY7_PRSNT", "CAN5_TRAY8_PRSNT",
++			"CAN5_TRAY9_PRSNT", "CAN5_TRAY10_PRSNT",
++			"CAN5_TRAY11_PRSNT", "CAN5_TRAY12_PRSNT",
++			"CAN5_TRAY13_PRSNT", "CAN5_TRAY14_PRSNT",
++			"CAN5_TRAY15_PRSNT", "CAN5_TRAY16_PRSNT",
++			"CAN5_TRAY17_PRSNT", "CAN5_TRAY18_PRSNT",
++			"CAN5_TRAY19_PRSNT", "CAN5_TRAY20_PRSNT",
++			"CAN5_TRAY21_PRSNT", "CAN5_TRAY22_PRSNT",
++			"CAN5_TRAY23_PRSNT", "CAN5_TRAY24_PRSNT",
++			"CAN5_TRAY25_PRSNT", "CAN5_TRAY26_PRSNT",
++			"CAN5_TRAY27_PRSNT", "CAN5_TRAY28_PRSNT",
++			"CAN5_TRAY29_PRSNT", "CAN5_TRAY30_PRSNT",
++			"CAN5_TRAY31_PRSNT", "CAN5_TRAY32_PRSNT",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	prsnt_io_expander5: gpio@45 {
++		compatible = "nxp,pca9698";
++		reg = <0x45>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <88 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN6_TRAY1_PRSNT", "CAN6_TRAY2_PRSNT",
++			"CAN6_TRAY3_PRSNT", "CAN6_TRAY4_PRSNT",
++			"CAN6_TRAY5_PRSNT", "CAN6_TRAY6_PRSNT",
++			"CAN6_TRAY7_PRSNT", "CAN6_TRAY8_PRSNT",
++			"CAN6_TRAY9_PRSNT", "CAN6_TRAY10_PRSNT",
++			"CAN6_TRAY11_PRSNT", "CAN6_TRAY12_PRSNT",
++			"CAN6_TRAY13_PRSNT", "CAN6_TRAY14_PRSNT",
++			"CAN6_TRAY15_PRSNT", "CAN6_TRAY16_PRSNT",
++			"CAN6_TRAY17_PRSNT", "CAN6_TRAY18_PRSNT",
++			"CAN6_TRAY19_PRSNT", "CAN6_TRAY20_PRSNT",
++			"CAN6_TRAY21_PRSNT", "CAN6_TRAY22_PRSNT",
++			"CAN6_TRAY23_PRSNT", "CAN6_TRAY24_PRSNT",
++			"CAN6_TRAY25_PRSNT", "CAN6_TRAY26_PRSNT",
++			"CAN6_TRAY27_PRSNT", "CAN6_TRAY28_PRSNT",
++			"CAN6_TRAY29_PRSNT", "CAN6_TRAY30_PRSNT",
++			"CAN6_TRAY31_PRSNT", "CAN6_TRAY32_PRSNT",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	prsnt_io_expander6: gpio@46 {
++		compatible = "nxp,pca9698";
++		reg = <0x46>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <96 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN7_TRAY1_PRSNT", "CAN7_TRAY2_PRSNT",
++			"CAN7_TRAY3_PRSNT", "CAN7_TRAY4_PRSNT",
++			"CAN7_TRAY5_PRSNT", "CAN7_TRAY6_PRSNT",
++			"CAN7_TRAY7_PRSNT", "CAN7_TRAY8_PRSNT",
++			"CAN7_TRAY9_PRSNT", "CAN7_TRAY10_PRSNT",
++			"CAN7_TRAY11_PRSNT", "CAN7_TRAY12_PRSNT",
++			"CAN7_TRAY13_PRSNT", "CAN7_TRAY14_PRSNT",
++			"CAN7_TRAY15_PRSNT", "CAN7_TRAY16_PRSNT",
++			"CAN7_TRAY17_PRSNT", "CAN7_TRAY18_PRSNT",
++			"CAN7_TRAY19_PRSNT", "CAN7_TRAY20_PRSNT",
++			"CAN7_TRAY21_PRSNT", "CAN7_TRAY22_PRSNT",
++			"CAN7_TRAY23_PRSNT", "CAN7_TRAY24_PRSNT",
++			"CAN7_TRAY25_PRSNT", "CAN7_TRAY26_PRSNT",
++			"CAN7_TRAY27_PRSNT", "CAN7_TRAY28_PRSNT",
++			"CAN7_TRAY29_PRSNT", "CAN7_TRAY30_PRSNT",
++			"CAN7_TRAY31_PRSNT", "CAN7_TRAY32_PRSNT",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	prsnt_io_expander7: gpio@47 {
++		compatible = "nxp,pca9698";
++		reg = <0x47>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <104 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN8_TRAY1_PRSNT", "CAN8_TRAY2_PRSNT",
++			"CAN8_TRAY3_PRSNT", "CAN8_TRAY4_PRSNT",
++			"CAN8_TRAY5_PRSNT", "CAN8_TRAY6_PRSNT",
++			"CAN8_TRAY7_PRSNT", "CAN8_TRAY8_PRSNT",
++			"CAN8_TRAY9_PRSNT", "CAN8_TRAY10_PRSNT",
++			"CAN8_TRAY11_PRSNT", "CAN8_TRAY12_PRSNT",
++			"CAN8_TRAY13_PRSNT", "CAN8_TRAY14_PRSNT",
++			"CAN8_TRAY15_PRSNT", "CAN8_TRAY16_PRSNT",
++			"CAN8_TRAY17_PRSNT", "CAN8_TRAY18_PRSNT",
++			"CAN8_TRAY19_PRSNT", "CAN8_TRAY20_PRSNT",
++			"CAN8_TRAY21_PRSNT", "CAN8_TRAY22_PRSNT",
++			"CAN8_TRAY23_PRSNT", "CAN8_TRAY24_PRSNT",
++			"CAN8_TRAY25_PRSNT", "CAN8_TRAY26_PRSNT",
++			"CAN8_TRAY27_PRSNT", "CAN8_TRAY28_PRSNT",
++			"CAN8_TRAY29_PRSNT", "CAN8_TRAY30_PRSNT",
++			"CAN8_TRAY31_PRSNT", "CAN8_TRAY32_PRSNT",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	pwrgd_io_expander0: gpio@48 {
++		compatible = "nxp,pca9698";
++		reg = <0x48>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <50 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN1_TRAY1_PWRGD", "CAN1_TRAY2_PWRGD",
++			"CAN1_TRAY3_PWRGD", "CAN1_TRAY4_PWRGD",
++			"CAN1_TRAY5_PWRGD", "CAN1_TRAY6_PWRGD",
++			"CAN1_TRAY7_PWRGD", "CAN1_TRAY8_PWRGD",
++			"CAN1_TRAY9_PWRGD", "CAN1_TRAY10_PWRGD",
++			"CAN1_TRAY11_PWRGD", "CAN1_TRAY12_PWRGD",
++			"CAN1_TRAY13_PWRGD", "CAN1_TRAY14_PWRGD",
++			"CAN1_TRAY15_PWRGD", "CAN1_TRAY16_PWRGD",
++			"CAN1_TRAY17_PWRGD", "CAN1_TRAY18_PWRGD",
++			"CAN1_TRAY19_PWRGD", "CAN1_TRAY20_PWRGD",
++			"CAN1_TRAY21_PWRGD", "CAN1_TRAY22_PWRGD",
++			"CAN1_TRAY23_PWRGD", "CAN1_TRAY24_PWRGD",
++			"CAN1_TRAY25_PWRGD", "CAN1_TRAY26_PWRGD",
++			"CAN1_TRAY27_PWRGD", "CAN1_TRAY28_PWRGD",
++			"CAN1_TRAY29_PWRGD", "CAN1_TRAY30_PWRGD",
++			"CAN1_TRAY31_PWRGD", "CAN1_TRAY32_PWRGD",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	pwrgd_io_expander1: gpio@49 {
++		compatible = "nxp,pca9698";
++		reg = <0x49>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <58 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN2_TRAY1_PWRGD", "CAN2_TRAY2_PWRGD",
++			"CAN2_TRAY3_PWRGD", "CAN2_TRAY4_PWRGD",
++			"CAN2_TRAY5_PWRGD", "CAN2_TRAY6_PWRGD",
++			"CAN2_TRAY7_PWRGD", "CAN2_TRAY8_PWRGD",
++			"CAN2_TRAY9_PWRGD", "CAN2_TRAY10_PWRGD",
++			"CAN2_TRAY11_PWRGD", "CAN2_TRAY12_PWRGD",
++			"CAN2_TRAY13_PWRGD", "CAN2_TRAY14_PWRGD",
++			"CAN2_TRAY15_PWRGD", "CAN2_TRAY16_PWRGD",
++			"CAN2_TRAY17_PWRGD", "CAN2_TRAY18_PWRGD",
++			"CAN2_TRAY19_PWRGD", "CAN2_TRAY20_PWRGD",
++			"CAN2_TRAY21_PWRGD", "CAN2_TRAY22_PWRGD",
++			"CAN2_TRAY23_PWRGD", "CAN2_TRAY24_PWRGD",
++			"CAN2_TRAY25_PWRGD", "CAN2_TRAY26_PWRGD",
++			"CAN2_TRAY27_PWRGD", "CAN2_TRAY28_PWRGD",
++			"CAN2_TRAY29_PWRGD", "CAN2_TRAY30_PWRGD",
++			"CAN2_TRAY31_PWRGD", "CAN2_TRAY32_PWRGD",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	pwrgd_io_expander2: gpio@4a {
++		compatible = "nxp,pca9698";
++		reg = <0x4a>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <66 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN3_TRAY1_PWRGD", "CAN3_TRAY2_PWRGD",
++			"CAN3_TRAY3_PWRGD", "CAN3_TRAY4_PWRGD",
++			"CAN3_TRAY5_PWRGD", "CAN3_TRAY6_PWRGD",
++			"CAN3_TRAY7_PWRGD", "CAN3_TRAY8_PWRGD",
++			"CAN3_TRAY9_PWRGD", "CAN3_TRAY10_PWRGD",
++			"CAN3_TRAY11_PWRGD", "CAN3_TRAY12_PWRGD",
++			"CAN3_TRAY13_PWRGD", "CAN3_TRAY14_PWRGD",
++			"CAN3_TRAY15_PWRGD", "CAN3_TRAY16_PWRGD",
++			"CAN3_TRAY17_PWRGD", "CAN3_TRAY18_PWRGD",
++			"CAN3_TRAY19_PWRGD", "CAN3_TRAY20_PWRGD",
++			"CAN3_TRAY21_PWRGD", "CAN3_TRAY22_PWRGD",
++			"CAN3_TRAY23_PWRGD", "CAN3_TRAY24_PWRGD",
++			"CAN3_TRAY25_PWRGD", "CAN3_TRAY26_PWRGD",
++			"CAN3_TRAY27_PWRGD", "CAN3_TRAY28_PWRGD",
++			"CAN3_TRAY29_PWRGD", "CAN3_TRAY30_PWRGD",
++			"CAN3_TRAY31_PWRGD", "CAN3_TRAY32_PWRGD",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	pwrgd_io_expander3: gpio@4b {
++		compatible = "nxp,pca9698";
++		reg = <0x4b>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <74 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN4_TRAY1_PWRGD", "CAN4_TRAY2_PWRGD",
++			"CAN4_TRAY3_PWRGD", "CAN4_TRAY4_PWRGD",
++			"CAN4_TRAY5_PWRGD", "CAN4_TRAY6_PWRGD",
++			"CAN4_TRAY7_PWRGD", "CAN4_TRAY8_PWRGD",
++			"CAN4_TRAY9_PWRGD", "CAN4_TRAY10_PWRGD",
++			"CAN4_TRAY11_PWRGD", "CAN4_TRAY12_PWRGD",
++			"CAN4_TRAY13_PWRGD", "CAN4_TRAY14_PWRGD",
++			"CAN4_TRAY15_PWRGD", "CAN4_TRAY16_PWRGD",
++			"CAN4_TRAY17_PWRGD", "CAN4_TRAY18_PWRGD",
++			"CAN4_TRAY19_PWRGD", "CAN4_TRAY20_PWRGD",
++			"CAN4_TRAY21_PWRGD", "CAN4_TRAY22_PWRGD",
++			"CAN4_TRAY23_PWRGD", "CAN4_TRAY24_PWRGD",
++			"CAN4_TRAY25_PWRGD", "CAN4_TRAY26_PWRGD",
++			"CAN4_TRAY27_PWRGD", "CAN4_TRAY28_PWRGD",
++			"CAN4_TRAY29_PWRGD", "CAN4_TRAY30_PWRGD",
++			"CAN4_TRAY31_PWRGD", "CAN4_TRAY32_PWRGD",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	pwrgd_io_expander4: gpio@4c {
++		compatible = "nxp,pca9698";
++		reg = <0x4c>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <82 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN5_TRAY1_PWRGD", "CAN5_TRAY2_PWRGD",
++			"CAN5_TRAY3_PWRGD", "CAN5_TRAY4_PWRGD",
++			"CAN5_TRAY5_PWRGD", "CAN5_TRAY6_PWRGD",
++			"CAN5_TRAY7_PWRGD", "CAN5_TRAY8_PWRGD",
++			"CAN5_TRAY9_PWRGD", "CAN5_TRAY10_PWRGD",
++			"CAN5_TRAY11_PWRGD", "CAN5_TRAY12_PWRGD",
++			"CAN5_TRAY13_PWRGD", "CAN5_TRAY14_PWRGD",
++			"CAN5_TRAY15_PWRGD", "CAN5_TRAY16_PWRGD",
++			"CAN5_TRAY17_PWRGD", "CAN5_TRAY18_PWRGD",
++			"CAN5_TRAY19_PWRGD", "CAN5_TRAY20_PWRGD",
++			"CAN5_TRAY21_PWRGD", "CAN5_TRAY22_PWRGD",
++			"CAN5_TRAY23_PWRGD", "CAN5_TRAY24_PWRGD",
++			"CAN5_TRAY25_PWRGD", "CAN5_TRAY26_PWRGD",
++			"CAN5_TRAY27_PWRGD", "CAN5_TRAY28_PWRGD",
++			"CAN5_TRAY29_PWRGD", "CAN5_TRAY30_PWRGD",
++			"CAN5_TRAY31_PWRGD", "CAN5_TRAY32_PWRGD",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	pwrgd_io_expander5: gpio@4d {
++		compatible = "nxp,pca9698";
++		reg = <0x4d>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <90 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN6_TRAY1_PWRGD", "CAN6_TRAY2_PWRGD",
++			"CAN6_TRAY3_PWRGD", "CAN6_TRAY4_PWRGD",
++			"CAN6_TRAY5_PWRGD", "CAN6_TRAY6_PWRGD",
++			"CAN6_TRAY7_PWRGD", "CAN6_TRAY8_PWRGD",
++			"CAN6_TRAY9_PWRGD", "CAN6_TRAY10_PWRGD",
++			"CAN6_TRAY11_PWRGD", "CAN6_TRAY12_PWRGD",
++			"CAN6_TRAY13_PWRGD", "CAN6_TRAY14_PWRGD",
++			"CAN6_TRAY15_PWRGD", "CAN6_TRAY16_PWRGD",
++			"CAN6_TRAY17_PWRGD", "CAN6_TRAY18_PWRGD",
++			"CAN6_TRAY19_PWRGD", "CAN6_TRAY20_PWRGD",
++			"CAN6_TRAY21_PWRGD", "CAN6_TRAY22_PWRGD",
++			"CAN6_TRAY23_PWRGD", "CAN6_TRAY24_PWRGD",
++			"CAN6_TRAY25_PWRGD", "CAN6_TRAY26_PWRGD",
++			"CAN6_TRAY27_PWRGD", "CAN6_TRAY28_PWRGD",
++			"CAN6_TRAY29_PWRGD", "CAN6_TRAY30_PWRGD",
++			"CAN6_TRAY31_PWRGD", "CAN6_TRAY32_PWRGD",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	pwrgd_io_expander6: gpio@4e {
++		compatible = "nxp,pca9698";
++		reg = <0x4e>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <98 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN7_TRAY1_PWRGD", "CAN7_TRAY2_PWRGD",
++			"CAN7_TRAY3_PWRGD", "CAN7_TRAY4_PWRGD",
++			"CAN7_TRAY5_PWRGD", "CAN7_TRAY6_PWRGD",
++			"CAN7_TRAY7_PWRGD", "CAN7_TRAY8_PWRGD",
++			"CAN7_TRAY9_PWRGD", "CAN7_TRAY10_PWRGD",
++			"CAN7_TRAY11_PWRGD", "CAN7_TRAY12_PWRGD",
++			"CAN7_TRAY13_PWRGD", "CAN7_TRAY14_PWRGD",
++			"CAN7_TRAY15_PWRGD", "CAN7_TRAY16_PWRGD",
++			"CAN7_TRAY17_PWRGD", "CAN7_TRAY18_PWRGD",
++			"CAN7_TRAY19_PWRGD", "CAN7_TRAY20_PWRGD",
++			"CAN7_TRAY21_PWRGD", "CAN7_TRAY22_PWRGD",
++			"CAN7_TRAY23_PWRGD", "CAN7_TRAY24_PWRGD",
++			"CAN7_TRAY25_PWRGD", "CAN7_TRAY26_PWRGD",
++			"CAN7_TRAY27_PWRGD", "CAN7_TRAY28_PWRGD",
++			"CAN7_TRAY29_PWRGD", "CAN7_TRAY30_PWRGD",
++			"CAN7_TRAY31_PWRGD", "CAN7_TRAY32_PWRGD",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	pwrgd_io_expander7: gpio@4f {
++		compatible = "nxp,pca9698";
++		reg = <0x4f>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <106 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN8_TRAY1_PWRGD", "CAN8_TRAY2_PWRGD",
++			"CAN8_TRAY3_PWRGD", "CAN8_TRAY4_PWRGD",
++			"CAN8_TRAY5_PWRGD", "CAN8_TRAY6_PWRGD",
++			"CAN8_TRAY7_PWRGD", "CAN8_TRAY8_PWRGD",
++			"CAN8_TRAY9_PWRGD", "CAN8_TRAY10_PWRGD",
++			"CAN8_TRAY11_PWRGD", "CAN8_TRAY12_PWRGD",
++			"CAN8_TRAY13_PWRGD", "CAN8_TRAY14_PWRGD",
++			"CAN8_TRAY15_PWRGD", "CAN8_TRAY16_PWRGD",
++			"CAN8_TRAY17_PWRGD", "CAN8_TRAY18_PWRGD",
++			"CAN8_TRAY19_PWRGD", "CAN8_TRAY20_PWRGD",
++			"CAN8_TRAY21_PWRGD", "CAN8_TRAY22_PWRGD",
++			"CAN8_TRAY23_PWRGD", "CAN8_TRAY24_PWRGD",
++			"CAN8_TRAY25_PWRGD", "CAN8_TRAY26_PWRGD",
++			"CAN8_TRAY27_PWRGD", "CAN8_TRAY28_PWRGD",
++			"CAN8_TRAY29_PWRGD", "CAN8_TRAY30_PWRGD",
++			"CAN8_TRAY31_PWRGD", "CAN8_TRAY32_PWRGD",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	large_leak_io_expander0: gpio@50 {
++		compatible = "nxp,pca9698";
++		reg = <0x50>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <54 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN1_TRAY1_LARGE_LEAK", "CAN1_TRAY2_LARGE_LEAK",
++			"CAN1_TRAY3_LARGE_LEAK", "CAN1_TRAY4_LARGE_LEAK",
++			"CAN1_TRAY5_LARGE_LEAK", "CAN1_TRAY6_LARGE_LEAK",
++			"CAN1_TRAY7_LARGE_LEAK", "CAN1_TRAY8_LARGE_LEAK",
++			"CAN1_TRAY9_LARGE_LEAK", "CAN1_TRAY10_LARGE_LEAK",
++			"CAN1_TRAY11_LARGE_LEAK", "CAN1_TRAY12_LARGE_LEAK",
++			"CAN1_TRAY13_LARGE_LEAK", "CAN1_TRAY14_LARGE_LEAK",
++			"CAN1_TRAY15_LARGE_LEAK", "CAN1_TRAY16_LARGE_LEAK",
++			"CAN1_TRAY17_LARGE_LEAK", "CAN1_TRAY18_LARGE_LEAK",
++			"CAN1_TRAY19_LARGE_LEAK", "CAN1_TRAY20_LARGE_LEAK",
++			"CAN1_TRAY21_LARGE_LEAK", "CAN1_TRAY22_LARGE_LEAK",
++			"CAN1_TRAY23_LARGE_LEAK", "CAN1_TRAY24_LARGE_LEAK",
++			"CAN1_TRAY25_LARGE_LEAK", "CAN1_TRAY26_LARGE_LEAK",
++			"CAN1_TRAY27_LARGE_LEAK", "CAN1_TRAY28_LARGE_LEAK",
++			"CAN1_TRAY29_LARGE_LEAK", "CAN1_TRAY30_LARGE_LEAK",
++			"CAN1_TRAY31_LARGE_LEAK", "CAN1_TRAY32_LARGE_LEAK",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	large_leak_io_expander1: gpio@51 {
++		compatible = "nxp,pca9698";
++		reg = <0x51>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <62 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN2_TRAY1_LARGE_LEAK", "CAN2_TRAY2_LARGE_LEAK",
++			"CAN2_TRAY3_LARGE_LEAK", "CAN2_TRAY4_LARGE_LEAK",
++			"CAN2_TRAY5_LARGE_LEAK", "CAN2_TRAY6_LARGE_LEAK",
++			"CAN2_TRAY7_LARGE_LEAK", "CAN2_TRAY8_LARGE_LEAK",
++			"CAN2_TRAY9_LARGE_LEAK", "CAN2_TRAY10_LARGE_LEAK",
++			"CAN2_TRAY11_LARGE_LEAK", "CAN2_TRAY12_LARGE_LEAK",
++			"CAN2_TRAY13_LARGE_LEAK", "CAN2_TRAY14_LARGE_LEAK",
++			"CAN2_TRAY15_LARGE_LEAK", "CAN2_TRAY16_LARGE_LEAK",
++			"CAN2_TRAY17_LARGE_LEAK", "CAN2_TRAY18_LARGE_LEAK",
++			"CAN2_TRAY19_LARGE_LEAK", "CAN2_TRAY20_LARGE_LEAK",
++			"CAN2_TRAY21_LARGE_LEAK", "CAN2_TRAY22_LARGE_LEAK",
++			"CAN2_TRAY23_LARGE_LEAK", "CAN2_TRAY24_LARGE_LEAK",
++			"CAN2_TRAY25_LARGE_LEAK", "CAN2_TRAY26_LARGE_LEAK",
++			"CAN2_TRAY27_LARGE_LEAK", "CAN2_TRAY28_LARGE_LEAK",
++			"CAN2_TRAY29_LARGE_LEAK", "CAN2_TRAY30_LARGE_LEAK",
++			"CAN2_TRAY31_LARGE_LEAK", "CAN2_TRAY32_LARGE_LEAK",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	large_leak_io_expander2: gpio@52 {
++		compatible = "nxp,pca9698";
++		reg = <0x52>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <70 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN3_TRAY1_LARGE_LEAK", "CAN3_TRAY2_LARGE_LEAK",
++			"CAN3_TRAY3_LARGE_LEAK", "CAN3_TRAY4_LARGE_LEAK",
++			"CAN3_TRAY5_LARGE_LEAK", "CAN3_TRAY6_LARGE_LEAK",
++			"CAN3_TRAY7_LARGE_LEAK", "CAN3_TRAY8_LARGE_LEAK",
++			"CAN3_TRAY9_LARGE_LEAK", "CAN3_TRAY10_LARGE_LEAK",
++			"CAN3_TRAY11_LARGE_LEAK", "CAN3_TRAY12_LARGE_LEAK",
++			"CAN3_TRAY13_LARGE_LEAK", "CAN3_TRAY14_LARGE_LEAK",
++			"CAN3_TRAY15_LARGE_LEAK", "CAN3_TRAY16_LARGE_LEAK",
++			"CAN3_TRAY17_LARGE_LEAK", "CAN3_TRAY18_LARGE_LEAK",
++			"CAN3_TRAY19_LARGE_LEAK", "CAN3_TRAY20_LARGE_LEAK",
++			"CAN3_TRAY21_LARGE_LEAK", "CAN3_TRAY22_LARGE_LEAK",
++			"CAN3_TRAY23_LARGE_LEAK", "CAN3_TRAY24_LARGE_LEAK",
++			"CAN3_TRAY25_LARGE_LEAK", "CAN3_TRAY26_LARGE_LEAK",
++			"CAN3_TRAY27_LARGE_LEAK", "CAN3_TRAY28_LARGE_LEAK",
++			"CAN3_TRAY29_LARGE_LEAK", "CAN3_TRAY30_LARGE_LEAK",
++			"CAN3_TRAY31_LARGE_LEAK", "CAN3_TRAY32_LARGE_LEAK",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	large_leak_io_expander3: gpio@53 {
++		compatible = "nxp,pca9698";
++		reg = <0x53>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <78 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN4_TRAY1_LARGE_LEAK", "CAN4_TRAY2_LARGE_LEAK",
++			"CAN4_TRAY3_LARGE_LEAK", "CAN4_TRAY4_LARGE_LEAK",
++			"CAN4_TRAY5_LARGE_LEAK", "CAN4_TRAY6_LARGE_LEAK",
++			"CAN4_TRAY7_LARGE_LEAK", "CAN4_TRAY8_LARGE_LEAK",
++			"CAN4_TRAY9_LARGE_LEAK", "CAN4_TRAY10_LARGE_LEAK",
++			"CAN4_TRAY11_LARGE_LEAK", "CAN4_TRAY12_LARGE_LEAK",
++			"CAN4_TRAY13_LARGE_LEAK", "CAN4_TRAY14_LARGE_LEAK",
++			"CAN4_TRAY15_LARGE_LEAK", "CAN4_TRAY16_LARGE_LEAK",
++			"CAN4_TRAY17_LARGE_LEAK", "CAN4_TRAY18_LARGE_LEAK",
++			"CAN4_TRAY19_LARGE_LEAK", "CAN4_TRAY20_LARGE_LEAK",
++			"CAN4_TRAY21_LARGE_LEAK", "CAN4_TRAY22_LARGE_LEAK",
++			"CAN4_TRAY23_LARGE_LEAK", "CAN4_TRAY24_LARGE_LEAK",
++			"CAN4_TRAY25_LARGE_LEAK", "CAN4_TRAY26_LARGE_LEAK",
++			"CAN4_TRAY27_LARGE_LEAK", "CAN4_TRAY28_LARGE_LEAK",
++			"CAN4_TRAY29_LARGE_LEAK", "CAN4_TRAY30_LARGE_LEAK",
++			"CAN4_TRAY31_LARGE_LEAK", "CAN4_TRAY32_LARGE_LEAK",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	large_leak_io_expander4: gpio@54 {
++		compatible = "nxp,pca9698";
++		reg = <0x54>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <86 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN5_TRAY1_LARGE_LEAK", "CAN5_TRAY2_LARGE_LEAK",
++			"CAN5_TRAY3_LARGE_LEAK", "CAN5_TRAY4_LARGE_LEAK",
++			"CAN5_TRAY5_LARGE_LEAK", "CAN5_TRAY6_LARGE_LEAK",
++			"CAN5_TRAY7_LARGE_LEAK", "CAN5_TRAY8_LARGE_LEAK",
++			"CAN5_TRAY9_LARGE_LEAK", "CAN5_TRAY10_LARGE_LEAK",
++			"CAN5_TRAY11_LARGE_LEAK", "CAN5_TRAY12_LARGE_LEAK",
++			"CAN5_TRAY13_LARGE_LEAK", "CAN5_TRAY14_LARGE_LEAK",
++			"CAN5_TRAY15_LARGE_LEAK", "CAN5_TRAY16_LARGE_LEAK",
++			"CAN5_TRAY17_LARGE_LEAK", "CAN5_TRAY18_LARGE_LEAK",
++			"CAN5_TRAY19_LARGE_LEAK", "CAN5_TRAY20_LARGE_LEAK",
++			"CAN5_TRAY21_LARGE_LEAK", "CAN5_TRAY22_LARGE_LEAK",
++			"CAN5_TRAY23_LARGE_LEAK", "CAN5_TRAY24_LARGE_LEAK",
++			"CAN5_TRAY25_LARGE_LEAK", "CAN5_TRAY26_LARGE_LEAK",
++			"CAN5_TRAY27_LARGE_LEAK", "CAN5_TRAY28_LARGE_LEAK",
++			"CAN5_TRAY29_LARGE_LEAK", "CAN5_TRAY30_LARGE_LEAK",
++			"CAN5_TRAY31_LARGE_LEAK", "CAN5_TRAY32_LARGE_LEAK",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	large_leak_io_expander5: gpio@55 {
++		compatible = "nxp,pca9698";
++		reg = <0x55>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <94 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN6_TRAY1_LARGE_LEAK", "CAN6_TRAY2_LARGE_LEAK",
++			"CAN6_TRAY3_LARGE_LEAK", "CAN6_TRAY4_LARGE_LEAK",
++			"CAN6_TRAY5_LARGE_LEAK", "CAN6_TRAY6_LARGE_LEAK",
++			"CAN6_TRAY7_LARGE_LEAK", "CAN6_TRAY8_LARGE_LEAK",
++			"CAN6_TRAY9_LARGE_LEAK", "CAN6_TRAY10_LARGE_LEAK",
++			"CAN6_TRAY11_LARGE_LEAK", "CAN6_TRAY12_LARGE_LEAK",
++			"CAN6_TRAY13_LARGE_LEAK", "CAN6_TRAY14_LARGE_LEAK",
++			"CAN6_TRAY15_LARGE_LEAK", "CAN6_TRAY16_LARGE_LEAK",
++			"CAN6_TRAY17_LARGE_LEAK", "CAN6_TRAY18_LARGE_LEAK",
++			"CAN6_TRAY19_LARGE_LEAK", "CAN6_TRAY20_LARGE_LEAK",
++			"CAN6_TRAY21_LARGE_LEAK", "CAN6_TRAY22_LARGE_LEAK",
++			"CAN6_TRAY23_LARGE_LEAK", "CAN6_TRAY24_LARGE_LEAK",
++			"CAN6_TRAY25_LARGE_LEAK", "CAN6_TRAY26_LARGE_LEAK",
++			"CAN6_TRAY27_LARGE_LEAK", "CAN6_TRAY28_LARGE_LEAK",
++			"CAN6_TRAY29_LARGE_LEAK", "CAN6_TRAY30_LARGE_LEAK",
++			"CAN6_TRAY31_LARGE_LEAK", "CAN6_TRAY32_LARGE_LEAK",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	large_leak_io_expander6: gpio@56 {
++		compatible = "nxp,pca9698";
++		reg = <0x56>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <102 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN7_TRAY1_LARGE_LEAK", "CAN7_TRAY2_LARGE_LEAK",
++			"CAN7_TRAY3_LARGE_LEAK", "CAN7_TRAY4_LARGE_LEAK",
++			"CAN7_TRAY5_LARGE_LEAK", "CAN7_TRAY6_LARGE_LEAK",
++			"CAN7_TRAY7_LARGE_LEAK", "CAN7_TRAY8_LARGE_LEAK",
++			"CAN7_TRAY9_LARGE_LEAK", "CAN7_TRAY10_LARGE_LEAK",
++			"CAN7_TRAY11_LARGE_LEAK", "CAN7_TRAY12_LARGE_LEAK",
++			"CAN7_TRAY13_LARGE_LEAK", "CAN7_TRAY14_LARGE_LEAK",
++			"CAN7_TRAY15_LARGE_LEAK", "CAN7_TRAY16_LARGE_LEAK",
++			"CAN7_TRAY17_LARGE_LEAK", "CAN7_TRAY18_LARGE_LEAK",
++			"CAN7_TRAY19_LARGE_LEAK", "CAN7_TRAY20_LARGE_LEAK",
++			"CAN7_TRAY21_LARGE_LEAK", "CAN7_TRAY22_LARGE_LEAK",
++			"CAN7_TRAY23_LARGE_LEAK", "CAN7_TRAY24_LARGE_LEAK",
++			"CAN7_TRAY25_LARGE_LEAK", "CAN7_TRAY26_LARGE_LEAK",
++			"CAN7_TRAY27_LARGE_LEAK", "CAN7_TRAY28_LARGE_LEAK",
++			"CAN7_TRAY29_LARGE_LEAK", "CAN7_TRAY30_LARGE_LEAK",
++			"CAN7_TRAY31_LARGE_LEAK", "CAN7_TRAY32_LARGE_LEAK",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	large_leak_io_expander7: gpio@57 {
++		compatible = "nxp,pca9698";
++		reg = <0x57>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <110 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN8_TRAY1_LARGE_LEAK", "CAN8_TRAY2_LARGE_LEAK",
++			"CAN8_TRAY3_LARGE_LEAK", "CAN8_TRAY4_LARGE_LEAK",
++			"CAN8_TRAY5_LARGE_LEAK", "CAN8_TRAY6_LARGE_LEAK",
++			"CAN8_TRAY7_LARGE_LEAK", "CAN8_TRAY8_LARGE_LEAK",
++			"CAN8_TRAY9_LARGE_LEAK", "CAN8_TRAY10_LARGE_LEAK",
++			"CAN8_TRAY11_LARGE_LEAK", "CAN8_TRAY12_LARGE_LEAK",
++			"CAN8_TRAY13_LARGE_LEAK", "CAN8_TRAY14_LARGE_LEAK",
++			"CAN8_TRAY15_LARGE_LEAK", "CAN8_TRAY16_LARGE_LEAK",
++			"CAN8_TRAY17_LARGE_LEAK", "CAN8_TRAY18_LARGE_LEAK",
++			"CAN8_TRAY19_LARGE_LEAK", "CAN8_TRAY20_LARGE_LEAK",
++			"CAN8_TRAY21_LARGE_LEAK", "CAN8_TRAY22_LARGE_LEAK",
++			"CAN8_TRAY23_LARGE_LEAK", "CAN8_TRAY24_LARGE_LEAK",
++			"CAN8_TRAY25_LARGE_LEAK", "CAN8_TRAY26_LARGE_LEAK",
++			"CAN8_TRAY27_LARGE_LEAK", "CAN8_TRAY28_LARGE_LEAK",
++			"CAN8_TRAY29_LARGE_LEAK", "CAN8_TRAY30_LARGE_LEAK",
++			"CAN8_TRAY31_LARGE_LEAK", "CAN8_TRAY32_LARGE_LEAK",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	small_leak_io_expander0: gpio@58 {
++		compatible = "nxp,pca9698";
++		reg = <0x58>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <52 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN1_TRAY1_SMALL_LEAK", "CAN1_TRAY2_SMALL_LEAK",
++			"CAN1_TRAY3_SMALL_LEAK", "CAN1_TRAY4_SMALL_LEAK",
++			"CAN1_TRAY5_SMALL_LEAK", "CAN1_TRAY6_SMALL_LEAK",
++			"CAN1_TRAY7_SMALL_LEAK", "CAN1_TRAY8_SMALL_LEAK",
++			"CAN1_TRAY9_SMALL_LEAK", "CAN1_TRAY10_SMALL_LEAK",
++			"CAN1_TRAY11_SMALL_LEAK", "CAN1_TRAY12_SMALL_LEAK",
++			"CAN1_TRAY13_SMALL_LEAK", "CAN1_TRAY14_SMALL_LEAK",
++			"CAN1_TRAY15_SMALL_LEAK", "CAN1_TRAY16_SMALL_LEAK",
++			"CAN1_TRAY17_SMALL_LEAK", "CAN1_TRAY18_SMALL_LEAK",
++			"CAN1_TRAY19_SMALL_LEAK", "CAN1_TRAY20_SMALL_LEAK",
++			"CAN1_TRAY21_SMALL_LEAK", "CAN1_TRAY22_SMALL_LEAK",
++			"CAN1_TRAY23_SMALL_LEAK", "CAN1_TRAY24_SMALL_LEAK",
++			"CAN1_TRAY25_SMALL_LEAK", "CAN1_TRAY26_SMALL_LEAK",
++			"CAN1_TRAY27_SMALL_LEAK", "CAN1_TRAY28_SMALL_LEAK",
++			"CAN1_TRAY29_SMALL_LEAK", "CAN1_TRAY30_SMALL_LEAK",
++			"CAN1_TRAY31_SMALL_LEAK", "CAN1_TRAY32_SMALL_LEAK",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	small_leak_io_expander1: gpio@59 {
++		compatible = "nxp,pca9698";
++		reg = <0x59>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <60 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN2_TRAY1_SMALL_LEAK", "CAN2_TRAY2_SMALL_LEAK",
++			"CAN2_TRAY3_SMALL_LEAK", "CAN2_TRAY4_SMALL_LEAK",
++			"CAN2_TRAY5_SMALL_LEAK", "CAN2_TRAY6_SMALL_LEAK",
++			"CAN2_TRAY7_SMALL_LEAK", "CAN2_TRAY8_SMALL_LEAK",
++			"CAN2_TRAY9_SMALL_LEAK", "CAN2_TRAY10_SMALL_LEAK",
++			"CAN2_TRAY11_SMALL_LEAK", "CAN2_TRAY12_SMALL_LEAK",
++			"CAN2_TRAY13_SMALL_LEAK", "CAN2_TRAY14_SMALL_LEAK",
++			"CAN2_TRAY15_SMALL_LEAK", "CAN2_TRAY16_SMALL_LEAK",
++			"CAN2_TRAY17_SMALL_LEAK", "CAN2_TRAY18_SMALL_LEAK",
++			"CAN2_TRAY19_SMALL_LEAK", "CAN2_TRAY20_SMALL_LEAK",
++			"CAN2_TRAY21_SMALL_LEAK", "CAN2_TRAY22_SMALL_LEAK",
++			"CAN2_TRAY23_SMALL_LEAK", "CAN2_TRAY24_SMALL_LEAK",
++			"CAN2_TRAY25_SMALL_LEAK", "CAN2_TRAY26_SMALL_LEAK",
++			"CAN2_TRAY27_SMALL_LEAK", "CAN2_TRAY28_SMALL_LEAK",
++			"CAN2_TRAY29_SMALL_LEAK", "CAN2_TRAY30_SMALL_LEAK",
++			"CAN2_TRAY31_SMALL_LEAK", "CAN2_TRAY32_SMALL_LEAK",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	small_leak_io_expander2: gpio@5a {
++		compatible = "nxp,pca9698";
++		reg = <0x5a>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <68 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN3_TRAY1_SMALL_LEAK", "CAN3_TRAY2_SMALL_LEAK",
++			"CAN3_TRAY3_SMALL_LEAK", "CAN3_TRAY4_SMALL_LEAK",
++			"CAN3_TRAY5_SMALL_LEAK", "CAN3_TRAY6_SMALL_LEAK",
++			"CAN3_TRAY7_SMALL_LEAK", "CAN3_TRAY8_SMALL_LEAK",
++			"CAN3_TRAY9_SMALL_LEAK", "CAN3_TRAY10_SMALL_LEAK",
++			"CAN3_TRAY11_SMALL_LEAK", "CAN3_TRAY12_SMALL_LEAK",
++			"CAN3_TRAY13_SMALL_LEAK", "CAN3_TRAY14_SMALL_LEAK",
++			"CAN3_TRAY15_SMALL_LEAK", "CAN3_TRAY16_SMALL_LEAK",
++			"CAN3_TRAY17_SMALL_LEAK", "CAN3_TRAY18_SMALL_LEAK",
++			"CAN3_TRAY19_SMALL_LEAK", "CAN3_TRAY20_SMALL_LEAK",
++			"CAN3_TRAY21_SMALL_LEAK", "CAN3_TRAY22_SMALL_LEAK",
++			"CAN3_TRAY23_SMALL_LEAK", "CAN3_TRAY24_SMALL_LEAK",
++			"CAN3_TRAY25_SMALL_LEAK", "CAN3_TRAY26_SMALL_LEAK",
++			"CAN3_TRAY27_SMALL_LEAK", "CAN3_TRAY28_SMALL_LEAK",
++			"CAN3_TRAY29_SMALL_LEAK", "CAN3_TRAY30_SMALL_LEAK",
++			"CAN3_TRAY31_SMALL_LEAK", "CAN3_TRAY32_SMALL_LEAK",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	small_leak_io_expander3: gpio@5b {
++		compatible = "nxp,pca9698";
++		reg = <0x5b>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <76 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN4_TRAY1_SMALL_LEAK", "CAN4_TRAY2_SMALL_LEAK",
++			"CAN4_TRAY3_SMALL_LEAK", "CAN4_TRAY4_SMALL_LEAK",
++			"CAN4_TRAY5_SMALL_LEAK", "CAN4_TRAY6_SMALL_LEAK",
++			"CAN4_TRAY7_SMALL_LEAK", "CAN4_TRAY8_SMALL_LEAK",
++			"CAN4_TRAY9_SMALL_LEAK", "CAN4_TRAY10_SMALL_LEAK",
++			"CAN4_TRAY11_SMALL_LEAK", "CAN4_TRAY12_SMALL_LEAK",
++			"CAN4_TRAY13_SMALL_LEAK", "CAN4_TRAY14_SMALL_LEAK",
++			"CAN4_TRAY15_SMALL_LEAK", "CAN4_TRAY16_SMALL_LEAK",
++			"CAN4_TRAY17_SMALL_LEAK", "CAN4_TRAY18_SMALL_LEAK",
++			"CAN4_TRAY19_SMALL_LEAK", "CAN4_TRAY20_SMALL_LEAK",
++			"CAN4_TRAY21_SMALL_LEAK", "CAN4_TRAY22_SMALL_LEAK",
++			"CAN4_TRAY23_SMALL_LEAK", "CAN4_TRAY24_SMALL_LEAK",
++			"CAN4_TRAY25_SMALL_LEAK", "CAN4_TRAY26_SMALL_LEAK",
++			"CAN4_TRAY27_SMALL_LEAK", "CAN4_TRAY28_SMALL_LEAK",
++			"CAN4_TRAY29_SMALL_LEAK", "CAN4_TRAY30_SMALL_LEAK",
++			"CAN4_TRAY31_SMALL_LEAK", "CAN4_TRAY32_SMALL_LEAK",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	small_leak_io_expander4: gpio@5c {
++		compatible = "nxp,pca9698";
++		reg = <0x5c>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <84 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN5_TRAY1_SMALL_LEAK", "CAN5_TRAY2_SMALL_LEAK",
++			"CAN5_TRAY3_SMALL_LEAK", "CAN5_TRAY4_SMALL_LEAK",
++			"CAN5_TRAY5_SMALL_LEAK", "CAN5_TRAY6_SMALL_LEAK",
++			"CAN5_TRAY7_SMALL_LEAK", "CAN5_TRAY8_SMALL_LEAK",
++			"CAN5_TRAY9_SMALL_LEAK", "CAN5_TRAY10_SMALL_LEAK",
++			"CAN5_TRAY11_SMALL_LEAK", "CAN5_TRAY12_SMALL_LEAK",
++			"CAN5_TRAY13_SMALL_LEAK", "CAN5_TRAY14_SMALL_LEAK",
++			"CAN5_TRAY15_SMALL_LEAK", "CAN5_TRAY16_SMALL_LEAK",
++			"CAN5_TRAY17_SMALL_LEAK", "CAN5_TRAY18_SMALL_LEAK",
++			"CAN5_TRAY19_SMALL_LEAK", "CAN5_TRAY20_SMALL_LEAK",
++			"CAN5_TRAY21_SMALL_LEAK", "CAN5_TRAY22_SMALL_LEAK",
++			"CAN5_TRAY23_SMALL_LEAK", "CAN5_TRAY24_SMALL_LEAK",
++			"CAN5_TRAY25_SMALL_LEAK", "CAN5_TRAY26_SMALL_LEAK",
++			"CAN5_TRAY27_SMALL_LEAK", "CAN5_TRAY28_SMALL_LEAK",
++			"CAN5_TRAY29_SMALL_LEAK", "CAN5_TRAY30_SMALL_LEAK",
++			"CAN5_TRAY31_SMALL_LEAK", "CAN5_TRAY32_SMALL_LEAK",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	small_leak_io_expander5: gpio@5d {
++		compatible = "nxp,pca9698";
++		reg = <0x5d>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <92 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN6_TRAY1_SMALL_LEAK", "CAN6_TRAY2_SMALL_LEAK",
++			"CAN6_TRAY3_SMALL_LEAK", "CAN6_TRAY4_SMALL_LEAK",
++			"CAN6_TRAY5_SMALL_LEAK", "CAN6_TRAY6_SMALL_LEAK",
++			"CAN6_TRAY7_SMALL_LEAK", "CAN6_TRAY8_SMALL_LEAK",
++			"CAN6_TRAY9_SMALL_LEAK", "CAN6_TRAY10_SMALL_LEAK",
++			"CAN6_TRAY11_SMALL_LEAK", "CAN6_TRAY12_SMALL_LEAK",
++			"CAN6_TRAY13_SMALL_LEAK", "CAN6_TRAY14_SMALL_LEAK",
++			"CAN6_TRAY15_SMALL_LEAK", "CAN6_TRAY16_SMALL_LEAK",
++			"CAN6_TRAY17_SMALL_LEAK", "CAN6_TRAY18_SMALL_LEAK",
++			"CAN6_TRAY19_SMALL_LEAK", "CAN6_TRAY20_SMALL_LEAK",
++			"CAN6_TRAY21_SMALL_LEAK", "CAN6_TRAY22_SMALL_LEAK",
++			"CAN6_TRAY23_SMALL_LEAK", "CAN6_TRAY24_SMALL_LEAK",
++			"CAN6_TRAY25_SMALL_LEAK", "CAN6_TRAY26_SMALL_LEAK",
++			"CAN6_TRAY27_SMALL_LEAK", "CAN6_TRAY28_SMALL_LEAK",
++			"CAN6_TRAY29_SMALL_LEAK", "CAN6_TRAY30_SMALL_LEAK",
++			"CAN6_TRAY31_SMALL_LEAK", "CAN6_TRAY32_SMALL_LEAK",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	small_leak_io_expander6: gpio@5e {
++		compatible = "nxp,pca9698";
++		reg = <0x5e>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <100 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN7_TRAY1_SMALL_LEAK", "CAN7_TRAY2_SMALL_LEAK",
++			"CAN7_TRAY3_SMALL_LEAK", "CAN7_TRAY4_SMALL_LEAK",
++			"CAN7_TRAY5_SMALL_LEAK", "CAN7_TRAY6_SMALL_LEAK",
++			"CAN7_TRAY7_SMALL_LEAK", "CAN7_TRAY8_SMALL_LEAK",
++			"CAN7_TRAY9_SMALL_LEAK", "CAN7_TRAY10_SMALL_LEAK",
++			"CAN7_TRAY11_SMALL_LEAK", "CAN7_TRAY12_SMALL_LEAK",
++			"CAN7_TRAY13_SMALL_LEAK", "CAN7_TRAY14_SMALL_LEAK",
++			"CAN7_TRAY15_SMALL_LEAK", "CAN7_TRAY16_SMALL_LEAK",
++			"CAN7_TRAY17_SMALL_LEAK", "CAN7_TRAY18_SMALL_LEAK",
++			"CAN7_TRAY19_SMALL_LEAK", "CAN7_TRAY20_SMALL_LEAK",
++			"CAN7_TRAY21_SMALL_LEAK", "CAN7_TRAY22_SMALL_LEAK",
++			"CAN7_TRAY23_SMALL_LEAK", "CAN7_TRAY24_SMALL_LEAK",
++			"CAN7_TRAY25_SMALL_LEAK", "CAN7_TRAY26_SMALL_LEAK",
++			"CAN7_TRAY27_SMALL_LEAK", "CAN7_TRAY28_SMALL_LEAK",
++			"CAN7_TRAY29_SMALL_LEAK", "CAN7_TRAY30_SMALL_LEAK",
++			"CAN7_TRAY31_SMALL_LEAK", "CAN7_TRAY32_SMALL_LEAK",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	small_leak_io_expander7: gpio@5f {
++		compatible = "nxp,pca9698";
++		reg = <0x5f>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <108 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CAN8_TRAY1_SMALL_LEAK", "CAN8_TRAY2_SMALL_LEAK",
++			"CAN8_TRAY3_SMALL_LEAK", "CAN8_TRAY4_SMALL_LEAK",
++			"CAN8_TRAY5_SMALL_LEAK", "CAN8_TRAY6_SMALL_LEAK",
++			"CAN8_TRAY7_SMALL_LEAK", "CAN8_TRAY8_SMALL_LEAK",
++			"CAN8_TRAY9_SMALL_LEAK", "CAN8_TRAY10_SMALL_LEAK",
++			"CAN8_TRAY11_SMALL_LEAK", "CAN8_TRAY12_SMALL_LEAK",
++			"CAN8_TRAY13_SMALL_LEAK", "CAN8_TRAY14_SMALL_LEAK",
++			"CAN8_TRAY15_SMALL_LEAK", "CAN8_TRAY16_SMALL_LEAK",
++			"CAN8_TRAY17_SMALL_LEAK", "CAN8_TRAY18_SMALL_LEAK",
++			"CAN8_TRAY19_SMALL_LEAK", "CAN8_TRAY20_SMALL_LEAK",
++			"CAN8_TRAY21_SMALL_LEAK", "CAN8_TRAY22_SMALL_LEAK",
++			"CAN8_TRAY23_SMALL_LEAK", "CAN8_TRAY24_SMALL_LEAK",
++			"CAN8_TRAY25_SMALL_LEAK", "CAN8_TRAY26_SMALL_LEAK",
++			"CAN8_TRAY27_SMALL_LEAK", "CAN8_TRAY28_SMALL_LEAK",
++			"CAN8_TRAY29_SMALL_LEAK", "CAN8_TRAY30_SMALL_LEAK",
++			"CAN8_TRAY31_SMALL_LEAK", "CAN8_TRAY32_SMALL_LEAK",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++};
++
++&i2c4 {
++	status = "okay";
++	multi-master;
++	mctp-controller;
++	mctp0: mctp@10 {
++		compatible = "mctp-i2c-controller";
++		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
++	};
++
++	i2c-mux@77 {
++		compatible = "nxp,pca9548";
++		reg = <0x77>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		i2c4mux0ch0: i2c@0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++
++			io_expander3: gpio@23 {
++				compatible = "nxp,pca9555";
++				reg = <0x23>;
++				gpio-controller;
++				#gpio-cells = <2>;
++				interrupt-parent = <&io_expander7>;
++				interrupts = <3 IRQ_TYPE_LEVEL_LOW>;
++
++				gpio-line-names =
++					"", "",
++					"", "RST_I2CRST_MUX1_N",
++					"RST_I2CRST_MUX2_N", "RST_I2CRST_MUX3_N",
++					"RST_I2CRST_MUX4_N", "RST_I2CRST_MUX5_N",
++					"RST_I2CRST_MUX6_N", "RST_I2CRST_MUX7_N",
++					"RST_I2CRST_MUX8_N", "",
++					"TRAY30_PWRGD_BUF_R", "TRAY31_PWRGD_BUF_R",
++					"TRAY32_PWRGD_BUF_R", "TRAY37_PWRGD_BUF_R";
++			};
++		};
++
++		i2c4mux0ch1: i2c@1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++
++			temp-sensor@48 {
++				compatible = "ti,tmp75";
++				reg = <0x48>;
++			};
++
++			temp-sensor@4a {
++				compatible = "ti,tmp75";
++				reg = <0x4a>;
++			};
++
++			eeprom@56 {
++				compatible = "atmel,24c128";
++				reg = <0x56>;
++			};
++		};
++
++		i2c4mux0ch2: i2c@2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++			status = "okay";
++		};
++
++		i2c4mux0ch3: i2c@3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++			status = "okay";
++		};
++
++		i2c4mux0ch4: i2c@4 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <4>;
++			status = "okay";
++		};
++
++		i2c4mux0ch5: i2c@5 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <5>;
++			status = "okay";
++		};
++
++		i2c4mux0ch6: i2c@6 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <6>;
++			mctp-controller;
++		};
++
++		i2c4mux0ch7: i2c@7 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <7>;
++			status = "okay";
++		};
++	};
++};
++
++&i2c5 {
++	status = "okay";
++
++	io_expander4: gpio@22 {
++		compatible = "nxp,pca9555";
++		reg = <0x22>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&io_expander7>;
++		interrupts = <4 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"R_COME_THERMTRIP_L", "R_PWRGD_PCH_PWROK",
++			"", "",
++			"", "",
++			"", "",
++			"", "",
++			"", "",
++			"", "TRAY38_PWRGD_BUF_R",
++			"TRAY39_PWRGD_BUF_R", "TRAY40_PWRGD_BUF_R";
++	};
++
++	io_expander5: gpio@23 {
++		compatible = "nxp,pca9555";
++		reg = <0x23>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&io_expander7>;
++		interrupts = <5 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"PWRGD_P5V_AUX_R2", "",
++			"PWRGD_P1V5_AUX_R", "PWRGD_P1V05_AUX_R",
++			"PWRGD_P52V_HSC_PWROK_R", "PWRGD_P24V_AUX_2_R",
++			"PWRGD_P24V_AUX_R", "PWRGD_P12V_AUX_R2",
++			"PWRGD_P12V_SCM_R", "P24V_AUX_INA230_ALERT_N_R",
++			"", "PRSNT_CAN1_MCIO_N",
++			"PRSNT_CAN2_MCIO_N", "PRSNT_AALC_MCIO_N",
++			"PRSNT_RACKMON_MCIO_N", "PRSNT_RIO_RACKMON_N";
++	};
++
++	temp-sensor@4f {
++		compatible = "ti,tmp75";
++		reg = <0x4f>;
++	};
++
++	eeprom@54 {
++		compatible = "atmel,24c128";
++		reg = <0x54>;
++	};
++
++	i2c-mux@77 {
++		compatible = "nxp,pca9548";
++		reg = <0x77>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		i2c-mux-idle-disconnect;
++
++		i2c5mux0ch0: i2c@0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++		};
++
++		i2c5mux0ch1: i2c@1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++		};
++
++		i2c5mux0ch2: i2c@2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++
++			eeprom@56 {
++				compatible = "atmel,24c128";
++				reg = <0x56>;
++			};
++		};
++
++		i2c5mux0ch3: i2c@3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++
++			eeprom@56 {
++				compatible = "atmel,24c128";
++				reg = <0x56>;
++			};
++		};
++
++		i2c5mux0ch4: i2c@4 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <4>;
++
++			eeprom@56 {
++				compatible = "atmel,24c128";
++				reg = <0x56>;
++			};
++		};
++
++		i2c5mux0ch5: i2c@5 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <5>;
++
++			eeprom@56 {
++				compatible = "atmel,24c128";
++				reg = <0x56>;
++			};
++		};
++
++		i2c5mux0ch6: i2c@6 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <6>;
++
++			eeprom@56 {
++				compatible = "atmel,24c128";
++				reg = <0x56>;
++			};
++		};
++
++		i2c5mux0ch7: i2c@7 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <7>;
++
++			eeprom@56 {
++				compatible = "atmel,24c128";
++				reg = <0x56>;
++			};
++		};
++	};
++};
++
++&i2c6 {
++	status = "okay";
++
++	dac@0c {
++		reg = <0x0c>;
++		compatible = "adi,ad5612";
++		vcc-supply = <&p5v_dac_aux>;
++	};
++
++	dac@0e {
++		reg = <0x0e>;
++		compatible = "adi,ad5612";
++		vcc-supply = <&p5v_dac_aux>;
++	};
++
++	dac@0f {
++		reg = <0x0f>;
++		compatible = "adi,ad5612";
++		vcc-supply = <&p5v_dac_aux>;
++	};
++
++	io_expander0: gpio@20 {
++		compatible = "nxp,pca9555";
++		reg = <0x20>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&io_expander7>;
++		interrupts = <0 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"", "",
++			"", "",
++			"", "PRSNT_FANBP_0_PWR_N",
++			"PRSNT_FANBP_0_SIG_N", "PRSNT_POE_PWR_N",
++			"PRSNT_POE_SIG_N", "",
++			"PWRGD_P3V3_ISO_POE_BMC_R", "",
++			"", "",
++			"DEV_DIS_N", "PCI_DIS_N";
++	};
++
++	io_expander1: gpio@21 {
++		compatible = "nxp,pca9555";
++		reg = <0x21>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&io_expander7>;
++		interrupts = <1 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"PWRGD_CPU_LVC3_BMC", "R_FM_BIOS_POST_CMPLT_BMC",
++			"", "",
++			"", "",
++			"", "",
++			"", "",
++			"", "PCIE_SSD1_PRSNT_N",
++			"", "TRAY23_PWRGD_BUF_R",
++			"TRAY24_PWRGD_BUF_R", "TRAY29_PWRGD_BUF_R";
++	};
++
++	io_expander2: gpio@22 {
++		compatible = "nxp,pca9555";
++		reg = <0x22>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&io_expander7>;
++		interrupts = <2 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"BOARD_ID_0", "BOARD_ID_1",
++			"BOARD_ID_2", "BOARD_ID_3",
++			"SKU_ID_3", "SKU_ID_2",
++			"SKU_ID_1", "SKU_ID_0",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	io_expander7: gpio@23 {
++		compatible = "nxp,pca9555";
++		reg = <0x23>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-controller;
++		#interrupt-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <32 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"IOEXP1_INT_N", "IOEXP2_INT_N",
++			"IOEXP3_INT_N", "IOEXP4_INT_N",
++			"IOEXP5_INT_N", "IOEXP6_INT_N",
++			"IOEXP7_INT_N", "",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	io_expander8: gpio@24 {
++		compatible = "nxp,pca9555";
++		reg = <0x24>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&io_expander7>;
++		interrupts = <0 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"PRSNT_MGMT_J54_N", "PRSNT_RACKMON_J47_N",
++			"PRSNT_MGMT_DEBUG_J53_N", "PRSNT_MINISAS_TOP_J49_N",
++			"PRSNT_MINISAS_TOP_J50_N", "PRSNT_MINISAS_BOT_J51_N",
++			"PRSNT_MINISAS_BOT_J52_N", "JTAG_PLD_JTAGEN",
++			"PU_PLD_CONFIG_N", "",
++			"", "",
++			"", "",
++			"", "";
++};
++
++	// Marvell 88E6393X EEPROM
++	eeprom@50 {
++		compatible = "atmel,24c64";
++		reg = <0x50>;
++	};
++
++	rtc@51 {
++		compatible = "nxp,pcf8563";
++		reg = <0x51>;
++	};
++};
++
++&i2c7 {
++	status = "okay";
++	bus-frequency = <100000>;
++	multi-master;
++	aspeed,hw-timeout-ms = <1000>;
++
++	ipmb@10 {
++		compatible = "ipmb-dev";
++		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
++		i2c-protocol;
++	};
++};
++
++&i2c8 {
++	status = "okay";
++
++	i2c-mux@77 {
++		compatible = "nxp,pca9548";
++		reg = <0x77>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		i2c-mux-idle-disconnect;
++
++		i2c8mux0ch0: i2c@0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++			status = "okay";
++		};
++
++		i2c8mux0ch1: i2c@1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++			status = "okay";
++		};
++
++		i2c8mux0ch2: i2c@2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++			status = "okay";
++		};
++
++		i2c8mux0ch3: i2c@3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++			status = "okay";
++		};
++
++		i2c8mux0ch4: i2c@4 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <4>;
++			status = "okay";
++		};
++
++		i2c8mux0ch5: i2c@5 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <5>;
++			status = "okay";
++		};
++
++		i2c8mux0ch6: i2c@6 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <6>;
++			status = "okay";
++		};
++
++		i2c8mux0ch7: i2c@7 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <7>;
++			status = "okay";
++		};
++	};
++};
++
++&i2c9 {
++	status = "okay";
++
++	temperature-sensor@4b {
++		compatible = "ti,tmp75";
++		reg = <0x4b>;
++	};
++
++	eeprom@50 {
++		compatible = "atmel,24c128";
++		reg = <0x50>;
++	};
++
++	eeprom@51 {
++		compatible = "atmel,24c128";
++		reg = <0x51>;
++	};
++
++	eeprom@56 {
++		compatible = "atmel,24c64";
++		reg = <0x56>;
++	};
++};
++
++&i2c10 {
++	status = "okay";
++	/*
++	 * This board physically routes two sets of presence signals to support
++	 * both new and older tray designs concurrently.
++	 * The 'legacy_' prefix is used to distinguish these backward-compatible
++	 * PCA9555 expanders from the new CAN-based PCA9698 expanders (e.g., gpio@40)
++	 * and to prevent device tree label collisions.
++	 */
++	legacy_prsnt_io_expander0: gpio@11 {
++		compatible = "nxp,pca9555";
++		reg = <0x11>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <40 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"TRAY_PRSNT1_N_BUF_R", "TRAY_PRSNT2_N_BUF_R",
++			"TRAY_PRSNT3_N_BUF_R", "TRAY_PRSNT4_N_BUF_R",
++			"TRAY_PRSNT5_N_BUF_R", "TRAY_PRSNT6_N_BUF_R",
++			"TRAY_PRSNT7_N_BUF_R", "TRAY_PRSNT8_N_BUF_R",
++			"TRAY_PRSNT9_N_BUF_R", "TRAY_PRSNT10_N_BUF_R",
++			"TRAY_PRSNT11_N_BUF_R", "TRAY_PRSNT12_N_BUF_R",
++			"TRAY_PRSNT13_N_BUF_R", "TRAY_PRSNT14_N_BUF_R",
++			"TRAY_PRSNT15_N_BUF_R", "TRAY_PRSNT16_N_BUF_R";
++	};
++
++	legacy_prsnt_io_expander1: gpio@12 {
++		compatible = "nxp,pca9555";
++		reg = <0x12>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <40 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"TRAY_PRSNT17_N_BUF_R", "TRAY_PRSNT18_N_BUF_R",
++			"TRAY_PRSNT19_N_BUF_R", "TRAY_PRSNT20_N_BUF_R",
++			"TRAY_PRSNT21_N_BUF_R", "TRAY_PRSNT22_N_BUF_R",
++			"TRAY_PRSNT23_N_BUF_R", "TRAY_PRSNT24_N_BUF_R",
++			"TRAY_PRSNT25_N_BUF_R", "TRAY_PRSNT26_N_BUF_R",
++			"TRAY_PRSNT27_N_BUF_R", "TRAY_PRSNT28_N_BUF_R",
++			"TRAY_PRSNT29_N_BUF_R", "TRAY_PRSNT30_N_BUF_R",
++			"TRAY_PRSNT31_N_BUF_R", "TRAY_PRSNT32_N_BUF_R";
++	};
++
++	legacy_prsnt_io_expander2: gpio@13 {
++		compatible = "nxp,pca9555";
++		reg = <0x13>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <40 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"TRAY_PRSNT33_N_BUF_R", "TRAY_PRSNT34_N_BUF_R",
++			"TRAY_PRSNT35_N_BUF_R", "TRAY_PRSNT36_N_BUF_R",
++			"TRAY_PRSNT37_N_BUF_R", "TRAY_PRSNT38_N_BUF_R",
++			"TRAY_PRSNT39_N_BUF_R", "TRAY_PRSNT40_N_BUF_R",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	power-monitor@14 {
++		compatible = "infineon,xdp710";
++		reg = <0x14>;
++	};
++
++	legacy_pwrgd_io_expander1: gpio@15 {
++		compatible = "nxp,pca9555";
++		reg = <0x15>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <42 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"TRAY_PWRGD17_N_BUF_R", "TRAY_PWRGD18_N_BUF_R",
++			"TRAY_PWRGD19_N_BUF_R", "TRAY_PWRGD20_N_BUF_R",
++			"TRAY_PWRGD21_N_BUF_R", "TRAY_PWRGD22_N_BUF_R",
++			"TRAY_PWRGD23_N_BUF_R", "TRAY_PWRGD24_N_BUF_R",
++			"TRAY_PWRGD25_N_BUF_R", "TRAY_PWRGD26_N_BUF_R",
++			"TRAY_PWRGD27_N_BUF_R", "TRAY_PWRGD28_N_BUF_R",
++			"TRAY_PWRGD29_N_BUF_R", "TRAY_PWRGD30_N_BUF_R",
++			"TRAY_PWRGD31_N_BUF_R", "TRAY_PWRGD32_N_BUF_R";
++	};
++
++	legacy_pwrgd_io_expander2: gpio@16 {
++		compatible = "nxp,pca9555";
++		reg = <0x16>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <42 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"TRAY_PWRGD33_N_BUF_R", "TRAY_PWRGD34_N_BUF_R",
++			"TRAY_PWRGD35_N_BUF_R", "TRAY_PWRGD36_N_BUF_R",
++			"TRAY_PWRGD37_N_BUF_R", "TRAY_PWRGD38_N_BUF_R",
++			"TRAY_PWRGD39_N_BUF_R", "TRAY_PWRGD40_N_BUF_R",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	legacy_leak_io_expander0: gpio@17 {
++		compatible = "nxp,pca9555";
++		reg = <0x17>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <46 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"TRAY_LEAK_DETECT1_N_BUF_R", "TRAY_LEAK_DETECT2_N_BUF_R",
++			"TRAY_LEAK_DETECT3_N_BUF_R", "TRAY_LEAK_DETECT4_N_BUF_R",
++			"TRAY_LEAK_DETECT5_N_BUF_R", "TRAY_LEAK_DETECT6_N_BUF_R",
++			"TRAY_LEAK_DETECT7_N_BUF_R", "TRAY_LEAK_DETECT8_N_BUF_R",
++			"TRAY_LEAK_DETECT9_N_BUF_R", "TRAY_LEAK_DETECT10_N_BUF_R",
++			"TRAY_LEAK_DETECT11_N_BUF_R", "TRAY_LEAK_DETECT12_N_BUF_R",
++			"TRAY_LEAK_DETECT13_N_BUF_R", "TRAY_LEAK_DETECT14_N_BUF_R",
++			"TRAY_LEAK_DETECT15_N_BUF_R", "TRAY_LEAK_DETECT16_N_BUF_R";
++	};
++
++	legacy_leak_io_expander1: gpio@18 {
++		compatible = "nxp,pca9555";
++		reg = <0x18>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <46 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"TRAY_LEAK_DETECT17_N_BUF_R", "TRAY_LEAK_DETECT18_N_BUF_R",
++			"TRAY_LEAK_DETECT19_N_BUF_R", "TRAY_LEAK_DETECT20_N_BUF_R",
++			"TRAY_LEAK_DETECT21_N_BUF_R", "TRAY_LEAK_DETECT22_N_BUF_R",
++			"TRAY_LEAK_DETECT23_N_BUF_R", "TRAY_LEAK_DETECT24_N_BUF_R",
++			"TRAY_LEAK_DETECT25_N_BUF_R", "TRAY_LEAK_DETECT26_N_BUF_R",
++			"TRAY_LEAK_DETECT27_N_BUF_R", "TRAY_LEAK_DETECT28_N_BUF_R",
++			"TRAY_LEAK_DETECT29_N_BUF_R", "TRAY_LEAK_DETECT30_N_BUF_R",
++			"TRAY_LEAK_DETECT31_N_BUF_R", "TRAY_LEAK_DETECT32_N_BUF_R";
++	};
++
++	legacy_leak_io_expander2: gpio@19 {
++		compatible = "nxp,pca9555";
++		reg = <0x19>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <46 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"TRAY_LEAK_DETECT33_N_BUF_R", "TRAY_LEAK_DETECT34_N_BUF_R",
++			"TRAY_LEAK_DETECT35_N_BUF_R", "TRAY_LEAK_DETECT36_N_BUF_R",
++			"TRAY_LEAK_DETECT37_N_BUF_R", "TRAY_LEAK_DETECT38_N_BUF_R",
++			"TRAY_LEAK_DETECT39_N_BUF_R", "TRAY_LEAK_DETECT40_N_BUF_R",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	legacy_small_leak_io_expander0: gpio@1a {
++		compatible = "nxp,pca9555";
++		reg = <0x1a>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <44 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"TRAY_SMALL_LEAK1_N_BUF_R", "TRAY_SMALL_LEAK2_N_BUF_R",
++			"TRAY_SMALL_LEAK3_N_BUF_R", "TRAY_SMALL_LEAK4_N_BUF_R",
++			"TRAY_SMALL_LEAK5_N_BUF_R", "TRAY_SMALL_LEAK6_N_BUF_R",
++			"TRAY_SMALL_LEAK7_N_BUF_R", "TRAY_SMALL_LEAK8_N_BUF_R",
++			"TRAY_SMALL_LEAK9_N_BUF_R", "TRAY_SMALL_LEAK10_N_BUF_R",
++			"TRAY_SMALL_LEAK11_N_BUF_R", "TRAY_SMALL_LEAK12_N_BUF_R",
++			"TRAY_SMALL_LEAK13_N_BUF_R", "TRAY_SMALL_LEAK14_N_BUF_R",
++			"TRAY_SMALL_LEAK15_N_BUF_R", "TRAY_SMALL_LEAK16_N_BUF_R";
++	};
++
++	legacy_small_leak_io_expander1: gpio@1b {
++		compatible = "nxp,pca9555";
++		reg = <0x1b>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <44 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"TRAY_SMALL_LEAK17_N_BUF_R", "TRAY_SMALL_LEAK18_N_BUF_R",
++			"TRAY_SMALL_LEAK19_N_BUF_R", "TRAY_SMALL_LEAK20_N_BUF_R",
++			"TRAY_SMALL_LEAK21_N_BUF_R", "TRAY_SMALL_LEAK22_N_BUF_R",
++			"TRAY_SMALL_LEAK23_N_BUF_R", "TRAY_SMALL_LEAK24_N_BUF_R",
++			"TRAY_SMALL_LEAK25_N_BUF_R", "TRAY_SMALL_LEAK26_N_BUF_R",
++			"TRAY_SMALL_LEAK27_N_BUF_R", "TRAY_SMALL_LEAK28_N_BUF_R",
++			"TRAY_SMALL_LEAK29_N_BUF_R", "TRAY_SMALL_LEAK30_N_BUF_R",
++			"TRAY_SMALL_LEAK31_N_BUF_R", "TRAY_SMALL_LEAK32_N_BUF_R";
++	};
++
++	legacy_small_leak_io_expander2: gpio@1c {
++		compatible = "nxp,pca9555";
++		reg = <0x1c>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <44 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"TRAY_SMALL_LEAK33_N_BUF_R", "TRAY_SMALL_LEAK34_N_BUF_R",
++			"TRAY_SMALL_LEAK35_N_BUF_R", "TRAY_SMALL_LEAK36_N_BUF_R",
++			"TRAY_SMALL_LEAK37_N_BUF_R", "TRAY_SMALL_LEAK38_N_BUF_R",
++			"TRAY_SMALL_LEAK39_N_BUF_R", "TRAY_SMALL_LEAK40_N_BUF_R",
++			"", "",
++			"", "",
++			"", "",
++			"", "";
++	};
++
++	legacy_pwrgd_io_expander0: gpio@28 {
++		compatible = "nxp,pca9555";
++		reg = <0x28>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <42 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"TRAY_PWRGD1_N_BUF_R", "TRAY_PWRGD2_N_BUF_R",
++			"TRAY_PWRGD3_N_BUF_R", "TRAY_PWRGD4_N_BUF_R",
++			"TRAY_PWRGD5_N_BUF_R", "TRAY_PWRGD6_N_BUF_R",
++			"TRAY_PWRGD7_N_BUF_R", "TRAY_PWRGD8_N_BUF_R",
++			"TRAY_PWRGD9_N_BUF_R", "TRAY_PWRGD10_N_BUF_R",
++			"TRAY_PWRGD11_N_BUF_R", "TRAY_PWRGD12_N_BUF_R",
++			"TRAY_PWRGD13_N_BUF_R", "TRAY_PWRGD14_N_BUF_R",
++			"TRAY_PWRGD15_N_BUF_R", "TRAY_PWRGD16_N_BUF_R";
++	};
++
++	adc@35 {
++		compatible = "maxim,max11617";
++		reg = <0x35>;
++	};
++
++	power-monitor@44 {
++		compatible = "lltc,ltc4287";
++		reg = <0x44>;
++		shunt-resistor-micro-ohms = <500>;
++	};
++
++	adc@48 {
++		compatible = "ti,ads1015";
++		reg = <0x48>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++	};
++
++	temp-sensor@4c {
++		compatible = "ti,tmp75";
++		reg = <0x4c>;
++	};
++
++	temp-sensor@4d {
++		compatible = "ti,tmp75";
++		reg = <0x4d>;
++	};
++
++	temp-sensor@4e {
++		compatible = "ti,tmp75";
++		reg = <0x4e>;
++	};
++
++	power-monitor@4f {
++		compatible = "ti,ina230";
++		reg = <0x4f>;
++		shunt-resistor = <1000>;
++	};
++
++	power-monitor@69 {
++		compatible = "pmbus";
++		reg = <0x69>;
++	};
++
++	fpga_io_expander64: gpio@64 {
++		compatible = "nxp,pca9555";
++		reg = <0x64>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		gpio-line-names =
++			"", "",
++			"", "",
++			"", "",
++			"LEAK_CONFIG0", "LEAK_CONFIG1",
++			"FPGA_PWRGD_P24V_AUX_R", "FPGA_PWRGD_P24V_AUX_2_R",
++			"FPGA_PWRGD_P12V_SCM_R", "FPGA_PWRGD_P12V_AUX_R2",
++			"FPGA_PRSNT_FANBP_0_SIG_R_PLD_N", "FPGA_PRSNT_FANBP_0_PWR_R_PLD_N",
++			"FPGA_P24V_AUX_INA230_ALERT_N_R", "FPGA_SMB_TMC75_TEMP_ALERT_N_R";
++	};
++
++	fpga_io_expander65: gpio@65 {
++		compatible = "nxp,pca9555";
++		reg = <0x65>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		gpio-line-names =
++			"FPGA_PCI_DIS_N", "FPGA_DEV_DIS_N",
++			"FPGA_PWRGD_P3V3_AUX_R", "FPGA_PWRGD_P5V_AUX_R2",
++			"FPGA_PWRGD_P1V05_AUX_R", "FPGA_P48V_HSC_ALERT_N",
++			"FPGA_PWRGD_P1V5_AUX_R", "FPGA_PWRGD_P52V_HSC_PWROK_R",
++			"FPGA_R_COME_THERMTRIP_L", "FPGA_PRSNT_POE_SIG_PLD_N",
++			"FPGA_PRSNT_POE_PWR_PLD_N", "FPGA_PRSNT_RIO_RACKMON_N",
++			"FPGA_PRSNT_CAN2_MCIO_N", "FPGA_PRSNT_CAN1_MCIO_N",
++			"FPGA_PRSNT_RACKMON_MCIO_N", "FPGA_PRSNT_AALC_MCIO_N";
++	};
++
++	fpga_io_expander66: gpio@66 {
++		compatible = "nxp,pca9555";
++		reg = <0x66>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		gpio-line-names =
++			"FPGA_R_FM_CPU_ERR0_LVT3_L", "FPGA_FPGA_R_FM_PCHHOT_L",
++			"FPGA_R_FM_BIOS_POST_CMPLT_L", "FPGA_R_FM_SOC_BMC_RST_L",
++			"FPGA_R_CPU_MSMI_CATERR_N", "FPGA_R_H_MEMHOT_OUT_FET_L",
++			"FPGA_R_PWRGD_P3V3_STBY", "FPGA_R_PWRGD_PCH_PWROK",
++			"FPGA_TRAY23_PWRGD_BUF_R", "FPGA_TRAY24_PWRGD_BUF_R",
++			"FPGA_P24V_AUX_2_INA230_ALERT_N_R", "FPGA_R_IRQ_BMC_PCH_SMI_N",
++			"FPGA_R_FM_CPU_DIMM_EVENT_COD_BUF", "FPGA_R_BIOS_MSG_DIS_L",
++			"FPGA_R_ISO_FM_USB_OC0_L", "FPGA_SPI_LVC_EN";
++	};
++
++	fpga_io_expander67: gpio@67 {
++		compatible = "nxp,pca9555";
++		reg = <0x67>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		gpio-line-names =
++			"FPGA_TRAY29_PWRGD_BUF_R", "FPGA_TRAY30_PWRGD_BUF_R",
++			"FPGA_TRAY31_PWRGD_BUF_R", "FPGA_TRAY32_PWRGD_BUF_R",
++			"FPGA_TRAY37_PWRGD_BUF_R", "FPGA_TRAY38_PWRGD_BUF_R",
++			"FPGA_TRAY39_PWRGD_BUF_R", "FPGA_TRAY40_PWRGD_BUF_R",
++			"FPGA_ISO_CARRIER_BOARD_PWR_OK", "FPGA_UART_MUX_SEL",
++			"", "",
++			"", "",
++			"", "";
++	};
++};
++
++&i2c11 {
++	status = "okay";
++
++	i2c-mux@77 {
++		compatible = "nxp,pca9548";
++		reg = <0x77>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		i2c-mux-idle-disconnect;
++
++		i2c11mux0ch0: i2c@0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++			status = "okay";
++		};
++
++		i2c11mux0ch1: i2c@1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++			status = "okay";
++		};
++
++		i2c11mux0ch2: i2c@2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++			status = "okay";
++		};
++
++		i2c11mux0ch3: i2c@3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++			status = "okay";
++		};
++
++		i2c11mux0ch4: i2c@4 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <4>;
++			status = "okay";
++		};
++
++		i2c11mux0ch5: i2c@5 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <5>;
++			status = "okay";
++		};
++
++		i2c11mux0ch6: i2c@6 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <6>;
++			status = "okay";
++		};
++
++		i2c11mux0ch7: i2c@7 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <7>;
++			status = "okay";
++		};
++	};
++};
++
++&i2c12 {
++	status = "okay";
++	bus-frequency = <400000>;
++};
++
++&i2c13 {
++	status = "okay";
++
++	i2c-mux@77 {
++		compatible = "nxp,pca9548";
++		reg = <0x77>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		i2c-mux-idle-disconnect;
++
++		i2c13mux0ch0: i2c@0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++			status = "okay";
++		};
++
++		i2c13mux0ch1: i2c@1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++			status = "okay";
++		};
++
++		i2c13mux0ch2: i2c@2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++			status = "okay";
++		};
++
++		i2c13mux0ch3: i2c@3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++			status = "okay";
++		};
++
++		i2c13mux0ch4: i2c@4 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <4>;
++			status = "okay";
++		};
++
++		i2c13mux0ch5: i2c@5 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <5>;
++			status = "okay";
++		};
++
++		i2c13mux0ch6: i2c@6 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <6>;
++			status = "okay";
++		};
++
++		i2c13mux0ch7: i2c@7 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <7>;
++			status = "okay";
++		};
++	};
++};
++
++&i2c14 {
++	status = "okay";
++};
++
++&i2c15 {
++	status = "okay";
++
++	i2c-mux@77 {
++		compatible = "nxp,pca9548";
++		reg = <0x77>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		i2c-mux-idle-disconnect;
++
++		i2c15mux0ch0: i2c@0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++			status = "okay";
++		};
++
++		i2c15mux0ch1: i2c@1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++			status = "okay";
++		};
++
++		i2c15mux0ch2: i2c@2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++			status = "okay";
++		};
++
++		i2c15mux0ch3: i2c@3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++			status = "okay";
++		};
++
++		i2c15mux0ch4: i2c@4 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <4>;
++			status = "okay";
++		};
++
++		i2c15mux0ch5: i2c@5 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <5>;
++			status = "okay";
++		};
++
++		i2c15mux0ch6: i2c@6 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <6>;
++			status = "okay";
++		};
++
++		i2c15mux0ch7: i2c@7 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <7>;
++			status = "okay";
++		};
++	};
++};
++
++&kcs3 {
++	aspeed,lpc-io-reg = <0xca2>;
++	status = "okay";
++};
++
++&lpc_ctrl {
++	status = "okay";
++};
++
++&mac2 {
++	status = "okay";
++	phy-mode = "rmii";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_rmii3_default>;
++
++	/*
++	 * The Marvell 88E6393X is initialized at boot via EEPROM
++	 * configuration and hardware straps.
++	 * The BMC connects via an RMII fixed-link; link parameters are fixed
++	 * by board design.
++	 */
++	fixed-link {
++		speed = <100>;
++		full-duplex;
++	};
++};
++
++&mac3 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_rmii4_default>;
++	use-ncsi;
++};
++
++&peci0 {
++	status = "okay";
++};
++
++&sgpiom0 {
++	status = "okay";
++	ngpios = <128>;
++	bus-frequency = <100000>;
++	gpio-line-names =
++		/*"input pin","output pin"*/
++		/*A0 - A7*/
++		"power-chassis-good","FM_PLD_HEARTBEAT_LVC3_R",
++		"host0-ready","R_BMC_PTH_RST_BTN_L",
++		"CONTROL_VT2_SUPPLY1_CLOSE","FM_MDIO_SW_SEL_PLD",
++		"CONTROL_VT2_SUPPLY2_CLOSE","FM_88E6393X_BIN_UPDATE_EN_N",
++		"CONTROL_VT2_SUPPLY3_CLOSE","Sequence_TransFR_Alert",
++		"RETURN_CNTL1_FB","WATER_VALVE1_OPEN",
++		"RETURN_CNTL2_FB","WATER_VALVE2_OPEN",
++		"RETURN_CNTL3_FB","WATER_VALVE3_OPEN",
++		/*B0 - B7*/
++		"IT_STOP_PUMP_R_CPLD","WATER_VALVE1_CLOSE",
++		"IT_STOP_PUMP_SPARE_R_CPLD","WATER_VALVE2_CLOSE",
++		"IT_STOP_PUMP_2_R_CPLD","WATER_VALVE3_CLOSE",
++		"IT_STOP_PUMP_SPARE_2_R_CPLD","REPORT_VT2_SUPPLY1_CLOSE",
++		"RPU_2_READY_SPARE_PLD_R","REPORT_VT2_SUPPLY2_CLOSE",
++		"RPU_2_READY_PLD_R","REPORT_VT2_SUPPLY3_CLOSE",
++		"RPU_READY_SPARE_PLD_R","PCIE_SSD1_PRSNT_N",
++		"RPU_READY_PLD_R","",
++		/*C0 - C7*/
++		"IOEXP8_INT_N","",
++		"SUPPLY_CNTL1_FB","",
++		"SUPPLY_CNTL2_FB","",
++		"SUPPLY_CNTL3_FB","",
++		"PRSNT_TRAY1_TO_40_R_BUF_N","",
++		"PWRGD_TRAY1_TO_40_R_BUF","",
++		"SMALL_LEAK_TRAY1_TO_40_R_BUF_N","",
++		"LEAK_DETECT_TRAY1_TO_40_R_BUF_N","",
++		/*D0 - D7*/
++		"PRSNT_CANBUSP1_TRAY1_TO_32_N","",
++		"PWRGD_CANBUSP1_TRAY1_TO_32_PWROK","",
++		"SMALL_LEAK_CANBUSP1_TRAY1_TO_32_N","",
++		"LEAK_DETECT_CANBUSP1_TRAY1_TO_32_N","",
++		"PRSNT_CANBUSP2_TRAY1_TO_32_N","",
++		"PWRGD_CANBUSP2_TRAY1_TO_32_PWROK","",
++		"SMALL_LEAK_CANBUSP2_TRAY1_TO_32_N","",
++		"LEAK_DETECT_CANBUSP2_TRAY1_TO_32_N","",
++		/*E0 - E7*/
++		"PRSNT_CANBUSP3_TRAY1_TO_32_N","",
++		"PWRGD_CANBUSP3_TRAY1_TO_32_PWROK","",
++		"SMALL_LEAK_CANBUSP3_TRAY1_TO_32_N","",
++		"LEAK_DETECT_CANBUSP3_TRAY1_TO_32_N","",
++		"PRSNT_CANBUSP4_TRAY1_TO_32_N","",
++		"PWRGD_CANBUSP4_TRAY1_TO_32_PWROK","",
++		"SMALL_LEAK_CANBUSP4_TRAY1_TO_32_N","",
++		"LEAK_DETECT_CANBUSP4_TRAY1_TO_32_N","",
++		/*F0 - F7*/
++		"PRSNT_CANBUSP5_TRAY1_TO_32_N","",
++		"PWRGD_CANBUSP5_TRAY1_TO_32_PWROK","",
++		"SMALL_LEAK_CANBUSP5_TRAY1_TO_32_N","",
++		"LEAK_DETECT_CANBUSP5_TRAY1_TO_32_N","",
++		"PRSNT_CANBUSP6_TRAY1_TO_32_N","",
++		"PWRGD_CANBUSP6_TRAY1_TO_32_PWROK","",
++		"SMALL_LEAK_CANBUSP6_TRAY1_TO_32_N","",
++		"LEAK_DETECT_CANBUSP6_TRAY1_TO_32_N","",
++		/*G0 - G7*/
++		"PRSNT_CANBUSP7_TRAY1_TO_32_N","",
++		"PWRGD_CANBUSP7_TRAY1_TO_32_PWROK","",
++		"SMALL_LEAK_CANBUSP7_TRAY1_TO_32_N","",
++		"LEAK_DETECT_CANBUSP7_TRAY1_TO_32_N","",
++		"PRSNT_CANBUSP8_TRAY1_TO_32_N","",
++		"PWRGD_CANBUSP8_TRAY1_TO_32_PWROK","",
++		"SMALL_LEAK_CANBUSP8_TRAY1_TO_32_N","",
++		"LEAK_DETECT_CANBUSP8_TRAY1_TO_32_N","",
++		/*H0 - H7*/
++		"CHASSIS0_LEAK_Q_N_R","",
++		"CHASSIS1_LEAK_Q_N_R","",
++		"CHASSIS2_LEAK_Q_N_R","",
++		"CHASSIS3_LEAK_Q_N_R","",
++		"CHASSIS4_LEAK_Q_N_R","",
++		"CHASSIS5_LEAK_Q_N_R","",
++		"CHASSIS6_LEAK_Q_N_R","",
++		"CHASSIS7_LEAK_Q_N_R","",
++		/*I0 - I7*/
++		"CHASSIS8_LEAK_Q_N_R","",
++		"CHASSIS9_LEAK_Q_N_R","",
++		"CHASSIS10_LEAK_Q_N_R","",
++		"CHASSIS11_LEAK_Q_N_R","",
++		"AALC_RPU_READY","",
++		"","",
++		"","",
++		"","",
++		/*J0 - J7*/
++		"","",
++		"","",
++		"","",
++		"","",
++		"","",
++		"","",
++		"","",
++		"","",
++		/*K0 - K7*/
++		"","",
++		"","",
++		"","",
++		"","",
++		"","",
++		"","",
++		"","",
++		"","",
++		/*L0 - L7*/
++		"IT_GEAR_RPU_2_LINK_PRSNT_SPARE_N_R","",
++		"IT_GEAR_RPU_2_LINK_PRSNT_N_R","",
++		"IT_GEAR_RPU_LINK_PRSNT_SPARE_N_R","",
++		"IT_GEAR_RPU_LINK_PRSNT_N_R","",
++		"","",
++		"","",
++		"","",
++		"","",
++		/*M0 - M7*/
++		"","",
++		"","",
++		"PRSNT_SENSOR_N","",
++		"PRSNT3_VT2_PLD_N","",
++		"PRSNT2_VT2_PLD_N","",
++		"PRSNT1_VT2_PLD_N","",
++		"PRSNT3_RETURN_PLD_N","",
++		"PRSNT2_RETURN_PLD_N","",
++		/*N0 - N7*/
++		"PRSNT1_RETURN_PLD_N","",
++		"PRSNT3_SUPPLY_PLD_N","",
++		"PRSNT2_SUPPLY_PLD_N","",
++		"PRSNT1_SUPPLY_PLD_N","",
++		"PRSNT_LEAK11_SENSOR_R_PLD_N","",
++		"PRSNT_LEAK10_SENSOR_R_PLD_N","",
++		"PRSNT_LEAK9_SENSOR_R_PLD_N","",
++		"PRSNT_LEAK8_SENSOR_R_PLD_N","",
++		/*O0 - O7*/
++		"PRSNT_LEAK7_SENSOR_R_PLD_N","",
++		"PRSNT_LEAK6_SENSOR_R_PLD_N","",
++		"PRSNT_LEAK5_SENSOR_R_PLD_N","",
++		"PRSNT_LEAK4_SENSOR_R_PLD_N","",
++		"PRSNT_LEAK3_SENSOR_R_PLD_N","",
++		"PRSNT_LEAK2_SENSOR_R_PLD_N","",
++		"PRSNT_LEAK1_SENSOR_R_PLD_N","",
++		"PRSNT_LEAK0_SENSOR_R_PLD_N","",
++		/*P0 - P7*/
++		"","",
++		"","",
++		"","",
++		"","",
++		"","SGPIO_REG_VALID_0",
++		"","SGPIO_REG_VALID_1",
++		"","SGPIO_REG_VALID_2",
++		"","SGPIO_REG_VALID_3";
++};
++
++&spi2 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_spi2_default &pinctrl_spi2cs1_default>;
++
++	flash@0 {
++		status = "okay";
++		m25p,fast-read;
++		label = "pnor";
++		spi-max-frequency = <12000000>;
++		spi-tx-bus-width = <2>;
++		spi-rx-bus-width = <2>;
++	};
++
++	flash@1 {
++		status = "okay";
++		m25p,fast-read;
++		label = "e810";
++		spi-max-frequency = <12000000>;
++		spi-tx-bus-width = <2>;
++		spi-rx-bus-width = <2>;
++	};
++};
++
++&uart3 {
++	status = "okay";
++};
++
++&wdt1 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_wdtrst1_default>;
++	aspeed,reset-type = "soc";
++	aspeed,external-signal;
++	aspeed,ext-push-pull;
++	aspeed,ext-active-high;
++	aspeed,ext-pulse-duration = <256>;
++};
++
+
 -- 
-Kyle Hsieh <kylehsieh1995@gmail.com>
+2.34.1
 
 
