@@ -1,59 +1,63 @@
-Return-Path: <linux-aspeed+bounces-4217-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4218-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C53DCD8CB2
-	for <linux-aspeed@archiver.kernel.org>; Wed, 10 Jun 2026 12:51:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F0F2CD8CB9
+	for <linux-aspeed@archiver.kernel.org>; Wed, 10 Jun 2026 13:04:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gb5JJ23CSz3bps;
-	Wed, 10 Jun 2026 22:51:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gb5Zf4Kc5z2yfD;
+	Wed, 10 Jun 2026 23:04:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781095904;
-	cv=none; b=lci6KI4hl9u0ajFMPMwkSCaImZtG817SslYOxkHQAR7Q/EN/6uZN31iWF0si1BAGhUO/wFu0puYIsklBCuPabUScMr16v1qfYkwj6l/39LP19G2vuIM1CWrehHjoBfViITbr9/I2exqNtrUIFhl+ayjEMHzckyyUfOA2tX0eE6xW6duHVo5eiMdcqQ/KkE8hNoEbqXcp0hA1SQyhSG2aYuOJpct641XayUt54K7Oiagk2jrGJSSjdU3mSNq34D2rBThr0QzrJ8CQl/Lcyj9hpCAIQ+IOwSTFF9bucq12B/ngFTROSq6ihYYj6GCsHRP9a9/fOBNM7S5ivtoOkKf5rg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781096650;
+	cv=none; b=B0FgUB7XCvhA0/eGYVfOgHBlM/GdG2aZKohmsqpdFYvA2xrmk70b6KGyNxo0ENsWb4DMP7fPsCvJNCbUG+drqX/Cf8VH2KeUuoXfaHvNS5IAvWpQ0vvalzsGuEv5FfdVCKLs5BC3uBOIimh7VomqDB489PdH8pKmwDQjOWPQ8D803idO6ntBchVUHoRnrxCDQwdKjOaE4HRMqZoRVGFelldA+C5/YEfpPBlkrB2emq1yFz2K3fs7wGro0DfH3QIdIAq26YqFgIvoOV9wJIbFqukOAD+xNVvae+mPzZnaTZPqgoEXYe4xFQnHJK/TRqlu2F6TzzkfRE8Ak4uRoENuzg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781095904; c=relaxed/relaxed;
-	bh=dXHIZ/2QHQoePaQPKzlHVwUBufWD4eofcOnZPnw7FJQ=;
+	t=1781096650; c=relaxed/relaxed;
+	bh=r4dMD/100adzbPgTxMBB6l472MWU6Q0VLNNG94IBX1k=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=NYP3f1MG+piEfn0vhqWjl8x8AzS/pwZ7nTTcyMO/dyFIe7/ySbzBwJRUeojB2NmPO6XZF3P1vHrd/qdkYKn9leItWLF0G62Q+HGUD5F/iLulQIQ8rRJgVnOV6x99Lvl9XTy7sP7ILMW1zx6Wbp7V5DFl6cG4aHPhYEjdwcTOZjoOTeJtxdCZ+hosoZHpxN1iqIE3xz5hUDD0hkjdMNabLu3Z4r/kofujsAbWZpYhdJlTo/GDIj14MumWm9hvleYoE9e8CshYKv7suG7UhauhLTpChVBQE/cjufKuB99E6rsnew7yBJ985KmfA8+3MlHeVUvp02JH/emDuDnSj0tmmg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=ki3xHBHQ; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	 Content-Type:MIME-Version; b=CxkpUez12ZaoHxP2G+36YBbsygC0WYbv3p0F9zK4EmutsxfyRsGI0XjDUq+2/QmxBwaI9+/ya0ExsnNPEMwLHcGerc4gsyOBJEkB4D8lRm65IwIyU2hVE+WO592MHsxrLYsk2t9kYB186wFG7/sM61MlcrvYpPUELXcWz1LsE7kWVUTNSNRZhN3NejyU612T5P3Tw48fvty3WAkZ+uh+HP5+OyyFzMPAH0bxNVQRJ5W/hccOfH2zz0xIr+Hn5lEZz7N37J7Ih9sK+8+jG9PMxjqMx8tqkDlTd30RM75qkmGORMJ0ptFcfO7GFlvWRRnWcCPfEMCci//CWDymslM16A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=WwLjIBF3; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=ki3xHBHQ;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=WwLjIBF3;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gb5JH3fWlz2xdb
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 10 Jun 2026 22:51:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gb5Zd1B4Fz2yNn
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 10 Jun 2026 23:04:08 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1781095902;
-	bh=dXHIZ/2QHQoePaQPKzlHVwUBufWD4eofcOnZPnw7FJQ=;
+	d=codeconstruct.com.au; s=2022a; t=1781096647;
+	bh=r4dMD/100adzbPgTxMBB6l472MWU6Q0VLNNG94IBX1k=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=ki3xHBHQFRlzQi7vyUqcTCUOi5xajOpaqBdePmaGu0KgucW2sncQFVUtpbD3cDfLL
-	 96OJHaygIW3HAjdtf+Z795GR7xUrSXIjkrNBoyQiWeiOnUxybW6t+vo8zh+M1nagIQ
-	 gS8sjGxRi3nn9QyUS7Tu2tfnfMQ/hIx55x6yc582MX2KPgfY/KrmWTTLcKqnYVlM1H
-	 iZJyitgJjH0eQJaiXIf+SmO7j9ij9vVv1y4ODF6Kqs+pYhxl5CaksfknXz8osyrj1D
-	 RkiF2C2o2Zj3LK4tVdjFIpYuoccTSqUuHFsseI2QpSHMjAkXOlL4eM6pnHwxurql6K
-	 ISvv6KmEpNgew==
+	b=WwLjIBF3WAGB9EPSY9fK0KbP0DJmiznjNWC4PyX5rswzSu4aXDjSvRgRLoHqm2SbO
+	 J6hJ5kSFNTQ17zvsM9Po4EqTmStCuPRnbbQbPL3uSkNNJ+i1Je7VOGe8Xm1qHvbeHA
+	 1zUST1r9/+/ughClIxibXG5j731EfFCXf6ZkIxNPdWOD2eYiqNtjeBF7FDTMbo56rO
+	 9dKH0lWpy1OJZMon8TAkyAeYe7vfYJDiRbVcBFYmuWZItTShfySgM8YGmwlbYeMf4c
+	 6ofLl43QtXmKi4cTRuOv9cTyxd57cWzBM0YyiCZD6VwVuln+3VafLFxJjm4TOUkyUf
+	 un6ojGE3Gwoog==
 Received: from [192.168.68.117] (unknown [180.150.112.11])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 8702360A17;
-	Wed, 10 Jun 2026 20:51:42 +0800 (AWST)
-Message-ID: <66df26f7ec827a0f48cd44c454bfd36968ca4dd0.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v2 2/2] soc: aspeed: add host-side PCIe BMC device driver
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 7E2DA60921;
+	Wed, 10 Jun 2026 21:04:06 +0800 (AWST)
+Message-ID: <2d1095b342fe0f4b1b4b99b22bb3af410d9aa60e.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v3 0/9] ARM: dts: aspeed: anacapa: restructure
+ devicetree for development-phase
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: =?ISO-8859-1?Q?Gr=E9goire?= Layet <gregoire.layet@9elements.com>, 
-	joel@jms.id.au
-Cc: andrew@lunn.ch, jacky_chou@aspeedtech.com, yh_chung@aspeedtech.com, 
-	ninad@linux.ibm.com, linux-aspeed@lists.ozlabs.org, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Date: Wed, 10 Jun 2026 22:21:42 +0930
-In-Reply-To: <13d18d25f53e0a084a8c17219804b305d4667c6b.1780929570.git.gregoire.layet@9elements.com>
-References: <cover.1780929570.git.gregoire.layet@9elements.com>
-	 <13d18d25f53e0a084a8c17219804b305d4667c6b.1780929570.git.gregoire.layet@9elements.com>
+To: u8813345@gmail.com, Rob Herring <robh@kernel.org>, Krzysztof Kozlowski
+	 <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel Stanley
+	 <joel@jms.id.au>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+	colin.huang2@amd.com, Carl Lee <carl.lee@amd.com>, Rex Fu
+ <rex.fu.amd@gmail.com>,  Andy Chung <Andy.Chung@amd.com>, Peter Shen
+ <peter.shen@amd.com>
+Date: Wed, 10 Jun 2026 22:34:05 +0930
+In-Reply-To: <20260602-anacapa-devlop-phase-devicetree-v3-0-7c93c5df8d9b@gmail.com>
+References: 
+	<20260602-anacapa-devlop-phase-devicetree-v3-0-7c93c5df8d9b@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.56.2-0+deb13u1 
@@ -71,356 +75,94 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 
-On Mon, 2026-06-08 at 14:51 +0000, Gr=C3=A9goire Layet wrote:
-> Taken from ASPEED 6.18 Kernel SDK
+On Tue, 2026-06-02 at 21:24 +0800, Colin Huang via B4 Relay wrote:
+> This series refactors the Anacapa BMC devicetree layout to better support
+> development-phase hardware revisions (EVT1/EVT2/DVT) while keeping a plat=
+form
+> entrypoint.
 >=20
-> Add support for VUART over PCIe between BMC and host.
-> This add host side driver.
->=20
-> Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
-> Signed-off-by: aspeedyh <yh_chung@aspeedtech.com>
-> Signed-off-by: Gr=C3=A9goire Layet <gregoire.layet@9elements.com>
-> Tested-by: Gr=C3=A9goire Layet <gregoire.layet@9elements.com>
+> Signed-off-by: Colin Huang <u8813345@gmail.com>
 > ---
-> =C2=A0drivers/soc/aspeed/Kconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0=C2=A0 8 +
-> =C2=A0drivers/soc/aspeed/Makefile=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0=C2=A0 1 +
-> =C2=A0drivers/soc/aspeed/aspeed-host-bmc-dev.c | 249 ++++++++++++++++++++=
-+++
-
-Again, I'd rather we avoid drivers/soc/aspeed.
-
-> =C2=A03 files changed, 258 insertions(+)
-> =C2=A0create mode 100644 drivers/soc/aspeed/aspeed-host-bmc-dev.c
+> Changes in v3:
+> - Restructure the EVT2 devicetree to inherit from the EVT1 devicetree, ma=
+king it incremental rather than standalone.
+> - Add the DVT devicetree, inheriting from the EVT2 devicetree.
+> - Enable MCTP and FRU support for the NIC.
+> - Align PDB fan GPIO numbering.
+> - Add an EEPROM device node for the NFC adaptor board.
+> - Add an additional EEPROM device node for the SCM.
+> - Add shunt resistor values for HSC monitors
+> - Link to v2: https://lore.kernel.org/r/20260409-anacapa-devlop-phase-dev=
+icetree-v2-0-68f328671653@gmail.com
 >=20
-> diff --git a/drivers/soc/aspeed/Kconfig b/drivers/soc/aspeed/Kconfig
-> index 3e1fcf3c3268..5deefb64e8c7 100644
-> --- a/drivers/soc/aspeed/Kconfig
-> +++ b/drivers/soc/aspeed/Kconfig
-> @@ -11,6 +11,14 @@ config ASPEED_BMC_DEV
-> =C2=A0	=C2=A0 Enable support for the ASPEED AST2600 BMC Device.
-> =C2=A0	=C2=A0 This exposes the PCIe-to-LPC bridge of the BMC to the host =
-over PCIe.
-> =C2=A0
-> +config ASPEED_HOST_BMC_DEV
-> +	tristate "ASPEED Host BMC Device"
-> +	depends on PCI
-> +	depends on SERIAL_8250
-> +	help
-> +	=C2=A0 Enable support for the ASPEED AST2600 BMC Device on the Host.
-> +	=C2=A0 This configure the PCIe and setup two 8250 compatible VUART port=
-s.
-> +
-> =C2=A0config ASPEED_LPC_CTRL
-> =C2=A0	tristate "ASPEED LPC firmware cycle control"
-> =C2=A0	select REGMAP
-> diff --git a/drivers/soc/aspeed/Makefile b/drivers/soc/aspeed/Makefile
-> index fab0d247df66..3fd3f6d8d36e 100644
-> --- a/drivers/soc/aspeed/Makefile
-> +++ b/drivers/soc/aspeed/Makefile
-> @@ -1,5 +1,6 @@
-> =C2=A0# SPDX-License-Identifier: GPL-2.0-only
-> =C2=A0obj-$(CONFIG_ASPEED_BMC_DEV)		+=3D aspeed-bmc-dev.o
-> +obj-$(CONFIG_ASPEED_HOST_BMC_DEV)	+=3D aspeed-host-bmc-dev.o
-> =C2=A0obj-$(CONFIG_ASPEED_LPC_CTRL)		+=3D aspeed-lpc-ctrl.o
-> =C2=A0obj-$(CONFIG_ASPEED_LPC_SNOOP)		+=3D aspeed-lpc-snoop.o
-> =C2=A0obj-$(CONFIG_ASPEED_UART_ROUTING)	+=3D aspeed-uart-routing.o
-> diff --git a/drivers/soc/aspeed/aspeed-host-bmc-dev.c b/drivers/soc/aspee=
-d/aspeed-host-bmc-dev.c
-> new file mode 100644
-> index 000000000000..7cb52a770fb6
-> --- /dev/null
-> +++ b/drivers/soc/aspeed/aspeed-host-bmc-dev.c
-> @@ -0,0 +1,249 @@
-> +// SPDX-License-Identifier: GPL-2.0-or-later
-> +// Copyright (C) ASPEED Technology Inc.
-> +
-> +#include <linux/init.h>
-> +#include <linux/version.h>
-> +#include <linux/module.h>
-> +#include <linux/kernel.h>
-> +#include <linux/errno.h>
-> +#include <linux/pci.h>
-> +#include <linux/serial_core.h>
-> +#include <linux/serial_8250.h>
-> +
-> +static DEFINE_IDA(bmc_device_ida);
-> +
-> +#define VUART_MAX_PARMS	2
 
-Given the one supported piece of hardware we could avoid the associated
-loops and rather extract loop bodies to functions and call the function
-twice.
+So just to check, the changes in patches 5-8 inclusive are applicable
+to all of EVT1, EVT2 and DVT (given the way you've structured the
+includes)?
 
-> +#define MAX_MSI_NUM		8
-> +#define BMC_MULTI_MSI	32
-> +
-> +#define DRIVER_NAME "aspeed-host-bmc-dev"
-> +
-> +enum aspeed_platform_id {
-> +	ASPEED,
-> +};
-> +
-> +enum msi_index {
-> +	VUART0_MSI,
-> +	VUART1_MSI,
-> +};
-> +
-> +/* Match msi_index */
-> +static int ast2600_msi_idx_table[MAX_MSI_NUM] =3D { 16, 15 };
-> +
-> +struct aspeed_platform {
-> +	int (*setup)(struct pci_dev *pdev);
-> +};
-> +
-> +struct aspeed_pci_bmc_dev {
-> +	struct device *dev;
-> +	struct aspeed_platform *platform;
-> +	kernel_ulong_t driver_data;
-> +	int id;
-> +
-> +	unsigned long message_bar_base;
-> +	unsigned long message_bar_size;
-> +	void __iomem *msg_bar_reg;
-> +
-> +	struct uart_8250_port uart[VUART_MAX_PARMS];
-> +	int uart_line[VUART_MAX_PARMS];
-> +
-> +	/* Interrupt
-> +	 * The index of array is using to enum msi_index
-> +	 */
-> +	int *msi_idx_table;
-> +};
-> +
-> +static void aspeed_pci_setup_irq_resource(struct pci_dev *pdev)
-> +{
-> +	struct aspeed_pci_bmc_dev *pci_bmc_dev =3D pci_get_drvdata(pdev);
-> +
-> +	/* Assign static msi index table by platform */
-> +	pci_bmc_dev->msi_idx_table =3D ast2600_msi_idx_table;
-> +
-> +	if (pci_alloc_irq_vectors(pdev, 1, BMC_MULTI_MSI, PCI_IRQ_INTX | PCI_IR=
-Q_MSI) <=3D 1)
-> +		/* Set all msi index to the first vector */
-> +		memset(pci_bmc_dev->msi_idx_table, 0, sizeof(int) * MAX_MSI_NUM);
-> +}
-> +
-> +static int aspeed_pci_bmc_device_setup_vuart(struct pci_dev *pdev)
-> +{
-> +	struct aspeed_pci_bmc_dev *pci_bmc_dev =3D pci_get_drvdata(pdev);
-> +	struct device *dev =3D &pdev->dev;
-> +	u16 vuart_ioport;
-> +	int ret, i;
-> +
-> +	for (i =3D 0; i < VUART_MAX_PARMS; i++) {
-> +		/* Assign the line to non-exist device */
-> +		pci_bmc_dev->uart_line[i] =3D -ENOENT;
-> +		vuart_ioport =3D 0x3F8 - (i * 0x100);
-> +		pci_bmc_dev->uart[i].port.flags =3D UPF_SKIP_TEST | UPF_BOOT_AUTOCONF =
-| UPF_SHARE_IRQ;
-> +		pci_bmc_dev->uart[i].port.uartclk =3D 115200 * 16;
-> +		pci_bmc_dev->uart[i].port.irq =3D
-> +			pci_irq_vector(pdev, pci_bmc_dev->msi_idx_table[VUART0_MSI + i]);
-> +		pci_bmc_dev->uart[i].port.dev =3D dev;
-> +		pci_bmc_dev->uart[i].port.iotype =3D UPIO_MEM32;
-> +		pci_bmc_dev->uart[i].port.iobase =3D 0;
-> +		pci_bmc_dev->uart[i].port.mapbase =3D
-> +			pci_bmc_dev->message_bar_base + (vuart_ioport << 2);
-> +		pci_bmc_dev->uart[i].port.membase =3D 0;
-> +		pci_bmc_dev->uart[i].port.type =3D PORT_16550A;
-> +		pci_bmc_dev->uart[i].port.flags |=3D (UPF_IOREMAP | UPF_FIXED_PORT | U=
-PF_FIXED_TYPE);
-> +		pci_bmc_dev->uart[i].port.regshift =3D 2;
-> +		ret =3D serial8250_register_8250_port(&pci_bmc_dev->uart[i]);
-> +		if (ret < 0) {
-> +			dev_err_probe(dev, ret, "Can't setup PCIe VUART\n");
-> +			return ret;
-> +		}
-> +		pci_bmc_dev->uart_line[i] =3D ret;
-> +	}
-> +	return 0;
-> +}
-> +
-> +static void aspeed_pci_host_bmc_device_release_vuart(struct pci_dev *pde=
-v)
-> +{
-> +	struct aspeed_pci_bmc_dev *pci_bmc_dev =3D pci_get_drvdata(pdev);
-> +	int i;
-> +
-> +	for (i =3D 0; i < VUART_MAX_PARMS; i++) {
-> +		if (pci_bmc_dev->uart_line[i] >=3D 0)
-> +			serial8250_unregister_port(pci_bmc_dev->uart_line[i]);
-> +	}
-> +}
-> +
-> +static int aspeed_pci_host_setup(struct pci_dev *pdev)
-> +{
-> +	struct aspeed_pci_bmc_dev *pci_bmc_dev =3D pci_get_drvdata(pdev);
-> +	int rc =3D 0;
-> +
-> +	/* Get Message BAR */
-> +	pci_bmc_dev->message_bar_base =3D pci_resource_start(pdev, 1);
-> +	pci_bmc_dev->message_bar_size =3D pci_resource_len(pdev, 1);
-> +	pci_bmc_dev->msg_bar_reg =3D pci_ioremap_bar(pdev, 1);
-> +	if (!pci_bmc_dev->msg_bar_reg)
-> +		return -ENOMEM;
-> +
-> +	if (pdev->revision < 0x27) {
-> +		/* AST2600 ERRTA40: dummy read */
+> Changes in v2:
+> - Fix dtbs_check fail.
+> =C2=A0 Validated by following command:
+> =C2=A0=C2=A0=C2=A0 make dt_binding_check DT_SCHEMA_FILES=3Darm/aspeed/asp=
+eed.yaml
+> =C2=A0=C2=A0=C2=A0 make CHECK_DTBS=3Dy DT_SCHEMA_FILES=3Darm/aspeed/aspee=
+d.yaml aspeed/aspeed-bmc-facebook-anacapa.dtb
+> =C2=A0=C2=A0=C2=A0 make CHECK_DTBS=3Dy DT_SCHEMA_FILES=3Darm/aspeed/aspee=
+d.yaml aspeed/aspeed-bmc-facebook-anacapa-evt1.dtb
+> =C2=A0=C2=A0=C2=A0 make CHECK_DTBS=3Dy DT_SCHEMA_FILES=3Darm/aspeed/aspee=
+d.yaml aspeed/aspeed-bmc-facebook-anacapa-evt2.dtb
+> - Link to v1: https://lore.kernel.org/r/20260407-anacapa-devlop-phase-dev=
+icetree-v1-0-97b96367cac3@gmail.com
+>=20
+> ---
+> Andy Chung (1):
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 ARM: dts: aspeed: anacapa: Enable MCTP and=
+ FRU for NIC
+>=20
+> Carl Lee (1):
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 ARM: dts: aspeed: anacapa: Add eeprom devi=
+ce node for NFC adaptor board
+>=20
+> Colin Huang (5):
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 dt-bindings: arm: aspeed: add Anacapa EVT1=
+ EVT2 DVT board
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 ARM: dts: aspeed: anacapa: add EVT1 device=
+tree and point wrapper to it
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 ARM: dts: aspeed: anacapa: add EVT2 device=
+tree inheriting EVT1
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 ARM: dts: aspeed: anacapa: add DVT devicet=
+ree inheriting EVT2
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 ARM: dts: aspeed: anacapa: add additional =
+EEPROM node for SCM
 
-Can you please rather document what problem this is actually solving.
+If you need to respin this series for some reason, can you please
+capitalise the first word of the short description (the bit after the
+last ':') for the commits above and the one below?
 
-> +		(void)__raw_readl((void __iomem *)pci_bmc_dev->msg_bar_reg);
-> +	} else {
-> +		/* AST2700 not supported */
-> +		pr_err("AST2700 detected but not supported");
+>=20
+> Peter Shen (1):
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 ARM: dts: aspeed: anacapa: evt2: add shunt=
+ resistor values for HSC monitors
+>=20
+> Rex Fu (1):
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 ARM: dts: aspeed: anacapa: Align PDB fan G=
+PIO numbering
+>=20
+> =C2=A0.../devicetree/bindings/arm/aspeed/aspeed.yaml=C2=A0=C2=A0=C2=A0=C2=
+=A0 |=C2=A0=C2=A0=C2=A0 3 +
+> =C2=A0.../dts/aspeed/aspeed-bmc-facebook-anacapa-dvt.dts |=C2=A0 178 +++
+> =C2=A0.../aspeed/aspeed-bmc-facebook-anacapa-evt1.dts=C2=A0=C2=A0=C2=A0 |=
+ 1179 ++++++++++++++++++++
+> =C2=A0.../aspeed/aspeed-bmc-facebook-anacapa-evt2.dts=C2=A0=C2=A0=C2=A0 |=
+=C2=A0 228 ++++
+> =C2=A0.../dts/aspeed/aspeed-bmc-facebook-anacapa.dts=C2=A0=C2=A0=C2=A0=C2=
+=A0 | 1077 +-----------------
+> =C2=A05 files changed, 1589 insertions(+), 1076 deletions(-)
+> ---
+> base-commit: 7ca1caf017d34396397b19fb4de9ecef256f4acc
+> change-id: 20260407-anacapa-devlop-phase-devicetree-4101d3f312c0
+>=20
+> Best regards,
 
-This logs an error but rc =3D 0 on return. Perhaps drop the log message
-and return an appropriate error code?
-
-> +		goto out_free0;
-> +	}
-> +
-> +	rc =3D aspeed_pci_bmc_device_setup_vuart(pdev);
-> +	if (rc) {
-> +		pr_err("Cannot setup Virtual UART");
-> +		goto out_free0;
-> +	}
-> +
-> +	return 0;
-> +
-> +out_free0:
-> +	pci_iounmap(pdev, pci_bmc_dev->msg_bar_reg);
-> +
-> +	return rc;
-> +}
-> +
-> +static struct aspeed_platform aspeed_pcie_host[] =3D {
-> +	{ .setup =3D aspeed_pci_host_setup },
-> +	{ 0 }
-> +};
-> +
-> +static int aspeed_pci_host_bmc_device_probe(struct pci_dev *pdev, const =
-struct pci_device_id *ent)
-> +{
-> +	struct aspeed_pci_bmc_dev *pci_bmc_dev;
-> +	int rc =3D 0;
-> +
-> +	pr_info("ASPEED BMC PCI ID %04x:%04x, IRQ=3D%u\n", pdev->vendor, pdev->=
-device, pdev->irq);
-
-I think we could do without this.
-
-> +
-> +	pci_bmc_dev =3D devm_kzalloc(&pdev->dev, sizeof(*pci_bmc_dev), GFP_KERN=
-EL);
-> +	if (!pci_bmc_dev)
-> +		return -ENOMEM;
-> +
-> +	/* Get platform id */
-> +	pci_bmc_dev->driver_data =3D ent->driver_data;
-> +	pci_bmc_dev->platform =3D &aspeed_pcie_host[ent->driver_data];
-> +
-> +	pci_bmc_dev->id =3D ida_alloc(&bmc_device_ida, GFP_KERNEL);
-
-This seems unnecessary.
-
-> +	if (pci_bmc_dev->id < 0)
-> +		return pci_bmc_dev->id;
-> +
-> +	rc =3D pci_enable_device(pdev);
-> +	if (rc) {
-> +		dev_err(&pdev->dev, "pci_enable_device() returned error %d\n", rc);
-> +		return rc;
-> +	}
-> +
-> +	pci_set_master(pdev);
-> +	pci_set_drvdata(pdev, pci_bmc_dev);
-> +
-> +	/* Prepare IRQ resource */
-> +	aspeed_pci_setup_irq_resource(pdev);
-> +
-> +	/* Setup BMC PCI device */
-> +	rc =3D pci_bmc_dev->platform->setup(pdev);
-
-As with patch 1 this indirection seems unnecessary.
-
-> +	if (rc) {
-> +		dev_err(&pdev->dev, "ASPEED PCIe Host device returned error %d\n", rc)=
-;
-> +		pci_free_irq_vectors(pdev);
-> +		pci_disable_device(pdev);
-> +		return rc;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static void aspeed_pci_host_bmc_device_remove(struct pci_dev *pdev)
-> +{
-> +	struct aspeed_pci_bmc_dev *pci_bmc_dev =3D pci_get_drvdata(pdev);
-> +
-> +	if (pci_bmc_dev->driver_data =3D=3D ASPEED)
-
-This condition seems unnecessary as the value shouldn't be anything
-else.
-
-> +		aspeed_pci_host_bmc_device_release_vuart(pdev);
-> +
-> +	ida_free(&bmc_device_ida, pci_bmc_dev->id);
-> +
-> +	pci_iounmap(pdev, pci_bmc_dev->msg_bar_reg);
-> +
-> +	pci_free_irq_vectors(pdev);
-> +	pci_disable_device(pdev);
-> +}
-> +
-> +/**
-> + * This table holds the list of (VendorID,DeviceID) supported by this dr=
-iver
-> + *
-> + */
-
-I think that's self-evident and prefer the comment be removed.
-
-> +static struct pci_device_id aspeed_host_bmc_dev_pci_ids[] =3D {
-> +	/* ASPEED BMC Device */
-> +	{ PCI_DEVICE(0x1A03, 0x2402), .class =3D 0xFF0000, .class_mask =3D 0xFF=
-FF00,
-> +	=C2=A0 .driver_data =3D ASPEED },
-> +	{
-> +		0,
-> +	}
-> +};
-> +
-> +MODULE_DEVICE_TABLE(pci, aspeed_host_bmc_dev_pci_ids);
-> +
-> +static struct pci_driver aspeed_host_bmc_dev_driver =3D {
-> +	.name		=3D DRIVER_NAME,
-> +	.id_table	=3D aspeed_host_bmc_dev_pci_ids,
-> +	.probe		=3D aspeed_pci_host_bmc_device_probe,
-> +	.remove		=3D aspeed_pci_host_bmc_device_remove,
-> +};
-> +
-> +static int __init aspeed_host_bmc_device_init(void)
-> +{
-> +	return pci_register_driver(&aspeed_host_bmc_dev_driver);
-> +}
-> +
-> +static void aspeed_host_bmc_device_exit(void)
-> +{
-> +	/* unregister pci driver */
-> +	pci_unregister_driver(&aspeed_host_bmc_dev_driver);
-> +}
-> +
-> +late_initcall(aspeed_host_bmc_device_init);
-> +module_exit(aspeed_host_bmc_device_exit);
-
-module_driver() could be used here.
-
-> +
-> +MODULE_AUTHOR("Ryan Chen <ryan_chen@aspeedtech.com>");
-> +MODULE_DESCRIPTION("ASPEED Host BMC DEVICE Driver");
-> +MODULE_LICENSE("GPL");
+Andrew
 
