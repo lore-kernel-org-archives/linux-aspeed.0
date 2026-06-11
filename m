@@ -1,93 +1,64 @@
-Return-Path: <linux-aspeed+bounces-4222-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4223-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34A90CD98C7
-	for <linux-aspeed@archiver.kernel.org>; Wed, 10 Jun 2026 23:12:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 771C3CD98C5
+	for <linux-aspeed@archiver.kernel.org>; Thu, 11 Jun 2026 02:50:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gbM472b0qz3bpx;
-	Thu, 11 Jun 2026 09:12:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::e2d" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781104600;
-	cv=pass; b=UtIdC08VKAKNfO9lu7PcEd7diVqz/4wW/gh61QImS9YnvYVQdROnkQOAJFOaRlIxFZKLu4o1tPvoTbIDM1AQrVtv8/u2DO4Vkkmoc8cMEnYy2Bp5EJF57mGqHy/DFehnhhry4l4pWuJ7cIMzF+lrpG8ABhP5NkjJS0zwrj+VPrlIl8cGvXTJw12NwGptbZQroVM+u/hf9owjndKEb9pCFnozfCqk+JCVhJwZ1lQ/q/eRbU65UeRpt0YrkcNnz8SfnaE5MmYXm1zz7qe8y5bJuNgcbmVWQals1aGxfphVYPzOVI8yNobVzDBtHRWGhQysm4NtKEeeG0vcvUxb4GonBA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781104600; c=relaxed/relaxed;
-	bh=ts8wGeDzZal8GxfKYhzw5ox6k82S2BLaK+sms3HyOZM=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=BfYEwdTRR1FgGufxshr1wP2SuWmAQXmiKIFjcPlKHJBAhyeQbjOgAh6bLZYE8xRj4zy9+465Tc7td1H6BUULXMAQGnt4/fDRb7BEmSuhQ1kUCx/1zV5LnIY9lMtfu8qXqixO+KbjSVs8LdiNF0ityDElsyFuHcpBcI+1VhbPG0HiT/+Ed+U1dApVeTrh2vj+lr62zc9O/j9hvNY6TbGulom5W/D6dG6zugXlQ5bb535rrs+5Shf0idNWScIj8jJbYC5Unb4eGJJBmpmC67sJHSneBtZoagGn79TS55tMg1RU+QljybQAAEoFhGqtcHs0dFSJS8mtYMvtoTjYKpHCmg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=VBg4XMjR; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::e2d; helo=mail-vs1-xe2d.google.com; envelope-from=u8813345@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gbRwb5Q61z2xll;
+	Thu, 11 Jun 2026 12:50:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781146255;
+	cv=none; b=CFjvCIxYw31JE3OIP1mvJP9saBRAMfOmlRT5SxiY5sZka/pvWFkxAevuLC8wSSiisr/rxd4kkXREx8jSgeTysriA+7Dbi4lWm60DsCWLCUb31KMNU0s3mzML4sFXnr/CnOOrUpemTI4y45jMf4fgwk7ICmdkQ47IbLrqkJPmDeUW1ykyY9+givM0ltGwLVmt0VUO9+m44a4ARZG5Yl6lpZk37cToTWInjDxtn117d6KiSTtP5sO8QCePjpXpDqDdYVVPbq4HvlmUL9+2E9RUaFazJSuBQ1ypml1v4bPPdtg74GO3BJ6p3QYG8ef63Ao9h2Nndtco/YFtt4iAjGISsA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1781146255; c=relaxed/relaxed;
+	bh=jC17BLRupxjFh4QurP21wywIDB1dwNBEJxTReffswGw=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=OQijQeOa+v5Etgg7nCaV3Z1vTo+bOLphPuwnppU4lz24k9ym5CJ5Ce0UqNZiEv6a1Qj59y8kCkQADqwK9vB5XfzYS7JfL8drSNvy12T7ZLajxMown4oDsZzo3saCy9RKAzasH1vux4qHMn39Wh03it9zM5Ih46q8Z/CziKAIYwBrHzlj/6p+J2Kx+pyVjcnH7E3iAlqKzs+S9dUFfsWYy0jUcxWO9kkS7WKtZ81ebfueNvktkba0ZcM2+gTJJywMctsJHemINfaE24vc11P7TaAu7j0pChOeT9PNDtImRlxjzMJJFDPi/D5MlNCJTKmxacpIbK5ybdl7FwcMNISfEw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=SYVLyqrQ; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=VBg4XMjR;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=SYVLyqrQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::e2d; helo=mail-vs1-xe2d.google.com; envelope-from=u8813345@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-vs1-xe2d.google.com (mail-vs1-xe2d.google.com [IPv6:2607:f8b0:4864:20::e2d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
+Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gb8WW33krz2yNn
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 11 Jun 2026 01:16:38 +1000 (AEST)
-Received: by mail-vs1-xe2d.google.com with SMTP id ada2fe7eead31-6ca16bbc52aso2182085137.2
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 10 Jun 2026 08:16:38 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1781104596; cv=none;
-        d=google.com; s=arc-20240605;
-        b=N5qc6rRBvKrfgOWp6WOBEdv4fK4Sa+1tBA0cHRlbhiPiFA6ohFLoVPmNqMXiYRKO29
-         rj+xoc6r1cstnA4yGmMTI7zVfLaVnLbMcBKxDfL+3R3m/ZePlSRaXQb2/IIqN//LMQZr
-         IHbNcfDmDvlaqAtiZi+QGSAaQnyFEwHQa1KBSXfKNSYbm7mjgCnz+giIVh7uqRiX9rF7
-         fOFf9F1Uy9piAfvwl2l9EQQi6UEVXzEdQmmcVl+RBjzLw2VzZWZfavYMEPkalx9IPMb3
-         ug/JUwmOdHEpWv8i4KVmkj4vCzF9GO7E8NVj+89TWvkb0h2ci+FdlwlM9NuQJMv9elp9
-         hKKw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=ts8wGeDzZal8GxfKYhzw5ox6k82S2BLaK+sms3HyOZM=;
-        fh=4Zp6uJPbZh6r7JMH1jIY4eYlB3Qa3UislpQAb2KSL3s=;
-        b=aswDvVlcSEYUp6DutwQXjp9LcSoWV/lZzAULqG2fBu8fE2siD5O1YYdgNciL8UoGU3
-         vPro97K2nMNfO7qjRUqArNoqUUxxQ5sjSJZ0RsdqxLd4ljyKvcyIy7G8f/GOmWz3i9rk
-         lJzxhGawMTZOYF+AfDuZwsrSHWllvzepHvtmammDzSn5n5NbbaYcUpt3jM25un5R57zY
-         Tc6jVJZn+Y23q41xIUFLohBRqlaKktDy6Ls/duGE+lCwJyag/bkE/TgUSaDf3dBdUMNQ
-         v3Q4VqXp51s3TftAd6dTa4aeZns1KtqTrS9XMEUPj0dTr6nztLXcTkaYiVuQOf3pe09e
-         DvbQ==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gbRwZ5bNDz2xl6
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 11 Jun 2026 12:50:54 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781104596; x=1781709396; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ts8wGeDzZal8GxfKYhzw5ox6k82S2BLaK+sms3HyOZM=;
-        b=VBg4XMjRAuMzjLXmX74HbkILy1KekWF2H3dw2LZE1o10IMn/PUrwGNNOTe31iHwvjO
-         gaTS4+3GfgB9MiVsHlTxq63+E16Vk7zVXs1AFUJI/QmdipztshM2+cQiuAPjagqguEQb
-         n95bVWxwvl2Dgb45WJqrZrA4YxRpF54CebNmOW76KTpO9XovfJ4Uz8TvccUMWhSxKv2R
-         WBaV7S5fOVIzqAchlSgM4Q2fRKPQFyFESWzBIZV8yRadYFQe4pe7L0iInIpn0xWW+L5T
-         ooER8cVKXVDvfTqO6nHX3qy3LKUPF8bJaY3n8akJGe3FuJojmAlC3TK3pi5WtUu4FFfR
-         tDJg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781104596; x=1781709396;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=ts8wGeDzZal8GxfKYhzw5ox6k82S2BLaK+sms3HyOZM=;
-        b=gzu5PdVmTln01ijERuGaOVu/PL6KLAfyOt4I+f98gaGIZ9DO/R3pj5I8Uxmjlnz/rv
-         NPTZ8pCFThqraOegzyf75aJhd4i6c6tJbFuY2I4Bhu8eXTvCsooRR6k9E/kBgRl7tMWO
-         7I9xUnaRy0URroJhnqL6jL6xKYvzz6bR+hxYolIOJTwsSp04qrsozAZgfk4Hflef2Yrs
-         HHFknxQPpaTxUGi8o+Lzf9cThMIrwSa35yjMpbefxN8rURx/k+4m+5CFzie/z4yupyUv
-         zJrREHIFAiAkGO0YDzvCZycDpk+i6xINwIIs67d+TO7HgjSDA/WtYln7uUPfJintqJXH
-         JViw==
-X-Forwarded-Encrypted: i=1; AFNElJ8HSO2ci3sobb835gKeEHvAgGG37wui4qN47Nb/XRnHVvJBM/EpcU83IT7jPWk2EzytVOtRK/d/jJXHpdc=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yy6cm98CwG9OjkQ81L485MX3wq+VA6jtKO8rTMDIEf3CCFFPInw
-	GX/vy12wrp4eH+D6bsFjO4Cj9nVny9jMz3kDE3nN9Pcgnzm6+tc40Nw8xh7/oKB5g2f7A0bbMik
-	Ef2nKq8PcalyrqydWajyonQPlxopO4sQ=
-X-Gm-Gg: Acq92OEVWTSWtCzKgaJBZ2+O+4J9b+paHWMtRjSN6tsmWkYpL+481aMfyjqvwvnY9uT
-	IcHIsA/rKxCSnKNqAwDPB41rpKvycCkYTjOo22NgiMWhrmR2wIvNPV/8m+stboH63WKAGAob7cB
-	Fs07/W8q5/LPIASIzoysNbWmHkVuR1CihK9ucXzm4PjWRG8rk88nReXCfu78BGmT2OklPph5gzu
-	SQSyzpbqi+3U6hPD6YPYuo9KNFqSxiuwwC7TsrRgpT5yTN1pe7idK+MzoRCtfK329wbEm6P6Fz2
-	PVkKJ8ivNdjKoKzBWXdd
-X-Received: by 2002:a05:6102:6447:b0:631:b834:e05f with SMTP id
- ada2fe7eead31-6ff0610caf4mr14199152137.11.1781104595646; Wed, 10 Jun 2026
- 08:16:35 -0700 (PDT)
+	d=codeconstruct.com.au; s=2022a; t=1781146253;
+	bh=jC17BLRupxjFh4QurP21wywIDB1dwNBEJxTReffswGw=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=SYVLyqrQiN1Offva8UPZ/gcqnw2zJNMdKsotwp/JLCuPsS3QbUUTWLgd3VSMGSx4r
+	 5lNrAFl0iQ3VyHQIhNRslyvUoQegK1YJJyYIAmSLlcH7SQ295Iurh6pvD2LRT0tS+2
+	 Vy7YqlcusxaPBLVl7Qr8IDkViYYromvKsx1lbSv2soYjuVT2VMp/P5xdFe3MAkHBbc
+	 TQxiaY/7wvy1R/wqtie29/p7FPHVYpvL0c+u/zRts/P49RXY/SZGPdtIdqtW8GiU10
+	 r9MpCEybw18qEdiOALgdqtormaeygxfVlaMpcKEFkh2Rx077FgY1Q7uEdgLXbpMoCc
+	 GaFVW+6bDAG4A==
+Received: from [192.168.68.117] (unknown [180.150.112.11])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 6573D60A0C;
+	Thu, 11 Jun 2026 10:50:51 +0800 (AWST)
+Message-ID: <64f8d88bf4cd72d8120baaa304dfe34bb66cbe0b.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v5] soc: aspeed: lpc-snoop: Fix usercopy overflow in
+ snoop_file_read
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+To: Karthikeyan KS <karthiproffesional@gmail.com>
+Cc: joel@jms.id.au, andrew@aj.id.au, Kees Cook <kees@kernel.org>, 
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org, 
+	stable@vger.kernel.org
+Date: Thu, 11 Jun 2026 12:20:50 +0930
+In-Reply-To: <20260610172310.163321-1-karthiproffesional@gmail.com>
+References: 
+	<033f2657ae6a94ad13d22f717a2900afb75d892d.camel@codeconstruct.com.au>
+	 <20260610172310.163321-1-karthiproffesional@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.56.2-0+deb13u1 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -101,115 +72,229 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260602-anacapa-devlop-phase-devicetree-v3-0-7c93c5df8d9b@gmail.com>
- <2d1095b342fe0f4b1b4b99b22bb3af410d9aa60e.camel@codeconstruct.com.au>
-In-Reply-To: <2d1095b342fe0f4b1b4b99b22bb3af410d9aa60e.camel@codeconstruct.com.au>
-From: Colin Huang <u8813345@gmail.com>
-Date: Wed, 10 Jun 2026 23:16:24 +0800
-X-Gm-Features: AVVi8Cc7NRfVUhw9WT9jp6Y4XQLBetD1jrzFvFoN05U7Qh5wPj_DELWRqc2qZTs
-Message-ID: <CAPBH0A-8VcJ7zDfKrhKn3ZhqdKxz2vt1umJShtHre4=H31pkcg@mail.gmail.com>
-Subject: Re: [PATCH v3 0/9] ARM: dts: aspeed: anacapa: restructure devicetree
- for development-phase
-To: Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, devicetree@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org, colin.huang2@amd.com, 
-	Carl Lee <carl.lee@amd.com>, Rex Fu <rex.fu.amd@gmail.com>, Andy Chung <Andy.Chung@amd.com>, 
-	Peter Shen <peter.shen@amd.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-Andrew Jeffery <andrew@codeconstruct.com.au> =E6=96=BC 2026=E5=B9=B46=E6=9C=
-=8810=E6=97=A5=E9=80=B1=E4=B8=89 =E4=B8=8B=E5=8D=889:04=E5=AF=AB=E9=81=93=
-=EF=BC=9A
->
-> On Tue, 2026-06-02 at 21:24 +0800, Colin Huang via B4 Relay wrote:
-> > This series refactors the Anacapa BMC devicetree layout to better suppo=
-rt
-> > development-phase hardware revisions (EVT1/EVT2/DVT) while keeping a pl=
-atform
-> > entrypoint.
-> >
-> > Signed-off-by: Colin Huang <u8813345@gmail.com>
-> > ---
-> > Changes in v3:
-> > - Restructure the EVT2 devicetree to inherit from the EVT1 devicetree, =
-making it incremental rather than standalone.
-> > - Add the DVT devicetree, inheriting from the EVT2 devicetree.
-> > - Enable MCTP and FRU support for the NIC.
-> > - Align PDB fan GPIO numbering.
-> > - Add an EEPROM device node for the NFC adaptor board.
-> > - Add an additional EEPROM device node for the SCM.
-> > - Add shunt resistor values for HSC monitors
-> > - Link to v2: https://lore.kernel.org/r/20260409-anacapa-devlop-phase-d=
-evicetree-v2-0-68f328671653@gmail.com
-> >
->
-> So just to check, the changes in patches 5-8 inclusive are applicable
-> to all of EVT1, EVT2 and DVT (given the way you've structured the
-> includes)?
+Hi Karthikeyan,
 
-Yes, these patch apply to all development phase.
+On Wed, 2026-06-10 at 17:23 +0000, Karthikeyan KS wrote:
+> put_fifo_with_discard() acts as both producer and consumer on the kfifo:
+> it calls kfifo_skip() (advances out) and kfifo_put() (advances in) from
+> the IRQ handler without synchronizing with snoop_file_read(), which also
+> consumes via kfifo_to_user(). On SMP systems this concurrent access can
+> leave (in - out) larger than the ring buffer, so __kfifo_to_user()'s clam=
+p
+> to (in - out) is ineffective and kfifo_copy_to_user() can attempt a
+> copy_to_user() past the kmalloc-2k backing store:
+>=20
+> =C2=A0 usercopy: Kernel memory exposure attempt detected from SLUB object
+> =C2=A0 'kmalloc-2k' (offset 0, size 2049)!
+> =C2=A0 kernel BUG at mm/usercopy.c!
+> =C2=A0 Call trace:
+> =C2=A0=C2=A0 usercopy_abort
+> =C2=A0=C2=A0 __check_heap_object
+> =C2=A0=C2=A0 __check_object_size
+> =C2=A0=C2=A0 kfifo_copy_to_user
+> =C2=A0=C2=A0 __kfifo_to_user
+> =C2=A0=C2=A0 snoop_file_read
+> =C2=A0=C2=A0 vfs_read
+>=20
+> Serialize kfifo access with a per-channel spinlock. The reader drains
+> into a bounce buffer under the lock with kfifo_out_spinlocked() and then
+> copies to userspace after dropping it, since copy_to_user() may sleep on
+> a page fault.
+>=20
+> Fixes: 3772e5da4454 ("drivers/misc: Aspeed LPC snoop output using misc ch=
+ardev")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Karthikeyan KS <karthiproffesional@gmail.com>
+> ---
+> Andrew,
+>=20
+> Thanks for the review.
+>=20
+> Changes since v4:
+> - Use __free(kfree) for automatic cleanup
+> - Allocate clamped count instead of full SNOOP_FIFO_SIZE
+> - Use kfifo_out_spinlocked() in snoop_file_read
+> - Use scoped_guard(spinlock) in put_fifo_with_discard
+>=20
+> =C2=A0drivers/soc/aspeed/aspeed-lpc-snoop.c | 25 +++++++++++++++++++-----=
+-
+> =C2=A01 file changed, 19 insertions(+), 6 deletions(-)
+>=20
+> diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c b/drivers/soc/aspeed/a=
+speed-lpc-snoop.c
+> index b03310c0830d..c9c87a794228 100644
+> --- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
+> +++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+> @@ -11,6 +11,7 @@
+> =C2=A0 */
+> =C2=A0
+> =C2=A0#include <linux/bitops.h>
+> +#include <linux/cleanup.h>
+> =C2=A0#include <linux/clk.h>
+> =C2=A0#include <linux/dev_printk.h>
+> =C2=A0#include <linux/interrupt.h>
+> @@ -74,6 +75,7 @@ struct aspeed_lpc_snoop_channel_cfg {
+> =C2=A0struct aspeed_lpc_snoop_channel {
+> =C2=A0	const struct aspeed_lpc_snoop_channel_cfg *cfg;
+> =C2=A0	bool enabled;
+> +	spinlock_t		lock;=C2=A0=C2=A0=C2=A0 /* serialises @fifo: irq producer v=
+s reader */
 
->
-> > Changes in v2:
-> > - Fix dtbs_check fail.
-> >   Validated by following command:
-> >     make dt_binding_check DT_SCHEMA_FILES=3Darm/aspeed/aspeed.yaml
-> >     make CHECK_DTBS=3Dy DT_SCHEMA_FILES=3Darm/aspeed/aspeed.yaml aspeed=
-/aspeed-bmc-facebook-anacapa.dtb
-> >     make CHECK_DTBS=3Dy DT_SCHEMA_FILES=3Darm/aspeed/aspeed.yaml aspeed=
-/aspeed-bmc-facebook-anacapa-evt1.dtb
-> >     make CHECK_DTBS=3Dy DT_SCHEMA_FILES=3Darm/aspeed/aspeed.yaml aspeed=
-/aspeed-bmc-facebook-anacapa-evt2.dtb
-> > - Link to v1: https://lore.kernel.org/r/20260407-anacapa-devlop-phase-d=
-evicetree-v1-0-97b96367cac3@gmail.com
-> >
-> > ---
-> > Andy Chung (1):
-> >       ARM: dts: aspeed: anacapa: Enable MCTP and FRU for NIC
-> >
-> > Carl Lee (1):
-> >       ARM: dts: aspeed: anacapa: Add eeprom device node for NFC adaptor=
- board
-> >
-> > Colin Huang (5):
-> >       dt-bindings: arm: aspeed: add Anacapa EVT1 EVT2 DVT board
-> >       ARM: dts: aspeed: anacapa: add EVT1 devicetree and point wrapper =
-to it
-> >       ARM: dts: aspeed: anacapa: add EVT2 devicetree inheriting EVT1
-> >       ARM: dts: aspeed: anacapa: add DVT devicetree inheriting EVT2
-> >       ARM: dts: aspeed: anacapa: add additional EEPROM node for SCM
->
-> If you need to respin this series for some reason, can you please
-> capitalise the first word of the short description (the bit after the
-> last ':') for the commits above and the one below?
->
+I'd prefer we avoid trailing comments, which it seems you've added this
+time around. Since you did that ...
 
-Got it.  Capitalise the first word.of the short description.
+> =C2=A0	struct kfifo		fifo;
 
-> >
-> > Peter Shen (1):
-> >       ARM: dts: aspeed: anacapa: evt2: add shunt resistor values for HS=
-C monitors
-> >
-> > Rex Fu (1):
-> >       ARM: dts: aspeed: anacapa: Align PDB fan GPIO numbering
-> >
-> >  .../devicetree/bindings/arm/aspeed/aspeed.yaml     |    3 +
-> >  .../dts/aspeed/aspeed-bmc-facebook-anacapa-dvt.dts |  178 +++
-> >  .../aspeed/aspeed-bmc-facebook-anacapa-evt1.dts    | 1179 ++++++++++++=
-++++++++
-> >  .../aspeed/aspeed-bmc-facebook-anacapa-evt2.dts    |  228 ++++
-> >  .../dts/aspeed/aspeed-bmc-facebook-anacapa.dts     | 1077 +-----------=
-------
-> >  5 files changed, 1589 insertions(+), 1076 deletions(-)
-> > ---
-> > base-commit: 7ca1caf017d34396397b19fb4de9ecef256f4acc
-> > change-id: 20260407-anacapa-devlop-phase-devicetree-4101d3f312c0
-> >
-> > Best regards,
->
-> Andrew
+... in this specific case we can improve on the comment, with:
+
+   struct kfifo fifo __guarded_by(&lock);
+
+More details here:
+
+   https://docs.kernel.org/dev-tools/context-analysis.html
+
+Adding a change along these lines currently produces:
+
+   ../drivers/soc/aspeed/aspeed-lpc-snoop.c:164:32: warning: reading variab=
+le 'fifo' requires holding spinlock '&aspeed_lpc_snoop_channel::lock' [-Wth=
+read-safety-analysis]
+     164 |         if (!kfifo_initialized(&chan->fifo))
+         |                                       ^
+
+I ended up applying this on top of your patch:
+
+   diff --git a/drivers/soc/aspeed/Makefile b/drivers/soc/aspeed/Makefile
+   index b35d74592964..9cba7be8c395 100644
+   --- a/drivers/soc/aspeed/Makefile
+   +++ b/drivers/soc/aspeed/Makefile
+   @@ -4,3 +4,5 @@ obj-$(CONFIG_ASPEED_LPC_SNOOP)          +=3D aspeed-lpc-=
+snoop.o
+    obj-$(CONFIG_ASPEED_UART_ROUTING)      +=3D aspeed-uart-routing.o
+    obj-$(CONFIG_ASPEED_P2A_CTRL)          +=3D aspeed-p2a-ctrl.o
+    obj-$(CONFIG_ASPEED_SOCINFO)           +=3D aspeed-socinfo.o
+   +
+   +CONTEXT_ANALYSIS_aspeed-lpc-snoop.o    :=3D y
+   diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c b/drivers/soc/aspeed/=
+aspeed-lpc-snoop.c
+   index 9165a543a250..7fa1a345acac 100644
+   --- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
+   +++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+   @@ -75,8 +75,8 @@ struct aspeed_lpc_snoop_channel_cfg {
+    struct aspeed_lpc_snoop_channel {
+           const struct aspeed_lpc_snoop_channel_cfg *cfg;
+           bool enabled;
+   -       spinlock_t              lock;    /* serialises @fifo: irq produc=
+er vs reader */
+   -       struct kfifo            fifo;
+   +       spinlock_t              lock;
+   +       struct kfifo            fifo __guarded_by(&lock);
+           wait_queue_head_t       wq;
+           struct miscdevice       miscdev;
+    };
+   @@ -161,9 +161,9 @@ static const struct file_operations snoop_fops =3D {
+    /* Save a byte to a FIFO and discard the oldest byte if FIFO is full */
+    static void put_fifo_with_discard(struct aspeed_lpc_snoop_channel *chan=
+, u8 val)
+    {
+   -       if (!kfifo_initialized(&chan->fifo))
+   -               return;
+           scoped_guard(spinlock, &chan->lock) {
+   +               if (!kfifo_initialized(&chan->fifo))
+   +                       return;
+                   if (kfifo_is_full(&chan->fifo))
+                           kfifo_skip(&chan->fifo);
+                   kfifo_put(&chan->fifo, val);
+   @@ -240,7 +240,6 @@ static int aspeed_lpc_enable_snoop(struct device *de=
+v,
+                   return -EBUSY;
+   =20
+           init_waitqueue_head(&channel->wq);
+   -       spin_lock_init(&channel->lock);
+   =20
+           channel->cfg =3D cfg;
+           channel->miscdev.minor =3D MISC_DYNAMIC_MINOR;
+   @@ -252,9 +251,11 @@ static int aspeed_lpc_enable_snoop(struct device *d=
+ev,
+           if (!channel->miscdev.name)
+                   return -ENOMEM;
+   =20
+   -       rc =3D kfifo_alloc(&channel->fifo, SNOOP_FIFO_SIZE, GFP_KERNEL);
+   -       if (rc)
+   -               return rc;
+   +       scoped_guard(spinlock_init, &channel->lock) {
+   +               rc =3D kfifo_alloc(&channel->fifo, SNOOP_FIFO_SIZE, GFP_=
+KERNEL);
+   +               if (rc)
+   +                       return rc;
+   +       }
+   =20
+           rc =3D misc_register(&channel->miscdev);
+           if (rc)
+  =20
+I prefer that we add the annotation as the compiler analysis provides
+some comfort in contrast to the comment.
+
+Otherwise, the rest of the fix seems okay to me.
+
+Andrew
+
+> =C2=A0	wait_queue_head_t	wq;
+> =C2=A0	struct miscdevice	miscdev;
+> @@ -114,6 +116,7 @@ static ssize_t snoop_file_read(struct file *file, cha=
+r __user *buffer,
+> =C2=A0				size_t count, loff_t *ppos)
+> =C2=A0{
+> =C2=A0	struct aspeed_lpc_snoop_channel *chan =3D snoop_file_to_chan(file)=
+;
+> +	u8 *buf __free(kfree) =3D NULL;
+> =C2=A0	unsigned int copied;
+> =C2=A0	int ret =3D 0;
+> =C2=A0
+> @@ -125,9 +128,16 @@ static ssize_t snoop_file_read(struct file *file, ch=
+ar __user *buffer,
+> =C2=A0		if (ret =3D=3D -ERESTARTSYS)
+> =C2=A0			return -EINTR;
+> =C2=A0	}
+> -	ret =3D kfifo_to_user(&chan->fifo, buffer, count, &copied);
+> -	if (ret)
+> -		return ret;
+> +
+> +	count =3D min_t(size_t, count, SNOOP_FIFO_SIZE);
+> +
+> +	buf =3D kmalloc(count, GFP_KERNEL);
+> +	if (!buf)
+> +		return -ENOMEM;
+> +
+> +	copied =3D kfifo_out_spinlocked(&chan->fifo, buf, count, &chan->lock);
+> +	if (copied && copy_to_user(buffer, buf, copied))
+> +		return -EFAULT;
+> =C2=A0
+> =C2=A0	return copied;
+> =C2=A0}
+> @@ -153,9 +163,11 @@ static void put_fifo_with_discard(struct aspeed_lpc_=
+snoop_channel *chan, u8 val)
+> =C2=A0{
+> =C2=A0	if (!kfifo_initialized(&chan->fifo))
+> =C2=A0		return;
+> -	if (kfifo_is_full(&chan->fifo))
+> -		kfifo_skip(&chan->fifo);
+> -	kfifo_put(&chan->fifo, val);
+> +	scoped_guard(spinlock, &chan->lock) {
+> +		if (kfifo_is_full(&chan->fifo))
+> +			kfifo_skip(&chan->fifo);
+> +		kfifo_put(&chan->fifo, val);
+> +	}
+> =C2=A0	wake_up_interruptible(&chan->wq);
+> =C2=A0}
+> =C2=A0
+> @@ -228,6 +240,7 @@ static int aspeed_lpc_enable_snoop(struct device *dev=
+,
+> =C2=A0		return -EBUSY;
+> =C2=A0
+> =C2=A0	init_waitqueue_head(&channel->wq);
+> +	spin_lock_init(&channel->lock);
+> =C2=A0
+> =C2=A0	channel->cfg =3D cfg;
+> =C2=A0	channel->miscdev.minor =3D MISC_DYNAMIC_MINOR;
 
