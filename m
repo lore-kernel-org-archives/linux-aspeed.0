@@ -1,93 +1,40 @@
-Return-Path: <linux-aspeed+bounces-4233-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4234-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B579CD8CB2
-	for <linux-aspeed@archiver.kernel.org>; Thu, 11 Jun 2026 05:39:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72601CD98CC
+	for <linux-aspeed@archiver.kernel.org>; Thu, 11 Jun 2026 06:50:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gbWgW5mcVz3br5;
-	Thu, 11 Jun 2026 15:39:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::229" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781156391;
-	cv=pass; b=Va5kr7ICxeh0loe0GpsYAC/YzDHKEJWPh6cdMqCVrVL9JUQXCYyV5O4mAK4rT+MKydCv75CK4LH46QRW64KAPk/jrNT2kaVprA0wSGnvS3lMZsRv0MFqkko3/BsqiVgcnHxyB6LPUW9i2WBZhy+99YmNXMggy/+s8EsbD35atvQG1RdQbsWZOqIEw9hDELl8igqrqLfY+tiRrYIoVQpS5dornkRt5dzNzDwFaPWgUPaHIXxTcsco+eAOqQ60a4sKCShbEd87uKOQCGJPYZ9W/W6wu/Pm2qWaj21VtGfIeG2D25iBSentmLIB31wj2Fpn3NRh+6tesyTNH7WlauTKSg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781156391; c=relaxed/relaxed;
-	bh=3oB59fVMVK27SoPfM6pxgXOWQ6r4jMS+0G1YJm98FsA=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=TEDaskq5Nx5ErYndvpTHbfxKoXsAJ657gnQEktsg77R5BwQppeLyJ15fY7tOM5NbFg1X4YNPi0Ono/EDLCLrQ6rjEm3p/OlBtFRf2Ce6n1KoiQIZ9ns7Bj9dWJrpC6VJTBVLXfhnAMn6DYeub3OO9pHoXSpGnTIqXhmzvoGSdtoVAF9izS9gdCD86xWntSsXglYmUeabcD09phtu5SZTJI2XJsi33dT7Z0ksUHd0a3xhMA0f3oTRbDU+kmDR6On1dsPCbVuZvRQrk0/I91KOCMRV32PbZaD+YMV2jzBNmauiSawvgYeoVn4SxqAbtBp1kPtqMNdeGzSjCuD7Wz4buw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=hagYWP7V; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::229; helo=mail-lj1-x229.google.com; envelope-from=kylehsieh1995@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=hagYWP7V;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::229; helo=mail-lj1-x229.google.com; envelope-from=kylehsieh1995@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-lj1-x229.google.com (mail-lj1-x229.google.com [IPv6:2a00:1450:4864:20::229])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gbYDy5Ddqz2xl6;
+	Thu, 11 Jun 2026 16:50:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781160626;
+	cv=none; b=e+liFWJmtxnMAqCqtEkR7xR3UHh6wVJM20212boin/V8Sw+Z4voNm8xUtcrx40Lf3hM/UMvXVo5MC0guYApkxstMqMNM0F21LxHA5GPLUa8v1vOTWEaGZwuhnl1YrMX3eK5ciQ9YfXWmzVOMGzJ+QFGTnqxGe4G7M+81KaJFilT4xULxq+3VDe6P6Wk0jmy5lpF8EMmUDPbJU8tkPCo4vjhjnllj2tGW1KINAM7tsdCarT3Hakt8T90hSZsM3FQ2saXyxnDlVfwNmYT2SfS5gAb4vY6IuS20//3738AqVlbVKXaoFiPhT0lAwLYBT2lc8peA1jZ3nmRCRw2kAd/jSg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1781160626; c=relaxed/relaxed;
+	bh=d/3KW645kadoWYBkkkiV3R/cBByrtaM6iiRuO1ZY31c=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:To:CC; b=II9qy4qW2ayUYnIqAGslwQOA+Rz8Pvf6NcdnKYfiK5Ec+/8SMNQWkS9fSVBPNpzVrftaspvQfgyPa1PRAmo0erp9dK4Lf2NFizAwulJRA0K1sKLFIiviVGN833IL3o1FN3i13XAwh8Jt1Mm/AAFuf6sPH3PwIK6MsJbvUt/tSkJIP9D/OfygOw45Ku849S2dR63PepjkkdPlprBPc8PcCQ1VsB+RPDwsAKiyKIPfBH80E27DljgmWSgDsxN33Y3ATswXYCcE3e3Suvnfb+QcPNemri47ta3rHRpwR6t5hoj68vj1UEQP3utEGFO1uwoa3sDY5mloTye0UTqPUzbZ1Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeedtech.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeedtech.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from twmbx01.aspeedtech.com (mail.aspeedtech.com [211.20.114.72])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gbWgV20DBz2ySS
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 11 Jun 2026 15:39:49 +1000 (AEST)
-Received: by mail-lj1-x229.google.com with SMTP id 38308e7fff4ca-396aacc5bcfso74094241fa.3
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 10 Jun 2026 22:39:48 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1781156386; cv=none;
-        d=google.com; s=arc-20240605;
-        b=XPZsoHSJd9zIVOtlv3maQ1ArPtXQkQEXu0Kep1f8ENYpFWpLPBimQJTdjCI0DZaeBO
-         HV8oW9gbWKQG6FPmGNg0vdg55egHkim26jcSE9QUubBYj25a19ILHkAT9iTYXzLWN8fh
-         UBVkxC6EzoNIl/v347DGhuQlLN5TFZotoPwGfDofty6uTOibhB+xDPQku5vKIQIMY/XP
-         59eXVA7jH9X7hXCOCoxYw7gPbLZS1NALeUPhTg9w+gw9Pn8L2oWZQQ6KGkQayEdiEMea
-         pasRezTFw6pEEkVqIr/elr+biA8HGx8URGb51krk824VSEGqSniNPuYD7XOpEG61A8hg
-         77tQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=3oB59fVMVK27SoPfM6pxgXOWQ6r4jMS+0G1YJm98FsA=;
-        fh=4TOuiNgNQ5G316uPL+KddHAD9n+xwmVvSAi+sNGItlI=;
-        b=iSj97XEq8fNoPgSyFW1i9TJntfUly4ir4PsNQ9E2igzvxqueICUZof59f6ZcILKqtz
-         vqru5/p+4pIJJZErsCi10AafU314bEBQqeHTTY/8W/Rnt4Z+hCTJQL2pBptSj70HU/j2
-         Cmm5UL8QK4E83+fpCO1j4tBH8nVonNRjHutqVQ0t5BNEJl7ipbMI2iAEnlipP4jDKfLz
-         SQPi0tOS6G8vf9G13agwSB/hUoz+Yj50K0Vs+ogRPQ/a+a3eK6b7awUvjKyecJiZ3va+
-         xMavddZJFHKxciwJ+fpu9tD2O5Ls9ZvVFryc6NeijDvLH4ca1/NELdJFulvs9E5s+Aw/
-         R+SQ==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781156386; x=1781761186; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=3oB59fVMVK27SoPfM6pxgXOWQ6r4jMS+0G1YJm98FsA=;
-        b=hagYWP7VJf7HICaZn0Jid06cw/uHJlrYPK3+Gc14VrtZ1c7NkPCKh/pb0wLbx84yLN
-         CFALUZXLXJii50Zb22HRsLuisBD8x0IUct1xSJDAKBqInQqnY4AXYP7Ze6q99ger6Sso
-         ImrWaLWO7WvhsOIF395+gtRP1ReFYwMJB/fodbuVo4t8/eO2uLktd+vOOQCgf13s+S/u
-         XPUFrtScKC80N36sv7jOFTMURPchg+Zarv6JRsx5ysl5aKNX05td0IpujnPbNhW1iAul
-         jCidVl7XsxLdf3ifbYbPDTdXA+fF/3AKJEgVPTVB4EaY92yliBsSIDg/YFQki0vbzJMC
-         Lpuw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781156386; x=1781761186;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=3oB59fVMVK27SoPfM6pxgXOWQ6r4jMS+0G1YJm98FsA=;
-        b=BrhinyNjZMs6pGG0JpEu0uXhImhaAZ7ypeU/3Zdad6zCDWsgwekyRrutrYGuidt0/q
-         /WkY4iONDRBd0Vov/QR7UdbUW4mvcyjBgllh5pWje9I+/v3plxLCMC83YFeyyPSxEP5s
-         2s4XrwMThwUBGG4vbdX9D767aNLqx/gxYBhcDiC/TfmWy0icE+wKRCLszc0qPY78870S
-         Rr61XjlTD60NxTk52Bjvm03YJ7s0l1wEc6mwTFn9FTejexslSdiBtKl9SXBTEYkSzOU8
-         mcctNgFMK09MYtwKWY0OrDjv9uadAu/V3VnC/7dI+Qi2DAM0ymP3/6DS3Ado8oRudTqV
-         B0UQ==
-X-Forwarded-Encrypted: i=1; AFNElJ8JOtxawlp+KtO0IplmaJ5UXMRPIgmUWWHDGYmCqu/8abpOTFXlPYIuPaVJhPX7x4FtN0c5nmrZ2Xi8QbU=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yzf1RXQDz1fnaCv3BMKzKo8uDCXlviPQki8vSTvsOYezkTHd5KL
-	DRMNpSs4qhHXzpi85aBPuXf31FZ/DtS7a7aRL2Mw0Cb+nuy2yFz2k7xpyNVfB3QgHVszsOiKne0
-	wqkqzLMAOiRllWDQ9UL+f+dmjdmFkqi0=
-X-Gm-Gg: Acq92OGUi/9MUGdEAs++/getp4uv7tsfp66oAEJ2hacEOIUqK3Y9zOtnvm/RTTZD8ZU
-	/rSLRgkiAWnJ+bsCcLnvH519gG32Wln1IYwlCdxxZpq8BUvttKSpSEbrPSu8IMF+60zbD/ATo91
-	flla+tLrPWdajjdjDKyAbgwX8S1NAsxOkdU8noRKO2qAtsWXj8J0QdjWnPLM8Heo8v2hwBP49jO
-	Jk5XRahjdpSlUejh/S57RqYh9rQwJC/A8KYjgsjA6UCA6nxEVyCWhPH8G7uNRxwoLi1XC3rN+rz
-	wnjs5zc6PZx/wyZuc4E=
-X-Received: by 2002:a2e:a107:0:b0:393:975b:5635 with SMTP id
- 38308e7fff4ca-39919fb6857mr2532671fa.12.1781156385590; Wed, 10 Jun 2026
- 22:39:45 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gbYDx4qwQz2xLq
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 11 Jun 2026 16:50:24 +1000 (AEST)
+Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Thu, 11 Jun
+ 2026 14:50:09 +0800
+Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
+ Transport; Thu, 11 Jun 2026 14:50:09 +0800
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Date: Thu, 11 Jun 2026 14:50:08 +0800
+Subject: [PATCH] arm64: dts: aspeed: Fix duplicate pinctrl labels and
+ address scheme
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -101,301 +48,228 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260608-ventura2_initial_dts-v5-0-37ee5bcf58b6@gmail.com>
- <20260608-ventura2_initial_dts-v5-2-37ee5bcf58b6@gmail.com> <3d56889c004fc2d11b76ace6033c7ccfb8a37d03.camel@codeconstruct.com.au>
-In-Reply-To: <3d56889c004fc2d11b76ace6033c7ccfb8a37d03.camel@codeconstruct.com.au>
-From: Kyle Hsieh <kylehsieh1995@gmail.com>
-Date: Thu, 11 Jun 2026 13:41:15 +0800
-X-Gm-Features: AVVi8Ccm0DC9rSjRQJdBWLuBDknFZNLKxN-D90VWvba6LpRXnzFxGYFIhU7-HJk
-Message-ID: <CAF7HswNYvs73zoCDdVq_E11H82Djy=2OY-k8=zq+G6EGrV_6Qg@mail.gmail.com>
-Subject: Re: [PATCH v5 2/2] ARM: dts: aspeed: ventura2: Add Meta ventura2 BMC
-To: Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, devicetree@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-ID: <20260611-dtsi_fix-v1-1-ef2b7cd86d6d@aspeedtech.com>
+X-B4-Tracking: v=1; b=H4sIAKBaKmoC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
+ vPSU3UzU4B8JSMDIzMDM0ND3ZSS4sz4tMwKXQNLyyRDw0RjI8MkUyWg8oKiVKAw2Kjo2NpaAKY
+ AXaBaAAAA
+X-Change-ID: 20260611-dtsi_fix-099b11a321b5
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, "Andrew
+ Jeffery" <andrew@codeconstruct.com.au>, Arnd Bergmann <arnd@arndb.de>
+CC: <devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-aspeed@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>, Ryan Chen
+	<ryan_chen@aspeedtech.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1781160609; l=5765;
+ i=ryan_chen@aspeedtech.com; s=20251126; h=from:subject:message-id;
+ bh=8U6jz7rXtYL1MwCZPqGDf5fZs+4y+xyGRhjMMf47rOU=;
+ b=O9wmMN7nZjWZ4LiaBz1UQB8K5FQiwQQye3VsCY92aIsBDGfBlwhNQ68rdmVUnuq1MT8XhoL1R
+ byIXjsGNhUgDIjxeCHG6e77/P2X8uyQom931Pc1kK32Q0cXBpJexTUJ
+X-Developer-Key: i=ryan_chen@aspeedtech.com; a=ed25519;
+ pk=Xe73xY6tcnkuRjjbVAB/oU30KdB3FvG4nuJuILj7ZVc=
 
-On Wed, Jun 10, 2026 at 7:15=E2=80=AFPM Andrew Jeffery
-<andrew@codeconstruct.com.au> wrote:
->
-> Hi Kyle,
->
-> On Mon, 2026-06-08 at 10:42 +0800, Kyle Hsieh wrote:
-> > Add linux device tree entry related to the Meta(Facebook) rmc-node.
->
-> This is redundant as it is evident from the patch itself. Can you
-> please remove it?
->
-> > The system use an AT2600 BMC.
-> > This node is named "ventura2".
->
-> Can you provide some more detail about the platform in the commit
-> message? What's it's purpose? Can you describe some interesting
-> features or details about its design?
->
-Hi Andrew,
+Fix duplicate pinctrl_tach{0-15} and pinctrl_n{cts,dcd,dsr,ri}5 labels
+in aspeed-g7-soc1-pinctrl.dtsi.
 
-To briefly answer your question: Ventura2 is Rack Management
-Controller. It is a modular device primarily designed to manage liquid
-cooling systems and monitor rack-level hardware states. Its key
-hardware features include an extensive I2C/GPIO topology for
-tray-level and rack-level liquid leakage detection, as well as MCTP
-over I2C support for asynchronous device communications.
+Drop the cpu-index from secondary/tertiary container nodes: reduce the
+"#address-cells" from 2 to 1 and update ssp_nvic/tsp_nvic unit-address
+and reg accordingly. Also remove URL comments from the DTS.
 
-I will remove the redundant sentence and include this detailed
-description of the platform's purpose and architecture in the commit
-message for v7.
-> >
-> > Signed-off-by: Kyle Hsieh <kylehsieh1995@gmail.com>
-> > ---
-> >  arch/arm/boot/dts/aspeed/Makefile                  |    1 +
-> >  .../dts/aspeed/aspeed-bmc-facebook-ventura2.dts    | 2888 ++++++++++++=
-++++++++
-> >  2 files changed, 2889 insertions(+)
-> >
-> > diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspe=
-ed/Makefile
-> > index 9adf9278dc94..6b96997629d4 100644
-> > --- a/arch/arm/boot/dts/aspeed/Makefile
-> > +++ b/arch/arm/boot/dts/aspeed/Makefile
-> > @@ -32,6 +32,7 @@ dtb-$(CONFIG_ARCH_ASPEED) +=3D \
-> >       aspeed-bmc-facebook-minipack.dtb \
-> >       aspeed-bmc-facebook-santabarbara.dtb \
-> >       aspeed-bmc-facebook-tiogapass.dtb \
-> > +     aspeed-bmc-facebook-ventura2.dtb \
-> >       aspeed-bmc-facebook-wedge40.dtb \
-> >       aspeed-bmc-facebook-wedge100.dtb \
-> >       aspeed-bmc-facebook-wedge400-data64.dtb \
-> > diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura2.dts =
-b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura2.dts
-> > new file mode 100644
-> > index 000000000000..9bf7d6e52e40
-> > --- /dev/null
-> > +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura2.dts
-> > @@ -0,0 +1,2888 @@
-> > +// SPDX-License-Identifier: GPL-2.0
-> > +// Copyright (c) 2023 Facebook Inc.
-> > +/dts-v1/;
-> > +
-> > +#include "aspeed-g6.dtsi"
-> > +#include <dt-bindings/i2c/i2c.h>
-> > +#include <dt-bindings/gpio/aspeed-gpio.h>
-> > +
-> > +/ {
-> > +     model =3D "Facebook Ventura2 RMC";
-> > +     compatible =3D "facebook,ventura2-rmc", "aspeed,ast2600";
-> >
->
-> ...
->
-> > +};
-> > +
->
-> ...
->
-> > +&gpio1 {
-> > +     gpio-line-names =3D
-> > +     /*18A0-18A7*/   "","","","","","","","",
-> > +     /*18B0-18B7*/   "","","","",
-> > +                     "FM_BOARD_BMC_REV_ID0","FM_BOARD_BMC_REV_ID1",
-> > +                     "FM_BOARD_BMC_REV_ID2","",
-> > +     /*18C0-18C7*/   "SPI_BMC_BIOS_ROM_IRQ0_R_N","","","","","","","",
-> > +     /*18D0-18D7*/   "","","","","","","","",
-> > +     /*18E0-18E3*/   "FM_BMC_PROT_LS_EN","AC_PWR_BMC_BTN_R_N","","";
-> > +};
-> > +
-> > +&i2c0 {
-> > +     status =3D "okay";
-> > +
-> > +     i2c-mux@77 {
-> > +             compatible =3D "nxp,pca9548";
-> > +             reg =3D <0x77>;
-> > +             #address-cells =3D <1>;
-> > +             #size-cells =3D <0>;
-> > +             i2c-mux-idle-disconnect;
-> > +
-> > +             i2c0mux0ch0: i2c@0 {
-> > +                     #address-cells =3D <1>;
-> > +                     #size-cells =3D <0>;
-> > +                     reg =3D <0>;
-> > +             };
-> > +
-> > +             i2c0mux0ch1: i2c@1 {
-> > +                     #address-cells =3D <1>;
-> > +                     #size-cells =3D <0>;
-> > +                     reg =3D <1>;
-> > +             };
-> > +
-> > +             i2c0mux0ch2: i2c@2 {
-> > +                     #address-cells =3D <1>;
-> > +                     #size-cells =3D <0>;
-> > +                     reg =3D <2>;
-> > +             };
-> > +
-> > +             i2c0mux0ch3: i2c@3 {
-> > +                     #address-cells =3D <1>;
-> > +                     #size-cells =3D <0>;
-> > +                     reg =3D <3>;
-> > +                     status =3D "okay";
-> > +             };
-> > +
-> > +             i2c0mux0ch4: i2c@4 {
-> > +                     #address-cells =3D <1>;
-> > +                     #size-cells =3D <0>;
-> > +                     reg =3D <4>;
-> > +                     status =3D "okay";
-> > +             };
-> > +
-> > +             i2c0mux0ch5: i2c@5 {
-> > +                     #address-cells =3D <1>;
-> > +                     #size-cells =3D <0>;
-> > +                     reg =3D <5>;
-> > +                     status =3D "okay";
-> > +
-> > +                     eeprom@56 {
-> > +                             compatible =3D "atmel,24c128";
-> > +                             reg =3D <0x56>;
-> > +                     };
-> > +             };
-> > +
-> > +             i2c0mux0ch6: i2c@6 {
-> > +                     #address-cells =3D <1>;
-> > +                     #size-cells =3D <0>;
-> > +                     reg =3D <6>;
-> > +
-> > +                     eeprom@56 {
-> > +                             compatible =3D "atmel,24c128";
-> > +                             reg =3D <0x56>;
-> > +                     };
-> > +
-> > +                     fan_io_expander0: gpio@20 {
-> > +                             compatible =3D "nxp,pca9555";
-> > +                             reg =3D <0x20>;
-> > +                             gpio-controller;
-> > +                             #gpio-cells =3D <2>;
-> > +                     };
-> > +
-> > +                     fan_io_expander1: gpio@21 {
-> > +                             compatible =3D "nxp,pca9555";
-> > +                             reg =3D <0x21>;
-> > +                             gpio-controller;
-> > +                             #gpio-cells =3D <2>;
-> > +                     };
-> > +
-> > +                     adc@1d {
-> > +                             compatible =3D "ti,adc128d818";
-> > +                             reg =3D <0x1d>;
-> > +                             ti,mode =3D /bits/ 8 <1>;
-> > +                     };
-> > +
-> > +                     adc@35 {
-> > +                             compatible =3D "maxim,max11617";
-> > +                             reg =3D <0x35>;
-> > +                     };
-> > +             };
-> > +
-> > +             i2c0mux0ch7: i2c@7 {
-> > +                     #address-cells =3D <1>;
-> > +                     #size-cells =3D <0>;
-> > +                     reg =3D <7>;
-> > +
-> > +                     fanctl0: fan-controller@20 {
-> > +                             compatible =3D "maxim,max31790";
-> > +                             reg =3D <0x20>;
-> > +                             #address-cells =3D <1>;
-> > +                             #size-cells =3D <0>;
-> > +                             channel@2 {
->
-> Can you make sure that you consistently use a blank line to separate
-> child nodes from each other and from properties in their parent?
->
-> Please fix throughout.
+Suggested-by: Andrew Jeffery <andrew@codeconstruct.com.au>
+Fixes: e77bb5dc5759 ("arm64: dts: aspeed: Add initial AST27xx SoC device tree")
+Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+---
+This series contains follow-up fixes for the AST27xx DTS support that
+was merged into linux-next (e77bb5dc5759).
 
-I will recheck the whole file to satisfy the rule in the next patch v7, tha=
-nks.
->
-> > +                                     reg =3D <2>;
-> > +                                     sensor-type =3D "TACH";
-> > +                             };
-> > +                             channel@5 {
-> > +                                     reg =3D <5>;
-> > +                                     sensor-type =3D "TACH";
-> > +                             };
-> > +                     };
-> > +
-> > +                     fanctl1: fan-controller@23 {
-> > +                             compatible =3D "nuvoton,nct7363";
-> > +                             reg =3D <0x23>;
-> > +                             #pwm-cells =3D <2>;
-> > +
-> > +                             fan-9 {
-> > +                                     pwms =3D <&fanctl1 0 20000>;
-> > +                                     tach-ch =3D /bits/ 8 <0x09>;
-> > +                             };
-> > +
-> > +                             fan-11 {
-> > +                                     pwms =3D <&fanctl1 0 20000>;
-> > +                                     tach-ch =3D /bits/ 8 <0x0B>;
-> > +                             };
-> > +
-> > +                             fan-10 {
-> > +                                     pwms =3D <&fanctl1 4 20000>;
-> > +                                     tach-ch =3D /bits/ 8 <0x0A>;
-> > +                             };
-> > +
-> > +                             fan-13 {
-> > +                                     pwms =3D <&fanctl1 4 20000>;
-> > +                                     tach-ch =3D /bits/ 8 <0x0D>;
-> > +                             };
-> > +
-> > +                             fan-15 {
-> > +                                     pwms =3D <&fanctl1 6 20000>;
-> > +                                     tach-ch =3D /bits/ 8 <0x0F>;
-> > +                             };
-> > +
-> > +                             fan-1 {
->
-> Can you please sort the fan nodes in ascending order?
-I will reorder the fan node in next patch v7.
->
-> > +                                     pwms =3D <&fanctl1 6 20000>;
-> > +                                     tach-ch =3D /bits/ 8 <0x01>;
-> > +                             };
-> > +
-> > +                             fan-0 {
-> > +                                     pwms =3D <&fanctl1 10 20000>;
-> > +                                     tach-ch =3D /bits/ 8 <0x00>;
-> > +                             };
-> > +
-> > +                             fan-3 {
-> > +                                     pwms =3D <&fanctl1 10 20000>;
-> > +                                     tach-ch =3D /bits/ 8 <0x03>;
-> > +                             };
-> > +                     };
-> > +             };
-> > +     };
-> > +};
-> >
->
-> ...
->
-> > +
-> > +     // Marvell 88E6393X EEPROM
->
-> Please try to be consistent with the comment style (prefer /* */).
-I will fix this in the next patch v7, thanks for your suggestion.
->
-> > +     eeprom@50 {
-> > +             compatible =3D "atmel,24c64";
-> > +             reg =3D <0x50>;
-> > +     };
-> > +
-> > +     rtc@51 {
-> > +             compatible =3D "nxp,pcf8563";
-> > +             reg =3D <0x51>;
-> > +     };
-> > +};
-> > +
+Two issues were identified after merge by Andrew Jeffery during review
+of the pending v11 series:
+
+1. Duplicate pinctrl state labels in aspeed-g7-soc1-pinctrl.dtsi caused
+   dtc to abort with fatal label-redefinition errors.
+
+2. The synthetic container nodes (secondary, tertiary) for sub-processor
+   interrupt controllers used a 2-cell address scheme to encode a
+   <cpu-index reg-base> tuple.  Since the cpu-index adds no value for
+   nodes that are purely phandle anchors, Andrew requested we drop it
+   and use the bare register address instead.
+---
+ arch/arm64/boot/dts/aspeed/aspeed-g7-a35.dtsi      |  14 ++-
+ .../boot/dts/aspeed/aspeed-g7-soc1-pinctrl.dtsi    | 102 ---------------------
+ 2 files changed, 6 insertions(+), 110 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/aspeed/aspeed-g7-a35.dtsi b/arch/arm64/boot/dts/aspeed/aspeed-g7-a35.dtsi
+index ef283d95649a..58193c3c3696 100644
+--- a/arch/arm64/boot/dts/aspeed/aspeed-g7-a35.dtsi
++++ b/arch/arm64/boot/dts/aspeed/aspeed-g7-a35.dtsi
+@@ -84,32 +84,30 @@ l2: l2-cache0 {
+ 	};
+ 
+ 	secondary {
+-		#address-cells = <2>;
+-		/* https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/of/address.c?h=v6.16#n491 */
++		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		/* https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/of/address.c?h=v6.16#n430 */
+ 
+-		ssp_nvic: interrupt-controller@1,e000e100 {
++		ssp_nvic: interrupt-controller@e000e100 {
+ 			compatible = "arm,v7m-nvic";
+ 			#interrupt-cells = <2>;
+ 			#address-cells = <0>;
+ 			interrupt-controller;
+-			reg = <1 0xe000e100>;
++			reg = <0xe000e100>;
+ 			arm,num-irq-priority-bits = <3>;
+ 			status = "disabled";
+ 		};
+ 	};
+ 
+ 	tertiary {
+-		#address-cells = <2>;
++		#address-cells = <1>;
+ 		#size-cells = <0>;
+ 
+-		tsp_nvic: interrupt-controller@2,e000e100 {
++		tsp_nvic: interrupt-controller@e000e100 {
+ 			compatible = "arm,v7m-nvic";
+ 			#interrupt-cells = <2>;
+ 			#address-cells = <0>;
+ 			interrupt-controller;
+-			reg = <2 0xe000e100>;
++			reg = <0xe000e100>;
+ 			arm,num-irq-priority-bits = <3>;
+ 			status = "disabled";
+ 		};
+diff --git a/arch/arm64/boot/dts/aspeed/aspeed-g7-soc1-pinctrl.dtsi b/arch/arm64/boot/dts/aspeed/aspeed-g7-soc1-pinctrl.dtsi
+index 72d93323593d..6edf14617b09 100644
+--- a/arch/arm64/boot/dts/aspeed/aspeed-g7-soc1-pinctrl.dtsi
++++ b/arch/arm64/boot/dts/aspeed/aspeed-g7-soc1-pinctrl.dtsi
+@@ -496,87 +496,6 @@ pinctrl_hvi3c15_default: hvi3c15-default-state {
+ 		function = "I3C15";
+ 		groups = "HVI3C15";
+ 	};
+-
+-	pinctrl_tach0_default: tach0-default-state {
+-		function = "TACH0";
+-		groups = "TACH0";
+-	};
+-
+-	pinctrl_tach1_default: tach1-default-state {
+-		function = "TACH1";
+-		groups = "TACH1";
+-	};
+-
+-	pinctrl_tach2_default: tach2-default-state {
+-		function = "TACH2";
+-		groups = "TACH2";
+-	};
+-
+-	pinctrl_tach3_default: tach3-default-state {
+-		function = "TACH3";
+-		groups = "TACH3";
+-	};
+-
+-	pinctrl_tach4_default: tach4-default-state {
+-		function = "TACH4";
+-		groups = "TACH4";
+-	};
+-
+-	pinctrl_tach5_default: tach5-default-state {
+-		function = "TACH5";
+-		groups = "TACH5";
+-	};
+-
+-	pinctrl_tach6_default: tach6-default-state {
+-		function = "TACH6";
+-		groups = "TACH6";
+-	};
+-
+-	pinctrl_tach7_default: tach7-default-state {
+-		function = "TACH7";
+-		groups = "TACH7";
+-	};
+-
+-	pinctrl_tach8_default: tach8-default-state {
+-		function = "TACH8";
+-		groups = "TACH8";
+-	};
+-
+-	pinctrl_tach9_default: tach9-default-state {
+-		function = "TACH9";
+-		groups = "TACH9";
+-	};
+-
+-	pinctrl_tach10_default: tach10-default-state {
+-		function = "TACH10";
+-		groups = "TACH10";
+-	};
+-
+-	pinctrl_tach11_default: tach11-default-state {
+-		function = "TACH11";
+-		groups = "TACH11";
+-	};
+-
+-	pinctrl_tach12_default: tach12-default-state {
+-		function = "TACH12";
+-		groups = "TACH12";
+-	};
+-
+-	pinctrl_tach13_default: tach13-default-state {
+-		function = "TACH13";
+-		groups = "TACH13";
+-	};
+-
+-	pinctrl_tach14_default: tach14-default-state {
+-		function = "TACH14";
+-		groups = "TACH14";
+-	};
+-
+-	pinctrl_tach15_default: tach15-default-state {
+-		function = "TACH15";
+-		groups = "TACH15";
+-	};
+-
+ 	pinctrl_thru0_default: thru0-default-state {
+ 		function = "THRU0";
+ 		groups = "THRU0";
+@@ -940,27 +859,6 @@ pinctrl_uart3_default: uart3-default-state {
+ 		function = "UART3";
+ 		groups = "UART3";
+ 	};
+-
+-	pinctrl_ncts5_default: ncts5-default-state {
+-		function = "NCTS5";
+-		groups = "NCTS5";
+-	};
+-
+-	pinctrl_ndcd5_default: ndcd5-default-state {
+-		function = "NDCD5";
+-		groups = "NDCD5";
+-	};
+-
+-	pinctrl_ndsr5_default: ndsr5-default-state {
+-		function = "NDSR5";
+-		groups = "NDSR5";
+-	};
+-
+-	pinctrl_nri5_default: nri5-default-state {
+-		function = "NRI5";
+-		groups = "NRI5";
+-	};
+-
+ 	pinctrl_ndtr5_default: ndtr5-default-state {
+ 		function = "NDTR5";
+ 		groups = "NDTR5";
+
+---
+base-commit: abe651837cb394f76d738a7a747322fca3bf17ba
+change-id: 20260611-dtsi_fix-099b11a321b5
+
+Best regards,
+-- 
+Ryan Chen <ryan_chen@aspeedtech.com>
+
 
