@@ -1,93 +1,92 @@
-Return-Path: <linux-aspeed+bounces-4252-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4253-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4CC55CD4F2C
-	for <linux-aspeed@archiver.kernel.org>; Fri, 12 Jun 2026 09:31:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B3A0CD8CA8
+	for <linux-aspeed@archiver.kernel.org>; Sat, 13 Jun 2026 07:56:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gcDmS2vR9z2ykX;
-	Fri, 12 Jun 2026 19:31:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::429" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781256137;
-	cv=pass; b=DC9gDoTa+2KyTygIr5TorF018NsAp8nwOkxjp+yWe0YXcgItxZ+A/3asqoWEOw2ResYGKs2qHPJb40LyrfexyINIdx0jtwsWPKGl8bFcbYuaV86OjScoPzsckzpnRncK1HRBoeqkcCRN3Bmtj+NUaga6KNKOKfC6BGz0ZYrODKv4jD07m5e4xNuDHU3mB4uRg5uWsAE8fjNAq86lFLmd8i5Ak9JRZP9QDvf29is/fDEJBEZuFORxfJwHgO/FWmJdoX2z+rzLkHGmL70eGd5BdfOeMVJNKSbGjY9gJNHie/rUdwVej0xVKgberF1bbA3miuRIQMoKI7/gqcLO5nUOpQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781256137; c=relaxed/relaxed;
-	bh=oIzgiaW8kA7BHlQhT2riBmgi7l2E1GpUatRNhNPxmqI=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=LnmTM4IOunSrT1PUUkXltVpdFPez/m+FsiwF7UNSREQigwKTRUDtyKt5zYWatWBmJ7xkayB1MzdAFfDfeFPQK8h471DwaGlNJ6QoHY6k+fbclFnfyvm3ZXqxwMcBpMXaJtRlhd6mRKKPXU4Q98W+YgBRkbHEh+duJlF/yClNHQgb0f0RwGnRlKQoOYxLGHPIgSHUP2c8pDMq+CYsVNUJEunXIp88RwVGPZOOpwR7TaAMY+HR3z/9XOO64YGYtda/5YH+Sf3I8T5V9sh2FHuFLwi0wRj5+2+piowsrlzoNchtQnPIu6e4LQYq3pkGsArU1I+iOQAcwm+PQIFfe7LTCA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=9elements.com; dkim=pass (2048-bit key; secure) header.d=9elements.com header.i=@9elements.com header.a=rsa-sha256 header.s=google header.b=NrQdClCm; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::429; helo=mail-wr1-x429.google.com; envelope-from=gregoire.layet@9elements.com; receiver=lists.ozlabs.org) smtp.mailfrom=9elements.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=9elements.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gcpcc4HbQz2xqn;
+	Sat, 13 Jun 2026 17:56:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781291282;
+	cv=none; b=blrZWawQF4RQxKnRu3kDlt161517dHl59ZjFxQcV7Xo/JoHxMqSde2wUt/Bhhuhv7JSXzMotiPLwa8W/qnkvne362j+IzyoiV0qiujafa9Rd2pJfpTCDUHIp94+x8nnfMiN6bLawb9oK1Cv+sIRTrVYB6mzKsiCqA0cIEl+IRJHWbHalwEt5PEIeo/vwX44RZMnEQuwsOSRVeuwsxLxYQYw8M4ZKAk12r14MJILBMIMOLMYiwWYByxQzoB/IlDGCizqgkwYLCta2y8RIB1G1LBjMtZvD5Y+VXCgreC9fh5oqP4AR3JirPvSKQgvwbEFordv/bdZ+QJum5Cm6eznKnQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1781291282; c=relaxed/relaxed;
+	bh=UwTEg4XBjlq2gqrpSaNYbmX8jrkzkowNm264wvHp61I=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=KqLc/+zWSRedTf4CsgJcUlv3PLVylPwEXJ1lJdzEBhhtMcTbJ+2/AtXv40cD+oA1r3uXhWaOg9F91+RZzPlSFY6Eel8/tsTKRpK/2TVUFqNBcAR7jmK5C7lC02i0XXQ1o8YSQEHHfRyqcxlcnHSMkW3LytVpvlxfETtYaz12Ww+JnNLg7LsrQ61diA2JRUSlC7G16151eZwU/2Vq5GHzySFuJi7d7UtqFIKG5jlFiHUC/AQ6HrfdSP+KEY25zoqXc6MLJ9vqrwh5bLZJrfddqcpLMN39rIO+Ijl9XzX228PsIfm5L5Ofx4mhfIvDDCdXMxcxjuIwVSQnkQesXay4Yw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=JS1Z+rRL; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=karthiproffesional@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=9elements.com header.i=@9elements.com header.a=rsa-sha256 header.s=google header.b=NrQdClCm;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=JS1Z+rRL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=9elements.com (client-ip=2a00:1450:4864:20::429; helo=mail-wr1-x429.google.com; envelope-from=gregoire.layet@9elements.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com [IPv6:2a00:1450:4864:20::429])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=karthiproffesional@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gcDYf4HKNz2yhY
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 12 Jun 2026 19:22:13 +1000 (AEST)
-Received: by mail-wr1-x429.google.com with SMTP id ffacd0b85a97d-4600cbb06deso458714f8f.1
-        for <linux-aspeed@lists.ozlabs.org>; Fri, 12 Jun 2026 02:22:13 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1781256130; cv=none;
-        d=google.com; s=arc-20240605;
-        b=H8VwdVj5HuN7CTxdSFEHiQGRaFUnI620sIyuqpy9EopQZKOiD8Ziy5dpRujoEIPAj0
-         GDDh5oyWISN9Fy3NpKbgTstk2JrgsI04vjCPetjlptcRHl9d88UuP1G61VB93Qtc9ozm
-         QIDupZbJySZdyQggI06Fv/CUiyXWreGWtlUiUFWjWp1MHJ8oD05Ghvav89hzkPIkGikq
-         p6dmOJWzToNPO6r0I+UdTkIFbALBqHzztWLjFbNAevMk3Ewcwvaha0qs59r/6ZFJitVW
-         17SiW3Vm4ZEMn/ClDWGGYonSFj9+UVoRaX4XJ4SwQusW8QntA3nT904A4YLRPqr2UjMT
-         j7eQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=oIzgiaW8kA7BHlQhT2riBmgi7l2E1GpUatRNhNPxmqI=;
-        fh=8MmAG1764++K2AxtbgjX2884bBP3LvFkW1I5da99+2U=;
-        b=IK++HSeXQWSOX1lwA1z1s0bL2NLGxZ/75lVhAQbYpBo4l96Z2f6Iv/TzpgFdTeemzL
-         62dHsPWwajqgSHUMFsJlMhtSfyYe/+W7wk3A/0AJy2FCBHeTwOQykhG9l2sACNjYB695
-         0rm9IgKxvTz/tRoNq6e8F3JFDniVIvHMGbcXEx+jo5g/wwyCCjFTDjPIkhwR7Xv8v1HZ
-         lqMw5fXBJcHHts2T16gCMDlStVRy83iizEMt9CfZKNcDLb6QCjeyvsBsXqG9+01smrE9
-         /ZQK2JHkaarhAfLz+7QNxOz7j2bVOb1E7A5i1ZOlUSLd+p7+3AMdHZCDF0qp0jRedBBU
-         G6ZQ==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gcTYY2gV5z2ykX
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 13 Jun 2026 05:08:00 +1000 (AEST)
+Received: by mail-pj1-x102b.google.com with SMTP id 98e67ed59e1d1-36b8d414666so900740a91.3
+        for <linux-aspeed@lists.ozlabs.org>; Fri, 12 Jun 2026 12:08:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=9elements.com; s=google; t=1781256130; x=1781860930; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
+        d=gmail.com; s=20251104; t=1781291278; x=1781896078; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=oIzgiaW8kA7BHlQhT2riBmgi7l2E1GpUatRNhNPxmqI=;
-        b=NrQdClCmkzI+h+Wda6rSJkghY6l/dKFW7aQnPBadvCShkUPxigsZRf6K641RRyLiek
-         SM+sgUGxKwaE7rUsq5Kv6MHxCYd7sAQYZmDumhJDuB2FeuyJUwapQ947Idu21zw4ll2g
-         y5mM0fJM8mojZ5XZQhtt9YjRP7aMTYoQFEkH7J6T2MA0bvNAeaNf8Rxh7A9uqHCFSUoJ
-         HqCNtslztCfQLwfRcZHxAg9PlcvVrPwppn67dEnKiD/RBdWv9VL06ABsPypacPNO14kw
-         Hai3xLT8nZ9dRhaAb5eAXi4pgf5reHipTwXA88GzigA0j4s9HF4BDO6xOl5l6FNN9Kpl
-         +ruw==
+        bh=UwTEg4XBjlq2gqrpSaNYbmX8jrkzkowNm264wvHp61I=;
+        b=JS1Z+rRLXFfFxhPoPTdlyhONk5sU92obU8n3aI+TF036yO5ZCzkiYFu/fnGbZuvw2M
+         +svNtqlM83w9Jsmt6I5oGSThBAs+3RFfablb2EXZJ/rMEgN7DuD4j7Du1iU7P/i7hLpd
+         cvB72mj/jx0X5+4S+FSRaXqlDWyBmQUgf5VJLrtMZW+simRxmyO/iqFMOhrjfBzzJ/zq
+         KSYPulq87fXflnQ9TzbZqnF+5mQRLZlHrPbcP43TJFKtvxluuWaBbvXnLvBb7SjbMzYL
+         OkfdVvmXyPFHGSXyF3ELEFSm86gZ2v+K93Eao/3VKxcTToqzDBjPU1nrBezI6l6F23mw
+         l8NQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781256130; x=1781860930;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+        d=1e100.net; s=20251104; t=1781291278; x=1781896078;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=oIzgiaW8kA7BHlQhT2riBmgi7l2E1GpUatRNhNPxmqI=;
-        b=WoVgDHRMX35xm492QRKbq95mYZ7f0KYHvA+x1b9oqu3PwOZE0S8B3d4qIKVfDarO4M
-         N3D+WPrnQkixuaJytc3G2xlx4xWZl1GJ+Syyx9vLomUEV7h4qmzcXOzGh5lDmC4plT+O
-         putT7JCAGxKeb+YGAQQfPzJfDcIDGfQhJdF57F/ilap8x5cCN/oh6Gg7+wUF8bTu54g+
-         iVQvRdU6V56nQ7XxW1dVol6ErJKi+YFCWbDRp1eLjOLTr3JIko9EXYA1c/6Bi7Q0OUx7
-         8aEb4P76IbCeY00lLU8zr4c3GcXaK4lstLB4TUiqd8c75oepxqN2QfS2bLX04CNnkGsI
-         NX7g==
-X-Forwarded-Encrypted: i=1; AFNElJ8VLgzzGw+svM8171KFTWkuNVYbgSMIuKcMv6h3xFqFPA97RpkzsOh77MXmy+vmO9xSA8Pa+SfmvhhDxe0=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzLcKpeqcumbSrAUZnNATzrofoIKsUjnVnkKxuWD+5px3ckUwau
-	tPP0UUpl5en6+YkKcAcZr4KWaEQRJCD9xaHljm0EfBazSZqkbMdeyjrUgXMvDpahUFnNNzyCvtR
-	K1H8QZnttYZXuMOpZQwW0DQuleA10tW1FaZioP5k9jQ==
-X-Gm-Gg: Acq92OGm+aLG1iwvyuETLOJLt7qiYSdcLnJO+Aj3v7vamSfW7I1Y4bDgRMKjZ8/o73E
-	whCvDAstDjJIPPRn19AjPpmUVuTtVfcFd7ije5OSCv1mFEw7wzBAIyMxdCOuyGlgmD+0hKnTl2/
-	yUGwVRiELkLdUyUL7BB1xJO+l1dl+k/dGFYNkrQN4UrMUHKRFsbJbwK4wev7Cpn2kS5AvpOkB/i
-	qO7y8qxaVLUpRFYbPhZWVdfwgC+yqPU5t28VHjkhFfZJqQylICaovYe6KgHl2PidR6DBeFAGo2M
-	19jx9yxcJUNsyXUHoNV+SQuVoca5HBpq0DjU+2l692/FWGzZbXFH2AbC4j2uJW8gf/sI
-X-Received: by 2002:a05:6000:2488:b0:460:21e7:330e with SMTP id
- ffacd0b85a97d-4606cb2a8f0mr2904399f8f.10.1781256130239; Fri, 12 Jun 2026
- 02:22:10 -0700 (PDT)
+        bh=UwTEg4XBjlq2gqrpSaNYbmX8jrkzkowNm264wvHp61I=;
+        b=FYaJhnZVdH1joE9lyvY7gCwSXcs2PNNJ5Tyl7gYNO1gZJYhlfNeZdOhpwMIBgzWe/P
+         mL+N66HvePmSJNx6kUObSp+FyWkrWzqfH4FmFS5NBx8aGYGss3Leeaz0u/C1qaxyUpZg
+         KYck7/GJZnTKz0PnV/jzptckZ7BiusmWYtKATsmymBWipn4qv5oA9IXny/9OlbNBBLFU
+         7AeEMSZwDBfzx/HZ5GEaGEi296zG26XUBEsTiRjxiE4AVUqpBYNLTCKjuJcZVwSHSmfv
+         y1hdCqTtikDc4jo83yKcvOEHxpDTmygfJf0YWuMDy8ErbLOmAZ4JGze3BV316uOVX7Ab
+         mGJA==
+X-Forwarded-Encrypted: i=1; AFNElJ9obqeFct2EOsEnzBSg5Iakouitzl0Fpqrx4GM/9jDHo9BJi0oH/6sfIk9d4/GEWbZ3N1h6gVVBYOIo+wY=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwJJ4aKvEbJr5xLI9qWVH0rcSLKbbsyt8VldAixMCa8zm800c0o
+	1/Br7NNvBy6e2xkSSGJ49WbnnoBkLGuVmLEY/TOfrwJoQVYTh2s2HyTs
+X-Gm-Gg: Acq92OFxv7jU2PvTxCQukKDtE1XVSMnFhX9D3ZsRlxAY2E4xdpSwIdKkCR1WLrDZZVi
+	Oyp9Q+wAm/lhbQbCGUxr5HigkHjOz46pAl00x3KUN/z7WDExNvMSJ+Lhkdhkd6ZSAx7YqkwCfT6
+	6yP0WurHEXaTIPritKO6EesUQwppA6Wxd6VX9g/2tIq7YAixh7wGrvsId72rpSQVtmAibIxgqLn
+	/oz9/RHeWGfUR3ktnm9tZ77bK8fino6rOCiNxhiZRbvcUKeaFkhzgAFEp9UDm1KZ7GJDY4wIapP
+	7Wd+BGf8HaoiD9MMS0dZ4TLncJSwuT4ObCkDPteQpHjsxLL0WDDP78OTqEHh0LVYtUohlgCt448
+	coWZWmNqOr3FrFVzCbV73oFgF+P0UxwEYgpDezM06GwH88UcDey3KhJcGPILEQOSsWQV7QwTOpg
+	H6AE6yk6eGZ67+nAIhPVhZK8PWva4k4fRxyM4MU1d3NqWXxDb75cCrVQ==
+X-Received: by 2002:a17:90b:28cd:b0:36a:95c:7613 with SMTP id 98e67ed59e1d1-37a0202ece8mr4596847a91.10.1781291277427;
+        Fri, 12 Jun 2026 12:07:57 -0700 (PDT)
+Received: from LAPTOP-97G9G880.localdomain ([106.206.15.12])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-37a1eba8e9asm2748485a91.2.2026.06.12.12.07.53
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 12 Jun 2026 12:07:56 -0700 (PDT)
+From: Karthikeyan KS <karthiproffesional@gmail.com>
+To: andrew@codeconstruct.com.au
+Cc: joel@jms.id.au,
+	andrew@aj.id.au,
+	Kees Cook <kees@kernel.org>,
+	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	linux-hardening@vger.kernel.org,
+	Karthikeyan KS <karthiproffesional@gmail.com>
+Subject: [PATCH v6] soc: aspeed: lpc-snoop: Fix usercopy overflow in snoop_file_read
+Date: Fri, 12 Jun 2026 19:07:43 +0000
+Message-ID: <20260612190744.172638-1-karthiproffesional@gmail.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <033f2657ae6a94ad13d22f717a2900afb75d892d.camel@codeconstruct.com.au>
+References: <033f2657ae6a94ad13d22f717a2900afb75d892d.camel@codeconstruct.com.au>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -101,56 +100,160 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <cover.1780929570.git.gregoire.layet@9elements.com>
- <af322e76d34ad504e0bdec470293a017b489cfd7.1780929570.git.gregoire.layet@9elements.com>
- <4839c31f666b612799a795bb47c884901fd2a903.camel@codeconstruct.com.au> <CAFi2wKYzUDY5Gis9GaHdqeYdv-orHB+gWfLXkJBgbxfbnRgorA@mail.gmail.com>
-In-Reply-To: <CAFi2wKYzUDY5Gis9GaHdqeYdv-orHB+gWfLXkJBgbxfbnRgorA@mail.gmail.com>
-From: =?UTF-8?Q?Gr=C3=A9goire_Layet?= <gregoire.layet@9elements.com>
-Date: Fri, 12 Jun 2026 11:21:57 +0200
-X-Gm-Features: AVVi8CdF5t19WVOCmH1FEj_n0A_RJ0z1s8GXW9OuHAYckfZfTIh9iO3nGukhqk0
-Message-ID: <CAFi2wKanAH+ekKz3eVtdiz=pjEvmKwSh1XhE-Xo7p=CCiSWpEw@mail.gmail.com>
-Subject: Re: [PATCH v2 1/2] soc: aspeed: add BMC-side PCIe BMC device driver
-To: Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: joel@jms.id.au, andrew@lunn.ch, jacky_chou@aspeedtech.com, 
-	yh_chung@aspeedtech.com, ninad@linux.ibm.com, linux-aspeed@lists.ozlabs.org, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	anirudhsriniv@gmail.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-Hello Andrew,
+put_fifo_with_discard() acts as both producer and consumer on the kfifo:
+it calls kfifo_skip() (advances out) and kfifo_put() (advances in) from
+the IRQ handler without synchronizing with snoop_file_read(), which also
+consumes via kfifo_to_user(). On SMP systems this concurrent access can
+leave (in - out) larger than the ring buffer, so __kfifo_to_user()'s clamp
+to (in - out) is ineffective and kfifo_copy_to_user() can attempt a
+copy_to_user() past the kmalloc-2k backing store:
 
-Anirudh Srinivasan and I have found that IPMI over KCS using the
-PCI worked with the stock ASPEED bmc driver (the bmc driver in the V1)
-but not with the trimmed-down version in the V2. I have apparently removed
-a bit too much from the V2 , but that's not what I want to focus on.
+  usercopy: Kernel memory exposure attempt detected from SLUB object
+  'kmalloc-2k' (offset 0, size 2049)!
+  kernel BUG at mm/usercopy.c!
+  Call trace:
+   usercopy_abort
+   __check_heap_object
+   __check_object_size
+   kfifo_copy_to_user
+   __kfifo_to_user
+   snoop_file_read
+   vfs_read
 
-This brings back the question of where we should put the registers
-configuration,
-considering that two different functionalities depend on it.
+Serialize kfifo access with a per-channel spinlock shared between the
+IRQ handler (producer) and the file reader (consumer).  Annotate @fifo
+with __guarded_by(&lock) and opt the driver into context analysis so the
+compiler enforces that all fifo access holds the lock.
 
-> It is also possible to put the SCU initialisation on the
-> 8250_aspeed_vuart driver
-> directly. This could be activated with a specific flag added to VUART nod=
-es
-> ('pcie2vuart' for example) on the DeviceTree.
+Fixes: 3772e5da4454 ("drivers/misc: Aspeed LPC snoop output using misc chardev")
+Signed-off-by: Karthikeyan KS <karthiproffesional@gmail.com>
+---
+ drivers/soc/aspeed/Makefile           |  1 +
+ drivers/soc/aspeed/aspeed-lpc-snoop.c | 38 ++++++++++++++++++---------
+ 2 files changed, 27 insertions(+), 12 deletions(-)
 
-Similarly to this idea, we could include have the necessary configuration i=
-n the
-'kcs_bmc_aspeed' driver. This could be activated using a similar flag
-,such as 'pci2lpc'
-or 'pci2kcs' directly. However, this would result in a lot of code
-duplication for most
-of the configuration.
+Andrew,
 
-The issue for me is that, two drivers configuring the same registers
-is not a good idea.
-I don't know how to do this the proper way.
+Thanks for the review.
 
-I wanted to add this information because it could influence the move to a
-bmc_device driver that configures both VUART and KCS, over PCI.
-This would be similar to the V2 bmc driver, and I fix the KCS bug.
+Changes since v5:
+- Annotate @fifo with __guarded_by(&lock) instead of a comment
+- Move kfifo_initialized() check inside scoped_guard(spinlock, &chan->lock)
+  in put_fifo_with_discard()
+- Replace spin_lock_init() with scoped_guard(spinlock_init, &channel->lock)
+  around kfifo_alloc() in aspeed_lpc_enable_snoop()
+- Enable CONTEXT_ANALYSIS for this driver in drivers/soc/aspeed/Makefile
+
+Dropped Cc: stable — the fix uses cleanup.h/context-analysis idioms absent
+from LTS; I'll send adapted backports to stable@ once this is in mainline.
+
+Tested on ast2600-evb (QEMU): clang-22 with CONFIG_WARN_CONTEXT_ANALYSIS=y
+shows no context-analysis warnings; PROVE_LOCKING, DEBUG_ATOMIC_SLEEP and
+HARDENED_USERCOPY show no splats. Overflow reproduced via a fault-injection
+module forcing the post-race (in - out) state (QEMU doesn't model the ARM
+ordering that triggers it in the field): unpatched panics, patched returns
+cleanly.
 
 Thanks,
-Gr=C3=A9goire
+Karthikeyan
+
+diff --git a/drivers/soc/aspeed/Makefile b/drivers/soc/aspeed/Makefile
+index b35d74592964..b5188dcde37a 100644
+--- a/drivers/soc/aspeed/Makefile
++++ b/drivers/soc/aspeed/Makefile
+@@ -4,3 +4,4 @@ obj-$(CONFIG_ASPEED_LPC_SNOOP)		+= aspeed-lpc-snoop.o
+ obj-$(CONFIG_ASPEED_UART_ROUTING)	+= aspeed-uart-routing.o
+ obj-$(CONFIG_ASPEED_P2A_CTRL)		+= aspeed-p2a-ctrl.o
+ obj-$(CONFIG_ASPEED_SOCINFO)		+= aspeed-socinfo.o
++CONTEXT_ANALYSIS_aspeed-lpc-snoop.o	:= y
+diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+index b03310c0830d..7fa1a345acac 100644
+--- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
++++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+@@ -11,6 +11,7 @@
+  */
+ 
+ #include <linux/bitops.h>
++#include <linux/cleanup.h>
+ #include <linux/clk.h>
+ #include <linux/dev_printk.h>
+ #include <linux/interrupt.h>
+@@ -74,7 +75,8 @@ struct aspeed_lpc_snoop_channel_cfg {
+ struct aspeed_lpc_snoop_channel {
+ 	const struct aspeed_lpc_snoop_channel_cfg *cfg;
+ 	bool enabled;
+-	struct kfifo		fifo;
++	spinlock_t		lock;
++	struct kfifo		fifo __guarded_by(&lock);
+ 	wait_queue_head_t	wq;
+ 	struct miscdevice	miscdev;
+ };
+@@ -114,6 +116,7 @@ static ssize_t snoop_file_read(struct file *file, char __user *buffer,
+ 				size_t count, loff_t *ppos)
+ {
+ 	struct aspeed_lpc_snoop_channel *chan = snoop_file_to_chan(file);
++	u8 *buf __free(kfree) = NULL;
+ 	unsigned int copied;
+ 	int ret = 0;
+ 
+@@ -125,9 +128,16 @@ static ssize_t snoop_file_read(struct file *file, char __user *buffer,
+ 		if (ret == -ERESTARTSYS)
+ 			return -EINTR;
+ 	}
+-	ret = kfifo_to_user(&chan->fifo, buffer, count, &copied);
+-	if (ret)
+-		return ret;
++
++	count = min_t(size_t, count, SNOOP_FIFO_SIZE);
++
++	buf = kmalloc(count, GFP_KERNEL);
++	if (!buf)
++		return -ENOMEM;
++
++	copied = kfifo_out_spinlocked(&chan->fifo, buf, count, &chan->lock);
++	if (copied && copy_to_user(buffer, buf, copied))
++		return -EFAULT;
+ 
+ 	return copied;
+ }
+@@ -151,11 +161,13 @@ static const struct file_operations snoop_fops = {
+ /* Save a byte to a FIFO and discard the oldest byte if FIFO is full */
+ static void put_fifo_with_discard(struct aspeed_lpc_snoop_channel *chan, u8 val)
+ {
+-	if (!kfifo_initialized(&chan->fifo))
+-		return;
+-	if (kfifo_is_full(&chan->fifo))
+-		kfifo_skip(&chan->fifo);
+-	kfifo_put(&chan->fifo, val);
++	scoped_guard(spinlock, &chan->lock) {
++		if (!kfifo_initialized(&chan->fifo))
++			return;
++		if (kfifo_is_full(&chan->fifo))
++			kfifo_skip(&chan->fifo);
++		kfifo_put(&chan->fifo, val);
++	}
+ 	wake_up_interruptible(&chan->wq);
+ }
+ 
+@@ -239,9 +251,11 @@ static int aspeed_lpc_enable_snoop(struct device *dev,
+ 	if (!channel->miscdev.name)
+ 		return -ENOMEM;
+ 
+-	rc = kfifo_alloc(&channel->fifo, SNOOP_FIFO_SIZE, GFP_KERNEL);
+-	if (rc)
+-		return rc;
++	scoped_guard(spinlock_init, &channel->lock) {
++		rc = kfifo_alloc(&channel->fifo, SNOOP_FIFO_SIZE, GFP_KERNEL);
++		if (rc)
++			return rc;
++	}
+ 
+ 	rc = misc_register(&channel->miscdev);
+ 	if (rc)
+--
+2.43.0
+
 
