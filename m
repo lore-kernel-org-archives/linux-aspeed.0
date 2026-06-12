@@ -1,93 +1,63 @@
-Return-Path: <linux-aspeed+bounces-4245-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4246-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00602CD98C7
-	for <linux-aspeed@archiver.kernel.org>; Fri, 12 Jun 2026 01:18:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5F43DCD98CE
+	for <linux-aspeed@archiver.kernel.org>; Fri, 12 Jun 2026 06:42:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gc1q72qSsz2ykX;
-	Fri, 12 Jun 2026 11:18:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::236" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781227091;
-	cv=pass; b=JxWVk8eO4w6UlYopz96u/a0tuHAFizOP8JEXKnbzDsJdcPCJ5WLrdvAPNaLQloNKDJJ8Gtgc48NjxsL9TLP2EQewhOIDZgoDwXSLhMGOD4Zp5+gNnjB8Cr2smLj0txkok3ZwW9RgoE+Ahv5w9U6tabaiyaPO6RCT1BWlFiUeaIKSWbEhrYHoThwMMyyqgtczuqKFnWdAORs/V9V4P2UBCJz5IvFjcMu7ze45R3bI3Seq7PEYhtUDwLsOvtQvY8tZ800PLHSF1IeVyfh4bzGejKarSRwAlRpJGe9AYAayl6253etkBLbcDxjnFJxadfToMXPzrUHLLBfREYSGl9ikJQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781227091; c=relaxed/relaxed;
-	bh=cc3iMFUn//oP8yDxcu+EBcaVb7FwW2+8uzE8Fd2fpu8=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=LZ6AkLIsEiHK7R+5JnH95KUTsTMqi4UNTwTz5TcgL418hhTBBTbQ28U1mARpWgyf3YkRMoX6iMLyiMXPWTMPoh5k2S07zeqgEIb1/10MxqxaOqPj0AYSNGfVVbDn42ptxKr3oO14SB6PNrcx12VQiEmxaitPMR/ITiOVKho70LEkZ+aBvmNreNx06JHHohbwSu+fCpG7IjXXFR5ErgRwxkEM76m2U2DvhQLzUbaY0vzvw7I0hURlV3PBJPPWPFt2QC4mDl0Jiioq/eEYjyOy1Ee6XLBdWgH8w54WdveP0aShn7HGt2Zo8ud0stPywoHBqETNrZknETMAh02BPDAMGQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=IzoJoy8H; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::236; helo=mail-lj1-x236.google.com; envelope-from=kylehsieh1995@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gc91l4kGZz3brt;
+	Fri, 12 Jun 2026 16:42:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781246571;
+	cv=none; b=F0E8V8JcOaHlNYeuKkrWersDDPzJFMNktzCbK0CMuT5PG5ROxMF3/2/PTJ6R8/3GQF9AstS9J6oiGR9Ns2cLLzQ3pF0k70tImxwHE3rRHLb9UB7+hOXA4uAxWIlF40KPEqrj0wV7o50Z37BO01cfHSJCiuvVKFakBAwjjTywNHeJ79bLEhNJth+itBryya9P10ufzvvoCPtIU+N8NDvGAzQ2QTwwU8ctesBck7d8/92M4jVe7QLWJvwdiRdW21K+1H4FdrQpZjg6bFy8A4BIGwheKkuVIQF4y5g0JroQqSCy2B/1ah+nOFt0TwilQbyG2x1iQ9b4reSSpW6hj52TVA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1781246571; c=relaxed/relaxed;
+	bh=FWJYhiXqUMaYD6VeHN0j6mrscoHhjJw3Gq3j4k/FXLw=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=Q7arH3X1n4oA2F9/rDO1wmgJVxtAtWXoyE92PehttLhC/COhKzrV/U+L5HU27voxSdiXRnQ1bWo1i8BASdKN6oH9Pq0fSrkuFsx75s0Rpfa4Ruf710vvpBKnst5O8/kQpPUxZ49sA3PyNAfXvotCZ0tqHxduVFZi4blcWL4kyxyxtzJ1PboiSYdhila8yu2VFDlaImtD89Tp2BhD4LU9xiuWVMZu/5G+SXf3TmJE4HwidLS+B6aPAD1CExznTeSTEgY7+ibLQnBNBJPVLCDdOl6FhudxzLFOA/L7UKxAISHobCfY8LIa2OC7X2eNUElvk5F1CNtjaTDIxAY1BK2bLg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=V7d4Q44P; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=IzoJoy8H;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=V7d4Q44P;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::236; helo=mail-lj1-x236.google.com; envelope-from=kylehsieh1995@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-lj1-x236.google.com (mail-lj1-x236.google.com [IPv6:2a00:1450:4864:20::236])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
+Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gc1q41gpWz2yQH
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 12 Jun 2026 11:18:07 +1000 (AEST)
-Received: by mail-lj1-x236.google.com with SMTP id 38308e7fff4ca-3965bc493caso3877161fa.2
-        for <linux-aspeed@lists.ozlabs.org>; Thu, 11 Jun 2026 18:18:07 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1781227079; cv=none;
-        d=google.com; s=arc-20240605;
-        b=h1PnjqOaU+yTuv4+ryK0Fj/ASXvEcfaDu/57yVmqFU0r8jfyZYyBL6MrSC1XPpymP2
-         0vRkyrBt/75YwrqOXRJq1mq42wq9RaPHU9uporkl+LshBl8uMDkdxCiZh5Q9ir33OAGW
-         n1jG6lmTw8dggVLX9WSPDKfBxVvxt73+pbd3mSlqEcIQcNHvYtfbM/0Ih2lkqKZTLb/n
-         2IdpSjAKPZUO6s1UGn0BIVA10kePsf8MgvbUXCodjSptKi4Z9kHWd2udXNwaBQidJg3J
-         qHCkJjVAYhqf9TsfL3lxhesl+FM0bxWzX9bfMf+Yewyy0tS3dWZs2AUED/tblfxltFSz
-         46wQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=cc3iMFUn//oP8yDxcu+EBcaVb7FwW2+8uzE8Fd2fpu8=;
-        fh=KQgq+9VnWL1b3/ZsDZ49ln/6AgwJ5T5OajvEbaFdPMs=;
-        b=FoT6LqkuHJhWiCEMRIY/YiWmEHvsk+tzCbFsZyTp4H3u8FfXhp65bpiG7NRdiPl0AF
-         eWmZB/YiffLH7qU5un1rBnJmbHRvuwcxqPthVKlHyAj8jTDo7+pC23cynR/3NQdf+hJy
-         UpCYsGCNjLgLM2neDQkhySRwVsM07XG4Zm2KfjfNiAwlz3VqcZxpYpE7czy11d62zneO
-         U5DvJ6fgRFSAbJYtLok4WTBcKrqWdiqGCSreiSca7JEWPGb+qmaC3NUUATsjreMyo9iC
-         FcU5loUa5E7zElKlB/JzAgu6blxeNd9eqGl1Tm2pr35rvqEj5xuGfqszQRNhk6FMxZIn
-         zvXw==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gc91k45JJz2xmX
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 12 Jun 2026 16:42:50 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781227079; x=1781831879; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=cc3iMFUn//oP8yDxcu+EBcaVb7FwW2+8uzE8Fd2fpu8=;
-        b=IzoJoy8H6991rMD4iTE1s5xVhKpIXemznyedxlDHOw8WTIZr+OZVXpCZHJ6BZ1wjvV
-         LQ53yHtoVFO3ZbEDYsTk5+sU8RzvUveYMiDtpr6piVDocqk51cmcSa8P11WxHiEX1xkY
-         a7pihXhTXMZLQSYczPCIAnGnKOVJNglvFuLUnpfe0bb9CJ9D6kAWMnsEJuiEGwellfq9
-         kOhHNdnHicV6IM59e0iF07TlJugXZ0LHpsupNtAy693aNGDqcEejYXGaeWHCVu4wlNF7
-         CbRNWPsO1E011vSHcNQl7/dh+W/U/E49O3YEthIWMud5jhGjwTUngiPk/YvG96SmX0xG
-         UECw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781227079; x=1781831879;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=cc3iMFUn//oP8yDxcu+EBcaVb7FwW2+8uzE8Fd2fpu8=;
-        b=SWE3exSWK1p39rXqgKEF8ZY3+dbSJeiYvUABcexMPj+YwSlkblK7mY0Ukt2W7oD+R4
-         OomuVDX+NMAy2QPv94eD0TlkJzMsu5KEjAcxWBnmwqrZT0Y7N1eFT0lcwom8CsXCJVAW
-         5KWFKCqbFlYmWDdn5cv3jXb8DDfrACW2KTmBB5EClYtvWbfDz/X+n/FGs441hl7b7fl5
-         EKXKwWRUYnXuhNYnPGuV1yjsSKdg/qUHciTWN19U+JJ3AsYfZKHic7dM+0YJ3Jyph7jY
-         84Idh0VPexw757wJmGukqzyECR7Yg+OvR+6yEhy0FJwBRscPebpdgH41v4hucIrPWOwC
-         Cpfw==
-X-Forwarded-Encrypted: i=1; AFNElJ8Gps4CfBv00wct87ISm+ZrWds6Yf6y8QnvK120D/iTZJ1HkRc58c02v10Ke6iH/A55aXGM11PtzyNdnjk=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzqwXnq7THnMpWWtx8d7EZUFY7tnvq4omAyjRnr7UL8MRuFmxZc
-	LYn1hsvbffjaqvn1TLiRXvlDYODwtkDqMkCBwRGD0Z4VpZLfovjcI7a9TQha1j52+gFoMwgqgL9
-	HK1I6ab8HhY387RFwDr4qZZY9xhlk/xM=
-X-Gm-Gg: Acq92OElcXE9CAhwgKZKI5MFNZa7i5xcU/9TFTOZr868tz05Fd/Eye0kCA4OrmaJAaq
-	GRFGeQAoJslpiHWOw3GR2eAnjsNMMJm/NJFefhT15QIi74lcrc1fw1kcJGUyDNrcBnq7lJPxKep
-	W/wvNm13WwK7FDhhKihU24wiBkg8u15JppYbRPoUP+RLBIWlrzwzRGDnm1fv1Bcd76g3ogi6XAC
-	u7rN9X+2WIGXzTqHHmI76RBEXR6+kSJa/Y6pPA1UBbPx40aJpwBoFNdUGl1yrAc6hzJx3cMKLKi
-	RRb/JqIM
-X-Received: by 2002:a2e:a99a:0:b0:396:7927:2d14 with SMTP id
- 38308e7fff4ca-3992afbd66dmr1406371fa.8.1781227078553; Thu, 11 Jun 2026
- 18:17:58 -0700 (PDT)
+	d=codeconstruct.com.au; s=2022a; t=1781246569;
+	bh=FWJYhiXqUMaYD6VeHN0j6mrscoHhjJw3Gq3j4k/FXLw=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=V7d4Q44PZOFAp2+7I7SwTT38ul/YbkTQd29va1hkNaH+zYcBobk7RogEOG2YbLVjl
+	 K4uDyb9qwqOkpcPju15Khs68B+MFbXitLbTpHJlZil1TZu0K2DEnOGhFTzpEWc3lzt
+	 eo3mS85M3neABGJ04Cqbbxs6rafta//qTCN2H8WCHcQv3ty+oyiSsinE4epJgdTRUV
+	 IuYGhuAPsHkWFRufboSGJ+F0wULuG9fYPOK3NBYJLX+rTLwCkkIffodn8voB7uRYts
+	 OXGeyQ7Fhgr5eiPEYgK9dopGq23+zCj1XGUOPLgWfUQnljeK2vTBJKZGAbOPK6T1fR
+	 kMhVRBbkiH8CA==
+Received: from [192.168.68.117] (unknown [180.150.112.11])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id E6A3C60931;
+	Fri, 12 Jun 2026 14:42:46 +0800 (AWST)
+Message-ID: <b226339bb2abe42ce23e90eadbc654b426131083.camel@codeconstruct.com.au>
+Subject: Re: [PATCH] arm64: dts: aspeed: Fix duplicate pinctrl labels and
+ address scheme
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+To: Ryan Chen <ryan_chen@aspeedtech.com>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski
+	 <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel Stanley
+	 <joel@jms.id.au>, Arnd Bergmann <arnd@arndb.de>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Date: Fri, 12 Jun 2026 16:12:45 +0930
+In-Reply-To: <20260611-dtsi_fix-v1-1-ef2b7cd86d6d@aspeedtech.com>
+References: <20260611-dtsi_fix-v1-1-ef2b7cd86d6d@aspeedtech.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.56.2-0+deb13u1 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -101,59 +71,172 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260611-ventura2_initial_dts-v7-0-a61d8902bc5f@gmail.com>
- <20260611-ventura2_initial_dts-v7-2-a61d8902bc5f@gmail.com> <843dc0ff-a504-4237-b0f4-d92be07e2465@lunn.ch>
-In-Reply-To: <843dc0ff-a504-4237-b0f4-d92be07e2465@lunn.ch>
-From: Kyle Hsieh <kylehsieh1995@gmail.com>
-Date: Fri, 12 Jun 2026 09:19:28 +0800
-X-Gm-Features: AVVi8CftlH_ekg-tghtfw6NJS5VaORcKvffCfG_52e7muOzHwhtMeakE4Fesdbk
-Message-ID: <CAF7HswOi3fPMFppPoGmh0QELiPz4Po4cyWuDrEHLY2vNMyKE9g@mail.gmail.com>
-Subject: Re: [PATCH v7 2/2] ARM: dts: aspeed: ventura2: Add Meta ventura2 BMC
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
-	Andrew Jeffery <andrew@codeconstruct.com.au>, devicetree@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Thu, Jun 11, 2026 at 11:57=E2=80=AFPM Andrew Lunn <andrew@lunn.ch> wrote=
-:
->
-> > +     /* Marvell 88E6393X EEPROM */
-> > +     eeprom@50 {
-> > +             compatible =3D "atmel,24c64";
-> > +             reg =3D <0x50>;
-> > +     };
->
-> How is this on both a host I2C bus, and the switches I2C bus? Are you
-> using multi-master? Is there a GPIO to hold the switch in reset while
-> the host access the EEPROM?
->
->       Andrew
-Hi Andrew,
+Hi Ryan,
 
-Thanks for taking a look at this.
+On Thu, 2026-06-11 at 14:50 +0800, Ryan Chen wrote:
+> Fix duplicate pinctrl_tach{0-15} and pinctrl_n{cts,dcd,dsr,ri}5 labels
+> in aspeed-g7-soc1-pinctrl.dtsi.
+>=20
+> Drop the cpu-index from secondary/tertiary container nodes: reduce the
+> "#address-cells" from 2 to 1 and update ssp_nvic/tsp_nvic unit-address
+> and reg accordingly. Also remove URL comments from the DTS.
+>=20
+> Suggested-by: Andrew Jeffery <andrew@codeconstruct.com.au>
+> Fixes: e77bb5dc5759 ("arm64: dts: aspeed: Add initial AST27xx SoC device =
+tree")
+> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+> ---
+> This series contains follow-up fixes for the AST27xx DTS support that
+> was merged into linux-next (e77bb5dc5759).
+>=20
+> Two issues were identified after merge by Andrew Jeffery during review
+> of the pending v11 series:
 
-To answer your questions: No, we are not using multi-master.
-The EEPROM is physically isolated by a hardware I2C multiplexer.
-By default, the mux connects the EEPROM directly to the Marvell switch
-for its routine operation and configuration loading. The BMC's I2C bus is
-physically disconnected from the EEPROM during this time.
+These were identified by the sashiko bot, not so much by me, as I
+hadn't got around to looking at the patches at the time. I did comment
+in the replies though:
 
-The BMC only gains access to this EEPROM for out-of-band firmware updates.
-When an update is required, the BMC or CPLD asserts a reset to the switch,
-toggles the I2C mux to route the EEPROM to the BMC, performs the flash,
-and then restores the original routing before releasing the switch from res=
-et.
+https://lore.kernel.org/all/20260609025708.ADBFE1F00893@smtp.kernel.org/
 
-Therefore, there is no runtime concurrent access or multi-master scenario
-between the host and the switch.
+Separately, the series at hand was v9, so any subsequent revision would
+have been v10, not v11. This isn't significant on its own, but it is
+another contribution to the collection of small errors that are
+accumulating at this point, which concerns me. Please take care.
 
-Would you recommend adding a comment in the device tree to clarify this
-hardware isolation, or is this explanation sufficient?
+>=20
+> 1. Duplicate pinctrl state labels in aspeed-g7-soc1-pinctrl.dtsi caused
+> =C2=A0=C2=A0 dtc to abort with fatal label-redefinition errors.
 
-Best regards,
-Kyle Hsieh
+However, it didn't. soc/dt @=C2=A0564edaca1486 ("Merge tag 'sunxi-dt-for-
+7.2-2' of https://git.kernel.org/pub/scm/linux/kernel/git/sunxi/linux
+into soc/dt"), which includes the v9 patches at e77bb5dc5759 ("arm64:
+dts: aspeed: Add initial AST27xx SoC device tree"), builds without
+error.
+
+Why? Well, the report from sashiko appears misleading. Usually
+duplicate labels do cause an error, for example:
+
+   $ cat dle.dts
+   /dts-v1/;
+   / {
+           inner: test1 {
+                   prop-inner;
+           };
+           inner: test1 {
+                   prop-inner;
+           };
+   };
+   $ dtc -o /dev/null dle.dts
+   dle.dts:6.15-8.4: ERROR (duplicate_node_names): /test1: Duplicate node n=
+ame
+   ERROR: Input tree has errors, aborting (use -f to force output)
+  =20
+   $ cat dle-1.dts
+   /dts-v1/;
+   / { };
+   &{/} {
+           inner: test0 {
+                   prop-inner;
+           };
+           inner: test1 {
+                   prop-inner;
+           };
+   };
+   $ dtc -o /dev/null dle-1.dts
+   dle-1.dts:8.15-10.4: ERROR (duplicate_label): /test1: Duplicate label 'i=
+nner' on /test1 and /test0
+   ERROR: Input tree has errors, aborting (use -f to force output)
+
+However, a relatively minimal reproduction of the case at hand is:
+
+   $ cat dlu.dts
+   /dts-v1/;
+   / { };
+   &{/} {
+           inner: test1 {
+                   prop-inner;
+           };
+           inner: test1 {
+                   prop-inner;
+           };
+   };
+   $ dtc -o /dev/null dlu.dts
+   $
+
+This doesn't error out. I recommend not assuming reports from the bot
+are entirely accurate. Please test that its claims make sense before
+proceeding.
+
+While it's not good that there were duplicate nodes and labels, it is
+good that you've tidied them up.
+
+If there are modifications to the aspeed-g7-soc*-pinctrl.dtsi files in
+the future, I ask that you them sorted first so we can minimise the
+chance of falling into this trap again. The current order seems fairly
+haphazard and likely contributed to the oversight.
+
+>=20
+> 2. The synthetic container nodes (secondary, tertiary) for sub-processor
+
+I'm not sure synthetic is the right word here. We're still describing
+the hardware, just components that have their own distinct address
+spaces.
+
+On a separate note, if you feel the need to make a list when describing
+the change (e.g. in the commit message or patch notes) it's usually an
+indicator that the change should be split into separate commits. Please
+keep this in mind for future changes.
+
+> =C2=A0=C2=A0 interrupt controllers used a 2-cell address scheme to encode=
+ a
+> =C2=A0=C2=A0 <cpu-index reg-base> tuple.=C2=A0 Since the cpu-index adds n=
+o value for
+> =C2=A0=C2=A0 nodes that are purely phandle anchors, Andrew requested we d=
+rop it
+> =C2=A0=C2=A0 and use the bare register address instead.
+> ---
+> =C2=A0arch/arm64/boot/dts/aspeed/aspeed-g7-a35.dtsi=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0 |=C2=A0 14 ++-
+> =C2=A0.../boot/dts/aspeed/aspeed-g7-soc1-pinctrl.dtsi=C2=A0=C2=A0=C2=A0 |=
+ 102 ---------------------
+> =C2=A02 files changed, 6 insertions(+), 110 deletions(-)
+>=20
+> diff --git a/arch/arm64/boot/dts/aspeed/aspeed-g7-a35.dtsi b/arch/arm64/b=
+oot/dts/aspeed/aspeed-g7-a35.dtsi
+> index ef283d95649a..58193c3c3696 100644
+> --- a/arch/arm64/boot/dts/aspeed/aspeed-g7-a35.dtsi
+> +++ b/arch/arm64/boot/dts/aspeed/aspeed-g7-a35.dtsi
+> @@ -84,32 +84,30 @@ l2: l2-cache0 {
+> =C2=A0	};
+> =C2=A0
+> =C2=A0	secondary {
+> -		#address-cells =3D <2>;
+> -		/* https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/=
+tree/drivers/of/address.c?h=3Dv6.16#n491=C2=A0*/
+> +		#address-cells =3D <1>;
+> =C2=A0		#size-cells =3D <0>;
+> -		/* https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/=
+tree/drivers/of/address.c?h=3Dv6.16#n430=C2=A0*/
+> =C2=A0
+> -		ssp_nvic: interrupt-controller@1,e000e100 {
+> +		ssp_nvic: interrupt-controller@e000e100 {
+> =C2=A0			compatible =3D "arm,v7m-nvic";
+> =C2=A0			#interrupt-cells =3D <2>;
+> =C2=A0			#address-cells =3D <0>;
+> =C2=A0			interrupt-controller;
+> -			reg =3D <1 0xe000e100>;
+> +			reg =3D <0xe000e100>;
+
+Some other cleanups to consider are ensuring the property ordering
+conforms to the DTS coding style:
+
+   https://docs.kernel.org/devicetree/bindings/dts-coding-style.html#order-=
+of-properties-in-device-node
+
+The following grep is likely helpful:
+
+   git grep -C1 -F 'compatible =3D' arch/arm64/boot/dts/aspeed
+
+Andrew
 
