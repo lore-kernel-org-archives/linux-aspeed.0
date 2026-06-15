@@ -1,92 +1,79 @@
-Return-Path: <linux-aspeed+bounces-4253-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4255-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B3A0CD8CA8
-	for <linux-aspeed@archiver.kernel.org>; Sat, 13 Jun 2026 07:56:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C785FCD8CA8
+	for <linux-aspeed@archiver.kernel.org>; Mon, 15 Jun 2026 02:44:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gcpcc4HbQz2xqn;
-	Sat, 13 Jun 2026 17:56:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781291282;
-	cv=none; b=blrZWawQF4RQxKnRu3kDlt161517dHl59ZjFxQcV7Xo/JoHxMqSde2wUt/Bhhuhv7JSXzMotiPLwa8W/qnkvne362j+IzyoiV0qiujafa9Rd2pJfpTCDUHIp94+x8nnfMiN6bLawb9oK1Cv+sIRTrVYB6mzKsiCqA0cIEl+IRJHWbHalwEt5PEIeo/vwX44RZMnEQuwsOSRVeuwsxLxYQYw8M4ZKAk12r14MJILBMIMOLMYiwWYByxQzoB/IlDGCizqgkwYLCta2y8RIB1G1LBjMtZvD5Y+VXCgreC9fh5oqP4AR3JirPvSKQgvwbEFordv/bdZ+QJum5Cm6eznKnQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gdvbK21Fqz3brT;
+	Mon, 15 Jun 2026 12:44:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::532"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1781491469;
+	cv=none; b=gnfLmuHNePhQ9IcmoM3Xq2P1zDef4lbYjorslen+V7Te5tvIl4Nx+Vs0FbXSA6M7oeLbAZkkahmirZyNGvEE7GqIKqEYIxei9JeJWOFgroc1A06lQHrrlGfmOeoK2yDps/U4CcBWGGAXTf7wtuTp6b0B6oVU64dnfM3k/qXGv6LCqozT0VZtduvdxN2fsKrZe/F+aBmbQ82zjWLBRkNlM+RH6MQ9XQXbp8mizsKUL5u7gIAne0F3wa7LOc6EcXWMyAXSdW/yB+NdTOP4AQSMIpdeM7fZ7q02Aq4OAf7QZcDp8RtKX0ihtiut9Dx+r6cUF7C9uEWkXZVu9DF6J4JFDg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1781291282; c=relaxed/relaxed;
-	bh=UwTEg4XBjlq2gqrpSaNYbmX8jrkzkowNm264wvHp61I=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=KqLc/+zWSRedTf4CsgJcUlv3PLVylPwEXJ1lJdzEBhhtMcTbJ+2/AtXv40cD+oA1r3uXhWaOg9F91+RZzPlSFY6Eel8/tsTKRpK/2TVUFqNBcAR7jmK5C7lC02i0XXQ1o8YSQEHHfRyqcxlcnHSMkW3LytVpvlxfETtYaz12Ww+JnNLg7LsrQ61diA2JRUSlC7G16151eZwU/2Vq5GHzySFuJi7d7UtqFIKG5jlFiHUC/AQ6HrfdSP+KEY25zoqXc6MLJ9vqrwh5bLZJrfddqcpLMN39rIO+Ijl9XzX228PsIfm5L5Ofx4mhfIvDDCdXMxcxjuIwVSQnkQesXay4Yw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=JS1Z+rRL; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=karthiproffesional@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1781491469; c=relaxed/relaxed;
+	bh=ctvKOED8Rs2Y8iHtAz2kdUCrMqrD3cqKZ8ykp6Je8z4=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=ciHviUAWktghnYWYCMj9VmAeq+icIfz6cAvxmWi7R5o8580hadpDOF/zVW3ogrUa9ubYHsi9fLGrBZ1DhV5lpfiqnsN6SvAZn2bDCI5Dx5ahZwtF+zkPHYKc9lYMQX2wXrWe73Yh6qmNqK6ziguNaNXvGf5u2Aw5FOI01M2d35042Zn20GOOj5HdfSdZHB2+2ugxU0HxQeRT6hh0i8z6a1i71kYi2HZcksZbPevFbDSHHSg/pJssvWVOh9OhDs/HVtdJYCWVZHBUAtWRHkicp6gC6EYHdWtPqc7DETA8ystoByPYL+0sb/ffuSbowfKb50gQ6iCUBUQA/RHtQAo8Bg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Zki+6UMQ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::532; helo=mail-pg1-x532.google.com; envelope-from=kylehsieh1995@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=JS1Z+rRL;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Zki+6UMQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=karthiproffesional@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::532; helo=mail-pg1-x532.google.com; envelope-from=kylehsieh1995@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x532.google.com (mail-pg1-x532.google.com [IPv6:2607:f8b0:4864:20::532])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gcTYY2gV5z2ykX
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 13 Jun 2026 05:08:00 +1000 (AEST)
-Received: by mail-pj1-x102b.google.com with SMTP id 98e67ed59e1d1-36b8d414666so900740a91.3
-        for <linux-aspeed@lists.ozlabs.org>; Fri, 12 Jun 2026 12:08:00 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gdvbJ4WrVz2yT0
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 15 Jun 2026 12:44:28 +1000 (AEST)
+Received: by mail-pg1-x532.google.com with SMTP id 41be03b00d2f7-c8584e80d59so1023512a12.2
+        for <linux-aspeed@lists.ozlabs.org>; Sun, 14 Jun 2026 19:44:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1781291278; x=1781896078; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=UwTEg4XBjlq2gqrpSaNYbmX8jrkzkowNm264wvHp61I=;
-        b=JS1Z+rRLXFfFxhPoPTdlyhONk5sU92obU8n3aI+TF036yO5ZCzkiYFu/fnGbZuvw2M
-         +svNtqlM83w9Jsmt6I5oGSThBAs+3RFfablb2EXZJ/rMEgN7DuD4j7Du1iU7P/i7hLpd
-         cvB72mj/jx0X5+4S+FSRaXqlDWyBmQUgf5VJLrtMZW+simRxmyO/iqFMOhrjfBzzJ/zq
-         KSYPulq87fXflnQ9TzbZqnF+5mQRLZlHrPbcP43TJFKtvxluuWaBbvXnLvBb7SjbMzYL
-         OkfdVvmXyPFHGSXyF3ELEFSm86gZ2v+K93Eao/3VKxcTToqzDBjPU1nrBezI6l6F23mw
-         l8NQ==
+        d=gmail.com; s=20251104; t=1781491466; x=1782096266; darn=lists.ozlabs.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=ctvKOED8Rs2Y8iHtAz2kdUCrMqrD3cqKZ8ykp6Je8z4=;
+        b=Zki+6UMQ7WSNa8bHPlK0eAmyzRlSHKr/Tmr0mvqUkNim6mrfVjXBexQj46n8h8QBfk
+         T1344EtoSda1ZAm5qFiKFq3CVOTFtyyY+fJeYs+MUPDA/8Gru6ZZbZsQ8nHmRDV0zl6N
+         IYMvPoPbKFWO7o4GelzR1e1QfeZZqDfCtDkXRqqIHmLg/7KEcLiYwr66LEU3yA+nmoXB
+         KRemeRPDDyKFzxIhB0KkVwOdk0eRJgSCZx48BCBbsIp4It92ScDTuxuiHlS09fG75iBB
+         g7d/t9LOFdymahXffPT7cr7/3jPi/kde+88uvSxU2qCz33jE/blrYXxILEs4CBj7tHPM
+         XEBw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1781291278; x=1781896078;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=UwTEg4XBjlq2gqrpSaNYbmX8jrkzkowNm264wvHp61I=;
-        b=FYaJhnZVdH1joE9lyvY7gCwSXcs2PNNJ5Tyl7gYNO1gZJYhlfNeZdOhpwMIBgzWe/P
-         mL+N66HvePmSJNx6kUObSp+FyWkrWzqfH4FmFS5NBx8aGYGss3Leeaz0u/C1qaxyUpZg
-         KYck7/GJZnTKz0PnV/jzptckZ7BiusmWYtKATsmymBWipn4qv5oA9IXny/9OlbNBBLFU
-         7AeEMSZwDBfzx/HZ5GEaGEi296zG26XUBEsTiRjxiE4AVUqpBYNLTCKjuJcZVwSHSmfv
-         y1hdCqTtikDc4jo83yKcvOEHxpDTmygfJf0YWuMDy8ErbLOmAZ4JGze3BV316uOVX7Ab
-         mGJA==
-X-Forwarded-Encrypted: i=1; AFNElJ9obqeFct2EOsEnzBSg5Iakouitzl0Fpqrx4GM/9jDHo9BJi0oH/6sfIk9d4/GEWbZ3N1h6gVVBYOIo+wY=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwJJ4aKvEbJr5xLI9qWVH0rcSLKbbsyt8VldAixMCa8zm800c0o
-	1/Br7NNvBy6e2xkSSGJ49WbnnoBkLGuVmLEY/TOfrwJoQVYTh2s2HyTs
-X-Gm-Gg: Acq92OFxv7jU2PvTxCQukKDtE1XVSMnFhX9D3ZsRlxAY2E4xdpSwIdKkCR1WLrDZZVi
-	Oyp9Q+wAm/lhbQbCGUxr5HigkHjOz46pAl00x3KUN/z7WDExNvMSJ+Lhkdhkd6ZSAx7YqkwCfT6
-	6yP0WurHEXaTIPritKO6EesUQwppA6Wxd6VX9g/2tIq7YAixh7wGrvsId72rpSQVtmAibIxgqLn
-	/oz9/RHeWGfUR3ktnm9tZ77bK8fino6rOCiNxhiZRbvcUKeaFkhzgAFEp9UDm1KZ7GJDY4wIapP
-	7Wd+BGf8HaoiD9MMS0dZ4TLncJSwuT4ObCkDPteQpHjsxLL0WDDP78OTqEHh0LVYtUohlgCt448
-	coWZWmNqOr3FrFVzCbV73oFgF+P0UxwEYgpDezM06GwH88UcDey3KhJcGPILEQOSsWQV7QwTOpg
-	H6AE6yk6eGZ67+nAIhPVhZK8PWva4k4fRxyM4MU1d3NqWXxDb75cCrVQ==
-X-Received: by 2002:a17:90b:28cd:b0:36a:95c:7613 with SMTP id 98e67ed59e1d1-37a0202ece8mr4596847a91.10.1781291277427;
-        Fri, 12 Jun 2026 12:07:57 -0700 (PDT)
-Received: from LAPTOP-97G9G880.localdomain ([106.206.15.12])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-37a1eba8e9asm2748485a91.2.2026.06.12.12.07.53
+        d=1e100.net; s=20251104; t=1781491466; x=1782096266;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=ctvKOED8Rs2Y8iHtAz2kdUCrMqrD3cqKZ8ykp6Je8z4=;
+        b=BRY3cQe3k+H+ZLNqv6UIkuJ2Ju0wAJuVBYv6h1qoVSKeJgyu7wE+temP9bN00UyNbn
+         iBzM2cwtJkTB/f2ulFBju1odtcZoo5itfByJgCLX6s/E9JukRhZVzArVolZMlTwOsDBe
+         x8rSUW94t1hiUIaAPy6DelJcfC4wBewNZ8zdLaOBKg4OeMLCZIY6y6F3Hau70hL4bz6l
+         YgkKSbkpAabaSK7eMSARKNBNL/sA1Tl67cRYGznjf9V/RgbdwbsXO3kNXTQkNnylwau1
+         bZxLN8OmdfJsg3zPnCoH9fuSYhwgSpXYCjIs+OdD6z7ohvFSjQmXKpGB3rcSwDzOtXIW
+         aJRg==
+X-Forwarded-Encrypted: i=1; AFNElJ92MHS2kou3fYHrrMusy2cv6sdz9O/mD3F17nFxWIkyrgWz2R50rCkx67YHeVR9Pc/xcxxtDbdtfuD+We0=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzT2iUFLie1rYKPLL9q3HY8KAldy1XUZ7zgbFl7RQTv3ovIErA1
+	6j7p+7rsb10aVWn5HRGeMd+Pz2hs97XtKKCqGVPmXWMlFsGePlj/lOI/
+X-Gm-Gg: Acq92OFn3CkB9N5H4+sHy5ooWriSyXezJJF2wFv9SdVDehgICknEdRA/lZ5ARNMDEIR
+	0I3kIMkEty5nwxmYZQjMAjL0wimpvt5rXA2GXq9VCFH3vkeW0awIlQYxSoh9EX0rFR8Qa4hpKv6
+	C42gaUbDvc5uAfkd5boJhXjcGv0uuntqD2BL3pFh5YjH3o0SZlvDp/jdA4gMYR11MDlZBul4IOx
+	qeDQmurPR17wfCgUsWiSAswjONGAJlvRCMotOKPQsIimKZ6mmWK9OkoFMSJdSKQbS8qMt/Pi13r
+	j5D51TYnzjENZi2sfSSBHh8sqWVXauIABKX2s34D7J52ecV8nnkINohriIvX9rBX9uV27Lobs8D
+	MW2hYMrDO1EnfszMI7iJngN7ZK7kzC6T54v+rAnObF/XUrteZTvT1izysuEHRjHRWwz9ecdgHwO
+	4V/OvRzBHVuKIlQC0dlXumBsfF49vpoCsJo45wRUTg2ABtXHlUTuBd93lrCivMaV0=
+X-Received: by 2002:a05:6a20:7f95:b0:3b4:8880:2089 with SMTP id adf61e73a8af0-3b783bb0448mr14504694637.16.1781491466271;
+        Sun, 14 Jun 2026 19:44:26 -0700 (PDT)
+Received: from [127.0.1.1] (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c866325d1d3sm7138676a12.11.2026.06.14.19.44.23
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 12 Jun 2026 12:07:56 -0700 (PDT)
-From: Karthikeyan KS <karthiproffesional@gmail.com>
-To: andrew@codeconstruct.com.au
-Cc: joel@jms.id.au,
-	andrew@aj.id.au,
-	Kees Cook <kees@kernel.org>,
-	linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	linux-hardening@vger.kernel.org,
-	Karthikeyan KS <karthiproffesional@gmail.com>
-Subject: [PATCH v6] soc: aspeed: lpc-snoop: Fix usercopy overflow in snoop_file_read
-Date: Fri, 12 Jun 2026 19:07:43 +0000
-Message-ID: <20260612190744.172638-1-karthiproffesional@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <033f2657ae6a94ad13d22f717a2900afb75d892d.camel@codeconstruct.com.au>
-References: <033f2657ae6a94ad13d22f717a2900afb75d892d.camel@codeconstruct.com.au>
+        Sun, 14 Jun 2026 19:44:25 -0700 (PDT)
+From: Kyle Hsieh <kylehsieh1995@gmail.com>
+Date: Mon, 15 Jun 2026 10:46:02 +0800
+Subject: [PATCH v8 1/2] dt-bindings: arm: aspeed: add Meta ventura2 board
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -100,160 +87,54 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260615-ventura2_initial_dts-v8-1-c89f92c80447@gmail.com>
+References: <20260615-ventura2_initial_dts-v8-0-c89f92c80447@gmail.com>
+In-Reply-To: <20260615-ventura2_initial_dts-v8-0-c89f92c80447@gmail.com>
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
+ Andrew Jeffery <andrew@codeconstruct.com.au>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+ Kyle Hsieh <kylehsieh1995@gmail.com>, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=909;
+ i=kylehsieh1995@gmail.com; h=from:subject:message-id;
+ bh=J3z5h5jN99f1BFk7jnvt5xoq1tLRgjc3X0kRzaksvsA=;
+ b=owEBbQGS/pANAwAKAaWDQrcJVsSBAcsmYgBqL2ds9BW16ZZQoO1e5JC8M56v9xEAV+IzijHmA
+ lB0RGhp+EKJATMEAAEKAB0WIQTJHsaNZOdY+THGqJelg0K3CVbEgQUCai9nbAAKCRClg0K3CVbE
+ gXWgCADCprZUJ0z700syJ6zD139+Wivkz9tcUw6CjgrjNq/OnB+mBhvi3Cq6ed/gVHouqFJptUm
+ Fd/0phsYrDe5eT8PXBsktLI0Yrueo2W5QvOgi8PDJUnobF+3XSLjb7ob0hVqqhpuBUz5ltN8/oo
+ YMLheoIJVMkiOIddANX65rvHiLupttXtwCUKgVEOVIxe5nvs/c+WwudZqdahS4U84GXM2y8RLRf
+ kmMb7l+CyL7Jykgj0F/Bmn1MT/yt5EoiuWr3IVXmC24x+YAVRTLR8u2wybRDB62a03VNKv2ZoJt
+ xe8D9O4Fl1GiXWnItAKO9oRU9JLnIgtrb/+MWRTzOcq1ffgP
+X-Developer-Key: i=kylehsieh1995@gmail.com; a=openpgp;
+ fpr=C91EC68D64E758F931C6A897A58342B70956C481
 
-put_fifo_with_discard() acts as both producer and consumer on the kfifo:
-it calls kfifo_skip() (advances out) and kfifo_put() (advances in) from
-the IRQ handler without synchronizing with snoop_file_read(), which also
-consumes via kfifo_to_user(). On SMP systems this concurrent access can
-leave (in - out) larger than the ring buffer, so __kfifo_to_user()'s clamp
-to (in - out) is ineffective and kfifo_copy_to_user() can attempt a
-copy_to_user() past the kmalloc-2k backing store:
+Document the new compatibles used on Facebook ventura2.
 
-  usercopy: Kernel memory exposure attempt detected from SLUB object
-  'kmalloc-2k' (offset 0, size 2049)!
-  kernel BUG at mm/usercopy.c!
-  Call trace:
-   usercopy_abort
-   __check_heap_object
-   __check_object_size
-   kfifo_copy_to_user
-   __kfifo_to_user
-   snoop_file_read
-   vfs_read
-
-Serialize kfifo access with a per-channel spinlock shared between the
-IRQ handler (producer) and the file reader (consumer).  Annotate @fifo
-with __guarded_by(&lock) and opt the driver into context analysis so the
-compiler enforces that all fifo access holds the lock.
-
-Fixes: 3772e5da4454 ("drivers/misc: Aspeed LPC snoop output using misc chardev")
-Signed-off-by: Karthikeyan KS <karthiproffesional@gmail.com>
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Signed-off-by: Kyle Hsieh <kylehsieh1995@gmail.com>
 ---
- drivers/soc/aspeed/Makefile           |  1 +
- drivers/soc/aspeed/aspeed-lpc-snoop.c | 38 ++++++++++++++++++---------
- 2 files changed, 27 insertions(+), 12 deletions(-)
+ Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-Andrew,
+diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+index 9298c1a75dd1..d48607c86e8e 100644
+--- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
++++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+@@ -92,6 +92,7 @@ properties:
+               - facebook,harma-bmc
+               - facebook,minerva-cmc
+               - facebook,santabarbara-bmc
++              - facebook,ventura2-rmc
+               - facebook,yosemite4-bmc
+               - facebook,yosemite5-bmc
+               - ibm,balcones-bmc
 
-Thanks for the review.
-
-Changes since v5:
-- Annotate @fifo with __guarded_by(&lock) instead of a comment
-- Move kfifo_initialized() check inside scoped_guard(spinlock, &chan->lock)
-  in put_fifo_with_discard()
-- Replace spin_lock_init() with scoped_guard(spinlock_init, &channel->lock)
-  around kfifo_alloc() in aspeed_lpc_enable_snoop()
-- Enable CONTEXT_ANALYSIS for this driver in drivers/soc/aspeed/Makefile
-
-Dropped Cc: stable — the fix uses cleanup.h/context-analysis idioms absent
-from LTS; I'll send adapted backports to stable@ once this is in mainline.
-
-Tested on ast2600-evb (QEMU): clang-22 with CONFIG_WARN_CONTEXT_ANALYSIS=y
-shows no context-analysis warnings; PROVE_LOCKING, DEBUG_ATOMIC_SLEEP and
-HARDENED_USERCOPY show no splats. Overflow reproduced via a fault-injection
-module forcing the post-race (in - out) state (QEMU doesn't model the ARM
-ordering that triggers it in the field): unpatched panics, patched returns
-cleanly.
-
-Thanks,
-Karthikeyan
-
-diff --git a/drivers/soc/aspeed/Makefile b/drivers/soc/aspeed/Makefile
-index b35d74592964..b5188dcde37a 100644
---- a/drivers/soc/aspeed/Makefile
-+++ b/drivers/soc/aspeed/Makefile
-@@ -4,3 +4,4 @@ obj-$(CONFIG_ASPEED_LPC_SNOOP)		+= aspeed-lpc-snoop.o
- obj-$(CONFIG_ASPEED_UART_ROUTING)	+= aspeed-uart-routing.o
- obj-$(CONFIG_ASPEED_P2A_CTRL)		+= aspeed-p2a-ctrl.o
- obj-$(CONFIG_ASPEED_SOCINFO)		+= aspeed-socinfo.o
-+CONTEXT_ANALYSIS_aspeed-lpc-snoop.o	:= y
-diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c b/drivers/soc/aspeed/aspeed-lpc-snoop.c
-index b03310c0830d..7fa1a345acac 100644
---- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
-+++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
-@@ -11,6 +11,7 @@
-  */
- 
- #include <linux/bitops.h>
-+#include <linux/cleanup.h>
- #include <linux/clk.h>
- #include <linux/dev_printk.h>
- #include <linux/interrupt.h>
-@@ -74,7 +75,8 @@ struct aspeed_lpc_snoop_channel_cfg {
- struct aspeed_lpc_snoop_channel {
- 	const struct aspeed_lpc_snoop_channel_cfg *cfg;
- 	bool enabled;
--	struct kfifo		fifo;
-+	spinlock_t		lock;
-+	struct kfifo		fifo __guarded_by(&lock);
- 	wait_queue_head_t	wq;
- 	struct miscdevice	miscdev;
- };
-@@ -114,6 +116,7 @@ static ssize_t snoop_file_read(struct file *file, char __user *buffer,
- 				size_t count, loff_t *ppos)
- {
- 	struct aspeed_lpc_snoop_channel *chan = snoop_file_to_chan(file);
-+	u8 *buf __free(kfree) = NULL;
- 	unsigned int copied;
- 	int ret = 0;
- 
-@@ -125,9 +128,16 @@ static ssize_t snoop_file_read(struct file *file, char __user *buffer,
- 		if (ret == -ERESTARTSYS)
- 			return -EINTR;
- 	}
--	ret = kfifo_to_user(&chan->fifo, buffer, count, &copied);
--	if (ret)
--		return ret;
-+
-+	count = min_t(size_t, count, SNOOP_FIFO_SIZE);
-+
-+	buf = kmalloc(count, GFP_KERNEL);
-+	if (!buf)
-+		return -ENOMEM;
-+
-+	copied = kfifo_out_spinlocked(&chan->fifo, buf, count, &chan->lock);
-+	if (copied && copy_to_user(buffer, buf, copied))
-+		return -EFAULT;
- 
- 	return copied;
- }
-@@ -151,11 +161,13 @@ static const struct file_operations snoop_fops = {
- /* Save a byte to a FIFO and discard the oldest byte if FIFO is full */
- static void put_fifo_with_discard(struct aspeed_lpc_snoop_channel *chan, u8 val)
- {
--	if (!kfifo_initialized(&chan->fifo))
--		return;
--	if (kfifo_is_full(&chan->fifo))
--		kfifo_skip(&chan->fifo);
--	kfifo_put(&chan->fifo, val);
-+	scoped_guard(spinlock, &chan->lock) {
-+		if (!kfifo_initialized(&chan->fifo))
-+			return;
-+		if (kfifo_is_full(&chan->fifo))
-+			kfifo_skip(&chan->fifo);
-+		kfifo_put(&chan->fifo, val);
-+	}
- 	wake_up_interruptible(&chan->wq);
- }
- 
-@@ -239,9 +251,11 @@ static int aspeed_lpc_enable_snoop(struct device *dev,
- 	if (!channel->miscdev.name)
- 		return -ENOMEM;
- 
--	rc = kfifo_alloc(&channel->fifo, SNOOP_FIFO_SIZE, GFP_KERNEL);
--	if (rc)
--		return rc;
-+	scoped_guard(spinlock_init, &channel->lock) {
-+		rc = kfifo_alloc(&channel->fifo, SNOOP_FIFO_SIZE, GFP_KERNEL);
-+		if (rc)
-+			return rc;
-+	}
- 
- 	rc = misc_register(&channel->miscdev);
- 	if (rc)
---
-2.43.0
+-- 
+2.34.1
 
 
