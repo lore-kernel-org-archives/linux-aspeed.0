@@ -1,65 +1,63 @@
-Return-Path: <linux-aspeed+bounces-4300-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4301-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94CACCDB47F
-	for <linux-aspeed@archiver.kernel.org>; Wed, 24 Jun 2026 16:29:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E46E8CDB479
+	for <linux-aspeed@archiver.kernel.org>; Wed, 24 Jun 2026 21:21:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4glnTY5V6cz2yRF;
-	Thu, 25 Jun 2026 02:29:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782318593;
-	cv=none; b=LedNpv8Ec5whMIYw+nXxhnOTOLBkbxbJafeWRsqklBCwJ8k5nSyT9E7kV6BfcDgg/fkpxowbeGGNADGxfH9igQqmF54JezqO6rarkLXLsk599NHdB/4xhuuuSDP9ij8EVKXzl0oJGgHJyWmvcxN+G6nkXJtTPdZqlmSRyqJrLW0Q6KIy6YiWh8mmUtLtIBJN1zdDYC+A0oDGM2cFgxkPbAgkpcqcG1jVfhMT8vMGb86ZsEo5kQT0UoZFJ4dxssNBEQvg1fo6LtMezuNhksT6PAviP/+Sql+p/8UlTlss1cH44XggatYsNzBRxsD24AJsxuW449rYrDoDO6PV8cteRQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4glvyZ2Ch7z2xSN;
+	Thu, 25 Jun 2026 07:21:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.171.202.116
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782336118;
+	cv=none; b=BXH7pNLUa3dJbsDxrw0piAqKr07DvBAfDqISFurgDJdLZju3O3ECszsbQ/TXIGVJpYckdQ6B9Qhd5FNTAt5k9A7PXRx/rRVcMNp6lwfFaKhnImyMi6WMJimNHT+bXo+T0wfet6IpyU2RfWG2uqGDErXiYEKncrV2KDWys3XVL5Ftdol4FnkIMeQikYgJnrR80SCJQmnmoemODW30m2C621XrTiXGO8TzTbNelU0aO+FvGo8Z2HOhwY0cokb/vKvnqV6lH+rxRa24dETx6Kcjp/i29RN02gTFzWx0Ul453QlpQL4jp1WLvosG3tnU/eS1+UTvmgyrGQFM1O3+KeZu8Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782318593; c=relaxed/relaxed;
-	bh=nB/xcDstYUVPnTa87uG6SAP6OEUqB+fH/Eywg/NIyxs=;
+	t=1782336118; c=relaxed/relaxed;
+	bh=BxRZgMMcXld1GewrTn/+Bpz0RNC0eo+0XsbHRMtaIMw=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=b4OdYtdxpX1hnLZjfYTGduwe0MUKAqSez5cUHWhArBv5rZ9xrld08V1cIS47KNpCzRrDtc8rK8SfLJ7OnPiUqNwhc1ippgtl4PhF8WCCHQCqKUZqBGiBQZ7xBnCqKE8Cb8lf9zMlAIAWOmyT89CqVLfDEIkZmJNiGKo90QdEx2ZHywXypwJQoJWUAVZBFt1x2kWV7z3lyW/nJEnEIDA1+FY22im8HGuRYY97DysQHHYj/22Qh9UrGrqGJMBmaaYTKQLba4UtU9xesOaBiWC97pzk/LL8yriKi9dqRmA3k40uU6TtkXmtaQIvOQo43a7NagKJRw5VBdQJgJJ3wxO6kw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ClMhLgvG; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=ngxBb0q8LLenG5zTdGfLlNCA5QLsdVtDs0Lev7/g9jp1Uqst6N64s9BnehItjxWKG+zOY8EzAxQWJ7vUymQYoGpPo7J+oQFoHGw9uavd9QKa4cPKRXAw4w/HiapPfHBv0ODo8+TX9J1alnNI+OvnkXbsOLETwBA4IvL3A5XYKN5T2cSmOZRtLn0Cy3hRxC7Fo6yPj3PENCpt4NEsW3xNyHc2qYHDibVr41XE215V1njKsJ6K+i6/Iu+1Yvif1geV91AVdjIbcbnZ+aB8APr1MNbH//+7t/vujVq/Nz1WCUsQ13GkZpa3DRt5S1BfGR9yCCoJqf66UJTl5+kwsQnu+Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=XTaTgVlK; dkim-atps=neutral; spf=pass (client-ip=185.171.202.116; helo=smtpout-04.galae.net; envelope-from=alexandre.belloni@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ClMhLgvG;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=XTaTgVlK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=185.171.202.116; helo=smtpout-04.galae.net; envelope-from=alexandre.belloni@bootlin.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 314 seconds by postgrey-1.37 at boromir; Thu, 25 Jun 2026 07:21:56 AEST
+Received: from smtpout-04.galae.net (smtpout-04.galae.net [185.171.202.116])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4glnTX1byjz2xy3
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 25 Jun 2026 02:29:51 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 586E460018;
-	Wed, 24 Jun 2026 16:29:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 70BCF1F000E9;
-	Wed, 24 Jun 2026 16:29:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782318588;
-	bh=nB/xcDstYUVPnTa87uG6SAP6OEUqB+fH/Eywg/NIyxs=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=ClMhLgvGviUAT4lTmqBBg5rMovWEhMvRTKDlxuTVmxfsWg9kK4KOko4t1/hlcrHrq
-	 Aoh/QxnzxJO/y5tOgkcgdjXKg0ellnq1CQ4B21wyjWk17VESPdXd8jATAN6PO3I8ld
-	 rkKibTIA9J5BsbAFgXl8K/1ORDvAZBgQ51TvpfvQ1qLq6DWVlG3Usiuk1UGRXTXv8Z
-	 Ypqa7iN5mM/LoAzOADt3lllBzBLrqgRpktn8cEAMnwn4tMlGh3YdZx+fJ9Mi10TNVH
-	 2LjvmOi2XQaTjKsHsKUg9MTemdV27oGTFvQLzsypvPaTHw9H0MjIsmRdMsIFIh7XI0
-	 EQeBRFhKmCZ/w==
-Date: Wed, 24 Jun 2026 17:29:43 +0100
-From: Conor Dooley <conor@kernel.org>
-To: Ryan Chen <ryan_chen@aspeedtech.com>
-Cc: Michael Turquette <mturquette@baylibre.com>,
-	Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney@redhat.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4glvyX6XZtz2xLk
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 25 Jun 2026 07:21:55 +1000 (AEST)
+Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
+	by smtpout-04.galae.net (Postfix) with ESMTPS id A40D9C6B3B9;
+	Wed, 24 Jun 2026 21:16:44 +0000 (UTC)
+Received: from mail.galae.net (mail.galae.net [212.83.136.155])
+	by smtpout-01.galae.net (Postfix) with ESMTPS id 884E9601C5;
+	Wed, 24 Jun 2026 21:16:36 +0000 (UTC)
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 79617106C8468;
+	Wed, 24 Jun 2026 23:16:31 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
+	t=1782335795; h=from:subject:date:message-id:to:cc:mime-version:content-type:
+	 in-reply-to:references; bh=BxRZgMMcXld1GewrTn/+Bpz0RNC0eo+0XsbHRMtaIMw=;
+	b=XTaTgVlKy08X8NDZtKOCQMu0BDALNDA0VYnboGRbodz5KICDzsoe4bn0H5ghMcfYsNHzf7
+	QMT8V300UIJts32vRAKK3n2sFo2SrX3dkNMMy4kNW3ZcWTiYwg455hdjrmmZSwa7RdIiR7
+	Etdi+5yxsda+qPlla29otIKBa2fFVLaxtJTit1ZpM7ILtmyrvF1ka/ptJCXh10z/j2Ee06
+	yXaN2S8hPf4dtbjbq7roFJHxyv/6TVa2zH4at9ce7yyJKx1KCjDwRzQXuSOiYOqfYxVf2B
+	gnr2CF7QMCoYoKGVEZR4R7tZQv4JfCKAtcoichw7aUXYzB2Nyqz2/jyQM2deDw==
+Date: Wed, 24 Jun 2026 23:16:31 +0200
+From: Alexandre Belloni <alexandre.belloni@bootlin.com>
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
 	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
 	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] dt-bindings: clock: ast2700: add PECI clock
-Message-ID: <20260624-disk-lingo-1d9fac0de659@spud>
-References: <20260624-peci_clk-v1-0-ee28b92e22e9@aspeedtech.com>
- <20260624-peci_clk-v1-1-ee28b92e22e9@aspeedtech.com>
+	Tommy Huang <tommy_huang@aspeedtech.com>
+Cc: linux-rtc@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org
+Subject: Re: [PATCH 0/2] rtc: aspeed: Add AST2700 RTC support
+Message-ID: <178233558822.1517260.6981271146090179790.b4-ty@b4>
+References: <20260601-ast2700-rtc-v1-0-15d4ca46500a@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -73,29 +71,26 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="Y2hWsGqtxlYAd0y4"
-Content-Disposition: inline
-In-Reply-To: <20260624-peci_clk-v1-1-ee28b92e22e9@aspeedtech.com>
-
-
---Y2hWsGqtxlYAd0y4
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20260601-ast2700-rtc-v1-0-15d4ca46500a@aspeedtech.com>
+X-Last-TLS-Session-Version: TLSv1.3
 
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
-pw-bot: not-applicable
+On Mon, 01 Jun 2026 17:14:05 +0800, Tommy Huang wrote:
+> This patch series adds support for the ASPEED AST2700 RTC define,
+> includeing dt-binding in the Document and rtc-aspeed.c
 
---Y2hWsGqtxlYAd0y4
-Content-Type: application/pgp-signature; name=signature.asc
+Applied, thanks!
 
------BEGIN PGP SIGNATURE-----
+[1/2] dt-bindings: rtc: add ASPEED AST2700 compatible
+      https://git.kernel.org/abelloni/c/5e7f746bc106
+[2/2] rtc: aspeed: add AST2700 compatible
+      https://git.kernel.org/abelloni/c/3319cfeeb8c4
 
-iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCajwF9AAKCRB4tDGHoIJi
-0ilsAP96KMQ9XSh+uOlgb/NYGm4S9RbQOnUkbS1MHqeOnixC7wEA9hgVf0iPIwO4
-vNCYTElGLjB+Jf2SMaWGJxn1GP0RKgk=
-=L3x/
------END PGP SIGNATURE-----
+Best regards,
 
---Y2hWsGqtxlYAd0y4--
+-- 
+Alexandre Belloni, co-owner and COO, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com
 
