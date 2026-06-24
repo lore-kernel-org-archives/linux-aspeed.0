@@ -1,40 +1,63 @@
-Return-Path: <linux-aspeed+bounces-4294-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4295-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 66F6CCDB479
-	for <linux-aspeed@archiver.kernel.org>; Wed, 24 Jun 2026 05:45:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E71A6CDB470
+	for <linux-aspeed@archiver.kernel.org>; Wed, 24 Jun 2026 07:15:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4glW9v0BlFz2yYy;
-	Wed, 24 Jun 2026 15:45:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782279922;
-	cv=none; b=EAHhNZI4s3d6gZBm7Oachljzu9KSj1H+Vb9KQJz2iIUVpWAlGBjpm8Ee68OptU5D2ULb8Y84rN41pmro9BjPRrfR7XnB4OVq+ib+8xHoNX6VTjcaWJxaci62Fcp2e4pEk12JMaLzDXiyoaMWDjBf2M4U/urDCH5mKc23LBDd/p89Pv5ICnJCgdRvPwHOjhXRuF4Y7802mzl174BGMuczyNKL1XJgFcmCvsGidDZ1Ku5SUkRRuu4Bs3OfqcM9FRI8PwKr67qKgOHOMxBWN+4tT8uEC/hGzWugXo1FO6M9Vn6POB2V4Nhy80j5HFK/3raV5v8tm0cHflYQjEwr/xFd3g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4glYB80ZLYz2yYq;
+	Wed, 24 Jun 2026 17:15:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782285343;
+	cv=none; b=fKkCqzKCyYoPOOgOBoLvwKN109T9xbIOqsu3qUssM2ptchJwAH+88wuNMAXV77/jkHaLadU82+SCzuMDb4HP/qhJEDA+t4M1R4sUmal8GbX7jIn3H4O6Bgh0bRie0d/pUJ+lntIX0RT2hit6lHX/4AwNcVbiVt1xDMbg2AFHtCR7/h5FCS7VKbU3VA8OZ21dTeQhBL2YhVdgIslXVFnBoWw+RnUCbID5VEc378zy8R3v5fg2GV6/kyL122G7XbN+XG6oFs3rokN19GTJv9ZhkeTKgBTSlsufoBvCX5U4FDyPm8cgu5xncOK6PrzlOyc/NoPgaC0XGCAxE+951/1R8Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782279922; c=relaxed/relaxed;
-	bh=iDySdxnRkntHDclVVEKN1JxfjPXVhGAU814UjzYn0nc=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
-	 In-Reply-To:To:CC; b=mHIzqe0m+W2YquYyPWjmTRkhzdDDlsgvwYKn+qUQI03n7BHmdPf9GBeQpRlSEJs7qnvrBkH7XcuBRX8uQiJvAHP3x5ncCkpMq7aWXDN997otTYMpXm5HGY4NZUyHvtv2vHLBCyI0izT8JxA/1UasyqFFv2NVtp7A7KHgxc65N88xfMKheRk0DfJiwBDDPWub4RO6ZorH5Lsv2ES508/nWW6kRiKcnna+ogPFfH2dre8OBorXWUVVFsf3fV5V8p7PuMxJCvUk1VIIPX0WO+W3Aw6DUvgxGEZggV514YO7WvAjoYVuWXlASM46VEpGIiy/oAVimPZv1KGZSIqSRCJc8A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeedtech.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeedtech.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from twmbx01.aspeedtech.com (mail.aspeedtech.com [211.20.114.72])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1782285343; c=relaxed/relaxed;
+	bh=ONVxwC+Td25N43rGDzHnzsanpqUWTvIc0+6pDMU/MTc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=O9c5GngyArs+i2shTiHgNNwlKK2zBu6Hx3FIjT1nhr+08urEzSAFyJeL7HSlVsY03gY3VCZ5XKgW1ss4SdL8OJFkEsFeFKYO7t5waKGXh8oXMpIjW6IX2lcA2RzS6LD1WyE7iGYQJ/mJwroM9T0ng914FQWwyPEC1/tjRsxljnTfFO8bDcxYW85jY1dGDHz8jbj7SqKFkCdWFCywhGWLm8BXRTdrWlHVRNl1m1oLZGzwRd5JLgWNSvPW1bHwe9zEX2vC8LbsbN7xCPcTyddoxSOBP/7BE6By1rJiBeOM2sc+ehzdBsGh3E8u24skgXXQTpEqPHb/rjWgA7lwMLUDQg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PTBFnWrT; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=PTBFnWrT;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4glW9t1xl0z2yQn
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 24 Jun 2026 15:45:22 +1000 (AEST)
-Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Wed, 24 Jun
- 2026 13:45:01 +0800
-Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
- Transport; Wed, 24 Jun 2026 13:45:01 +0800
-From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Wed, 24 Jun 2026 13:45:00 +0800
-Subject: [PATCH 2/2] clk: aspeed: add AST2700 PECI clock
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4glYB61xQjz2yQn
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 24 Jun 2026 17:15:42 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 40203601F3;
+	Wed, 24 Jun 2026 07:15:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F24E31F000E9;
+	Wed, 24 Jun 2026 07:15:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1782285339;
+	bh=ONVxwC+Td25N43rGDzHnzsanpqUWTvIc0+6pDMU/MTc=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=PTBFnWrTnSlnRm7wA9VA1PKnERY9yuPOvIvAeqhs1Yt6aoGxjRIfYBkjLVOQMbeNz
+	 kVBap/AwGkGSkpKtQ/39UY6tYC5h2Hxi7VKuzuAsEwE7Q8mVB/PU7I7Y4eJKS9ET6Q
+	 zysZDCaCETP5NWRPz+SMh2iLvN3vwxYg3pK9Ax+i//noDUm+RX8Zntiq8Pd3FC1Ldt
+	 PVyQL0gk9ZzMeM3ekhH4GVnrOpee7EB9Key3pzQBLLna0L0Ke76QM41Z4gJZ49GMV7
+	 uKzysiCphyE2UP/cXefVGblMHKlA92DT3p3TmpOZ+BzGgY0nAwKsi+rplH5Naor63Q
+	 2WpjSkr7z9qIw==
+Date: Wed, 24 Jun 2026 09:15:34 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: =?utf-8?B?R3LDqWdvaXJl?= Layet <gregoire.layet@9elements.com>
+Cc: joel@jms.id.au, andrew@codeconstruct.com.au, lkundrak@v3.sk, 
+	devicetree@vger.kernel.org, gregkh@linuxfoundation.org, jirislaby@kernel.org, 
+	robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, andrew@lunn.ch, 
+	jacky_chou@aspeedtech.com, yh_chung@aspeedtech.com, ninad@linux.ibm.com, 
+	anirudhsriniv@gmail.com, linux-serial@vger.kernel.org, linux-aspeed@lists.ozlabs.org, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 1/7] dt-bindings: serial: 8250: aspeed: add compatible
+ string for ast2600
+Message-ID: <20260624-realistic-spiked-parrot-db1d9c@quoll>
+References: <cover.1782224059.git.gregoire.layet@9elements.com>
+ <80d983887dfdfc7e70a6db95f8cb95b7312f3044.1782224059.git.gregoire.layet@9elements.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -48,74 +71,87 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-ID: <20260624-peci_clk-v1-2-ee28b92e22e9@aspeedtech.com>
-References: <20260624-peci_clk-v1-0-ee28b92e22e9@aspeedtech.com>
-In-Reply-To: <20260624-peci_clk-v1-0-ee28b92e22e9@aspeedtech.com>
-To: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
-	<sboyd@kernel.org>, Brian Masney <bmasney@redhat.com>, Rob Herring
-	<robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
-	<conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery
-	<andrew@codeconstruct.com.au>
-CC: <linux-clk@vger.kernel.org>, <devicetree@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
-	<linux-kernel@vger.kernel.org>, Ryan Chen <ryan_chen@aspeedtech.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1782279900; l=2202;
- i=ryan_chen@aspeedtech.com; s=20251126; h=from:subject:message-id;
- bh=JaGTBdxpHJ5fN4jX4hONzuI8SeSX32dT0OINEwJOlW0=;
- b=wx53gZa51rQIOOSRp0P/kkRu9+ktuqQtS5K609XIMHAwbayPtB5QtVf4naHm8A0llGtrfkO95
- tE4mAvNyW87CL9CLtBeyFKTQlqTIJG7T9HFgER1nGU/HP8s2wgzxj01
-X-Developer-Key: i=ryan_chen@aspeedtech.com; a=ed25519;
- pk=Xe73xY6tcnkuRjjbVAB/oU30KdB3FvG4nuJuILj7ZVc=
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <80d983887dfdfc7e70a6db95f8cb95b7312f3044.1782224059.git.gregoire.layet@9elements.com>
 
-Register the SoC1 PECI clock as a mux selected by SCU1_CLK_SEL2 bit 16,
-choosing between the 25MHz CLKIN and HPLL/4. Add the HPLL/4 fixed factor
-clock to serve as the second mux parent.
+On Tue, Jun 23, 2026 at 02:25:39PM +0000, Gr=C3=A9goire Layet wrote:
+> The ast2600 was using the ast2500 vuart compatible string.
+> This change makes it possible to have ast2600-specific properties.
+>=20
+> Signed-off-by: Gr=C3=A9goire Layet <gregoire.layet@9elements.com>
 
-Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
----
- drivers/clk/aspeed/clk-ast2700.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+Do not attach (thread) your patchsets to some other threads (unrelated
+or older versions). This buries them deep in the mailbox and might
+interfere with applying entire sets. See also:
+https://elixir.bootlin.com/linux/v6.16-rc2/source/Documentation/process/sub=
+mitting-patches.rst#L830
 
-diff --git a/drivers/clk/aspeed/clk-ast2700.c b/drivers/clk/aspeed/clk-ast2700.c
-index 8b7b382f6f3e..5f499ec0e1d1 100644
---- a/drivers/clk/aspeed/clk-ast2700.c
-+++ b/drivers/clk/aspeed/clk-ast2700.c
-@@ -273,6 +273,13 @@ static const unsigned int sdclk_parent_ids[] = {
- 
- static const struct clk_hw *sdclk_parent_hws[ARRAY_SIZE(sdclk_parent_ids)];
- 
-+static const unsigned int peciclk_parent_ids[] = {
-+	SCU1_CLKIN,
-+	SCU1_CLK_HPLL_DIV4
-+};
-+
-+static const struct clk_hw *peciclk_parent_hws[ARRAY_SIZE(peciclk_parent_ids)];
-+
- #define FIXED_CLK(_id, _name, _rate) \
- 	{ \
- 		.id = _id,	\
-@@ -458,6 +465,7 @@ static const struct ast2700_clk_info ast2700_scu1_clk_info[] __initconst = {
- 	PLL_CLK(SCU1_CLK_HPLL, CLK_PLL, "soc1-hpll", SCU1_CLKIN, SCU1_HPLL_PARAM),
- 	PLL_CLK(SCU1_CLK_APLL, CLK_PLL, "soc1-apll", SCU1_CLKIN, SCU1_APLL_PARAM),
- 	PLL_CLK(SCU1_CLK_DPLL, CLK_PLL, "soc1-dpll", SCU1_CLKIN, SCU1_DPLL_PARAM),
-+	FIXED_FACTOR_CLK(SCU1_CLK_HPLL_DIV4, "soc1-hpll_div4", SCU1_CLK_HPLL, 1, 4),
- 	FIXED_FACTOR_CLK(SCU1_CLK_APLL_DIV2, "soc1-apll_div2", SCU1_CLK_APLL, 1, 2),
- 	FIXED_FACTOR_CLK(SCU1_CLK_APLL_DIV4, "soc1-apll_div4", SCU1_CLK_APLL, 1, 4),
- 	FIXED_FACTOR_CLK(SCU1_CLK_CAN, "canclk", SCU1_CLK_APLL, 1, 10),
-@@ -481,6 +489,8 @@ static const struct ast2700_clk_info ast2700_scu1_clk_info[] __initconst = {
- 		uxclk_parent_hws, SCU1_CLK_SEL2, 0, 2),
- 	MUX_CLK(SCU1_CLK_HUXCLK, "huxclk", uxclk_parent_ids, ARRAY_SIZE(uxclk_parent_ids),
- 		uxclk_parent_hws, SCU1_CLK_SEL2, 3, 2),
-+	MUX_CLK(SCU1_CLK_PECI, "peciclk", peciclk_parent_ids, ARRAY_SIZE(peciclk_parent_ids),
-+		peciclk_parent_hws, SCU1_CLK_SEL2, 16, 1),
- 	DIVIDER_CLK(SCU1_CLK_SDCLK, "sdclk", SCU1_CLK_SDMUX,
- 		    SCU1_CLK_SEL1, 14, 3, ast2700_clk_div_table),
- 	PLL_CLK(SCU1_CLK_UARTX, CLK_UART_PLL, "uartxclk", SCU1_CLK_UXCLK, SCU1_UXCLK_CTRL),
+> ---
+>  .../devicetree/bindings/serial/8250.yaml      | 20 +++++++++++--------
+>  1 file changed, 12 insertions(+), 8 deletions(-)
+>=20
+> diff --git a/Documentation/devicetree/bindings/serial/8250.yaml b/Documen=
+tation/devicetree/bindings/serial/8250.yaml
+> index bb7b9c87a807..3cbd0f532e15 100644
+> --- a/Documentation/devicetree/bindings/serial/8250.yaml
+> +++ b/Documentation/devicetree/bindings/serial/8250.yaml
+> @@ -23,7 +23,9 @@ allOf:
+>      then:
+>        properties:
+>          compatible:
+> -          const: aspeed,ast2500-vuart
+> +          anyOf:
 
--- 
-2.34.1
+This should be oneOf (by convention and actually more accurate meaning).
+
+> +            - const: aspeed,ast2500-vuart
+> +            - const: aspeed,ast2600-vuart
+>    - if:
+>        properties:
+>          compatible:
+> @@ -287,17 +289,19 @@ properties:
+>    aspeed,sirq-polarity-sense:
+>      $ref: /schemas/types.yaml#/definitions/phandle-array
+>      description: |
+> -      Phandle to aspeed,ast2500-scu compatible syscon alongside register
+> -      offset and bit number to identify how the SIRQ polarity should be
+> -      configured. One possible data source is the LPC/eSPI mode bit. Only
+> -      applicable to aspeed,ast2500-vuart.
+> +      Phandle to aspeed,ast2500-scu or aspeed,ast2600-scu compatible sys=
+con
+> +      alongside register offset and bit number to identify how the SIRQ
+> +      polarity should be configured. One possible data source is the LPC=
+/eSPI
+> +      mode bit. Only applicable to aspeed,ast2500-vuart and
+> +      aspeed,ast2600-vuart.
+>      deprecated: true
+> =20
+>    aspeed,lpc-io-reg:
+>      $ref: /schemas/types.yaml#/definitions/uint32-array
+>      maxItems: 1
+>      description: |
+> -      The VUART LPC address.  Only applicable to aspeed,ast2500-vuart.
+> +      The VUART LPC address. Only applicable to aspeed,ast2500-vuart and
+> +      aspeed,ast2600-vuart.
+> =20
+>    aspeed,lpc-interrupts:
+>      $ref: /schemas/types.yaml#/definitions/uint32-array
+> @@ -305,8 +309,8 @@ properties:
+>      maxItems: 2
+>      description: |
+>        A 2-cell property describing the VUART SIRQ number and SIRQ
+> -      polarity (IRQ_TYPE_LEVEL_LOW or IRQ_TYPE_LEVEL_HIGH).  Only
+> -      applicable to aspeed,ast2500-vuart.
+> +      polarity (IRQ_TYPE_LEVEL_LOW or IRQ_TYPE_LEVEL_HIGH). Only
+> +      applicable to aspeed,ast2500-vuart and aspeed,ast2600-vuart.
+> =20
+
+More important, where is documenting of the actual compatible?
+
+
+Best regards,
+Krzysztof
 
 
