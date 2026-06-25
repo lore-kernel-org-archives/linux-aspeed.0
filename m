@@ -1,92 +1,51 @@
-Return-Path: <linux-aspeed+bounces-4305-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4306-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7FCF0CDB47F
-	for <linux-aspeed@archiver.kernel.org>; Thu, 25 Jun 2026 05:34:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DA320CDB47F
+	for <linux-aspeed@archiver.kernel.org>; Thu, 25 Jun 2026 06:36:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gm6tX2Z3mz2xwH;
-	Thu, 25 Jun 2026 15:34:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::12c" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782365652;
-	cv=pass; b=PBwzCOG44Op3KZ2pdcVGQFEmNUj5tsiOS+fcpnGZ/yhQ9BNDGV55eUS6tX/4XERUIHz5A+wg6wQmzcynNoiojNxa7MjsOP4PYsXkGDT9Un9w+to+590DnYZhiZRze3TYqXfIrKXRbizlF0Yz2hDeXs+JsXrM/r8vZwQI10ViNKWeOFaAOwwMF9RTJnmPPg1aJ81KC+lfOnS7E7tmJzZcYeySajFAi7MF74RdNuBzY5xX8EYmyLrNrL5XN79Kgm9fYtWM3qyTKVUKk6zxyvmVHynPkmpQkOoOdj4AnKTRql/U/fd6x5M718LEbMUxsgORyoL2uzEYe45Kk+RBWAgJSA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782365652; c=relaxed/relaxed;
-	bh=A+9zdrnWdYPYO0YMlgRGb3kLO0yAknKaNgGna5hHFMo=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=jZs+vKaD7mFk4OaUv1IRa17XBmYVVJ7Kr86DMDK+TKtLBUPVOoZZ8mCh2tGdiFv9mq6kyA6TkR1UjqdszC8fQRhoVgkAT7jFnnPLzNvLCX0wSgkxbLIpJCyiFeHZMMH2IERO8KjYJBafEtKEyXcuQ/MBZTxvVr6clFS6WsvyoI/b+JnFEbkUYAjzYFbKzNAqpi0BqAorRrnt5jZ8Asmzmes9U8eMIf9d6Ugen+j3CkePzYUYlqThbUWF8lP1AG1eyC6QYhkl2jZctK29vsEcmlSa6QhaqSqoQjiX0tcoWrzGEeLOsbBgV3ioBpr46v3QXQt6ss/yOEOUjDZv6CEz2Q==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=LOxwMWxq; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::12c; helo=mail-lf1-x12c.google.com; envelope-from=kylehsieh1995@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gm8GF082Cz2xwH;
+	Thu, 25 Jun 2026 16:36:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782369380;
+	cv=none; b=YfiDRerAIJ6xUlM5g27d/rb5gFIiX970s8W0j5RSBUka7OzoJtA6xtjjfJBzC5ibdanuxn94Q/tGD5OZ6q8apjcRJpvo/wDcBeWWQy6GMJ5fWrVVg9KEWZJ0CGuvDWRDcm401mbG5NgqcAMG8eEM8e+27hTyNKJC7dGQUQv4wLbvf1mGusEaG1aMA5CzGae+z9ztJpfsbI1RWjtbU+T29JVRv4KVQsg/584ekbgtWlFCNyOqa1WMhg7SrQZEa/yanflfKX0W1s9GUR+OM4fXySKcEiAD/M5lRyZSs9/Ya/asoVvwAu3TLDuCGhkjtYooYeQI+TNBNMBv+wg1muuMuQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1782369380; c=relaxed/relaxed;
+	bh=iccqRVwxvhQewqfPMfK2FxEEJuivEneqQEGd1Rf7CFw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=GxeIFWWpfKHE433bnfDCwzAO/A1Uelz4XYSlV4rmI30z6IZirvREr7zONYEZ91b5h96OAmPJVyThswezCOoPB31e90WifbemjiPszDtFKxaM3nRu1P3HKcD1Fy9mquY6N/mwFcYLsV+4cRIXeXYxCYX4wVjFlwlBB+zFw55HYDD0B60CHZ8FHWxk2Dm+N8PxD4yhtnwhSV09XniaHOYzHtl+JCMjvVSKA0IaH9tUtkXzFlPOeWe4z7juLsOxh4/I5iY7H+SvvedfJD4rVg2tLo8T1BoH/7BjgZgzWtGms40t9Phh3vtxbmws6b/MEFcg7Ne5OyRoyFNbWnRgIlY9GQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Udh2bRr6; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=LOxwMWxq;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Udh2bRr6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::12c; helo=mail-lf1-x12c.google.com; envelope-from=kylehsieh1995@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gm6tV30KYz2xPL
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 25 Jun 2026 15:34:09 +1000 (AEST)
-Received: by mail-lf1-x12c.google.com with SMTP id 2adb3069b0e04-5aa68cf9123so1959781e87.0
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 24 Jun 2026 22:34:09 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1782365641; cv=none;
-        d=google.com; s=arc-20260327;
-        b=muBkRgXCnrnMnCgJdrXZ/axFWaHkwjQu2eijEUfC1SWLisGmrY81QdLzC6oYANTFef
-         5Y8EL+qPPOi1roSRLJdXAsg+ZUqAbkQT440I4Foe9PfCGhoxHdmSAKCkMHA4mMoVKTXW
-         T95bq1rOinVdCKx2oPdh5JodL11dC98X7CJWQiC2GCZOyhZSrpScRlH2cKe8n2w1JnYr
-         sTjAqUUWNaaKLxbqVXm5XQOyDMvnLaIDjsGer4Ue1iDosZFjIO37uoy9rnnYLYbQpZf8
-         JOuHEiPu6OI8Wxfr8sSIRVlu66XB/apohUl1Up0R+lC8XNTgteJ8xsbTnWaYmpEaB+Fw
-         1qnw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=A+9zdrnWdYPYO0YMlgRGb3kLO0yAknKaNgGna5hHFMo=;
-        fh=kXi+MiF2REb0yqgrNLev6fx23t95AizfXSdhJrKtQkw=;
-        b=JcECzcSos8kgWRdXLf1cXsm6YsZSxsHrv6asycDvTi2J2hXDcTAg/Qa7Db3D4I3JKC
-         TDlaboxkJWDBKoGYRkJFzr1BpLE7QS75JkvpJFZLBFqW/0xOn4U8HmNvKcfaE96fzRVZ
-         xeolK5kurG+m4HPMqW9+oZF+ODAihUx5OvgMEzYMw0bMky+hXJOZ8zq94S55dq5NJf9i
-         tTdoVSMtRut3BztCGA63li/SlTonHRqyurbLi3mZOSamDvW+yoSRSmQLrok6GI6Pazog
-         Guo7hVH1wjJ1AY8+UzYfC7lV8xYhRQPlCyF45CtgN3hHw7qZkC6HSD2WEiXSomRqitu5
-         cx/A==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1782365641; x=1782970441; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=A+9zdrnWdYPYO0YMlgRGb3kLO0yAknKaNgGna5hHFMo=;
-        b=LOxwMWxqkHpnhnUZYAujT3l3X6zwzHBiKfhPLdfCIyqBbqTwjqXROjsZNHgjoqYpVJ
-         dnx+TGwcQV/MsYH7EWbmItyTOjwLe/xlTxSmexRXFQBzsIGi07QDkqnaqnrI3I0duHhR
-         ccLPGu8rJ1OcLc/8xs4QeSOwoAYWA4ud0iZcNG/npTl8oxsWeZf7O3vx24LVF9Leg/1d
-         zZYoi/vuijza1FQN5rHJEEyRJgM8lihKqGlR0wqAgoFg2dXkRnatUB95KxD+xH056S4Z
-         4omNgCIA265uwmYyv6Y+Q3oQZny1dENZOITJFbtZPkkwLk47UD+kWjQgeAU5oZJyXjlF
-         gCIA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1782365641; x=1782970441;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=A+9zdrnWdYPYO0YMlgRGb3kLO0yAknKaNgGna5hHFMo=;
-        b=lXKmN+WHfm0K9ZA07npFwt/fc6J15rmYUus/8hXnQAi/czQo6+/URtVP+jEY5DwYKp
-         d82jwO7UkTLUaIFuwvFjkqACrMVBDsO42XfPfjVEnvlrCE9HSwCMIkGIowRosh7YNIbp
-         YzQZe3YdWEXHnnHCpxn9S/kcTpszZpA4jab48sQLc/38hK5nsHWNk0JxBL8w4kQFVv5g
-         5hVRZ6aaALCtjDSS3OmUZ/kNlQlEbZD7z0BDfljLl7bjA28aABAqhndjtHXxq7gWQ4Od
-         AME6s2VXepgT/ZNFygf52lBGC5SjNuHBSMn0nSV/nmquhUC5HELAV1bLgWTZDzUlocdt
-         RaXg==
-X-Forwarded-Encrypted: i=1; AHgh+RqHwMdjOL/iWpVaxMZUQ5UPhkKP0+PD8Bjzgb20uWai5R9MGOC+uKS60Jl+wI7d5P1gg0QA9jplYWqlrjc=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyPYxAWfoNTgF+GCvfepdUPpjRb/ZvcvpE3OhpsHi43Tm+4DHlM
-	AWg5O+kvRqlewLfgpbc7VaeudrC5r+IUSo1E6L6gyr7ZQaPE5Ectxu4X31nTHHzjM3u2+OXe26E
-	qao6pUtm5Ekl6GzxU3IbuWXPVUnUauZc=
-X-Gm-Gg: AfdE7cmOX3cO5FWUsM+mZuEODqLvqf47OxIRn8qJgbSBgx9g3qE79bUvurnKPe5TjyL
-	y2alWeTqVaOPXfuZW3KLDDYCd2tvxVImq7sy+RbKnOXu5giSXry+HGfOPqjSJbRGjeY5+isPHzD
-	SXdRCbIFt3Nm8ydO2waGLG5965bS3JCBs+jnzux1vD1bnsXT/g2hKIhQXiT3paW9/1pXocQEzIQ
-	k9ikWH/tauk2BFgAro8sJnxFELESOcIw1dPzMIamQQWKp6TPHHgzoi8tvNAwKr0bl/aFYNdMg==
-X-Received: by 2002:a05:6512:2c86:b0:5ae:a348:1292 with SMTP id
- 2adb3069b0e04-5aea34815d2mr45473e87.38.1782365640650; Wed, 24 Jun 2026
- 22:34:00 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gm8GD0Prqz2xdb
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 25 Jun 2026 16:36:19 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id B9A9243BD4;
+	Thu, 25 Jun 2026 06:36:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4F4961F000E9;
+	Thu, 25 Jun 2026 06:36:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1782369377;
+	bh=iccqRVwxvhQewqfPMfK2FxEEJuivEneqQEGd1Rf7CFw=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=Udh2bRr6XK88oSDv+Zm9Ba41OghYlzOckyWxDmSExO+EfEeU4vo2Qba7n31uLrNEe
+	 7uv3a4Oy+qxoBrZ5Rje+TUs2gNbBqlaJ9c6XekJFx8cXN4OTR6G8K8YXvFv73uZ+0q
+	 jWMVn8tWqSa1bD0+DVn8f/0DyMlYBoVup1dU1pwUpIDCKszo0vsmxAo0JSs4yWcEN8
+	 vCp2l30W27riiu2x1M3Yg9O9LdRkgMjXxSI8y4iWvJUtUvSyAT4SBCtLYJhY6skLfX
+	 DwgKB6dqFudG/LanO8cox6GNDUiwNyMTsyPTV7b4AVtztt0dKHiyoNEdDX+zsLTCd1
+	 WklrG+75DCZwg==
+Message-ID: <b9ca9e36-a851-4a98-a739-ca99dd534d6d@kernel.org>
+Date: Thu, 25 Jun 2026 08:36:08 +0200
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -100,138 +59,87 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260615-ventura2_initial_dts-v8-0-c89f92c80447@gmail.com>
-In-Reply-To: <20260615-ventura2_initial_dts-v8-0-c89f92c80447@gmail.com>
-From: Kyle Hsieh <kylehsieh1995@gmail.com>
-Date: Thu, 25 Jun 2026 13:35:37 +0800
-X-Gm-Features: AVVi8CcTmMqcRiP9802pZDxyIJzSjqDj0HrKRWQTIvD6r3wqR2s-_IKZO7UmEjM
-Message-ID: <CAF7HswP25GXigSqL+bGBz=0=RST2XjS7fNmkKcsy-qjxfg_1jQ@mail.gmail.com>
-Subject: Re: [PATCH v8 0/2] Add Meta(Facebook) ventura2 BMC(AST2600)
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
-	Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
-	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 2/7] dt-bindings: serial: 8250: aspeed: add
+ aspeed,vuart-over-pci bool prop
+To: =?UTF-8?Q?Gr=C3=A9goire_Layet?= <gregoire.layet@9elements.com>
+Cc: joel@jms.id.au, andrew@codeconstruct.com.au, lkundrak@v3.sk,
+ devicetree@vger.kernel.org, gregkh@linuxfoundation.org,
+ jirislaby@kernel.org, robh@kernel.org, krzk+dt@kernel.org,
+ conor+dt@kernel.org, andrew@lunn.ch, jacky_chou@aspeedtech.com,
+ yh_chung@aspeedtech.com, ninad@linux.ibm.com, anirudhsriniv@gmail.com,
+ linux-serial@vger.kernel.org, linux-aspeed@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+References: <cover.1782224059.git.gregoire.layet@9elements.com>
+ <73b2bd81ce70814612e6d3cb689c3296de742aaf.1782224059.git.gregoire.layet@9elements.com>
+ <20260624-original-vigorous-mayfly-dfceac@quoll>
+ <CAFi2wKbKr8FMcJeGWA5e1UZUTh2=LwYNkLEj6exd2as7=AcvVQ@mail.gmail.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ xsFNBFVDQq4BEAC6KeLOfFsAvFMBsrCrJ2bCalhPv5+KQF2PS2+iwZI8BpRZoV+Bd5kWvN79
+ cFgcqTTuNHjAvxtUG8pQgGTHAObYs6xeYJtjUH0ZX6ndJ33FJYf5V3yXqqjcZ30FgHzJCFUu
+ JMp7PSyMPzpUXfU12yfcRYVEMQrmplNZssmYhiTeVicuOOypWugZKVLGNm0IweVCaZ/DJDIH
+ gNbpvVwjcKYrx85m9cBVEBUGaQP6AT7qlVCkrf50v8bofSIyVa2xmubbAwwFA1oxoOusjPIE
+ J3iadrwpFvsZjF5uHAKS+7wHLoW9hVzOnLbX6ajk5Hf8Pb1m+VH/E8bPBNNYKkfTtypTDUCj
+ NYcd27tjnXfG+SDs/EXNUAIRefCyvaRG7oRYF3Ec+2RgQDRnmmjCjoQNbFrJvJkFHlPeHaeS
+ BosGY+XWKydnmsfY7SSnjAzLUGAFhLd/XDVpb1Een2XucPpKvt9ORF+48gy12FA5GduRLhQU
+ vK4tU7ojoem/G23PcowM1CwPurC8sAVsQb9KmwTGh7rVz3ks3w/zfGBy3+WmLg++C2Wct6nM
+ Pd8/6CBVjEWqD06/RjI2AnjIq5fSEH/BIfXXfC68nMp9BZoy3So4ZsbOlBmtAPvMYX6U8VwD
+ TNeBxJu5Ex0Izf1NV9CzC3nNaFUYOY8KfN01X5SExAoVTr09ewARAQABzSVLcnp5c3p0b2Yg
+ S296bG93c2tpIDxrcnprQGtlcm5lbC5vcmc+wsGPBBMBCgA5AhsDBgsJCAcDAgYVCAIJCgsE
+ FgIDAQIeAQIXgBYhBJvQfg4MUfjVlne3VBuTQ307QWKbBQJp2mE8AAoJEBuTQ307QWKbeaIP
+ /ihHTkTW4KsN/DQ945JJbyu5tI0J80Wue7QyyLPglyKfhgb5cLLNPpOC8cCIJsc7+W3i2P38
+ s2c1cOH6CYGE7E9ur3Vfme8NW2S2I/Z8VC7bZnzyS23wT17LrsdS/qCpx4o8U+pt/xdXDKph
+ EGRYrIEmMpUWvyYzyYKGIe25FtaayIIKpq8eZYyFcp2f/sG5IkOW5uZzHPMPdcm87jU7fyuQ
+ rAU2vx9r+ulUfQ/q9Z2roC/ode3l7t2pN7BCBCsUDp6JCrUyZrtT1e7EbA0ZRP3aOBNk2P2E
+ DQOgJGjGdO5Yx2Y9LFtltu6JbsBJHi1syGRX3AtQYOMc4Y1WGoeZJmMlvKj2ZqqXNkcWi2DS
+ IQEWB0uW6CqFsBBIMGDa+6OzdaVO/uAVXWDWml02Men3CILdI1MbVjoh8ECqYUY7OQ+JJvNN
+ vnliuq5WM3Ghd3jg/LZZrxXjdIginRHFQCjIJYLKpLZWm1/iDFedcfzqRNYmTtqscdCNHW41
+ oT3Z7BmO9xwdjuwBS6nmS6JJwkbf5Ot2QR4pB/DRU7ZwjT1qHe+9r9gF32wXVQatHNGK/VVu
+ sfwOnkdxCWkp/qb2gdQRmZh+SedStWshigH6sNfuHBloF/q+hjMRc8b2m326OZdrbSHwY1Sz
+ vti8Hn7n8NjdHO9LKB7BIdjkA9DA5WsqOuVCzsFNBFVDXDQBEADNkrQYSREUL4D3Gws46JEo
+ Z9HEQOKtkrwjrzlw/tCmqVzERRPvz2Xg8n7+HRCrgqnodIYoUh5WsU84N03KlLueMNsWLJBv
+ BaubYN4JuJIdRr4dS4oyF1/fQAQPHh8Thpiz0SAZFx6iWKB7Qrz3OrGCjTPcW6eiOMheesVS
+ 5hxietSmlin+SilmIAPZHx7n242u6kdHOh+/SyLImKn/dh9RzatVpUKbv34eP1wAGldWsRxb
+ f3WP9pFNObSzI/Bo3kA89Xx2rO2roC+Gq4LeHvo7ptzcLcrqaHUAcZ3CgFG88CnA6z6lBZn0
+ WyewEcPOPdcUB2Q7D/NiUY+HDiV99rAYPJztjeTrBSTnHeSBPb+qn5ZZGQwIdUW9YegxWKvX
+ XHTwB5eMzo/RB6vffwqcnHDoe0q7VgzRRZJwpi6aMIXLfeWZ5Wrwaw2zldFuO4Dt91pFzBSO
+ IpeMtfgb/Pfe/a1WJ/GgaIRIBE+NUqckM+3zJHGmVPqJP/h2Iwv6nw8U+7Yyl6gUBLHFTg2h
+ YnLFJI4Xjg+AX1hHFVKmvl3VBHIsBv0oDcsQWXqY+NaFahT0lRPjYtrTa1v3tem/JoFzZ4B0
+ p27K+qQCF2R96hVvuEyjzBmdq2esyE6zIqftdo4MOJho8uctOiWbwNNq2U9pPWmu4vXVFBYI
+ GmpyNPYzRm0QPwARAQABwsF2BBgBCgAgAhsMFiEEm9B+DgxR+NWWd7dUG5NDfTtBYpsFAmna
+ YUkACgkQG5NDfTtBYptX+BAApg32CkxwNucNEi8WfWA8oKkW0y8YDuY6ORMo9FWNGiT/OTy0
+ vyJrLocrpn86zwfjVp+eCrssPYh8eqJfnWqmYv6ACQtHPYzPZQ3mSo8H97Z01oUxITzCxpXm
+ ZkLgPIqtDPcC2E3dPM/fVxcyowM8XsaMA9wcsaUYrta8toOq2b9tKcjleKMfMrm0gQ9u7wUc
+ QbLkwj6TCLOwucb07GXzLTNF9PZmaDUpKAZjMjmrW+le+SFvQbhamx0rxLWPR0NWntXpbCn+
+ +ACch03p/JyTBVktxFsFyCt7pTPE1kEaeuXBTe/a2D9iQvRxRW19LvuO2e59/u1wYUiH/orz
+ wbIC2S4dBsPAPihL3ztOU1yE86GPyQtSE0kU+/7snnLt4QGi6PChf3t5gnNjAzjUUovO8rgI
+ c+5yN5heq5loYHgK6OQ9OlHzsPHO9e9MOQcKlFycs1pyijFGzDwdNUm/SchK8iWT2QApTx4A
+ K9bCVaboTA2T77QYkRcRJYSsO1alGX0ome/hMLD1daXlkrNUp1HWa3K4iytLRXjCSIorWiGs
+ n+q3krnpXu3TFkA8qtOFZMdnIiFuiq1yLT8hptsV5xh1TA2nsVvSYiaCr3q4s4BKjS/KrLDb
+ qoxzw8ISjdUp4pA85vb6YLCmb39NgidD+7PmAr65lBNveIFynTgsja1rRQ4=
+In-Reply-To: <CAFi2wKbKr8FMcJeGWA5e1UZUTh2=LwYNkLEj6exd2as7=AcvVQ@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-Hi Maintainers,
+On 24/06/2026 14:48, Grégoire Layet wrote:
+> Hi Krzysztof,
+> 
+>> What does that mean? How UART can be accessible over PCI bus?
+> 
+> It's a Virtual UART. Internally, it's two FIFOs accessible via
+> 8250-compatible register sets on both ends.
 
-Just a gentle ping on this v8 series.
-All review comments from the previous versions have been addressed.
-Please let me know if there is anything else needed for this to be
-applied.
+I do not know what is Virtual UART...
 
-Thanks,
-Kyle
+> There is 4 Virtuals UARTs on the LPC bus of the AST2600 and 2 of them
+> are bridged over the PCI bus.
+> So, from the host, you can access the 8250 register set on the PCI bus.
 
-On Mon, Jun 15, 2026 at 10:44=E2=80=AFAM Kyle Hsieh <kylehsieh1995@gmail.co=
-m> wrote:
->
-> Summary:
-> Add linux device tree entry related to Meta(Facebook) ventura2.
-> specific devices connected to BMC(AST2600) SoC.
->
-> Signed-off-by: Kyle Hsieh <kylehsieh1995@gmail.com>
-> ---
-> Changes in v8:
-> - Addressed review comments from Andrew Lunn:
->   * Added a detailed comment to the Marvell 88E6393X EEPROM node to clari=
-fy its hardware I2C multiplexer isolation and out-of-band firmware update m=
-echanism, explaining why there is no concurrent access or multi-master scen=
-ario.
-> - Link to v7: https://lore.kernel.org/r/20260611-ventura2_initial_dts-v7-=
-0-a61d8902bc5f@gmail.com
->
-> Changes in v7:
-> - Updated the commit message to include a detailed description of the Ven=
-tura2 platform's purpose and its key hardware features.
-> - Fix comments from Andrew Jeffery:
->   * Ensured consistent blank lines to separate child nodes from parent pr=
-operties and from each other throughout the DTS.
->   * Sorted fan nodes in ascending order.
->   * Replaced '//' comments with '/* */' block comments.
-> - Fix feedback from Sashiko AI:
->   * Added 'idle-state =3D <6>;' to the PCA9548 mux on i2c4.
-> - Link to v6: https://lore.kernel.org/r/20260610-ventura2_initial_dts-v6-=
-0-375d8e9d7ebf@gmail.com
->
-> Changes in v6:
-> - Addressed automated feedback from Sashiko bot:
->   * Clarified comments that io_expander0 and io_expander8 physically shar=
-e the same interrupt line (Wired-OR) by hardware design.
->   * Removed leading zeros from unit addresses in DAC nodes (dac@c, dac@e,=
- dac@f).
->   * Removed unused properties from the adc@48 node.
-> - Link to v5: https://lore.kernel.org/r/20260608-ventura2_initial_dts-v5-=
-0-37ee5bcf58b6@gmail.com
->
-> Changes in v5:
-> - Addressed review comments:
->   * Added comments explaining the necessity of 'legacy_' prefixes (hardwa=
-re label collision), pre-allocated I2C aliases (future expansions), and the=
- 'ledd1' naming convention (schematic alignment).
->   * Removed the empty `&mdio0` node to comply with upstream networking su=
-bsystem guidelines.
->   * Removed the redundant `&peci0` node.
->   * Sorted `&kcs3` and `&lpc_ctrl` nodes in strict alphabetical order.
-> - Hardware/DT alignment updates:
->   * Removed unpopulated sensors (adi,adt7461, infineon,tda38640, ti,ina23=
-0, ti,ina238) to accurately reflect the current board population.
->   * Added the secondary flash node (flash@1 labeled "e810") under the &sp=
-i2 bus.
-> - Link to v4: https://lore.kernel.org/r/20260424-ventura2_initial_dts-v4-=
-0-806b00ea4314@gmail.com
->
-> Changes in v4:
-> - Fixed capitalization: "ventura2" -> "Ventura2".
-> - Reordered I2C child nodes in ascending order of unit addresses.
-> - Enable PECI, LPC control, and KCS3 interfaces for host communication.
-> - Configure MCTP controller on I2C4 and enable MCTP support for specific =
-mux channels.
-> - Add Infineon TDA38640 and TI INA230 power monitor nodes.
-> - GPIO and Pinmux cleanup for PVT:
->     - Aligned gpio-line-names as requested.
->     - Remove unused or non-existent GPIO line names to align with Ventura=
-2 PVT.
->     - Update specific GPIO pins to empty strings where signals were remov=
-ed or consolidated.
-> - Adjust SGPIOM frequency to 200kHz and update signal line names.
-> - Enable UART3 and add serial2 alias.
-> - Link to v3: https://lore.kernel.org/r/20260113-ventura2_initial_dts-v3-=
-0-2dbfda6a5b47@gmail.com
->
-> Changes in v3:
-> - Add annotation for marvel 88e6393x
-> - Modify the gpio-line-name
-> - Modify the node order alphabetically
-> - Modify dt-bindings document for rmc instead of bmc
-> - Move the gpio-line-names to original node
-> - Link to v2: https://lore.kernel.org/r/20251224-ventura2_initial_dts-v2-=
-0-f193ba5d4073@gmail.com
->
-> Changes in v2:
-> - Remove unused mdio
-> - Link to v1: https://lore.kernel.org/r/20251222-ventura2_initial_dts-v1-=
-0-1f06166c78a3@gmail.com
->
-> ---
-> Kyle Hsieh (2):
->       dt-bindings: arm: aspeed: add Meta ventura2 board
->       ARM: dts: aspeed: ventura2: Add Meta ventura2 BMC
->
->  .../devicetree/bindings/arm/aspeed/aspeed.yaml     |    1 +
->  arch/arm/boot/dts/aspeed/Makefile                  |    1 +
->  .../dts/aspeed/aspeed-bmc-facebook-ventura2.dts    | 2903 ++++++++++++++=
-++++++
->  3 files changed, 2905 insertions(+)
-> ---
-> base-commit: 9448598b22c50c8a5bb77a9103e2d49f134c9578
-> change-id: 20251222-ventura2_initial_dts-909b3277d665
->
-> Best regards,
-> --
-> Kyle Hsieh <kylehsieh1995@gmail.com>
->
+You mean these appear (or are) as PCI devices?
+
+> 
+Best regards,
+Krzysztof
 
