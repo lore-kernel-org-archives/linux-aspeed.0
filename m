@@ -1,52 +1,52 @@
-Return-Path: <linux-aspeed+bounces-4308-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4309-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11957CDE00E
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8210CDE011
 	for <linux-aspeed@archiver.kernel.org>; Fri, 26 Jun 2026 12:30:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gmw484xk6z2yYf;
-	Fri, 26 Jun 2026 22:30:16 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782462116;
-	cv=none; b=dHKE7dCkLybZCYrZcX8lYCa79cbMpMZU4pswewshrBk94kqleKwxc4+4FSL0a+cFedq7Ag9+azeJ6UQnTpGilyWMtkBvRmWz+Gzr3hkSfNVv5S5LwULs3d5ctpI2xgAdyRzlyljZS7jnqXkEgv4wEEe8YWt1Ji4upttuY0D9A/m6wYtsespVKjjytKt5SqUSXks2GcV5q4LM5f1mQA1IFYisN0hkV83CQKlcbwDTRNt0XGtH9Z7eRvke6EM2nUfjKB887sy32RpGuB+s3Fp/oSaSiMg2w+1dMHAUZYnLJ1PEO+Zx+a9K0jA+aPxYszKbBHNTefHEIxDKHRbGfT3Z9Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gmw490THYz2yVv;
+	Fri, 26 Jun 2026 22:30:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782462086;
+	cv=none; b=HWCPR9uIVreJ1A5bFZPY8Kn8FIqsViYqu6onj2cVLz1cgUch0lIPv46UyA7YJKOGZsearjWFX2ELkkheP78ZNJICLibN8Ked8H7/s3dVw3pEkZLVz8HLkXcoSUXuGeEXm0C0HvYVNYdnQapUL13xIzOE//vfF1RInuB/w0TZaizwgsY1FWavFWk3AcTfNd+Mm6V2tQ+ff+3gdz6h4xTQbDTUYhFqKOv+Pv9xkZxU32wPUJAfknn7Etd4U/k4TtlKIc2L14Ptd3bCjQfqZmR9UgnNdTzCyD3OXpTw0sbof5/r1777FEgO3dEeP7RxPJ1dVUIIYgVaXqsMtgEZfex2ZQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782462116; c=relaxed/relaxed;
-	bh=7N6xFs6HldNaJtHXB+1so7kMQ4CsatgFOfKvzUpfQ6c=;
+	t=1782462086; c=relaxed/relaxed;
+	bh=Xf3kAwe5ywIQY//rN3h6sBdlm1lF9rusVsWktLYdFkk=;
 	h=Content-Type:MIME-Version:Subject:From:Message-Id:Date:References:
-	 In-Reply-To:To:Cc; b=NpcYOQ62I51kSYhBMNUv1dH1LNtcpR0mAujGWBt9Cie1sHZR1xf8UOQAuRPPgTQz47SpzgcUfAveTarZ5FOf5JMnDmqChDlvyYShJRlodIp+tHvojH5qf9djts/Ei0zC+ESRHUcK1cdULPvkPRDlsh0r6jhaGmvWdttOmiao32UO1En+gG/4fCDrGiuAwu3xWlZCxb1yqM9QTFWKByiIhJBX42tTLP+T6t8P8pK08YokhCHN5SRMiAlG4n3bDuJKb+XdKnJQq/6xiGQk4lEaYd3aNE1DhI0YqqhFp37Dt1S06or72Ewei4EcVF0pe7x4w0OXVLOI0AjblgQ3E5LG0Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DLkaMOoe; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=Ig8FvfoInWJh1+6cakIEqYk4HkgwAiNCvR7FuEZbTCJf+3WZbprYILI2eMYV3Ql7sqMHGR1PO+3BhYF39ZuUDEVPdrpr18aP2lZuAv5G82DAbxZXza+DITPxKm/PseqHYm1RXcdU5lI85+fwxBC4H6WDlIjemI91SCrg0Vp1j9XpPQG61vOijz9FFPRIu8CkjjPoedSX3lnHlMKioUDDpNbjm/je5d5Un4iBrQ5IOUFNglS10GCo9WW6pW8uQgKagozhyDE0ds2B6P52DQAbEsMpeKHLMC43cOYa+VL7vt88V0yunM/UNaAns3QKcLYrkCVXpit/mJ75u54m5P5fgw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aA/AaODJ; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DLkaMOoe;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aA/AaODJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gmpYb0QhTz2yVv;
-	Fri, 26 Jun 2026 18:21:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gmpXy56NJz2yVv
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 26 Jun 2026 18:21:22 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 085944430E;
-	Fri, 26 Jun 2026 08:21:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DBDAC1F00A3A;
-	Fri, 26 Jun 2026 08:21:52 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 6C90A6021E;
+	Fri, 26 Jun 2026 08:21:20 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1B0AC1F00A3D;
+	Fri, 26 Jun 2026 08:21:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782462112;
-	bh=7N6xFs6HldNaJtHXB+1so7kMQ4CsatgFOfKvzUpfQ6c=;
+	s=k20260515; t=1782462080;
+	bh=Xf3kAwe5ywIQY//rN3h6sBdlm1lF9rusVsWktLYdFkk=;
 	h=Subject:From:Date:References:In-Reply-To:To:Cc;
-	b=DLkaMOoe7jjLq0zrWVM7g5T3weWBVn0GKvdUrsWL1NS6Qs/YGb/jSI/OCz0xvfzqS
-	 Qaym8bn+YQ7Yv3mFvqa3JZPMQyeTT1JkI61/DRV2mqoJOQ6RCZahCcrN/sZ0P41GxN
-	 lQMkVEyzffwbljfjI4cRAmJFH6TA/MXXocYqdJ0r2fyaFbY7MUFYbzOT2mQ1bO9ESQ
-	 aXENlZ4+KidZLyWpFEQCN/4TQ2SdvjPzYQw0gZqKyFHWnTN9MR5o7FqI9NLTieKhiJ
-	 eEE7hw/g70YQVjdOMlBaDUGyYwudw/LY4An0H/3ioGWkJoeS59H947CE7rYTKgUHWr
-	 baMoIKRFCt04w==
+	b=aA/AaODJC9hNx87l7DWmFqF1ycvUQDGXM6GzZfkNDnaN83wpqMr7NjTKa3W749koe
+	 hwI7hQleW1NVEl2PH70tTqE+TBtvDm8AwRL2dm6Hcj+k9PQxhyaItrC9HsLeyyIqR0
+	 zndpM5dfZUZ+rxd7ac/2X/rhEe3gGN3uSkL1j5ZvFuZKkz4qiMsVS0UdRBcW255bmd
+	 B7KThCYiQMxkacYR+Lx1CIiiqfC6QKOcMNcIWeEeOhqYwGxKSKPiOIfXmLesV17yR2
+	 Odx/7NmU+bJ7ZzRHg/3Xun0PK3w6/xBip2pDM77MGz/xkgB+IWxpgu7gJukMW3wPcN
+	 lLNjFjZn/RKUw==
 Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 199D639389E8;
-	Fri, 26 Jun 2026 08:21:41 +0000 (UTC)
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 5695239389E8;
+	Fri, 26 Jun 2026 08:21:08 +0000 (UTC)
 Content-Type: text/plain; charset="utf-8"
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
@@ -62,65 +62,51 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: Re: [PATCH v5 0/9] driver core: Fix some race conditions
+Subject: Re: [PATCH v9 0/4] Introduce ASPEED AST27xx BMC SoC
 From: patchwork-bot+linux-riscv@kernel.org
 Message-Id: 
- <178246209959.3816447.5329631417058038374.git-patchwork-notify@kernel.org>
-Date: Fri, 26 Jun 2026 08:21:39 +0000
-References: <20260406232444.3117516-1-dianders@chromium.org>
-In-Reply-To: <20260406232444.3117516-1-dianders@chromium.org>
-To: Doug Anderson <dianders@chromium.org>
-Cc: linux-riscv@lists.infradead.org, gregkh@linuxfoundation.org,
- rafael@kernel.org, dakr@kernel.org, stern@rowland.harvard.edu, aik@ozlabs.ru,
- johan@kernel.org, edumazet@google.com, leon@kernel.org, hch@lst.de,
- robin.murphy@arm.com, maz@kernel.org, aleksander.lobakin@intel.com,
- saravanak@kernel.org, akpm@linux-foundation.org, Frank.Li@kernel.org,
- jgg@ziepe.ca, alex@ghiti.fr, alexander.stein@ew.tq-group.com,
- andre.przywara@arm.com, andrew@codeconstruct.com.au, andrew@lunn.ch,
- andriy.shevchenko@linux.intel.com, aou@eecs.berkeley.edu, ardb@kernel.org,
- astewart@tektelic.com, bhelgaas@google.com, brgl@kernel.org,
- broonie@kernel.org, catalin.marinas@arm.com, chleroy@kernel.org,
- davem@davemloft.net, david@kernel.org, devicetree@vger.kernel.org,
- dmaengine@vger.kernel.org, driver-core@lists.linux.dev, gbatra@linux.ibm.com,
- gregory.clement@bootlin.com, hkallweit1@gmail.com, iommu@lists.linux.dev,
- jirislaby@kernel.org, joel@jms.id.au, joro@8bytes.org, kees@kernel.org,
- kevin.brodsky@arm.com, kuba@kernel.org, lenb@kernel.org, lgirdwood@gmail.com,
- linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-aspeed@lists.ozlabs.org, linux-cxl@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org, linux-mm@kvack.org,
- linux-pci@vger.kernel.org, linux-serial@vger.kernel.org,
- linux-snps-arc@lists.infradead.org, linux-usb@vger.kernel.org,
- linux@armlinux.org.uk, linuxppc-dev@lists.ozlabs.org,
- m.szyprowski@samsung.com, maddy@linux.ibm.com, mani@kernel.org,
- miko.lenczewski@arm.com, mpe@ellerman.id.au, netdev@vger.kernel.org,
- npiggin@gmail.com, osalvador@suse.de, oupton@kernel.org, pabeni@redhat.com,
- palmer@dabbelt.com, peter.ujfalusi@gmail.com, peterz@infradead.org,
- pjw@kernel.org, robh@kernel.org, sebastian.hesselbarth@gmail.com,
- tglx@kernel.org, tsbogend@alpha.franken.de, vgupta@kernel.org,
- vkoul@kernel.org, will@kernel.org, willy@infradead.org,
- yangyicong@hisilicon.com, yeoreum.yun@arm.com
+ <178246206701.3816447.15009741745882675380.git-patchwork-notify@kernel.org>
+Date: Fri, 26 Jun 2026 08:21:07 +0000
+References: <20260609-upstream_ast2700-v9-0-f631752f0cb1@aspeedtech.com>
+In-Reply-To: <20260609-upstream_ast2700-v9-0-f631752f0cb1@aspeedtech.com>
+To: Ryan Chen <ryan_chen@aspeedtech.com>
+Cc: linux-riscv@lists.infradead.org, robh@kernel.org, krzk+dt@kernel.org,
+ conor+dt@kernel.org, joel@jms.id.au, andrew@codeconstruct.com.au,
+ catalin.marinas@arm.com, will@kernel.org, arnd@arndb.de, krzk@kernel.org,
+ alexandre.belloni@bootlin.com, linusw@kernel.org, fustini@kernel.org,
+ pjw@kernel.org, palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr,
+ devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ soc@lists.linux.dev, conor.dooley@microchip.com
 
 Hello:
 
-This patch was applied to riscv/linux.git (fixes)
-by Danilo Krummrich <dakr@kernel.org>:
+This series was applied to riscv/linux.git (fixes)
+by Arnd Bergmann <arnd@arndb.de>:
 
-On Mon,  6 Apr 2026 16:22:53 -0700 you wrote:
-> The main goal of this series is to fix the observed bug talked about
-> in the first patch ("driver core: Don't let a device probe until it's
-> ready"). That patch fixes a problem that has been observed in the real
-> world and could land even if the rest of the patches are found
-> unacceptable or need to be spun.
+On Tue, 9 Jun 2026 10:47:17 +0800 you wrote:
+> This introduces initial support for the Aspeed AST27xx SoC and the AST2700
+> Evaluation Board (EVB) to the Linux kernel. The AST27xx is the 8th
+> generation Baseboard Management Controller (BMC) SoC from Aspeed,
+> featuring improved performance, enhanced security, and expanded I/O
+> capabilities compared to previous generations.
 > 
-> That said, during patch review Danilo correctly pointed out that many
-> of the bitfield accesses in "struct device" are unsafe. I added a
-> bunch of patches in the series to address each one.
+> AST27xx SOC Family
+>  - https://www.aspeedtech.com/server_ast2700/
+>  - https://www.aspeedtech.com/server_ast2720/
+>  - https://www.aspeedtech.com/server_ast2750/
 > 
 > [...]
 
 Here is the summary with links:
-  - [v5,7/9] driver core: Replace dev->dma_coherent with dev_dma_coherent()
-    https://git.kernel.org/riscv/c/3e2c1e213ac2
+  - [v9,1/4] dt-bindings: arm: aspeed: Add AST2700 board compatible
+    https://git.kernel.org/riscv/c/34efd73379ff
+  - [v9,2/4] arm64: Kconfig: Add ASPEED SoC family Kconfig support
+    https://git.kernel.org/riscv/c/df6f379eb4ac
+  - [v9,3/4] arm64: dts: aspeed: Add initial AST27xx SoC device tree
+    https://git.kernel.org/riscv/c/e77bb5dc5759
+  - [v9,4/4] arm64: configs: Update defconfig for AST2700 platform support
+    https://git.kernel.org/riscv/c/512cef2af615
 
 You are awesome, thank you!
 -- 
