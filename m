@@ -1,64 +1,55 @@
-Return-Path: <linux-aspeed+bounces-4314-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4315-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3598AC43458
-	for <linux-aspeed@archiver.kernel.org>; Mon, 29 Jun 2026 15:26:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61BB9C43458
+	for <linux-aspeed@archiver.kernel.org>; Mon, 29 Jun 2026 23:50:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gpqrX3HnKz2ySS;
-	Tue, 30 Jun 2026 01:26:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782746812;
-	cv=none; b=ZyjFecbx+647LsjzaqBSgDjE3a90bE8dYLpaAtrhzK2B8ZmNZaidV7jAB+GaT57FI49tzDcW1qiJWMrrgAyzJkLwpeonYxCGth76OJojvuNZakrpVDMtR0N85FSR4aBn7x/FtaXocXcIHlNoUWTWX3FGnyRqEPej6IyK+LGEQi3KUPUsGVIgyf61nv5A6Z/ynxqXcpc7dop1NNaKxxH9uNWobbPwoGJYRJDIV+KePDRZ+SQIzCKFJTB1BGxpzU2lKzhQIdZu23gzlZN7XUiwuaKd/cszuu8+vuyEPK+eHdsQOogjkD7fz7a0GqpDOIATtRtWh+smm9caJEWsTQmejA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gq31G59w5z2yRn;
+	Tue, 30 Jun 2026 09:50:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782715776;
+	cv=none; b=XXPRz7AO8lgwd34Rauts7/GQBQeQJLkwlAa7nhZarIfsm4K3q8g90QLi1hF1HWj+q95SwjBTYR7Hf4AR0HRXa2vaNzusbGjpOWtlOBfwjqXkkJM23LEjjxd8xQgKWlmRkSL3hIEDBkhDiIvoapNvL6rbuuZIYN+6FNboa6mnRRmHvzFS7spMPjocRj7XiR+z16BGLQVuyNoJBITQFwRmqdTvY/XErNRPiJj4KoblTmBNZVYQy8VtKJ9g+5gj8WcYuqfhbJXirVs4geCJ8UMeIP9rqaNFi5V1ULPXvGAxrT7QEWpykwo3t+REhES4rr5LtR98eRG5hD94VP2NnZGGXA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782746812; c=relaxed/relaxed;
-	bh=1DD1v7WAUfTa8LEsmdnXmo8TZcmGZDr0zVXhLE2Z5xY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=T6oNC0agr1B7Dfpqv8M0YKKYc9zfQt9QHCCurVMju3BZ9CK10hc3UKTP9YpHvELKi0v4HZ7NQGX2jtXWIn3DwfD0iPhMkWW2WnkjT60lcwlvxmkD9PRKafhqFYGXpkUfT8J9X+AO0maohipLOmWkYI0+BpTg6T3u9nduVgAknWD2Byb5gH7lPIMT8SYfb0tyHsumOkc+7XqCoX3okJAOTqsstbrRaRcQfm/EZ+UoaVs1FlVJPfeLtFxWogg+3lkw9VMjiVxz93coKAP5UpzCf9VpZjigcKwcCfwogoLNo1vyGzYaZ4qqSaUUrTDsARjiAHO1B5DGEUu1KJvhNuUVcw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kIQ37Fhi; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1782715776; c=relaxed/relaxed;
+	bh=elnn7JUGC5l+jKw9U2Iosas8+d3MHu6QPBJwE1B2V50=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=CrB4auwZxRGPAxaDQYLdArY91F6ZmEa1zScIk/ZxiYZE9WOgLAh1yS2CmmCgTMezToiKqOPuwv6qZcNp1Miq5PhnfRjLGi8Xud/wJVG+lRKrPCypitYsKv5ltlwmCbPiENya9QqBGAUpYIMwH6GrKlIbB1puCHCMfPNMZtTpldDxC9gosyNVTUKfa3OAivQv8dCCIVKhw0jIXOSzyynFAk3TvPlyIRN5rBlLqRgBC75XbZEY2B7FulA09h1AaVgdEvwwjhKOEo2f/PASiKb7EtwQn4RhWDKNRfeRn7CjO8lSWMuuebIPBM5igVOWOu3OgoJhzJYO01xDfeVFcbh1Uw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KJtjbnW1; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+yc_hsieh.aspeedtech.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kIQ37Fhi;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KJtjbnW1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+yc_hsieh.aspeedtech.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gpqrW03Bsz2yFc
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 30 Jun 2026 01:26:50 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 46698600AB;
-	Mon, 29 Jun 2026 15:26:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AF75A1F000E9;
-	Mon, 29 Jun 2026 15:26:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782746808;
-	bh=1DD1v7WAUfTa8LEsmdnXmo8TZcmGZDr0zVXhLE2Z5xY=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=kIQ37Fhi2asFeMqWXXsLFHsaVl4ib20zlyAFLNPHlXv0muZuUzgETqBfuj/Xy0YSa
-	 WJJts9i1xfRTBqy+zfHF5JnBJTN/zs0dNJNhfZhaGXZ8Z19wG+JNMOIwlQY1iqmiff
-	 PIziNckrvryuyZfyUnkqvaVrPWY2MHnD/UBExEufw9TxRtRGGQbL03J5eqvKCl69E3
-	 pDJ3L5POMusd4aiY7cHf4gavA7VhI/eO9NRlRTEBLytFyr1ZY95b2cvcTvDYFIdKTd
-	 hDbN0ncM+iPhk21ehxXhUZxcdXehe4d2QrzD7j+JKWClC5ai3hdfGDw94kMdZ2sphP
-	 o+cmD1krgsh/A==
-Date: Mon, 29 Jun 2026 16:26:43 +0100
-From: Conor Dooley <conor@kernel.org>
-To: yc_hsieh@aspeedtech.com
-Cc: Corey Minyard <corey@minyard.net>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	openipmi-developer@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org
-Subject: Re: [PATCH 3/4] dt-bindings: ipmi: Add optional LPC properties to
- ASPEED BT devices
-Message-ID: <20260629-bogus-vocation-db32e55a595f@spud>
-References: <20260629-aspeed-bt-bmc-multichannel-v1-0-fc23ee337f7a@aspeedtech.com>
- <20260629-aspeed-bt-bmc-multichannel-v1-3-fc23ee337f7a@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gpcMg5Gkgz2ySJ
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 29 Jun 2026 16:49:35 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id EFEAF43B03;
+	Mon, 29 Jun 2026 06:49:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id C72D9C19425;
+	Mon, 29 Jun 2026 06:49:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1782715773;
+	bh=uq6YWgDsWWGXAC45T6w2Ey4osYNKqHhIwFzNycMRum0=;
+	h=From:Subject:Date:To:Cc:Reply-To:From;
+	b=KJtjbnW1/mqKsn403xVrjfNllzjp/b4KZ0ab99n/OwnpfS7xL3m8NLEypUizpITYe
+	 d5Wi+eSF/E1L/X+8EQbNUuowHU25QdOzrPVfJzDbJqqHnayE8RQNg+NiVOaqQEXgw5
+	 lqKG1rKaujmOxgeuKulxFFzpZGa3p3f2mo0ccQOKOkAchx9t0XTWDznUQJ7V+HJiK6
+	 OKezfWYasXnMr/I2JULjMY8T2erEpk4m/csazqMENxhBparDm86LY/5qE1kxT8562/
+	 zixx8yNtgdmcMfdurTGAzi22dMS6nKcnRTBDug9zQtOzBbq+x/nm3THQqHpYGOlT5y
+	 agRvKEsmdvGAA==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BCD8FC43327;
+	Mon, 29 Jun 2026 06:49:33 +0000 (UTC)
+From: Yu-Che Hsieh via B4 Relay <devnull+yc_hsieh.aspeedtech.com@kernel.org>
+Subject: [PATCH 0/4] ipmi: bt-bmc: Add configurable LPC host interface
+Date: Mon, 29 Jun 2026 14:48:57 +0800
+Message-Id: <20260629-aspeed-bt-bmc-multichannel-v1-0-fc23ee337f7a@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -72,109 +63,77 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="JftmSqqify0j7mOM"
-Content-Disposition: inline
-In-Reply-To: <20260629-aspeed-bt-bmc-multichannel-v1-3-fc23ee337f7a@aspeedtech.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAFkVQmoC/x3MQQqAIBBA0avErBswsYKuEi3UxhooC60IpLtnL
+ R98foJIgSlCVyQIdHHkzWdUZQF21n4i5DEbpJCNaGSNOu5EI5oDzWpxPZeDv9DTgkYpXQnnlGg
+ t5MEeyPH9z/vheV7fNbWobAAAAA==
+X-Change-ID: 20260625-aspeed-bt-bmc-multichannel-b44a10ff407c
+To: Corey Minyard <corey@minyard.net>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
+ Andrew Jeffery <andrew@codeconstruct.com.au>
+Cc: openipmi-developer@lists.sourceforge.net, linux-kernel@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-aspeed@lists.ozlabs.org, Yu-Che Hsieh <yc_hsieh@aspeedtech.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1782715772; l=1578;
+ i=yc_hsieh@aspeedtech.com; s=20260629; h=from:subject:message-id;
+ bh=uq6YWgDsWWGXAC45T6w2Ey4osYNKqHhIwFzNycMRum0=;
+ b=z0YtNlAtfb9bWuZnl+4DCd9uwBOGfUQn+aP+5ndB2O/l5fbsR+oL9XsClEErI4e3dyIgUSw3j
+ dcqDi7YaxAXAgEuiRYiZKpRdhR3OWwyOGVjBozc1R3XAZPoZjC4B4Wp
+X-Developer-Key: i=yc_hsieh@aspeedtech.com; a=ed25519;
+ pk=kLxUeF7g6teciq79it9N3tYNgp3yCspZ+AHlYSnZ0gs=
+X-Endpoint-Received: by B4 Relay for yc_hsieh@aspeedtech.com/20260629 with
+ auth_id=844
+X-Original-From: Yu-Che Hsieh <yc_hsieh@aspeedtech.com>
+Reply-To: yc_hsieh@aspeedtech.com
 
---JftmSqqify0j7mOM
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The Aspeed BT BMC driver currently programs a fixed LPC IO address and
 
-On Mon, Jun 29, 2026 at 02:49:00PM +0800, Yu-Che Hsieh via B4 Relay wrote:
-> From: Yu-Che Hsieh <yc_hsieh@aspeedtech.com>
->=20
-> Allocating IO and IRQ resources to LPC devices is in-theory an operation
->=20
-> for the host, however ASPEED systems describe these resources through
->=20
-> BMC-internal configuration, as already supported by the ASPEED KCS BMC
->=20
-> binding.
->=20
-> Add aspeed,lpc-io-reg and aspeed,lpc-interrupts to the ASPEED BT BMC
->=20
-> binding so firmware can describe the host LPC IO address and SerIRQ
->=20
-> configuration using the same properties as KCS devices.
->=20
-> Signed-off-by: Yu-Che Hsieh <yc_hsieh@aspeedtech.com>
-> ---
->  .../bindings/ipmi/aspeed,ast2400-ibt-bmc.yaml       | 21 +++++++++++++++=
-++++++
->  1 file changed, 21 insertions(+)
->=20
-> diff --git a/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt-bm=
-c.yaml b/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt-bmc.yaml
-> index c4f7cdbbe16b..1803c6bbae93 100644
-> --- a/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt-bmc.yaml
-> +++ b/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt-bmc.yaml
-> @@ -25,6 +25,24 @@ properties:
->    interrupts:
->      maxItems: 1
-> =20
-> +  aspeed,lpc-io-reg:
-> +    $ref: /schemas/types.yaml#/definitions/uint32-array
-> +    maxItems: 1
-> +    description: |
-> +      The host CPU LPC IO address for the BT device.
-> +
-> +  aspeed,lpc-interrupts:
-> +    $ref: /schemas/types.yaml#/definitions/uint32-array
-> +    minItems: 2
-> +    maxItems: 2
-> +    description: |
-> +      A 2-cell property expressing the LPC SerIRQ number and the interru=
-pt
-> +      level/sense encoding (specified in the standard fashion).
-> +
-> +      Note that the generated interrupt is issued from the BMC to the ho=
-st, and
-> +      thus the target interrupt controller is not captured by the BMC's
-> +      devicetree.
+SerIRQ value for the host-facing BT interface. That matches the original
 
-Why can these two properties not just be an additional reg and
-interrupts entry?
+single-interface setup, but newer systems may need the host interface
+
+parameters to be described by firmware.
+
+The Aspeed KCS BMC and VUART bindings already use aspeed,lpc-io-reg and
+
+aspeed,lpc-interrupts for this purpose. Reuse the same properties for
+
+the BT BMC binding and teach the driver to consume them while preserving
+
+the existing default LPC IO address and level-low SerIRQ configuration
+
+when the properties are absent.
+
+The first two patches are small preparation patches. The register
+
+definitions are converted to bitfield helpers so BT_CR0 fields can be
+
+programmed by name, and the open state is moved from a global variable
+
+to the device instance so multiple BT devices are not blocked by a
+
+single shared open count.
+
+---
+Yu-Che Hsieh (4):
+      ipmi: bt-bmc: Use bitfield helpers for register definitions
+      ipmi: bt-bmc: Track open state per device
+      dt-bindings: ipmi: Add optional LPC properties to ASPEED BT devices
+      ipmi: bt-bmc: Read LPC address and SerIRQ from device tree
+
+ .../bindings/ipmi/aspeed,ast2400-ibt-bmc.yaml      |  21 ++++
+ drivers/char/ipmi/bt-bmc.c                         | 118 ++++++++++++++-------
+ 2 files changed, 99 insertions(+), 40 deletions(-)
+---
+base-commit: 493181e2f2f1bdfd4f09a988008653ae73b30688
+change-id: 20260625-aspeed-bt-bmc-multichannel-b44a10ff407c
+
+Best regards,
+-- 
+Yu-Che Hsieh <yc_hsieh@aspeedtech.com>
 
 
-Cheers,
-Conor.
-
-> +
->  required:
->    - compatible
->    - reg
-> @@ -35,10 +53,13 @@ additionalProperties: false
->  examples:
->    - |
->      #include <dt-bindings/clock/aspeed-clock.h>
-> +    #include <dt-bindings/interrupt-controller/irq.h>
-> =20
->      bt@1e789140 {
->          compatible =3D "aspeed,ast2400-ibt-bmc";
->          reg =3D <0x1e789140 0x18>;
->          interrupts =3D <8>;
->          clocks =3D <&syscon ASPEED_CLK_GATE_LCLK>;
-> +        aspeed,lpc-io-reg =3D <0xe4>;
-> +        aspeed,lpc-interrupts =3D <10 IRQ_TYPE_LEVEL_LOW>;
->      };
->=20
-> --=20
-> 2.34.1
->=20
->=20
-
---JftmSqqify0j7mOM
-Content-Type: application/pgp-signature; name=signature.asc
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCakKOswAKCRB4tDGHoIJi
-0psAAP9G4epdhbKfSpCHpiVzmew6DQEbokTKpL+98RgnG2LBKQD/U3BgoLrNNiQx
-n3K2bKbjCnRtMLKQG2R8sbPvLE9VbwM=
-=ygXE
------END PGP SIGNATURE-----
-
---JftmSqqify0j7mOM--
 
