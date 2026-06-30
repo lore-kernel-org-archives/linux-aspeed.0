@@ -1,65 +1,58 @@
-Return-Path: <linux-aspeed+bounces-4324-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4325-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51491C43458
-	for <linux-aspeed@archiver.kernel.org>; Tue, 30 Jun 2026 17:51:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 493EFC43458
+	for <linux-aspeed@archiver.kernel.org>; Tue, 30 Jun 2026 23:50:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gqW1H6Jxsz2yR5;
-	Wed, 01 Jul 2026 03:51:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782841907;
-	cv=none; b=XYhk8/B2ovWMP90XukSnNOWh2cL/PVw5ei/geyau/pmeTxUwglGk/EZR3xEWtX0mk00rdfxtNolI141nGykid3rrc2qPdqS/UduAtdKPc1knAJIKk7+fuAS0/IPKSl5F9ijmUS6Iknts0g5X+gPaCBNJ6Qn+acnIj47FE72UsHVL+lhwFApIIi9in9LXfQLSzWF3Uy/gU99ln3SV7BJ/CpSGpIeYVb+cL5ykcpw8FL+4ajHFj7KFjDBYXlTc4y9VRP9TFzQOoqpP8Ajb+Plb1IN07KfPqhn9RRHLquef69hQDfmr8ZOd3cgQnAK5uBueLJ2hNBp2bUEQzBBaBi5oIA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gqfzX323Gz2yb9;
+	Wed, 01 Jul 2026 09:50:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782820387;
+	cv=none; b=ccZfX1eyks3lLu2n/dig5Hln3kLXYzDXzzc2u6QmJ75xaOQogtOe7MDwZAdQbCEgSi/kKWgWefntAkTBL2UzbEIiTOe7lzoL9nSVclz9qN6E+7BcopiYAWJfx4/IlpsereFEACw2/uCjGtqDJUewu5ycpZZEW2AvHr1RRbPEkbn3VP+BGa0UBgGHMc/JVi+1JWMu9ZMCgL5g9n5IOznj8ZVMFJeMidYAZWiflNzUKd6ecB0UcD+EuNw1b2UyY7l/CVMZ1Fpd/9cDGdsCI2yulsF/uxpJLuFpP1S/boY7nNmmonPCHa2BGrpM234iPTGgmifax6/YMlkdOx1oWk7/NQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782841907; c=relaxed/relaxed;
-	bh=rpVzYJiD4uvUrnHrs1i+rq74dWRX/dxoOQRnlJsTbJc=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=foz6NsN4dLD4RErE6zYF0M8+xp4iUhiJO0sskyt5xWFtnUpC38/RFkQGB/GYKFXliZeRT6v+g/vJIx64SytTaEw1SAjfLFy/92gUeEvaP5GsfJtjB8bUl3dKa+jLoOK2k/bg5m7t6MVix8AVydyaTxgQ47AkUTppTg/BrBso78rdUbtTKr0GkexBtcJiA/AWSX5LEzE16ryUNGurtsFyTmbPpLmohjdb1zsp47MZzI1FLuIUHhkxb0gm5jD4KF0mLOiD5UcQpCEKFeW10QsJgenGJ4StBxfLMtUPu57wZ3D3RyYDqUiT8zE4RuRUXYimeeErWKdWi6Yn9f+WImaStg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HJCQ722M; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1782820387; c=relaxed/relaxed;
+	bh=493enOlPSgfL8Xi3QDIl1rddbYGRJGRVQ1cUt/F2sHc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=YjxV/SqAkjJFAgJyLUfeCpJUlUDEsSsxKMOlalhAPcB885hW6TkkRLaLxHG1wmDErnX8v6uLBcDsK2HkTrHFT4pFf+0OA0SVK8rU4ERl6Kg5GXtZ4xrca4cgCxunbjicWynt7eMfSam+MUC+G8PAb/5dvyw8C684HK8hi1sJrsAWYg1K0arsjXYy+4EZ20qZ+OLkxFA7h0KmODWben+/DxTrpmattmDiDMZANjT8l357ox0Ux/EvNHoFwGCtnCSelAbKJ61GcG1yQ0ea2eCcTRMGtK9RTmG9oAXmH8JV/xYON1/571HTyIP3K6Q8kHuDxi3+iFyHonFbpW3SMjRAVA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lrlJJAyQ; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HJCQ722M;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lrlJJAyQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gqW1H0zGhz2xq0
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 01 Jul 2026 03:51:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gqM3Q4Xqmz2yZ8
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 30 Jun 2026 21:53:06 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 593B5600BB;
-	Tue, 30 Jun 2026 17:51:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DAFF11F000E9;
-	Tue, 30 Jun 2026 17:51:43 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 28B5A41321
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 30 Jun 2026 11:53:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0DA681F000E9
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 30 Jun 2026 11:53:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782841904;
-	bh=rpVzYJiD4uvUrnHrs1i+rq74dWRX/dxoOQRnlJsTbJc=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=HJCQ722MxU+MHC23BSrdoiEHDRw9Ql9TrNC02wM9iluQIfFS2pL7HTm4DMoIfgXor
-	 sZPsO5fe+UCnhgLboo8vr0TxYlvWoSm+8RdtT2FaMnWx7JPw0TX2lNogNtAM5ZteTw
-	 1kPr6vuoJgOVYliMJqn+WxyV5po2NSC7PUY1wPojHU/iIW2U9UbFEofK+nGj/7RIjd
-	 3DSwICjJtI0nh+5j6ehuYBM+m0cJZgkyxCrI7fDAXrV/x7GCwCEd9pXhsyxB0HIQJu
-	 iSdfJvxZ1SPFEXVsbW8oYXCvLLbzRKpZuZq4gN4PrBGSb4ybV8zVkVSfUroRrLgIN0
-	 CwPpm9MKm8V3Q==
-Date: Tue, 30 Jun 2026 12:51:43 -0500
-From: Rob Herring <robh@kernel.org>
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: yc_hsieh@aspeedtech.com, Corey Minyard <corey@minyard.net>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	openipmi-developer@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org
-Subject: Re: [PATCH 3/4] dt-bindings: ipmi: Add optional LPC properties to
- ASPEED BT devices
-Message-ID: <20260630175143.GA4129206-robh@kernel.org>
-References: <20260629-aspeed-bt-bmc-multichannel-v1-0-fc23ee337f7a@aspeedtech.com>
- <20260629-aspeed-bt-bmc-multichannel-v1-3-fc23ee337f7a@aspeedtech.com>
- <35a8e3b3-7725-4d1b-8667-84e6fa24b2ca@kernel.org>
+	s=k20260515; t=1782820384;
+	bh=493enOlPSgfL8Xi3QDIl1rddbYGRJGRVQ1cUt/F2sHc=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=lrlJJAyQZ3DwijrvkQSaLW/aK3tq35nYYm/c5Fotxi0Uq/sxm/MTtkXjQNgg0Fgxp
+	 KeYk1xrd8xyH45/0n3famjiuhyGtB6ePQFrOG+P4ANJc9Ou8bDFFyq+PNnitfddnlu
+	 nn8vBTyx8KO13fiCz1xG/2id40eL/RmVJCjK3vGEmGii8y2HbrdEeYthuisNvkEIXh
+	 CCCVjANnb6ziEZe65ted0H7vtlp+DAVwnUfFYjeCgc3a3U6n7+/78RExC2z3Wm3HG3
+	 7kx01Gi09g0a+U5y8Tp+vSCr7ClStQFBUwDMXbdFuGNBF84FtfwlnzLaY2irwtKLJ8
+	 R7rE517rnSYuw==
+Received: by mail-lj1-f175.google.com with SMTP id 38308e7fff4ca-39b28814916so1461721fa.2
+        for <linux-aspeed@lists.ozlabs.org>; Tue, 30 Jun 2026 04:53:03 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RoHnPCTa1nIGLHHXG9Lh4NZjFT1ifXEh+WviQbJ5w2kEVBulaefM0QN5l6Mf59XdQOXn0veHTCuk8qC8vs=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwJEG7amfIvYApUVQaHCR/AOsIlgfpRwEF6noojOhG2Hdlfg8D2
+	EBcOrWAWz3T4W6lUuqIFietX/GeXWptajScBKRdxxIJ3ClCwXbCN8mNFUoE6DEKxzAXRRQ74+AJ
+	mluG8txHIC/V/9BbTNehCJU0D0vmEo/s=
+X-Received: by 2002:a05:6512:15a3:b0:5ae:afec:8afb with SMTP id
+ 2adb3069b0e04-5aebdbdd0bfmr741396e87.48.1782820382868; Tue, 30 Jun 2026
+ 04:53:02 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -73,33 +66,45 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <35a8e3b3-7725-4d1b-8667-84e6fa24b2ca@kernel.org>
+References: <20260616-pinctrl-fix-v1-0-621036e45c7c@aspeedtech.com>
+In-Reply-To: <20260616-pinctrl-fix-v1-0-621036e45c7c@aspeedtech.com>
+From: Linus Walleij <linusw@kernel.org>
+Date: Tue, 30 Jun 2026 12:52:49 +0100
+X-Gmail-Original-Message-ID: <CAD++jLm3-5BP+1E_DLTZvEPd1ugMZrXiOjM+Gqnn9Ri+uNWuPw@mail.gmail.com>
+X-Gm-Features: AVVi8Ccukh9jeKMJzDntWFmdET_gKKyPu4vZydSTvGPFTsmFqpaNo79r5YLA3x4
+Message-ID: <CAD++jLm3-5BP+1E_DLTZvEPd1ugMZrXiOjM+Gqnn9Ri+uNWuPw@mail.gmail.com>
+Subject: Re: [PATCH 0/2] pinctrl: aspeed: Make AST2700 SoC1 JTAG master TRST optional
+To: Billy Tsai <billy_tsai@aspeedtech.com>
+Cc: Andrew Jeffery <andrew@codeconstruct.com.au>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
+	linux-aspeed@lists.ozlabs.org, openbmc@lists.ozlabs.org, 
+	linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, Jun 30, 2026 at 08:11:34AM +0200, Krzysztof Kozlowski wrote:
-> On 29/06/2026 08:49, Yu-Che Hsieh via B4 Relay wrote:
-> > From: Yu-Che Hsieh <yc_hsieh@aspeedtech.com>
-> > 
-> > Allocating IO and IRQ resources to LPC devices is in-theory an operation
-> > 
-> > for the host, however ASPEED systems describe these resources through
-> > 
-> > BMC-internal configuration, as already supported by the ASPEED KCS BMC
-> 
-> What
-> 
-> is
-> 
-> with
-> 
-> this
-> 
-> line breaks?
+On Tue, Jun 16, 2026 at 4:30=E2=80=AFAM Billy Tsai <billy_tsai@aspeedtech.c=
+om> wrote:
 
-I've seen Codex do this... It amazes me how hard it is to get it to 
-write properly formatted commit messages and then not forget how to 
-write them.
+> The JTAGM1 pin group of the AST2700 SoC1 includes ball D12, which
+> carries the TRST signal. TRST is an optional signal for a JTAG master:
+> designs that do not wire it may need the D12 ball for other functions,
+> but with TRST embedded in the group they cannot use the JTAG master at
+> all.
+>
+> Split D12 into a new JTAGM1TRST group under the existing JTAGM1
+> function, so TRST is only muxed when a board explicitly requests it.
+> Patch 1 adds the new group to the device tree binding and patch 2
+> splits the group in the driver.
+>
+> Note that this changes the meaning of the existing JTAGM1 group: boards
+> that do use TRST now need to select both the JTAGM1 and JTAGM1TRST
+> groups.
+>
+> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 
-Rob
+Patches applied!
+
+Yours,
+Linus Walleij
 
