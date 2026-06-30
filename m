@@ -1,51 +1,68 @@
-Return-Path: <linux-aspeed+bounces-4322-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4323-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38BBBC43458
-	for <linux-aspeed@archiver.kernel.org>; Tue, 30 Jun 2026 06:11:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2835C43458
+	for <linux-aspeed@archiver.kernel.org>; Tue, 30 Jun 2026 17:15:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gqCTY616nz2yY1;
-	Tue, 30 Jun 2026 16:11:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782799905;
-	cv=none; b=HHrZFtt5bpPlkE8gi3x1rB5sdECFTKcN/yQjMNIzWiXYmYISrxmI7sMsoIx43JY58xlaKO6mS1lhb7vfeA7KRSjjsIE+Bfn6a0qnwJQGsydxJN++5iAvTkeyrgdisnwGdNmmkb4Nx9FlFgZBprtftazRyG5cVIuOlZZzNzuogBVY6hPC+gYz/0wGG7BA8atQ0AtHvOb0IYTxViHSdleliO5QewWFq3C2UYC1QeRXWAk+G8eBx7NxV4G6JX2Ka74eFxKxg5enPZ8EZ/S5zDyvcoStMPcF6iAybh8sl5qIlRV4LnSe5i/nqvIn/wHUdBvGppyljlQ39M99UpCtDQl9Lg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gqVC6129Zz2yR5;
+	Wed, 01 Jul 2026 03:15:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782839714;
+	cv=none; b=EME4rK0IFC4Jtiq8s0OTgg5wVjAG5uXVX/T5bH6Mnj6+oQO5g8uUHA69eP5LOnV28LlfeJI/NPB02IfhWA/bjx8pN57qQHHTV/CjQ9IG27sdxKZqYQlvbNIE/keVUPKOlxKtLPhxBptfex3+BGT8p4rDrYQE69UeoMGNrkxSb++K9P8REgEv9j/Aqln3xcQoGGMTHBUCCWdedBGC+aw9R5wabOZ0XJKVK+mtE35Am9LM0DeQIt5Gf+QCvrVJOvgJGYhyxNcrRulmLlAx3Pr7D8aiEnzPEqeRLCSWfXzquFpmyCoPu1GKdd4YKb8QUwPs39wvpE//UOetnUJAf9AQ9w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782799905; c=relaxed/relaxed;
-	bh=tltWWGTL9FFdiqSRf9Kfxc1Xnn7zryOZsVoDGgZFEh8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Yqt1GUMi0+GHF+DOVR2ZMRX/aQ4UtU50p99qa4RyBIgP8E28O0K/A7QJm4QgdXJNhz2InRJAnn1u1shVQ9YtjAale5zrFyM/PEJo3DeEu21svIxfBr3WvF20EUanGAVSVtjvDWZZ8QGcoc1/TVabLQy5XCHNHE8iemoLwd3XaS5jES+DB01zn2mv9cw1XqprqkqMfzGwF/nVGY8zCjjl0vMwK6dodMNitOaV4LLAaJcqLKQlNW3LZh8fsd87gMikClbdXiZQeS6BkBTciQXHZ6ANFA5P3z/WkDjbEV0PaRWNYnVmZ61/e7/cqQB78TN3UI6vwucOPQoIiYYX6vlfhg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EG4G6Xif; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1782839714; c=relaxed/relaxed;
+	bh=zoCexdF8WAmj/A/cB9RD+x/uZadpQsC20Zx9sVby7Zs=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=B2zTqmFREh8x3qGU5zeMZGhLHvJy1GMru/MNLMGPd+b5S7UrZvtZCswZcRhnkJTSP6Hm7hnpa70BYNH7RzONSs+qaaY609FMeZg/KXH8NqDZ0J+Wld6eYttqY6xNJoNty5gI6d/TLGifx0UPKpUKbAtYoobspIXaLPi5QI+ayiqHhYi8/2cqwAZAHSpP33fKtDmgqjKNkdXhymG48m+43YFv0J1cA4S8ksnQf4HMoj/x9nSoxUk9A9xjELaGAiriuzaWqxduaU0lth3EdKjGnPj+bIcMnZ4GjNNgZvDluZoNTos3zECH7vrtgaLaXSeXEZzV/ytrSDAIUEMSXFsRiQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=G4V3OQDK; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EG4G6Xif;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=G4V3OQDK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gqCTX5CXGz2xq0
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 30 Jun 2026 16:11:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gqVC44PpHz2yMl
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 01 Jul 2026 03:15:12 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id F37A960008;
-	Tue, 30 Jun 2026 06:11:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9FF881F000E9;
-	Tue, 30 Jun 2026 06:11:37 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 0E5824165B;
+	Tue, 30 Jun 2026 17:15:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A1BC21F000E9;
+	Tue, 30 Jun 2026 17:15:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1782799901;
-	bh=tltWWGTL9FFdiqSRf9Kfxc1Xnn7zryOZsVoDGgZFEh8=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=EG4G6XifiuP4C/hNu+hZXXxCIPvUqX2K2T7EMrwC74tSo7UCV5iwl42j8rwwuKTiw
-	 oWeFqHY9QyYbvoh0tx0b7plb5AT0ZWlQv5nwOXkiVJm7RZVA+x7J7iSszmJVRPG+QK
-	 Gvfh6zEjbDFb1HOoRumJXUqZgeJ/XQ54HS4z9iM7KoYyPXka7ShVgdUq+ZSxx6bAe5
-	 gP+rKKr06Tb7qQeTRZqdpQgYg73kGqknw9Ymgqu1Wbk8sqhg5FhUX+Jo/nrx/JQ3cF
-	 idDMOs3FdE1XlAXQbSTPX6gUpQ1+4DLLHBCLavnnEmKCx0+XOh8tFnKxfK4NffZ75T
-	 qWzBQW3+M2k0A==
-Message-ID: <35a8e3b3-7725-4d1b-8667-84e6fa24b2ca@kernel.org>
-Date: Tue, 30 Jun 2026 08:11:34 +0200
+	s=k20260515; t=1782839709;
+	bh=zoCexdF8WAmj/A/cB9RD+x/uZadpQsC20Zx9sVby7Zs=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=G4V3OQDK4LuGRepnI0nswNLNa/lKuAhTlsiY4H/ai3sTir+w0BkplZkG/88C1YjoE
+	 Ffdpg1MXKDTALoy7fWJHkV5zrAGmDMuCfZ4r3rU2LIGF2RAMIENOXc2420muOJmZQl
+	 wcYv8eysEx7vayF4lhA/q/SJt0VpKuDjgVWrVwzWfQDvkeIX6icpH0FEFRrq97NAbn
+	 uFtuWna5TSOULIZpfJCPupO92fBNo3m+AUaPlt7Bij+TgXJQb88ndD9BPaTwXxg6kc
+	 QPfxJokhSoTAtT2/0X9552Zd+fvO7iA5LXtk52p63kzZaqPP6LAp1VHVA34bI9L5Ph
+	 84iUzCm7/+6mQ==
+Date: Tue, 30 Jun 2026 18:15:05 +0100
+From: Conor Dooley <conor@kernel.org>
+To: YC Hsieh <yc_hsieh@aspeedtech.com>
+Cc: Corey Minyard <corey@minyard.net>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	"openipmi-developer@lists.sourceforge.net" <openipmi-developer@lists.sourceforge.net>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>
+Subject: Re: [PATCH 3/4] dt-bindings: ipmi: Add optional LPC properties to
+ ASPEED BT devices
+Message-ID: <20260630-privatize-flap-8b01761853eb@spud>
+References: <20260629-aspeed-bt-bmc-multichannel-v1-0-fc23ee337f7a@aspeedtech.com>
+ <20260629-aspeed-bt-bmc-multichannel-v1-3-fc23ee337f7a@aspeedtech.com>
+ <20260629-bogus-vocation-db32e55a595f@spud>
+ <TY0PR06MB6855F690BCCCA45172F3F0AD93F72@TY0PR06MB6855.apcprd06.prod.outlook.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,135 +76,80 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 3/4] dt-bindings: ipmi: Add optional LPC properties to
- ASPEED BT devices
-To: yc_hsieh@aspeedtech.com, Corey Minyard <corey@minyard.net>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
- Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: openipmi-developer@lists.sourceforge.net, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-aspeed@lists.ozlabs.org
-References: <20260629-aspeed-bt-bmc-multichannel-v1-0-fc23ee337f7a@aspeedtech.com>
- <20260629-aspeed-bt-bmc-multichannel-v1-3-fc23ee337f7a@aspeedtech.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- xsFNBFVDQq4BEAC6KeLOfFsAvFMBsrCrJ2bCalhPv5+KQF2PS2+iwZI8BpRZoV+Bd5kWvN79
- cFgcqTTuNHjAvxtUG8pQgGTHAObYs6xeYJtjUH0ZX6ndJ33FJYf5V3yXqqjcZ30FgHzJCFUu
- JMp7PSyMPzpUXfU12yfcRYVEMQrmplNZssmYhiTeVicuOOypWugZKVLGNm0IweVCaZ/DJDIH
- gNbpvVwjcKYrx85m9cBVEBUGaQP6AT7qlVCkrf50v8bofSIyVa2xmubbAwwFA1oxoOusjPIE
- J3iadrwpFvsZjF5uHAKS+7wHLoW9hVzOnLbX6ajk5Hf8Pb1m+VH/E8bPBNNYKkfTtypTDUCj
- NYcd27tjnXfG+SDs/EXNUAIRefCyvaRG7oRYF3Ec+2RgQDRnmmjCjoQNbFrJvJkFHlPeHaeS
- BosGY+XWKydnmsfY7SSnjAzLUGAFhLd/XDVpb1Een2XucPpKvt9ORF+48gy12FA5GduRLhQU
- vK4tU7ojoem/G23PcowM1CwPurC8sAVsQb9KmwTGh7rVz3ks3w/zfGBy3+WmLg++C2Wct6nM
- Pd8/6CBVjEWqD06/RjI2AnjIq5fSEH/BIfXXfC68nMp9BZoy3So4ZsbOlBmtAPvMYX6U8VwD
- TNeBxJu5Ex0Izf1NV9CzC3nNaFUYOY8KfN01X5SExAoVTr09ewARAQABzSVLcnp5c3p0b2Yg
- S296bG93c2tpIDxrcnprQGtlcm5lbC5vcmc+wsGPBBMBCgA5AhsDBgsJCAcDAgYVCAIJCgsE
- FgIDAQIeAQIXgBYhBJvQfg4MUfjVlne3VBuTQ307QWKbBQJp2mE8AAoJEBuTQ307QWKbeaIP
- /ihHTkTW4KsN/DQ945JJbyu5tI0J80Wue7QyyLPglyKfhgb5cLLNPpOC8cCIJsc7+W3i2P38
- s2c1cOH6CYGE7E9ur3Vfme8NW2S2I/Z8VC7bZnzyS23wT17LrsdS/qCpx4o8U+pt/xdXDKph
- EGRYrIEmMpUWvyYzyYKGIe25FtaayIIKpq8eZYyFcp2f/sG5IkOW5uZzHPMPdcm87jU7fyuQ
- rAU2vx9r+ulUfQ/q9Z2roC/ode3l7t2pN7BCBCsUDp6JCrUyZrtT1e7EbA0ZRP3aOBNk2P2E
- DQOgJGjGdO5Yx2Y9LFtltu6JbsBJHi1syGRX3AtQYOMc4Y1WGoeZJmMlvKj2ZqqXNkcWi2DS
- IQEWB0uW6CqFsBBIMGDa+6OzdaVO/uAVXWDWml02Men3CILdI1MbVjoh8ECqYUY7OQ+JJvNN
- vnliuq5WM3Ghd3jg/LZZrxXjdIginRHFQCjIJYLKpLZWm1/iDFedcfzqRNYmTtqscdCNHW41
- oT3Z7BmO9xwdjuwBS6nmS6JJwkbf5Ot2QR4pB/DRU7ZwjT1qHe+9r9gF32wXVQatHNGK/VVu
- sfwOnkdxCWkp/qb2gdQRmZh+SedStWshigH6sNfuHBloF/q+hjMRc8b2m326OZdrbSHwY1Sz
- vti8Hn7n8NjdHO9LKB7BIdjkA9DA5WsqOuVCzsFNBFVDXDQBEADNkrQYSREUL4D3Gws46JEo
- Z9HEQOKtkrwjrzlw/tCmqVzERRPvz2Xg8n7+HRCrgqnodIYoUh5WsU84N03KlLueMNsWLJBv
- BaubYN4JuJIdRr4dS4oyF1/fQAQPHh8Thpiz0SAZFx6iWKB7Qrz3OrGCjTPcW6eiOMheesVS
- 5hxietSmlin+SilmIAPZHx7n242u6kdHOh+/SyLImKn/dh9RzatVpUKbv34eP1wAGldWsRxb
- f3WP9pFNObSzI/Bo3kA89Xx2rO2roC+Gq4LeHvo7ptzcLcrqaHUAcZ3CgFG88CnA6z6lBZn0
- WyewEcPOPdcUB2Q7D/NiUY+HDiV99rAYPJztjeTrBSTnHeSBPb+qn5ZZGQwIdUW9YegxWKvX
- XHTwB5eMzo/RB6vffwqcnHDoe0q7VgzRRZJwpi6aMIXLfeWZ5Wrwaw2zldFuO4Dt91pFzBSO
- IpeMtfgb/Pfe/a1WJ/GgaIRIBE+NUqckM+3zJHGmVPqJP/h2Iwv6nw8U+7Yyl6gUBLHFTg2h
- YnLFJI4Xjg+AX1hHFVKmvl3VBHIsBv0oDcsQWXqY+NaFahT0lRPjYtrTa1v3tem/JoFzZ4B0
- p27K+qQCF2R96hVvuEyjzBmdq2esyE6zIqftdo4MOJho8uctOiWbwNNq2U9pPWmu4vXVFBYI
- GmpyNPYzRm0QPwARAQABwsF2BBgBCgAgAhsMFiEEm9B+DgxR+NWWd7dUG5NDfTtBYpsFAmna
- YUkACgkQG5NDfTtBYptX+BAApg32CkxwNucNEi8WfWA8oKkW0y8YDuY6ORMo9FWNGiT/OTy0
- vyJrLocrpn86zwfjVp+eCrssPYh8eqJfnWqmYv6ACQtHPYzPZQ3mSo8H97Z01oUxITzCxpXm
- ZkLgPIqtDPcC2E3dPM/fVxcyowM8XsaMA9wcsaUYrta8toOq2b9tKcjleKMfMrm0gQ9u7wUc
- QbLkwj6TCLOwucb07GXzLTNF9PZmaDUpKAZjMjmrW+le+SFvQbhamx0rxLWPR0NWntXpbCn+
- +ACch03p/JyTBVktxFsFyCt7pTPE1kEaeuXBTe/a2D9iQvRxRW19LvuO2e59/u1wYUiH/orz
- wbIC2S4dBsPAPihL3ztOU1yE86GPyQtSE0kU+/7snnLt4QGi6PChf3t5gnNjAzjUUovO8rgI
- c+5yN5heq5loYHgK6OQ9OlHzsPHO9e9MOQcKlFycs1pyijFGzDwdNUm/SchK8iWT2QApTx4A
- K9bCVaboTA2T77QYkRcRJYSsO1alGX0ome/hMLD1daXlkrNUp1HWa3K4iytLRXjCSIorWiGs
- n+q3krnpXu3TFkA8qtOFZMdnIiFuiq1yLT8hptsV5xh1TA2nsVvSYiaCr3q4s4BKjS/KrLDb
- qoxzw8ISjdUp4pA85vb6YLCmb39NgidD+7PmAr65lBNveIFynTgsja1rRQ4=
-In-Reply-To: <20260629-aspeed-bt-bmc-multichannel-v1-3-fc23ee337f7a@aspeedtech.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="GgAjwmP4KtDGuBGB"
+Content-Disposition: inline
+In-Reply-To: <TY0PR06MB6855F690BCCCA45172F3F0AD93F72@TY0PR06MB6855.apcprd06.prod.outlook.com>
 
-On 29/06/2026 08:49, Yu-Che Hsieh via B4 Relay wrote:
-> From: Yu-Che Hsieh <yc_hsieh@aspeedtech.com>
-> 
-> Allocating IO and IRQ resources to LPC devices is in-theory an operation
-> 
-> for the host, however ASPEED systems describe these resources through
-> 
-> BMC-internal configuration, as already supported by the ASPEED KCS BMC
+--GgAjwmP4KtDGuBGB
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-What
+On Tue, Jun 30, 2026 at 02:24:52AM +0000, YC Hsieh wrote:
 
-is
+> ************* Email Confidentiality Notice ********************
+> =E5=85=8D=E8=B2=AC=E8=81=B2=E6=98=8E:
+> =E6=9C=AC=E4=BF=A1=E4=BB=B6(=E6=88=96=E5=85=B6=E9=99=84=E4=BB=B6)=E5=8F=
+=AF=E8=83=BD=E5=8C=85=E5=90=AB=E6=A9=9F=E5=AF=86=E8=B3=87=E8=A8=8A=EF=BC=8C=
+=E4=B8=A6=E5=8F=97=E6=B3=95=E5=BE=8B=E4=BF=9D=E8=AD=B7=E3=80=82=E5=A6=82 =
+=E5=8F=B0=E7=AB=AF=E9=9D=9E=E6=8C=87=E5=AE=9A=E4=B9=8B=E6=94=B6=E4=BB=B6=E8=
+=80=85=EF=BC=8C=E8=AB=8B=E4=BB=A5=E9=9B=BB=E5=AD=90=E9=83=B5=E4=BB=B6=E9=80=
+=9A=E7=9F=A5=E6=9C=AC=E9=9B=BB=E5=AD=90=E9=83=B5=E4=BB=B6=E4=B9=8B=E7=99=BC=
+=E9=80=81=E8=80=85, =E4=B8=A6=E8=AB=8B=E7=AB=8B=E5=8D=B3=E5=88=AA=E9=99=A4=
+=E6=9C=AC=E9=9B=BB=E5=AD=90=E9=83=B5=E4=BB=B6=E5=8F=8A=E5=85=B6=E9=99=84=E4=
+=BB=B6=E5=92=8C=E9=8A=B7=E6=AF=80=E6=89=80=E6=9C=89=E8=A4=87=E5=8D=B0=E4=BB=
+=B6=E3=80=82=E8=AC=9D=E8=AC=9D=E6=82=A8=E7=9A=84=E5=90=88=E4=BD=9C!
+> =E4=BF=A1=E9=A9=8A=E7=A7=91=E6=8A=80=E4=BB=A5=E8=AA=A0=E4=BF=A1=E6=AD=A3=
+=E7=9B=B4=E5=8E=9F=E5=89=87=E6=B0=B8=E7=BA=8C=E7=B6=93=E7=87=9F=E4=BC=81=E6=
+=A5=AD=EF=BC=8C=E4=B8=A6=E5=B7=B2=E5=A7=94=E7=94=B1=E7=AC=AC=E4=B8=89=E6=96=
+=B9=E5=85=AC=E6=AD=A3=E5=96=AE=E4=BD=8D=E5=8B=A4=E6=A5=AD=E7=9C=BE=E4=BF=A1=
+=E5=8F=8A=E4=BF=A1=E9=A9=8A=E7=A7=91=E6=8A=80=E7=8D=A8=E7=AB=8B=E8=91=A3=E4=
+=BA=8B=E4=BE=86=E7=AE=A1=E7=90=86=E5=8C=BF=E5=90=8D=E8=88=89=E5=A0=B1=E7=B3=
+=BB=E7=B5=B1=EF=BC=8C=E5=A6=82=E5=90=84=E5=80=8B=E5=88=A9=E5=AE=B3=E9=97=9C=
+=E4=BF=82=E4=BA=BA=E7=AD=89=E6=9C=89=E7=99=BC=E7=8F=BE=E4=BB=BB=E4=BD=95=E9=
+=81=95=E6=B3=95=E5=8F=8A=E9=81=95=E5=8F=8D=E5=85=AC=E5=8F=B8=E5=BE=9E=E6=A5=
+=AD=E9=81=93=E5=BE=B7=E3=80=81=E9=81=95=E5=8F=8D=E6=B3=95=E4=BB=A4=E6=B3=95=
+=E8=A6=8F=E5=8F=8A=E5=B0=88=E6=A5=AD=E6=BA=96=E5=89=87=E3=80=81=E4=BA=A6=E6=
+=88=96=E9=9C=B8=E5=87=8C=E5=8F=8A=E9=81=95=E5=8F=8D=E6=80=A7=E5=88=A5=E5=B9=
+=B3=E7=AD=89=E4=B9=8B=E6=83=85=E4=BA=8B=EF=BC=8C=E8=AB=8B=E7=9B=B4=E6=8E=A5=
+=E9=80=8F=E9=81=8E=E4=BB=A5=E4=B8=8B=E5=8F=AF=E9=81=B8=E6=93=87=E5=8C=BF=E5=
+=90=8D=E4=B9=8B=E8=88=89=E5=A0=B1=E7=B3=BB=E7=B5=B1=E8=88=89=E5=A0=B1=EF=BC=
+=8C=E5=86=8D=E6=AC=A1=E6=84=9F=E8=AC=9D=E6=82=A8=E5=8D=94=E5=8A=A9=E4=BF=A1=
+=E9=A9=8A=E6=8C=81=E7=BA=8C=E9=82=81=E5=90=91=E6=B0=B8=E7=BA=8C=E7=B6=93=E7=
+=87=9F=E3=80=82=E4=BF=A1=E9=A9=8A=E7=A7=91=E6=8A=80=E8=88=89=E5=A0=B1=E7=B6=
+=B2=E7=AB=99=E9=80=A3=E7=B5=90=EF=BC=9Ahttps://secure.conductwatch.com/aspe=
+edtech/
+>=20
+> DISCLAIMER:
+> This message (and any attachments) may contain legally privileged and/or =
+other confidential information. If you have received it in error, please no=
+tify the sender by reply e-mail and immediately delete the e-mail and any a=
+ttachments without copying or disclosing the contents. Thank you.
+> ASPEED Technology is committed to sustainable business practices based on=
+ integrity and honesty principles. In order to ensure that all information =
+can be openly and transparently communicated, a third-party independent org=
+anization, Deloitte and ASPEED Technology's independent directors, have bee=
+n entrusted to manage the anonymous reporting system. If any stakeholders d=
+iscover any illegal activities, violations of the company's professional et=
+hics, infringements of laws and regulations, or incidents of bullying and g=
+ender inequality, please directly report through the anonymous reporting sy=
+stem provided below. We thank you for your assistance in helping ASPEED Tec=
+hnology continue its journey towards sustainable operations: https://secure=
+=2Econductwatch.com/aspeedtech/
 
-with
+Sort this out, it's not compatible with mailing lists.
 
-this
+--GgAjwmP4KtDGuBGB
+Content-Type: application/pgp-signature; name=signature.asc
 
-line breaks?
+-----BEGIN PGP SIGNATURE-----
 
+iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCakP5mQAKCRB4tDGHoIJi
+0sANAQDA/60UmVrLczKv6SoSmrQAAFOoThdWuBLoAD3P9T2y1QEA2X+Byuamqo3I
+lYXK5bHUCYUvg75FNp5lunAzcWGfVwE=
+=8JpS
+-----END PGP SIGNATURE-----
 
-> 
-> binding.
-> 
-> Add aspeed,lpc-io-reg and aspeed,lpc-interrupts to the ASPEED BT BMC
-> 
-> binding so firmware can describe the host LPC IO address and SerIRQ
-> 
-> configuration using the same properties as KCS devices.
-> 
-> Signed-off-by: Yu-Che Hsieh <yc_hsieh@aspeedtech.com>
-> ---
->  .../bindings/ipmi/aspeed,ast2400-ibt-bmc.yaml       | 21 +++++++++++++++++++++
->  1 file changed, 21 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt-bmc.yaml b/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt-bmc.yaml
-> index c4f7cdbbe16b..1803c6bbae93 100644
-> --- a/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt-bmc.yaml
-> +++ b/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt-bmc.yaml
-> @@ -25,6 +25,24 @@ properties:
->    interrupts:
->      maxItems: 1
->  
-> +  aspeed,lpc-io-reg:
-> +    $ref: /schemas/types.yaml#/definitions/uint32-array
-> +    maxItems: 1
-> +    description: |
-> +      The host CPU LPC IO address for the BT device.
-
-No, you do not get second reg property.
-
-> +
-> +  aspeed,lpc-interrupts:
-> +    $ref: /schemas/types.yaml#/definitions/uint32-array
-> +    minItems: 2
-> +    maxItems: 2
-> +    description: |
-> +      A 2-cell property expressing the LPC SerIRQ number and the interrupt
-> +      level/sense encoding (specified in the standard fashion).
-> +
-> +      Note that the generated interrupt is issued from the BMC to the host, and
-> +      thus the target interrupt controller is not captured by the BMC's
-> +      devicetree.
-
-No, you do not get second interrupts property.
-
-> 
-
-
-Best regards,
-Krzysztof
+--GgAjwmP4KtDGuBGB--
 
