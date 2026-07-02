@@ -1,60 +1,61 @@
-Return-Path: <linux-aspeed+bounces-4331-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4332-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26DE2C43458
-	for <linux-aspeed@archiver.kernel.org>; Thu,  2 Jul 2026 00:25:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C2DCC43458
+	for <linux-aspeed@archiver.kernel.org>; Thu,  2 Jul 2026 00:26:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4grHj34Bllz2yfD;
-	Thu, 02 Jul 2026 10:25:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4grHkG755Gz2yfD;
+	Thu, 02 Jul 2026 10:26:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782951927;
-	cv=none; b=igsBTaReo+xWDOrDr0z1VFVOZJfWAdpbPjnvJB6650Wx/7muta4BUBLQ4G5+MPUjPUYOtSmDdbauBAXedvGirQ6Lof5PzF2Z5GLRiXR3sUJsnAleEkTXuy5MdF8QkoZwkp4oXAgk0BBSGX0AFcwvxixYKUXm2Orhtpgaq/mMX0TAIsv5VwR7wWInafDTqNkndb/dI3hAs1umTmUg0AtRilq8MdfeCXX3TyDK2RNqTp9BCOzBxoW7CTZ/fMq4+X0JUDuu+an5au5sbE/xTx4heIn0+sl+JnMGrZmRAWW6f/6z0c314w308t5uZ9WD+z/87yvYujm7/D/KU54g4iQ79Q==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782951990;
+	cv=none; b=dnXCiyva/c0yGoYwfGvzgiiF7w6npaSG1shygygtQLgowD1P0iZgQ5LEdBvnTyuz/aNtEwjqC/Bjqz7MsMrDYpMuj69I807BSEuvWgQxZYK3skZ/5g2+yGCsOO5R5TJuAG7eB3bP3hThf/yYgPWNwVwoiRZYovL0asXGSB57CZ0lfQpWpQmWLNnRznHPS08GpEQVJgYVifvjr+gsq2h6QL6BPj60aUmTICfia8Yu+dbkT3lBFeX1fznAlPijhpz2GcgNo3/WtPP3OIrbYwzjT1b8te9PBPATQhdxf5FDOcB2s8pzrB5N+0124oSECTC3SOXSVXaQlvXMDFpYuDEHtg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782951927; c=relaxed/relaxed;
-	bh=b23V63BD9BdyYV2a2cLuU4Mh+dF+RSGxaY+1gI7BIEU=;
+	t=1782951990; c=relaxed/relaxed;
+	bh=ggKY+PiY/XL/TlUzVFfVrI+1Nd0wMZ3GupLpt3JkIXU=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=e24nO+VQFvCKBm48HCdqpOIooh/i1ChLTOE+jmi5AYryEoacyP3sReH/kaAx0S7+X7E0V0Eq295LVMhIKoz6X29AjbYms4ziKKl7WHqm32uZ8paMLjYO3YH2rK/ENbk5urkBFW+pGhOb4Duxo8obXHmr86oqZMQHh/xvb8TDwxKXqSHoX7u6+4WX6p2WKwmEzffynrK+2/MbOL/0rMFtTM+9wQJNRbNE/LijAEA52pq1Xz9HRFYlRnc4iJds/RKZfxbpeC353Op8t6lpaytSgyanIzXek8Mz+pNyWIunDt0mxDCN7DVaYdi9+LoI10L0b/vtJf6fuPrBr6nKzbL5jQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=h3bv4x2W; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	 Content-Type:MIME-Version; b=Ft8UQq3lC2u1t17PLn0aqymoiFsuNZPNMme0gRbku1fqydEOehhMgBD0BjPNEC//abSqqQx75vh0QkvdLu4csfRKh0aAhVrzW5f5dPKFt+5VcTYZtbG84hCieXPMSGKPdlk0eVEzeEI1d3k1TjYb7bNa0qwAzGWVFD6W+bIRAnRztpGsKqWDqMtB7aq0+zCdqVBxrMw1z1nkDkEVk/VkmEIKZsfVlVMbAqpTygtAavFI+kv9+Qdt/qcKALki5LK9cNEfLodzZEVVd8oMKRm04jqbrVnP87fMapynuWOQ3DuSvU8tCJBO1j52KvYazpM/OXkpQ4cIoetWfSDUguZHHQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=MKVkLHEq; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=h3bv4x2W;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=MKVkLHEq;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4grHj25hP0z2yf9
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 02 Jul 2026 10:25:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4grHkG4GZRz2yf9
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 02 Jul 2026 10:26:30 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1782951925;
-	bh=b23V63BD9BdyYV2a2cLuU4Mh+dF+RSGxaY+1gI7BIEU=;
+	d=codeconstruct.com.au; s=2022a; t=1782951990;
+	bh=ggKY+PiY/XL/TlUzVFfVrI+1Nd0wMZ3GupLpt3JkIXU=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=h3bv4x2WU3f1qVa7wLIOYvub7fxttSM9mZv8n11Vg4VoIPKJIsENJXvbd+HN3ds0M
-	 cNISPiqb448GaEdzSxe5INSLK1lnf5MpWUaVphXrhLC2jQh4ncUfEdnPHBL+RuQeKs
-	 +wGvEbXl5aZ3PeTvwmt+3z8oz3eXWAJGGk7SrnnlNbDg0ev2NzTvfzw8XK4vHiEkmd
-	 F9sQLOXnw7VPGED1Zvqi82Gpr6J/HfVYUbWIYf5w2n7mkSR3ny0AeN1/6cPPWmQQ4x
-	 scUrVFdffYKE8fBRFXe9Uc0GRxKAUcwpnpMzfcoT47eg29b5eVu97Edxvh2UA36dot
-	 GGbRjlpj+sJ+g==
+	b=MKVkLHEqSw5DimCEOHwHKrc1/BWkRhGWgS5Xuz4jz5WMGFWR1Q3qEDr9EIkT0aFS/
+	 tCNZJOe6YNAuZaJ2pEPzl2Az7jcdQa/+9sDSgdDBKiSuiwZjRC0SUDD8Hia5/OTPUq
+	 9wxuDAcDZb0QZ5GAChaGAcBgBKksNBOb4ebOcb1EzxsoCylDdLUqLE8ZXuSs1HE17C
+	 kfFJJD3CePZ864ZkvjomXdPbKrcy/Bufc9Ee/efDWB0lOaftHpiNqnrYG1fvPZxzs9
+	 D5fS8nS8s1S5Ebax96vEavxOR1pKpPhV/qv8nCw66ABV0yc2K6znE/Z5Rm+NUwf7om
+	 Ab8Kw0tL+Y2pA==
 Received: from [192.168.68.117] (unknown [180.150.112.11])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 0162A65871;
-	Thu,  2 Jul 2026 08:25:23 +0800 (AWST)
-Message-ID: <33cf45f92e4aa2ca985501807c3e4f74e1a10032.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v6] soc: aspeed: lpc-snoop: Fix usercopy overflow in
- snoop_file_read
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id B84EF65871;
+	Thu,  2 Jul 2026 08:26:29 +0800 (AWST)
+Message-ID: <906cd5f479fe4b80ea3d66c236f259bdd644bf78.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v8 0/2] Add Meta(Facebook) ventura2 BMC(AST2600)
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Karthikeyan KS <karthiproffesional@gmail.com>
-Cc: joel@jms.id.au, andrew@aj.id.au, Kees Cook <kees@kernel.org>, 
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org
-Date: Thu, 02 Jul 2026 09:55:23 +0930
-In-Reply-To: <20260701171506.338614-1-karthiproffesional@gmail.com>
-References: 
-	<033f2657ae6a94ad13d22f717a2900afb75d892d.camel@codeconstruct.com.au>
-	 <20260701171506.338614-1-karthiproffesional@gmail.com>
+To: Kyle Hsieh <kylehsieh1995@gmail.com>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski
+	 <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel Stanley
+	 <joel@jms.id.au>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, Krzysztof
+ Kozlowski	 <krzysztof.kozlowski@oss.qualcomm.com>
+Date: Thu, 02 Jul 2026 09:56:29 +0930
+In-Reply-To: <CAF7HswP25GXigSqL+bGBz=0=RST2XjS7fNmkKcsy-qjxfg_1jQ@mail.gmail.com>
+References: <20260615-ventura2_initial_dts-v8-0-c89f92c80447@gmail.com>
+	 <CAF7HswP25GXigSqL+bGBz=0=RST2XjS7fNmkKcsy-qjxfg_1jQ@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.56.2-0+deb13u1 
@@ -72,18 +73,19 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 
-Hi,
+Hi Kyle,
 
-On Wed, 2026-07-01 at 17:15 +0000, Karthikeyan KS wrote:
-> Hi Andrew,
+On Thu, 2026-06-25 at 13:35 +0800, Kyle Hsieh wrote:
+> Hi Maintainers,
 >=20
-> Just following up, it's been about two weeks since I shared the
-> hardware validation results. I believe I've addressed the questions
-> raised in the thread, but please let me know if there's anything
-> else you'd like me to do.
+> Just a gentle ping on this v8 series.
+> All review comments from the previous versions have been addressed.
+> Please let me know if there is anything else needed for this to be
+> applied.
+>=20
 
-Nothing further required on your part. I intend to apply it, however am
-working through some other priorities.
+Sorry for the delay. Your series is in my queue of patches to review,
+but it's competing with other priorities.
 
 Thanks,
 
