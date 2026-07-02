@@ -1,64 +1,58 @@
-Return-Path: <linux-aspeed+bounces-4332-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4333-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C2DCC43458
-	for <linux-aspeed@archiver.kernel.org>; Thu,  2 Jul 2026 00:26:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1269C43458
+	for <linux-aspeed@archiver.kernel.org>; Thu,  2 Jul 2026 17:16:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4grHkG755Gz2yfD;
-	Thu, 02 Jul 2026 10:26:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1782951990;
-	cv=none; b=dnXCiyva/c0yGoYwfGvzgiiF7w6npaSG1shygygtQLgowD1P0iZgQ5LEdBvnTyuz/aNtEwjqC/Bjqz7MsMrDYpMuj69I807BSEuvWgQxZYK3skZ/5g2+yGCsOO5R5TJuAG7eB3bP3hThf/yYgPWNwVwoiRZYovL0asXGSB57CZ0lfQpWpQmWLNnRznHPS08GpEQVJgYVifvjr+gsq2h6QL6BPj60aUmTICfia8Yu+dbkT3lBFeX1fznAlPijhpz2GcgNo3/WtPP3OIrbYwzjT1b8te9PBPATQhdxf5FDOcB2s8pzrB5N+0124oSECTC3SOXSVXaQlvXMDFpYuDEHtg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4grk803cDyz2xKh;
+	Fri, 03 Jul 2026 03:16:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783012608;
+	cv=none; b=EMLGuxH4DlV3OqHOuMK1zeY91khqm42CttYbzLdW789+Beo4yTeyatMENLG9KmcJ9TU674RhPSEQ26DwhaxHG4Kp6AYqn0zCBBPbvDGAACfSDmsEadVPoL3pB2bk3vSn1o9XFJi4OGNUnbnx9LpnZjAXA9tNFkCQeCTi9lCTF6/BXnejBvgotdw3jaf5ES3o4UNWkyrnl0v3wj2/u0A2Wlg8uEnBwv+f0aVyWpSaxRLgFfLm0OhBEaMiF4GCYLGkTmGjrxjcPSwj5BThRSLlO0ctDyozTIDbOJKJdIx4FS1kcRse9uVIjLHeoKnqp6kc/dNjhoAeHb61U1DaJCcdgA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1782951990; c=relaxed/relaxed;
-	bh=ggKY+PiY/XL/TlUzVFfVrI+1Nd0wMZ3GupLpt3JkIXU=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=Ft8UQq3lC2u1t17PLn0aqymoiFsuNZPNMme0gRbku1fqydEOehhMgBD0BjPNEC//abSqqQx75vh0QkvdLu4csfRKh0aAhVrzW5f5dPKFt+5VcTYZtbG84hCieXPMSGKPdlk0eVEzeEI1d3k1TjYb7bNa0qwAzGWVFD6W+bIRAnRztpGsKqWDqMtB7aq0+zCdqVBxrMw1z1nkDkEVk/VkmEIKZsfVlVMbAqpTygtAavFI+kv9+Qdt/qcKALki5LK9cNEfLodzZEVVd8oMKRm04jqbrVnP87fMapynuWOQ3DuSvU8tCJBO1j52KvYazpM/OXkpQ4cIoetWfSDUguZHHQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=MKVkLHEq; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
+	t=1783012608; c=relaxed/relaxed;
+	bh=9hU8UIsJBJs/wJVPysC5SFtDzxZng9BNNVfogLEp8pw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=e1OqsDGJY/F3tMLOBDbvqeVS4BY4eBZSBmTD1NMevyriInzDM7kfTrAyuAjkHzN5rBUdO2ZV2LKAiYq3TVYim//mqyN73adzwgXIIR8CKLGWwZ53/eDNYDDuQ6lkINYxjQz2xqhpRr9kNa/KVFABoBE9s8BNXuqcBP0RZMJBNzW1H/tC5x24wiZzOreqWmLv2odceZxFN0605EHxPxJW1SqIcA1kY46rpr6FEVONW8fnFefu48beE0FLyfQ0TtT30p4qzka6tiGizTohigLtOKDizDub3VCQ6z7SpaXnXpoMzxmzSQ4eU3Gk/RKElIHF6XVN/iJAd7ZjWjmjtGDHWA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=kjpQTX/S; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=MKVkLHEq;
+	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=kjpQTX/S;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
-Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
+Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4grHkG4GZRz2yf9
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 02 Jul 2026 10:26:30 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1782951990;
-	bh=ggKY+PiY/XL/TlUzVFfVrI+1Nd0wMZ3GupLpt3JkIXU=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=MKVkLHEqSw5DimCEOHwHKrc1/BWkRhGWgS5Xuz4jz5WMGFWR1Q3qEDr9EIkT0aFS/
-	 tCNZJOe6YNAuZaJ2pEPzl2Az7jcdQa/+9sDSgdDBKiSuiwZjRC0SUDD8Hia5/OTPUq
-	 9wxuDAcDZb0QZ5GAChaGAcBgBKksNBOb4ebOcb1EzxsoCylDdLUqLE8ZXuSs1HE17C
-	 kfFJJD3CePZ864ZkvjomXdPbKrcy/Bufc9Ee/efDWB0lOaftHpiNqnrYG1fvPZxzs9
-	 D5fS8nS8s1S5Ebax96vEavxOR1pKpPhV/qv8nCw66ABV0yc2K6znE/Z5Rm+NUwf7om
-	 Ab8Kw0tL+Y2pA==
-Received: from [192.168.68.117] (unknown [180.150.112.11])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id B84EF65871;
-	Thu,  2 Jul 2026 08:26:29 +0800 (AWST)
-Message-ID: <906cd5f479fe4b80ea3d66c236f259bdd644bf78.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v8 0/2] Add Meta(Facebook) ventura2 BMC(AST2600)
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Kyle Hsieh <kylehsieh1995@gmail.com>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski
-	 <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel Stanley
-	 <joel@jms.id.au>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, Krzysztof
- Kozlowski	 <krzysztof.kozlowski@oss.qualcomm.com>
-Date: Thu, 02 Jul 2026 09:56:29 +0930
-In-Reply-To: <CAF7HswP25GXigSqL+bGBz=0=RST2XjS7fNmkKcsy-qjxfg_1jQ@mail.gmail.com>
-References: <20260615-ventura2_initial_dts-v8-0-c89f92c80447@gmail.com>
-	 <CAF7HswP25GXigSqL+bGBz=0=RST2XjS7fNmkKcsy-qjxfg_1jQ@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.2-0+deb13u1 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4grk7y1xjNz2xC3
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 03 Jul 2026 03:16:45 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
+	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
+	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
+	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
+	bh=9hU8UIsJBJs/wJVPysC5SFtDzxZng9BNNVfogLEp8pw=; b=kjpQTX/SSMGDFX7PWnu5oH6F0R
+	qH26UpJqTO5RPkm0abkr6Kd0jMQplVjnu4Hb4qRiXAEMzNFV3OKWgqJ+/JQMkVpTLWlFq75MQPgdd
+	d8xMaN9+t0KnrWLbfp4yQzeRU4879A9J3N17qndTPck/+reBKLKw0WqgPFfpScFnFo/Q=;
+Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
+	(envelope-from <andrew@lunn.ch>)
+	id 1wfL1Z-00APGr-Sh; Thu, 02 Jul 2026 19:16:29 +0200
+Date: Thu, 2 Jul 2026 19:16:29 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+To: Jacky Huang <jackyhuang@nvidia.com>
+Cc: Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Joel Stanley <joel@jms.id.au>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org,
+	linux-aspeed@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] ARM: dts: aspeed: Add NVIDIA VR-NVL BMC
+Message-ID: <c43899a8-3d6a-4c94-b0c2-33c00a830610@lunn.ch>
+References: <20260702165524.2168091-1-jackyhuang@nvidia.com>
+ <20260702165524.2168091-3-jackyhuang@nvidia.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -72,22 +66,52 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260702165524.2168091-3-jackyhuang@nvidia.com>
 
-Hi Kyle,
+On Fri, Jul 03, 2026 at 01:55:24AM +0900, Jacky Huang wrote:
+> Add the device tree for the Aspeed AST2600 BMC for NVIDIA's Vera
+> Rubin NVL compute platform.
+> 
+> MAC0 uses phy-mode = "rgmii-id" because the on-board PHY supplies
+> both RGMII internal delays.  The matching U-Boot device tree does not
+> enable SoC-side MAC clock delays, leaving the MAC internal delay at
+> zero so the PHY-provided delay is not doubled by the MAC controller.
 
-On Thu, 2026-06-25 at 13:35 +0800, Kyle Hsieh wrote:
-> Hi Maintainers,
->=20
-> Just a gentle ping on this v8 series.
-> All review comments from the previous versions have been addressed.
-> Please let me know if there is anything else needed for this to be
-> applied.
->=20
+> +&mac0 {
+> +	pinctrl-names = "default";
+> +	pinctrl-0 = <&pinctrl_rgmii1_default>;
+> +	/*
+> +	 * The on-board PHY is strapped to add both RX and TX RGMII
+> +	 * internal delays;
 
-Sorry for the delay. Your series is in my queue of patches to review,
-but it's competing with other priorities.
+No change required, just a comment. The strapping should not
+matter. All Linux PHY drivers should configure the PHY based on
+phy-mode, replacing the strapping settings. There have been cases
+where the strapping is wrong...
 
-Thanks,
+>                       declare "rgmii-id" so the MAC does not add
+> +	 * additional delay.  The same setting is applied in the
+> +	 * matching u-boot DTS to keep early-boot networking working.
+> +	 */
+> +	phy-mode = "rgmii-id";
+> +	phy-handle = <&ethphy0>;
+> +	status = "okay";
+> +};
+> +
+> +&mdio0 {
+> +	status = "okay";
+> +
+> +	ethphy0: ethernet-phy@0 {
+> +		compatible = "ethernet-phy-ieee802.3-c22";
+> +		reg = <0>;
+> +	};
+> +};
 
-Andrew
+For these nodes only:
+
+Reviewed-by: Andrew Lunn <andrew@lunn.ch>
+
+    Andrew
 
