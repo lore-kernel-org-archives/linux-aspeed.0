@@ -1,101 +1,172 @@
-Return-Path: <linux-aspeed+bounces-4350-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4351-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EEB2DC43458
-	for <linux-aspeed@archiver.kernel.org>; Sun,  5 Jul 2026 05:36:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6ECF1C43458
+	for <linux-aspeed@archiver.kernel.org>; Sun,  5 Jul 2026 05:36:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gtGSC2cvjz2ygW;
-	Sun, 05 Jul 2026 15:36:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gtGSD3Mczz2ygm;
+	Sun, 05 Jul 2026 15:36:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.168.131
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783190012;
-	cv=none; b=iX3eq0enUdkHsh24DC0A9KGNeAFMe2oEkQzm2HEKIycS0ot/09QmugEQR2djng0eeY4R9dFbklonO9WIgfkQdVUgxCt5hN30RqBr+NfhVUbKZ6xAZchIxSR9ca2JKCNI/J8uqM4Qx/EzVzaPPohWtU4eOL59l9BvvFqvM7CxaOdo3Z03U+dBYSl4eXleuB1rkCZEIBpc2rO+sEm1pHeDo7cgbfL6KU0uOUizD6ABHfvWZRlDY+RsaRUNkDbYhVojAanqmJklEuGjBnyv3eEpK8/VyYLs9jyliCZsxLjaKM2PTxHYuV4XhHQQ30kyPiNDDAVu/9sXm4MpOHjhqzHWKg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783108986;
+	cv=none; b=VQUtfo8P1nKbs7GdyA5zXGjZPB16HysI/uTI8Bj8+tz0nM2C0Py8WXjeoW+ym9Sehj7KVBP1usN9ONxOB3/09a5VMVwZysPgWwTsP6m3I6dng/TcYCKqVmV2N9aAH3LkPxKAC11hVwyQUDyMtxHZGBP1OFA0MRL3yzshY5sBmYGfMZucMuVzRp/U6FUBuKxOieZbqy1z/3eOaBTCy3JqG0EJjEOVJiwnMrBZnYCh3yOD5Z3+6uFM/Tpedmqklytqwrio7WbPaPpMgzOgxEIMz5k7hV5O98KMo8JsiVmjZ+zdbRnFKl9CogcPXF+YX4vVZZcIQpPogA21YPTATi+qdw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783190012; c=relaxed/relaxed;
-	bh=g0BtnuFOv0FQCXxUBDMLCWTcgE0j6FLXPqatMYGCcJA=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=VczhOkKh0b9Uqp/Ga1txie6u69AY7AEk4FGfhkmnquNaSm2n2C4cvXwqeoOFj3kbKfUcja+0lYQdW2X//N3QeMkjwleHzVxxISvh/g4DhdnYIIoQxrp5FosiJl7hbNmzmo+Isi1CGUoGUWRFne18PFvHQDFDjE9N43s86Qo6YFN6fK4s1EMuAYbNkvrCqPiKUgoreVOeWUw6A5IeQb+7ptBg6LJDr9+5ovg5KvPb1uUsx7yCwSe3fnSLTJXU7rwE/G9ZrdmGZUwBkB47GtCz+XRD8mgRvSDhPHyZBNaVoUOLuAJtF8akkhe/mjikNpORcAdKBHT9X2wVYnmEB+UyBg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=W6KKvrhm; dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=AyNDWyJI; dkim-atps=neutral; spf=pass (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=ze.huang@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
+	t=1783108986; c=relaxed/relaxed;
+	bh=yuDgKoAlw/JRHunDNfGXYBYzhSRLVnjx2xmNmMEK1vs=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=ET29enikviw7XhnzTSxUC7w/kZa5DUUd4mVcNaEB5ze0RVP2iryaT1+aKAg9jGZ1NV46rpFGDLZrqFXBqNsB8dmw7BP453GqK9Qer2qtqbzRU/46kcKmxuQldzHnb8dfJxiyw9vZl3N5UqYQVlA/AYhJzgohxvsJX+88XivOFDMFv10MQ1KJJ+1LrocDDvZdBtqeq+CDei2yk+Bw3hDMqyVxVorVEY/O+scxvo/6dugv6LeH22Kqp7bOL37RKFnSBHByq/qwPHWu7FBp13YSTGHpNrcvY8b78q9YoHLGq67gNKZCKE2GrheZbG/m/WHNdUiq2EDf0bjK0EhKrnnVTA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=YEMeysY1; dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=f9yjXJ5v; dkim-atps=neutral; spf=pass (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=mukesh.ojha@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=W6KKvrhm;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=AyNDWyJI;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=YEMeysY1;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=f9yjXJ5v;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=ze.huang@oss.qualcomm.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=mukesh.ojha@oss.qualcomm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gszlb6lbZz2xyh
-	for <linux-aspeed@lists.ozlabs.org>; Sun, 05 Jul 2026 04:33:31 +1000 (AEST)
-Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 664G8L2E3293625
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 4 Jul 2026 18:33:30 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gsPnP5Qkwz2xC3
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 04 Jul 2026 06:03:05 +1000 (AEST)
+Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 663HiIHU683668
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 3 Jul 2026 19:39:27 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	g0BtnuFOv0FQCXxUBDMLCWTcgE0j6FLXPqatMYGCcJA=; b=W6KKvrhmeJ2fyG7f
-	WVeIgvI7yc1jiGCDVMy8ENc4fDLxlrrfJe8IN0O7lmm2B65JmceQegoTuxl0Zy4Q
-	OqrwkMJhj1H45TKfCC4YEbJgkLuuqCQWQ+x7QobwEfYeReDSSCL5wWTZivIRfWQf
-	ZJvG8MRhzMrHmL/91mXHljlnNhNPpfDOq9WZgplUeCnLLFjKY3B6g8sVRCTh67r/
-	N/u3p+SV46iH5sChKzMK/1uJIPHpraflaat1ixydDZW7kQwP9UJMiq81VaHpAprp
-	JpC6F9G6ErO9rXO+wqrCAT9MR9ncg2ZJVslkCM+/pUyt+MTHGF3FE+8IziiOj809
-	wXvMLA==
-Received: from mail-pf1-f199.google.com (mail-pf1-f199.google.com [209.85.210.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4f6txeh99y-1
+	cc:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=qcppdkim1; bh=yuDgKoAlw/JRHunDNfGXYB
+	YzhSRLVnjx2xmNmMEK1vs=; b=YEMeysY1/myhDao0i74e7TNlV74ktXTCfMwdq9
+	CR3QbS5AITeviE8hf9EJ30WAllVldtcYL4AMMm0/LzjQKzr0t0eqDF0S43incuSV
+	MyApeWy7M1IbpM60LNShiFzTpmwg+/W0PKTj+Lp+cXYVgARiHsuxhXD426SvD7cT
+	GGZrPR1QcL7iICOr24d23aBH8a/MPY5danZVa1/zTiMmF2fSUTDZMyH3oHPCfVAv
+	4nbvlJJiytEOZCVzenusm2J4e5XUbEHMVWQY64oswPjfiGG059bwY0hXxdENEoJ/
+	sJbKqjoPigEwtHk2s+fe6Ba9Tfz1f/tpFlGt1x1q0Mz2ipmQ==
+Received: from mail-pg1-f197.google.com (mail-pg1-f197.google.com [209.85.215.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4f64b5brk4-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 04 Jul 2026 18:33:30 +0000 (GMT)
-Received: by mail-pf1-f199.google.com with SMTP id d2e1a72fcca58-8478423e020so2625364b3a.0
-        for <linux-aspeed@lists.ozlabs.org>; Sat, 04 Jul 2026 11:33:29 -0700 (PDT)
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 03 Jul 2026 19:39:26 +0000 (GMT)
+Received: by mail-pg1-f197.google.com with SMTP id 41be03b00d2f7-c889d1eedcdso1374552a12.1
+        for <linux-aspeed@lists.ozlabs.org>; Fri, 03 Jul 2026 12:39:26 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1783190009; x=1783794809; darn=lists.ozlabs.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=g0BtnuFOv0FQCXxUBDMLCWTcgE0j6FLXPqatMYGCcJA=;
-        b=AyNDWyJIWscKOKkto/15rXyuL/QIStzU6LONQSF2k1BqizDIqBk1XcsyC/i9nf9ShM
-         DQp83l5ABZoTj83CXKZUsOx9taJG19XuTwOTa9yvX9CBb7J0hrypoR8F78rSx94YUtp6
-         2b6I0L9IO7dMT7r8O6r2N7VaYnwydPdz3KSW2803xBEHu4S1p4AZFBr4yODAK8mrJJEa
-         GeIGiVYqTn25zdNCrz+DB+megFHcj4f1tTKP0Xwd/QiB63R9p/OaM32MVT6dsQKl11EG
-         K3x65rHJMF16WgMtLIHoVh/heHg5YsEcg3NsPb6FCn2D+FlRn4vujju2XGbUkL6aTBzB
-         x2JQ==
+        d=oss.qualcomm.com; s=google; t=1783107566; x=1783712366; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=yuDgKoAlw/JRHunDNfGXYBYzhSRLVnjx2xmNmMEK1vs=;
+        b=f9yjXJ5v3mWB2p/VJCp9E7x1kAnvOl79+PK+ASqAO1R6o4fHL/sEZkYXA1gIM54rcE
+         nBm4Xqq/ggnH4fJCh75pxlvJ4XSV9nnYG88kbMQjuEq86uWf3bGCQPzDQK6C+AuiallZ
+         uU7G0PyufLdRZMwEqlnKciq1e27MI9I9OTUhdjNIspzxWEVK4VlyR3D4nLyruoadxUbx
+         lhR5GzeTyM5HxJefVg+J+gLlz/DTE1XJijayatVsXHfOhT2XbPHe+gDFiLGFBEYeMqeX
+         fzvWiCngiHWKSoKLUUbW8u0XV4h3szvGnBruBFN+J9DaJGvcH0yapPV0j7ISkg63YTam
+         wA3g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1783190009; x=1783794809;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=g0BtnuFOv0FQCXxUBDMLCWTcgE0j6FLXPqatMYGCcJA=;
-        b=ByvHcQKfe7wZkTRPL+/k8xKv+rmg0fFcR2t+NMQ0sGQg5lOFg1bwm9SlWGAionmgwD
-         BvW4j/p8tGsms4una7LHGOKTPOBSHeZhrgm+3cob0ShVQ3pHIlybzOPMzWRLm1XLjMYu
-         TdMaKpM/o+UTzPAgxzF8ScbARO4rt7Rx4L/IM9Y9m5PxbSk2+c82FBi3VvMuXFWmScm4
-         4gzo5eOQO791AVLmD+8gjBxelhcI/Z4nK8HqZH2QNOH7gciWWPuGobCLn37kKDcYaHZS
-         Z39/PAYm9eHkTeHJPPKVhEoUVknKf8Jyz3MwdNXGKEoJVuaS41rT1tnk787Y/DadIjsu
-         NzXA==
-X-Forwarded-Encrypted: i=1; AFNElJ87zHVKamw38VfM8aHHRs959Eu2HdWy2oPh6vKf6SLYJHVZq0z0MSWIRObwDDuTrkIBloAY/jGpdKNQaEk=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyUyYmezCwPpKVHialB0HgJh3dQbwPMh/4HkOeYRXFX7X/5hXKZ
-	43q5mE29Y+8r3bn+eh9wgKOex18HqITYxLHTTcmNd8fZFbgbIl0eUYghXNcrbbSqI7ehK31jNsg
-	b1VZAG3MNERQEUZDZKfFILKFbgBDdDwB2lZ/18+QfpNYscz/C+JuwqNGtPQgsXY52psMBEGhccp
-	rLZ1+pXw==
-X-Gm-Gg: AfdE7cnqJ2aONekZmvc+Js8anEH1hM053mBlblZAEhhPZZeUk5XNlCWx392HOc1h/di
-	6m6Cn0aGwPOvaRv2lOBeddeo/TiWn5bEMgcTLx1Dk+M4Xfpn7JGnodWxzUTQonkNc+LhlCQFqE/
-	c23cuAP5vaRF5q0WvOXlQwXgLC1DwftAXXdXM3Ejw7NbAfIEtI/YICTJbYL14t/YtV4Y32roPrn
-	hHOYA9FmnuVPIufIK1KiPLnJkJ+tBAO5ZYvg/nZlHjC089OqCjN+q2eavM00yTUV+52tAiF15kB
-	ryXHdOfWLUOdYLtd8lp3cfZvlRdzGn4MRamm/4KzzPTmOkmhK7S8At/9KeHwDTh5GuJ0iFtrsD3
-	f1nySFbdc6+KDwb1VpMJQzcM=
-X-Received: by 2002:a05:6a00:e05:b0:845:d274:bfa3 with SMTP id d2e1a72fcca58-847f6f96cdemr3661060b3a.58.1783190009293;
-        Sat, 04 Jul 2026 11:33:29 -0700 (PDT)
-X-Received: by 2002:a05:6a00:e05:b0:845:d274:bfa3 with SMTP id d2e1a72fcca58-847f6f96cdemr3661037b3a.58.1783190008770;
-        Sat, 04 Jul 2026 11:33:28 -0700 (PDT)
-Received: from [192.168.1.100] ([151.243.38.149])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-847f6b6057dsm1508437b3a.7.2026.07.04.11.33.22
+        d=1e100.net; s=20251104; t=1783107566; x=1783712366;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=yuDgKoAlw/JRHunDNfGXYBYzhSRLVnjx2xmNmMEK1vs=;
+        b=qmqYIK826x40eQ0P+JWKG5vRnsAXQJf7QqCOtnLkIH+eaezdd6WE2wcqmoIz5JpDfS
+         mUe6NbK9nvdy8qPUDPk0BaAaDLKUcqJlhz7FvhQS38HJ7FsGhJDapryPIN35hdLN1c5j
+         g0X3veddD5Xnyfs0t5eNisVu/esFbv58IPIjyfVNffIPRu6CeXqOcG4VS17XlWD8Slgr
+         3sgjlxe5G5YXJ0TwkkuystfnYO1NgpOIdPCAgzhpPXlKmAXBBSPBKMvxVKXodYDGNFqu
+         F1pAa7QcvE/abA9ddJDW+DGa/ufcpNGmp8u6CoIOGS/KnBePnRZq9+b3LBRrCYuZLKid
+         ibCg==
+X-Forwarded-Encrypted: i=1; AFNElJ/6lzxn5c6ASPYQyekO+hs76b7vjp494KuC0qCS+GjuZeIaYngyFK9D4/Uwfd3+PUHTQ1ji17Q4tUf4HqU=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzlMxk5ERnpolJHRzFsLn9aHafaU0gup1nJq6TlAI2L9VtFQjO8
+	45/3Ro3rsPKx61aPOm1BqcSmU1NI5pIW8Ur5tiLDIr1h803/fywDcpfN321gDZYKRPjb5temuvU
+	4InormO9KRzC7mmfc+lTeAafJClW/a3h9CFEu4sEp87ScNKxnFMcXGjICk2WzoIWt7ziD
+X-Gm-Gg: AfdE7clsdQePMT0oYtWKjuturGRbuIQIn/s80qckRn+Raqd30n5dRMfUygqNpL1gay8
+	WP501pE+Xi8l5cXpTQ+lMdWdKC9b9jnpG9Nhihw79eSVPHiVyCHw/Z8+H59xujOvYUrmR2hsIBC
+	aPQ048EFSiD4dYLInrHmWu+zF1mQSTsDWJkRjVG7UaOmKgroJ7Y9+vIFca5+K7TLxV8khmx+T4J
+	gZFloHFCtGaf//NhrzL9gMAGECv+w8oozjILFNAThKX8ei1taGeTDlf4Uyq3T+PZjd+pJw9Kifd
+	ygJuxgV7rkAK0OZDZTB6uiOuMFaG1eFpHEAwo8rI02XFzdar4WyFW+RtQfuZG1mKb9YJfHN1324
+	n341pa3kQ07xl0iYKT3vMvzo4/uPmHSUXElRmZA==
+X-Received: by 2002:a05:6a21:4c81:b0:3bf:e291:496c with SMTP id adf61e73a8af0-3c03e298475mr701928637.17.1783107565962;
+        Fri, 03 Jul 2026 12:39:25 -0700 (PDT)
+X-Received: by 2002:a05:6a21:4c81:b0:3bf:e291:496c with SMTP id adf61e73a8af0-3c03e298475mr701865637.17.1783107565344;
+        Fri, 03 Jul 2026 12:39:25 -0700 (PDT)
+Received: from hu-mojha-hyd.qualcomm.com ([202.46.23.25])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-30f290b6bc2sm10065845eec.27.2026.07.03.12.39.01
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 04 Jul 2026 11:33:28 -0700 (PDT)
-From: Ze Huang <ze.huang@oss.qualcomm.com>
-Date: Sun, 05 Jul 2026 02:31:17 +0800
-Subject: [PATCH 8/9] drm/tve200: replace struct drm_simple_display_pipe
- with regular atomic helpers
+        Fri, 03 Jul 2026 12:39:24 -0700 (PDT)
+From: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
+To: Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        Liviu Dudau <liviu.dudau@arm.com>,
+        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Thomas Zimmermann <tzimmermann@suse.de>,
+        David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+        Joel Stanley <joel@jms.id.au>,
+        Andrew Jeffery <andrew@codeconstruct.com.au>,
+        Paul Cercueil <paul@crapouillou.net>,
+        Anitha Chrisanthus <anitha.chrisanthus@intel.com>,
+        Paul Kocialkowski <paulk@sys-base.io>,
+        Linus Walleij <linusw@kernel.org>, Chen-Yu Tsai <wens@kernel.org>,
+        Jernej Skrabec <jernej.skrabec@gmail.com>,
+        Samuel Holland <samuel@sholland.org>,
+        Alexey Brodkin <abrodkin@synopsys.com>,
+        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>,
+        Michal Simek <michal.simek@amd.com>,
+        Daniel Scally <dan.scally@ideasonboard.com>,
+        Jacopo Mondi <jacopo.mondi@ideasonboard.com>,
+        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        Eddie James <eajames@linux.ibm.com>,
+        Tiffany Lin <tiffany.lin@mediatek.com>,
+        Andrew-CT Chen <andrew-ct.chen@mediatek.com>,
+        Yunfei Dong <yunfei.dong@mediatek.com>,
+        Minghsiu Tsai <minghsiu.tsai@mediatek.com>,
+        Houlong Wei <houlong.wei@mediatek.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+        Joseph Liu <kwliu@nuvoton.com>, Marvin Lin <kflin@nuvoton.com>,
+        Dmitry Osipenko <dmitry.osipenko@collabora.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Thierry Reding <thierry.reding@kernel.org>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Srinivas Kandagatla <srini@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Ge Gordon <gordon.ge@bst.ai>, Adrian Hunter <adrian.hunter@intel.com>,
+        Ulf Hansson <ulfh@kernel.org>, Rob Herring <robh@kernel.org>,
+        Saravana Kannan <saravanak@kernel.org>,
+        Mathieu Poirier <mathieu.poirier@linaro.org>,
+        Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+        Shengjiu Wang <shengjiu.wang@gmail.com>,
+        Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>, Frank Li <Frank.Li@nxp.com>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Peter Ujfalusi <peter.ujfalusi@linux.intel.com>,
+        Bard Liao <yung-chuan.liao@linux.intel.com>,
+        Daniel Baluta <daniel.baluta@nxp.com>,
+        Orson Zhai <orsonzhai@gmail.com>,
+        Baolin Wang <baolin.wang@linux.alibaba.com>,
+        Peter Chen <peter.chen@cixtech.com>,
+        Fugang Duan <fugang.duan@cixtech.com>
+Cc: Ekansh Gupta <ekansh.gupta@oss.qualcomm.com>,
+        BST Linux Kernel Upstream Group <bst-upstream@bstai.top>,
+        Fabio Estevam <festevam@gmail.com>,
+        Nicolin Chen <nicoleotsuka@gmail.com>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Kai Vehmanen <kai.vehmanen@linux.intel.com>,
+        Pierre-Louis Bossart <pierre-louis.bossart@linux.dev>,
+        Vijendar Mukunda <Vijendar.Mukunda@amd.com>,
+        Chunyan Zhang <zhang.lyra@gmail.com>,
+        CIX Linux Kernel Upstream Group <cix-kernel-upstream@cixtech.com>,
+        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-aspeed@lists.ozlabs.org,
+        linux-arm-kernel@lists.infradead.org, linux-mips@vger.kernel.org,
+        linux-sunxi@lists.linux.dev, linux-media@vger.kernel.org,
+        openbmc@lists.ozlabs.org, linux-mediatek@lists.infradead.org,
+        kernel@collabora.com, linux-tegra@vger.kernel.org,
+        linux-mmc@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-remoteproc@vger.kernel.org, linux-staging@lists.linux.dev,
+        linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        imx@lists.linux.dev, sound-open-firmware@alsa-project.org,
+        Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
+Subject: [PATCH 00/42] of: reserved_mem: Introduce devres helpers and convert drivers
+Date: Sat,  4 Jul 2026 01:08:13 +0530
+Message-ID: <20260703193855.110619-1-mukesh.ojha@oss.qualcomm.com>
+X-Mailer: git-send-email 2.53.0
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -109,433 +180,146 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260705-drm-simple-kms-removal-v1-8-b4e1ca053623@oss.qualcomm.com>
-References: <20260705-drm-simple-kms-removal-v1-0-b4e1ca053623@oss.qualcomm.com>
-In-Reply-To: <20260705-drm-simple-kms-removal-v1-0-b4e1ca053623@oss.qualcomm.com>
-To: Alexey Brodkin <abrodkin@synopsys.com>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-        Joel Stanley <joel@jms.id.au>,
-        Andrew Jeffery <andrew@codeconstruct.com.au>,
-        Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Fabio Estevam <festevam@gmail.com>, Linus Walleij <linusw@kernel.org>,
-        Hans de Goede <hansg@kernel.org>,
-        Alex Lanzano <lanzano.alex@gmail.com>,
-        Oleksandr Andrushchenko <oleksandr_andrushchenko@epam.com>
-Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        linux-aspeed@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
-        imx@lists.linux.dev, xen-devel@lists.xenproject.org,
-        Ze Huang <ze.huang@oss.qualcomm.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1783189912; l=12559;
- i=ze.huang@oss.qualcomm.com; s=20260704; h=from:subject:message-id;
- bh=IU9daMuh+wIrKu2A7tjNZQhHlWlCXrpg0Z3XcY9yMsA=;
- b=wca2bARZyhz/O2pE/2ultazGgfCDL/nXmuhK0zZODTqz3phtgEMU73vuIDTkXkqZJvrB1l2Xi
- pazMWuCMQ9XDkjSq9DKd98nVhHWb8WoQEKSNkWUUn6L6rvw9PKEzFZA
-X-Developer-Key: i=ze.huang@oss.qualcomm.com; a=ed25519;
- pk=pSsISLZF2ubEjJRmslsa6Ps4W3yAuPY7yaircQTlQQU=
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzA0MDE5MiBTYWx0ZWRfX/Xmiv/hnX3Mx
- 8f3awJrGGGxYW386RH7a92XSiiako0KO03vzt7XSTKFDOz++NMcyL6uiSN0MOh8r3HcYTHxYG84
- a9JfAjpU4VoRipkr2zRVEF2tdmZFYoM=
-X-Proofpoint-GUID: AP0jhW8ikr7nQXroQKzZhmGuse9KtdFa
-X-Proofpoint-ORIG-GUID: AP0jhW8ikr7nQXroQKzZhmGuse9KtdFa
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzA0MDE5MiBTYWx0ZWRfX6HwYkhBPinzW
- I3oCsJoH1XPstlcQQEin6Zb8fcSP3L2iNNjF9Ay5ZQWo553r+EiOrUSforuCvW85RGi1riw1OfS
- rjET0M/Lo8JJb5d5bUkC97zo5mMYYP/xejBI1iRBJ+Zslui8fL2sR6lfguoe/uaaJXGd2Kskk0c
- gM6yLfseInNAqgt9g4wws+KSdXR1+6Dyisr+0Pei74+kwfku2dh5ya40nINASyok0x3AYkYRZfH
- PotzyHfw3cofoyp1YdvclAdezH5Z+36cNvbIHM/u4PtGFLz+Fc+qzZdDhkZT108w5FuXJ93q5w7
- FTxn2EM1G4IyX75TYDf8KvxeC6ls6f6e0TfMrS44mZg4DdWQojICLse1cVfiVVm7pAZWJRUYpxd
- 1cgKFnuOjMu4JkKf3lqWGnIcOcsQ6Ne29IJMrrr3hvXLmIbRyYWlppiTNf3LGrnCwWIGADZAKqR
- WwDdEiVLy9I5GvlcHYA==
-X-Authority-Analysis: v=2.4 cv=HLLz0Itv c=1 sm=1 tr=0 ts=6a4951fa cx=c_pps
- a=WW5sKcV1LcKqjgzy2JUPuA==:117 a=cNux22OjBTKCC6TmznXXXA==:17
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzAzMDE5OCBTYWx0ZWRfXyhRILZq9gsXi
+ 51cAwCHfl8Xgf5AXmwJIneTE+7opJdeHgPBUhwM4LGod5+V4MeYi5DXBTX5oFpFlpxF0Z0nwmRg
+ u3C0+0ehyL+/513pBRJpLOK7pTGzc+Q=
+X-Authority-Analysis: v=2.4 cv=FOQrAeos c=1 sm=1 tr=0 ts=6a480fee cx=c_pps
+ a=rz3CxIlbcmazkYymdCej/Q==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
  a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22
- a=EUspDBNiAAAA:8 a=dgwnEUiFKTnKxPjcC9oA:9 a=QEXdDO2ut3YA:10
- a=OpyuDcXvxspvyRM73sMx:22
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22
+ a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8 a=c_1ikP4J58vCyc_cPHMA:9 a=3ZKOabzyN94A:10
+ a=QEXdDO2ut3YA:10 a=bFCP_H2QrGi7Okbo017w:22
+X-Proofpoint-ORIG-GUID: GW4GucENOnsdXFlegO5r0lQplbEuYNag
+X-Proofpoint-GUID: GW4GucENOnsdXFlegO5r0lQplbEuYNag
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzAzMDE5OCBTYWx0ZWRfX9pP8uexwhKP4
+ f+kpPE3VpCM0gZcqsErD8naDRYHGyMmPBL4HU/JsVTMLAKyMd6GOS1yDrXbjq50srnOe7xjSFQI
+ byvG5UBDMBPzdB6n5XrVfF/cXYQOBqU643LCF83AQADbRAo6G2DzWPRKQhY1Uat/SwPjjcA/h47
+ HCLuQR5AyEdqCdy19y7WoIh/l0qZ7rFuQ2rgvWhMLc9DpVR+gm2RqzbbQC79tjW5nakq8F2nVar
+ qxYF6vE/S3C2P+isAZvqVIMR/Rho0Eh1qExE+XAzfoPm9lbE9ioG6jZid9CMk8Cnaf9eM2c8oq0
+ 2x2LTHnz7ZTVQVI0r5KnuD9qVGBTyIcL/sciFqoBcNaiDpcsp8u2Yzs3uo1ySg4avbWGzdFRuxE
+ ZOlPCmzjaR9QVJur1Se2cyGG/Dsv7eJ6aVwDInDoUJdQMDPebJo77V6GDiTm0O9EPEWVz5iJGm1
+ yv7coLvyVsEfIFgy4vA==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.125,FMLib:17.12.100.49
- definitions=2026-07-04_02,2026-07-03_01,2025-10-01_01
+ definitions=2026-07-03_03,2026-07-03_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 priorityscore=1501 clxscore=1015 suspectscore=0 impostorscore=0
- phishscore=0 adultscore=0 malwarescore=0 lowpriorityscore=0 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607040192
+ impostorscore=0 suspectscore=0 priorityscore=1501 lowpriorityscore=0
+ bulkscore=0 adultscore=0 clxscore=1011 malwarescore=0 phishscore=0
+ spamscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2607030198
 
-Convert TVE200 to explicit plane, CRTC and encoder objects.
+Drivers using of_reserved_mem_device_init() and its variants must
+manually call of_reserved_mem_device_release() in their remove and
+error-unwind paths. This is repetitive boilerplate that is easy to
+get wrong, and several drivers have open-coded the teardown
+inconsistently or skipped it entirely, leading to dangling reserved
+memory references.
 
-Keep generic plane-state validation before TVE200-specific mode,
-alignment, pitch and format-change checks, and install GEM framebuffer
-prepare helper explicitly.
+This series introduces devres-managed wrappers —
+devm_of_reserved_mem_device_init(), devm_of_reserved_mem_device_init_by_idx(),
+and devm_of_reserved_mem_device_init_by_name() — that tie the reserved
+memory region lifetime to the device, releasing it automatically on
+unbind. The remaining 40 patches convert drivers across the drm, media,
+ASoC, remoteproc, firmware, mmc, memory and misc subsystems to use these
+helpers, yielding a net reduction of ~90 lines of boilerplate.
 
-Signed-off-by: Ze Huang <ze.huang@oss.qualcomm.com>
----
- drivers/gpu/drm/tve200/tve200_display.c | 221 ++++++++++++++++++++++----------
- drivers/gpu/drm/tve200/tve200_drm.h     |   6 +-
- drivers/gpu/drm/tve200/tve200_drv.c     |  17 ++-
- 3 files changed, 168 insertions(+), 76 deletions(-)
+This series depends on  https://lore.kernel.org/lkml/20260703164457.4040457-1-mukesh.ojha@oss.qualcomm.com/
 
-diff --git a/drivers/gpu/drm/tve200/tve200_display.c b/drivers/gpu/drm/tve200/tve200_display.c
-index 26b6c65ef6fd..8fdf69e8e126 100644
---- a/drivers/gpu/drm/tve200/tve200_display.c
-+++ b/drivers/gpu/drm/tve200/tve200_display.c
-@@ -15,6 +15,8 @@
- #include <linux/of_graph.h>
- #include <linux/delay.h>
- 
-+#include <drm/drm_atomic.h>
-+#include <drm/drm_atomic_helper.h>
- #include <drm/drm_fb_dma_helper.h>
- #include <drm/drm_fourcc.h>
- #include <drm/drm_framebuffer.h>
-@@ -52,7 +54,7 @@ irqreturn_t tve200_irq(int irq, void *data)
- 		val = readl(priv->regs + TVE200_CTRL);
- 		/* We have an actual start of vsync */
- 		if (!(val & TVE200_VSTSTYPE_BITS)) {
--			drm_crtc_handle_vblank(&priv->pipe.crtc);
-+			drm_crtc_handle_vblank(&priv->crtc);
- 			/* Toggle trigger to start of active image */
- 			val |= TVE200_VSTSTYPE_VAI;
- 		} else {
-@@ -69,13 +71,34 @@ irqreturn_t tve200_irq(int irq, void *data)
- 	return IRQ_HANDLED;
- }
- 
--static int tve200_display_check(struct drm_simple_display_pipe *pipe,
--			       struct drm_plane_state *pstate,
--			       struct drm_crtc_state *cstate)
-+static int tve200_plane_helper_atomic_check(struct drm_plane *plane,
-+					    struct drm_atomic_commit *state)
- {
--	const struct drm_display_mode *mode = &cstate->mode;
--	struct drm_framebuffer *old_fb = pipe->plane.state->fb;
-+	struct drm_plane_state *pstate = drm_atomic_get_new_plane_state(state, plane);
-+	struct drm_crtc *crtc = pstate->crtc;
-+	struct drm_crtc_state *cstate = NULL;
-+	const struct drm_display_mode *mode;
-+	struct drm_framebuffer *old_fb = plane->state->fb;
- 	struct drm_framebuffer *fb = pstate->fb;
-+	int ret;
-+
-+	if (crtc)
-+		cstate = drm_atomic_get_new_crtc_state(state, crtc);
-+
-+	ret = drm_atomic_helper_check_plane_state(pstate, cstate,
-+						  DRM_PLANE_NO_SCALING,
-+						  DRM_PLANE_NO_SCALING,
-+						  false, false);
-+	if (ret)
-+		return ret;
-+
-+	if (!pstate->visible)
-+		return 0;
-+
-+	if (!cstate)
-+		return 0;
-+
-+	mode = &cstate->mode;
- 
- 	/*
- 	 * We support these specific resolutions and nothing else.
-@@ -119,16 +142,73 @@ static int tve200_display_check(struct drm_simple_display_pipe *pipe,
- 	return 0;
- }
- 
--static void tve200_display_enable(struct drm_simple_display_pipe *pipe,
--				 struct drm_crtc_state *cstate,
--				 struct drm_plane_state *plane_state)
-+static void tve200_plane_helper_atomic_update(struct drm_plane *plane,
-+					      struct drm_atomic_commit *state)
-+{
-+	struct drm_crtc *crtc = plane->state->crtc;
-+	struct drm_device *drm;
-+	struct tve200_drm_dev_private *priv;
-+	struct drm_pending_vblank_event *event;
-+	struct drm_plane_state *pstate = plane->state;
-+	struct drm_framebuffer *fb = pstate->fb;
-+
-+	if (!crtc)
-+		return;
-+
-+	drm = crtc->dev;
-+	priv = drm->dev_private;
-+	event = crtc->state->event;
-+
-+	if (fb) {
-+		/* For RGB, the Y component is used as base address */
-+		writel(drm_fb_dma_get_gem_addr(fb, pstate, 0),
-+		       priv->regs + TVE200_Y_FRAME_BASE_ADDR);
-+
-+		/* For three plane YUV we need two more addresses */
-+		if (fb->format->format == DRM_FORMAT_YUV420) {
-+			writel(drm_fb_dma_get_gem_addr(fb, pstate, 1),
-+			       priv->regs + TVE200_U_FRAME_BASE_ADDR);
-+			writel(drm_fb_dma_get_gem_addr(fb, pstate, 2),
-+			       priv->regs + TVE200_V_FRAME_BASE_ADDR);
-+		}
-+	}
-+
-+	if (event) {
-+		crtc->state->event = NULL;
-+
-+		spin_lock_irq(&crtc->dev->event_lock);
-+		if (crtc->state->active && drm_crtc_vblank_get(crtc) == 0)
-+			drm_crtc_arm_vblank_event(crtc, event);
-+		else
-+			drm_crtc_send_vblank_event(crtc, event);
-+		spin_unlock_irq(&crtc->dev->event_lock);
-+	}
-+}
-+
-+static const struct drm_plane_helper_funcs tve200_plane_helper_funcs = {
-+	.prepare_fb	= drm_gem_plane_helper_prepare_fb,
-+	.atomic_check	= tve200_plane_helper_atomic_check,
-+	.atomic_update	= tve200_plane_helper_atomic_update,
-+};
-+
-+static const struct drm_plane_funcs tve200_plane_funcs = {
-+	.update_plane		= drm_atomic_helper_update_plane,
-+	.disable_plane		= drm_atomic_helper_disable_plane,
-+	.destroy		= drm_plane_cleanup,
-+	.reset			= drm_atomic_helper_plane_reset,
-+	.atomic_duplicate_state	= drm_atomic_helper_plane_duplicate_state,
-+	.atomic_destroy_state	= drm_atomic_helper_plane_destroy_state,
-+};
-+
-+static void tve200_crtc_helper_atomic_enable(struct drm_crtc *crtc,
-+					     struct drm_atomic_commit *state)
- {
--	struct drm_crtc *crtc = &pipe->crtc;
--	struct drm_plane *plane = &pipe->plane;
- 	struct drm_device *drm = crtc->dev;
- 	struct tve200_drm_dev_private *priv = drm->dev_private;
-+	struct drm_crtc_state *cstate = drm_atomic_get_new_crtc_state(state, crtc);
- 	const struct drm_display_mode *mode = &cstate->mode;
--	struct drm_framebuffer *fb = plane->state->fb;
-+	struct drm_plane_state *plane_state = priv->plane.state;
-+	struct drm_framebuffer *fb = plane_state->fb;
- 	struct drm_connector *connector = priv->connector;
- 	u32 format = fb->format->format;
- 	u32 ctrl1 = 0;
-@@ -240,9 +320,9 @@ static void tve200_display_enable(struct drm_simple_display_pipe *pipe,
- 	drm_crtc_vblank_on(crtc);
- }
- 
--static void tve200_display_disable(struct drm_simple_display_pipe *pipe)
-+static void tve200_crtc_helper_atomic_disable(struct drm_crtc *crtc,
-+					      struct drm_atomic_commit *state)
- {
--	struct drm_crtc *crtc = &pipe->crtc;
- 	struct drm_device *drm = crtc->dev;
- 	struct tve200_drm_dev_private *priv = drm->dev_private;
- 
-@@ -255,46 +335,8 @@ static void tve200_display_disable(struct drm_simple_display_pipe *pipe)
- 	clk_disable_unprepare(priv->clk);
- }
- 
--static void tve200_display_update(struct drm_simple_display_pipe *pipe,
--				 struct drm_plane_state *old_pstate)
--{
--	struct drm_crtc *crtc = &pipe->crtc;
--	struct drm_device *drm = crtc->dev;
--	struct tve200_drm_dev_private *priv = drm->dev_private;
--	struct drm_pending_vblank_event *event = crtc->state->event;
--	struct drm_plane *plane = &pipe->plane;
--	struct drm_plane_state *pstate = plane->state;
--	struct drm_framebuffer *fb = pstate->fb;
--
--	if (fb) {
--		/* For RGB, the Y component is used as base address */
--		writel(drm_fb_dma_get_gem_addr(fb, pstate, 0),
--		       priv->regs + TVE200_Y_FRAME_BASE_ADDR);
--
--		/* For three plane YUV we need two more addresses */
--		if (fb->format->format == DRM_FORMAT_YUV420) {
--			writel(drm_fb_dma_get_gem_addr(fb, pstate, 1),
--			       priv->regs + TVE200_U_FRAME_BASE_ADDR);
--			writel(drm_fb_dma_get_gem_addr(fb, pstate, 2),
--			       priv->regs + TVE200_V_FRAME_BASE_ADDR);
--		}
--	}
--
--	if (event) {
--		crtc->state->event = NULL;
--
--		spin_lock_irq(&crtc->dev->event_lock);
--		if (crtc->state->active && drm_crtc_vblank_get(crtc) == 0)
--			drm_crtc_arm_vblank_event(crtc, event);
--		else
--			drm_crtc_send_vblank_event(crtc, event);
--		spin_unlock_irq(&crtc->dev->event_lock);
--	}
--}
--
--static int tve200_display_enable_vblank(struct drm_simple_display_pipe *pipe)
-+static int tve200_crtc_enable_vblank(struct drm_crtc *crtc)
- {
--	struct drm_crtc *crtc = &pipe->crtc;
- 	struct drm_device *drm = crtc->dev;
- 	struct tve200_drm_dev_private *priv = drm->dev_private;
- 
-@@ -304,22 +346,49 @@ static int tve200_display_enable_vblank(struct drm_simple_display_pipe *pipe)
- 	return 0;
- }
- 
--static void tve200_display_disable_vblank(struct drm_simple_display_pipe *pipe)
-+static void tve200_crtc_disable_vblank(struct drm_crtc *crtc)
- {
--	struct drm_crtc *crtc = &pipe->crtc;
- 	struct drm_device *drm = crtc->dev;
- 	struct tve200_drm_dev_private *priv = drm->dev_private;
- 
- 	writel(0, priv->regs + TVE200_INT_EN);
- }
- 
--static const struct drm_simple_display_pipe_funcs tve200_display_funcs = {
--	.check = tve200_display_check,
--	.enable = tve200_display_enable,
--	.disable = tve200_display_disable,
--	.update = tve200_display_update,
--	.enable_vblank = tve200_display_enable_vblank,
--	.disable_vblank = tve200_display_disable_vblank,
-+static int tve200_crtc_helper_atomic_check(struct drm_crtc *crtc, struct drm_atomic_commit *state)
-+{
-+	struct drm_crtc_state *crtc_state = drm_atomic_get_new_crtc_state(state, crtc);
-+	int ret;
-+
-+	if (!crtc_state->enable)
-+		goto out;
-+
-+	ret = drm_atomic_helper_check_crtc_primary_plane(crtc_state);
-+	if (ret)
-+		return ret;
-+
-+out:
-+	return drm_atomic_add_affected_planes(state, crtc);
-+}
-+
-+static const struct drm_crtc_helper_funcs tve200_crtc_helper_funcs = {
-+	.atomic_check	= tve200_crtc_helper_atomic_check,
-+	.atomic_enable	= tve200_crtc_helper_atomic_enable,
-+	.atomic_disable	= tve200_crtc_helper_atomic_disable,
-+};
-+
-+static const struct drm_crtc_funcs tve200_crtc_funcs = {
-+	.reset			= drm_atomic_helper_crtc_reset,
-+	.destroy		= drm_crtc_cleanup,
-+	.set_config		= drm_atomic_helper_set_config,
-+	.page_flip		= drm_atomic_helper_page_flip,
-+	.atomic_duplicate_state	= drm_atomic_helper_crtc_duplicate_state,
-+	.atomic_destroy_state	= drm_atomic_helper_crtc_destroy_state,
-+	.enable_vblank		= tve200_crtc_enable_vblank,
-+	.disable_vblank		= tve200_crtc_disable_vblank,
-+};
-+
-+static const struct drm_encoder_funcs tve200_encoder_funcs = {
-+	.destroy = drm_encoder_cleanup,
- };
- 
- int tve200_display_init(struct drm_device *drm)
-@@ -346,13 +415,31 @@ int tve200_display_init(struct drm_device *drm)
- 		DRM_FORMAT_YUV420,
- 	};
- 
--	ret = drm_simple_display_pipe_init(drm, &priv->pipe,
--					   &tve200_display_funcs,
--					   formats, ARRAY_SIZE(formats),
--					   NULL,
--					   priv->connector);
-+	ret = drm_universal_plane_init(drm, &priv->plane, 0,
-+				       &tve200_plane_funcs,
-+				       formats, ARRAY_SIZE(formats),
-+				       NULL,
-+				       DRM_PLANE_TYPE_PRIMARY, NULL);
-+	if (ret)
-+		return ret;
-+
-+	drm_plane_helper_add(&priv->plane, &tve200_plane_helper_funcs);
-+
-+	ret = drm_crtc_init_with_planes(drm, &priv->crtc,
-+					&priv->plane, NULL,
-+					&tve200_crtc_funcs, NULL);
-+	if (ret)
-+		return ret;
-+
-+	drm_crtc_helper_add(&priv->crtc, &tve200_crtc_helper_funcs);
-+
-+	ret = drm_encoder_init(drm, &priv->encoder,
-+			       &tve200_encoder_funcs,
-+			       DRM_MODE_ENCODER_NONE, NULL);
- 	if (ret)
- 		return ret;
- 
-+	priv->encoder.possible_crtcs = drm_crtc_mask(&priv->crtc);
-+
- 	return 0;
- }
-diff --git a/drivers/gpu/drm/tve200/tve200_drm.h b/drivers/gpu/drm/tve200/tve200_drm.h
-index 5420b52ea16b..631a9f5d9aa6 100644
---- a/drivers/gpu/drm/tve200/tve200_drm.h
-+++ b/drivers/gpu/drm/tve200/tve200_drm.h
-@@ -15,8 +15,6 @@
- 
- #include <linux/irqreturn.h>
- 
--#include <drm/drm_simple_kms_helper.h>
--
- struct clk;
- struct drm_bridge;
- struct drm_connector;
-@@ -107,7 +105,9 @@ struct tve200_drm_dev_private {
- 	struct drm_connector *connector;
- 	struct drm_panel *panel;
- 	struct drm_bridge *bridge;
--	struct drm_simple_display_pipe pipe;
-+	struct drm_plane plane;
-+	struct drm_crtc crtc;
-+	struct drm_encoder encoder;
- 
- 	void *regs;
- 	struct clk *pclk;
-diff --git a/drivers/gpu/drm/tve200/tve200_drv.c b/drivers/gpu/drm/tve200/tve200_drv.c
-index 562f3f11812a..e2e8346acbb8 100644
---- a/drivers/gpu/drm/tve200/tve200_drv.c
-+++ b/drivers/gpu/drm/tve200/tve200_drv.c
-@@ -105,16 +105,21 @@ static int tve200_modeset_init(struct drm_device *dev)
- 		goto out_bridge;
- 	}
- 
--	ret = drm_simple_display_pipe_attach_bridge(&priv->pipe,
--						    bridge);
-+	priv->panel = panel;
-+	priv->connector = drm_panel_bridge_connector(bridge);
-+	priv->bridge = bridge;
-+
-+	ret = drm_connector_attach_encoder(priv->connector, &priv->encoder);
- 	if (ret) {
--		dev_err(dev->dev, "failed to attach bridge\n");
-+		dev_err(dev->dev, "failed to attach encoder\n");
- 		goto out_bridge;
- 	}
- 
--	priv->panel = panel;
--	priv->connector = drm_panel_bridge_connector(bridge);
--	priv->bridge = bridge;
-+	ret = drm_bridge_attach(&priv->encoder, bridge, NULL, 0);
-+	if (ret) {
-+		dev_err(dev->dev, "failed to attach bridge\n");
-+		goto out_bridge;
-+	}
- 
- 	dev_info(dev->dev, "attached to panel %s\n",
- 		 dev_name(panel->dev));
+Konrad Dybcio (1):
+  of: reserved_mem: Introduce devres-managed initialization functions
+
+Mukesh Ojha (41):
+  of: reserved_mem: Add devm_of_reserved_mem_device_init_by_name()
+  firmware: qcom: scm: Use devm_of_reserved_mem_device_init()
+  remoteproc: da8xx: Use devm_of_reserved_mem_device_init()
+  remoteproc: keystone: Use devm_of_reserved_mem_device_init()
+  media: synopsys: hdmirx: Use devm_of_reserved_mem_device_init()
+  remoteproc: omap: Use devm_of_reserved_mem_device_init()
+  drm: logicvc: Use devm_of_reserved_mem_device_init()
+  drm: hdlcd: Use devm_of_reserved_mem_device_init()
+  drm: pl111: Use devm_of_reserved_mem_device_init()
+  remoteproc: mtk_scp: Use devm_of_reserved_mem_device_init()
+  media: aspeed: Use devm_of_reserved_mem_device_init()
+  media: nuvoton: npcm-video: Use devm_of_reserved_mem_device_init()
+  memory: tegra210-emc: Use devm_of_reserved_mem_device_init_by_name()
+  drm: komeda: Use devm_of_reserved_mem_device_init()
+  drm: malidp: Use devm_of_reserved_mem_device_init()
+  drm: ingenic: Use devm_of_reserved_mem_device_init()
+  drm: kmb: Use devm_of_reserved_mem_device_init()
+  drm: sun4i: Use devm_of_reserved_mem_device_init()
+  drm: xlnx: zynqmp_dpsub: Use devm_of_reserved_mem_device_init()
+  media: arm: mali-c55: Use devm_of_reserved_mem_device_init()
+  media: mediatek: vpu: Use devm_of_reserved_mem_device_init()
+  mmc: sdhci-of-bst: Use devm_of_reserved_mem_device_init_by_idx()
+  remoteproc: ti_k3: Use devm_of_reserved_mem_device_init()
+  ASoC: mediatek: mt8192: Use devm_of_reserved_mem_device_init()
+  ASoC: mediatek: mt8196: Use devm_of_reserved_mem_device_init()
+  ASoC: mediatek: mt8183: Use devm_of_reserved_mem_device_init()
+  ASoC: mediatek: mt8189: Use devm_of_reserved_mem_device_init()
+  ASoC: SOF: imx: Use devm_of_reserved_mem_device_init_by_name()
+  staging: media: cedrus: Use devm_of_reserved_mem_device_init()
+  ASoC: cix-ipbloq: Use devm_of_reserved_mem_device_init()
+  drm: aspeed: Use devm_of_reserved_mem_device_init()
+  drm: arcpgu: Use devm_of_reserved_mem_device_init()
+  ASoC: mediatek: mt8173: Use devm_of_reserved_mem_device_init()
+  ASoC: mediatek: mt8186: Use devm_of_reserved_mem_device_init()
+  ASoC: mediatek: mt8188: Use devm_of_reserved_mem_device_init()
+  ASoC: mediatek: mt8195: Use devm_of_reserved_mem_device_init()
+  ASoC: SOF: mediatek: mt8186: Use devm_of_reserved_mem_device_init()
+  ASoC: SOF: mediatek: mt8195: Use devm_of_reserved_mem_device_init()
+  misc: fastrpc: Use devm_of_reserved_mem_device_init()
+  ASoC: fsl: imx-rpmsg: Use devm_of_reserved_mem_device_init_by_idx()
+  ASoC: sprd: Use devm_of_reserved_mem_device_init()
+
+ drivers/firmware/qcom/qcom_scm.c              | 22 +++------
+ .../gpu/drm/arm/display/komeda/komeda_dev.c   |  4 +-
+ drivers/gpu/drm/arm/hdlcd_drv.c               |  6 +--
+ drivers/gpu/drm/arm/malidp_drv.c              |  4 +-
+ drivers/gpu/drm/aspeed/aspeed_gfx_drv.c       |  2 +-
+ drivers/gpu/drm/ingenic/ingenic-drm-drv.c     | 13 +-----
+ drivers/gpu/drm/kmb/kmb_drv.c                 | 12 +----
+ drivers/gpu/drm/logicvc/logicvc_drm.c         | 21 ++++-----
+ drivers/gpu/drm/pl111/pl111_drv.c             |  4 +-
+ drivers/gpu/drm/sun4i/sun4i_drv.c             |  4 +-
+ drivers/gpu/drm/tiny/arcpgu.c                 |  2 +-
+ drivers/gpu/drm/xlnx/zynqmp_dpsub.c           |  4 +-
+ .../platform/arm/mali-c55/mali-c55-core.c     | 12 ++---
+ drivers/media/platform/aspeed/aspeed-video.c  | 12 ++---
+ drivers/media/platform/mediatek/vpu/mtk_vpu.c |  3 +-
+ drivers/media/platform/nuvoton/npcm-video.c   |  9 +---
+ .../platform/synopsys/hdmirx/snps_hdmirx.c    | 16 +------
+ drivers/memory/tegra/tegra210-emc-core.c      | 21 ++++-----
+ drivers/misc/fastrpc.c                        |  2 +-
+ drivers/mmc/host/sdhci-of-bst.c               |  7 +--
+ drivers/of/of_reserved_mem.c                  | 41 +++++++++++++++++
+ drivers/remoteproc/da8xx_remoteproc.c         | 10 +---
+ drivers/remoteproc/keystone_remoteproc.c      | 16 +------
+ drivers/remoteproc/mtk_scp.c                  |  3 +-
+ drivers/remoteproc/omap_remoteproc.c          | 13 +-----
+ drivers/remoteproc/ti_k3_common.c             | 13 +-----
+ drivers/remoteproc/ti_k3_common.h             |  1 -
+ .../staging/media/sunxi/cedrus/cedrus_hw.c    |  6 +--
+ include/linux/of_reserved_mem.h               | 46 +++++++++++++++++++
+ sound/hda/controllers/cix-ipbloq.c            |  2 +-
+ sound/soc/fsl/imx-rpmsg.c                     |  2 +-
+ sound/soc/mediatek/mt8173/mt8173-afe-pcm.c    |  2 +-
+ sound/soc/mediatek/mt8183/mt8183-afe-pcm.c    | 13 +-----
+ sound/soc/mediatek/mt8186/mt8186-afe-pcm.c    |  2 +-
+ sound/soc/mediatek/mt8188/mt8188-afe-pcm.c    |  2 +-
+ sound/soc/mediatek/mt8189/mt8189-afe-pcm.c    | 16 +------
+ sound/soc/mediatek/mt8192/mt8192-afe-pcm.c    | 11 +----
+ sound/soc/mediatek/mt8195/mt8195-afe-pcm.c    |  2 +-
+ sound/soc/mediatek/mt8196/mt8196-afe-pcm.c    | 14 +-----
+ sound/soc/sof/imx/imx-common.c                |  9 ++--
+ sound/soc/sof/mediatek/mt8186/mt8186.c        |  2 +-
+ sound/soc/sof/mediatek/mt8195/mt8195.c        |  2 +-
+ sound/soc/sprd/sprd-pcm-dma.c                 |  3 +-
+ 43 files changed, 162 insertions(+), 249 deletions(-)
 
 -- 
-2.55.0
+2.53.0
 
 
