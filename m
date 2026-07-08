@@ -1,94 +1,96 @@
-Return-Path: <linux-aspeed+bounces-4432-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4433-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37DA4C44501
-	for <linux-aspeed@archiver.kernel.org>; Wed,  8 Jul 2026 13:03:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4D3FC43458
+	for <linux-aspeed@archiver.kernel.org>; Wed,  8 Jul 2026 13:09:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gwJFL5b1Dz306S;
-	Wed, 08 Jul 2026 23:03:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783515830;
-	cv=none; b=SUmZ8RC+38rf5WuZkLhGKt93eqrInwZY9ImM3lYt1uwz50BUyp7Dd+ciFKp6e5C5y9E3sjAmCaQh6rcebFzdMk2CDclLKIxCw57ZeDop39OGGiC39fuapkONVl5kOmxztoPF4EONf0BXXCRvOV82vUk6JtxHAi2JVjaucvsSvLtDCOt0L0QqSukpRR5hmVHKvS5Ozsy1K5jb+PKt32G7y130odgw4MmemxbPexq71ZYMEhM+slvGSwW6nj3jULWxSovPekppH5pV79/M4C4dkXubKTOr5KXmLbgJm+N/KUhGxKwWYQUOSt61TUXJLwUaGANlYzY8Pu9ZCzpm8zcK6Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gwJMZ1rDRz2xll;
+	Wed, 08 Jul 2026 23:09:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.168.131
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783516082;
+	cv=none; b=ffU+yrtcqr9H7RHEj60o3Tm2SwUH2JQ4t0ZpikpQMKwiNqqjK6cuFHY/H/k0WIJgmbKWQXKSdHw7Axb/hwg00D7MsW8XUwHBk+59nPu73n+qy7S1P4HnWEs2NwBdeAtSRVQ1469mYf2/4m7FtN62kJNBLYn+wn0MvuvTbC4dnKydQUCvuSjQSCBz2fwFElNwFiFs+U79d8YfGDMgj3ZXD7GN8ZczuI3jtK1N25Rb7MW1OtidI7eaiQ/mA4AgCteOErVytTnXvc4jLdt8zm6UH9WV/tOxiqBxuChzPIRjex521nvzY5OZ4QwvDZLuuCeq8A8Yc5DBf3Htf9ekeV20iQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783515830; c=relaxed/relaxed;
-	bh=vx4MUMUPW+cvPFm4OHv8pg1uFv77h5nfjhtL0ZgDfqs=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=oVOxRFa+Ns9ifESlkvUZzmbn1xiDctzO729a82dR4FnwF7QofidbUtUElDueNsQcbxe34G1jA2ASgFCKFf6dWBY0bZ5tCtq5wwpn9eXUf3TSYcqo5CqswGSUNbBksdzdX1jPjApZzgT3Z7Nw+f3oDoNuzcDNBuar8qRrNknc35krZi9xKzaqVfzU65YeT8R9Gr/DvTms6MpJGb3/P+0j5d1KTXdgDrEXpJ+VDKQaCT5RbNlwJ7Ges/lRgIJ1ZVmDjyFq4bd8yUNajgvxRYY75qBen11Xe5xUCQD1VUnj/eMje8exV23IpQJ90p1wZamoL1ZlLLUgFkDGXRWzEuBFow==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=VGWGn+Y+; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=6dGjxnbX; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=VGWGn+Y+; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=6dGjxnbX; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	t=1783516082; c=relaxed/relaxed;
+	bh=WOOq+NNu+tyhPReYKnu6wDK3tTFUATf17W5IdwFPg9M=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
+	 References:In-Reply-To; b=nG9dEOQTOYRZcSV4Jv/LsE0k8ylZt26euYJnyFLnwr1ML8fvGR98XPRFoqQTzy88nmk/X1i2D+6nBxXITlkhz87TrynJhCFc+Ev8DvJkM+ZZlagZnuFfvoPBvhos9fQRcY6ssUN2PcD8/URDlKnlINWGSJhe3wZJ1WLOVwsVDkz8UPi8fOUSaxKf87jbp/gmKjnY8AD+V8Wg86O1n/Q1gkd9a2hsjaTXrK9yL5oZzv4wvDa7bZfJfLuay3gL25fQMSrmNx7LPfGi+zW2e+ImiTAa0NBI9T28PQFE6+1/C7ls8J0E54V7IrdSssLxM2S4DTi5qwBW0p3eG3weGv87kg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=bhLue+T1; dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=UF3FDiWt; dkim-atps=neutral; spf=pass (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=ze.huang@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=VGWGn+Y+;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=6dGjxnbX;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=VGWGn+Y+;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=6dGjxnbX;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=bhLue+T1;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=UF3FDiWt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=ze.huang@oss.qualcomm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwJFK37fpz2xWY
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 08 Jul 2026 23:03:49 +1000 (AEST)
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 861A076026;
-	Wed,  8 Jul 2026 13:03:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1783515826; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=vx4MUMUPW+cvPFm4OHv8pg1uFv77h5nfjhtL0ZgDfqs=;
-	b=VGWGn+Y+Ub/X3cWSoJx8lW+U782iCaR6v0WNvUoyKlJJBqCQDVerhihUhqseGWx71cxd3h
-	R5e0TjYUw3agBeehXrNv0Zy/v1dpPCoOnZZ7UpmQf4g/h3oRpemM8XBiv1AwhQDc4kxQLz
-	wGPSjrD1Bx0weLl4UmP2PD5e0iZvFpo=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1783515826;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=vx4MUMUPW+cvPFm4OHv8pg1uFv77h5nfjhtL0ZgDfqs=;
-	b=6dGjxnbXJR4C1BA/EXMtjuhVIxLXQ+bWkbQPZ79XzVKw0WY2BJan/2JQ+1mtbvhGAzLjtt
-	0ZOtOIOAUh5OIpDQ==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=VGWGn+Y+;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=6dGjxnbX
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1783515826; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=vx4MUMUPW+cvPFm4OHv8pg1uFv77h5nfjhtL0ZgDfqs=;
-	b=VGWGn+Y+Ub/X3cWSoJx8lW+U782iCaR6v0WNvUoyKlJJBqCQDVerhihUhqseGWx71cxd3h
-	R5e0TjYUw3agBeehXrNv0Zy/v1dpPCoOnZZ7UpmQf4g/h3oRpemM8XBiv1AwhQDc4kxQLz
-	wGPSjrD1Bx0weLl4UmP2PD5e0iZvFpo=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1783515826;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=vx4MUMUPW+cvPFm4OHv8pg1uFv77h5nfjhtL0ZgDfqs=;
-	b=6dGjxnbXJR4C1BA/EXMtjuhVIxLXQ+bWkbQPZ79XzVKw0WY2BJan/2JQ+1mtbvhGAzLjtt
-	0ZOtOIOAUh5OIpDQ==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id DCF9C779AE;
-	Wed,  8 Jul 2026 13:03:45 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id 0NupNLFKTmoOLQAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Wed, 08 Jul 2026 13:03:45 +0000
-Message-ID: <747ae980-9358-4e15-84e3-6e2f3e143423@suse.de>
-Date: Wed, 8 Jul 2026 15:03:45 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwJL90GVpz2xWY
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 08 Jul 2026 23:07:59 +1000 (AEST)
+Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 668C3LSZ2793725
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 8 Jul 2026 13:07:56 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	WOOq+NNu+tyhPReYKnu6wDK3tTFUATf17W5IdwFPg9M=; b=bhLue+T1HZS6Z1yl
+	0SK7piGEP/m4bSiAAlhhNU1mTl4FX62J6rU1q96kA8aMseiY9ZWto/Dd+0Miw/MA
+	mR4PyKQbN0+ZHEnUBucu6zOkAfsXEujfYWmhI1l4vmbj7e2jH7cR7VwXg/Z3crhN
+	8NMEObbUbI6ULX1L6+S8JWxbOZ31JSqX/EATTSay9ArAKJaG68hvW+2EcXMK96to
+	NoyER+PjRKSJ3ycZpb7+FNwNa/8pI5bYh5dQkZYYYmwi0kkWyLAdJpvqie26YbNn
+	Nx4kVOvaFr1YQ5T3Dorvfj4wI18xfQdrLiWC94ltSqRHDt3vqchC2u6ywJgry83Q
+	kdthGA==
+Received: from mail-vs1-f70.google.com (mail-vs1-f70.google.com [209.85.217.70])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4f9cswafu2-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 08 Jul 2026 13:07:56 +0000 (GMT)
+Received: by mail-vs1-f70.google.com with SMTP id ada2fe7eead31-6751db2792dso235888137.3
+        for <linux-aspeed@lists.ozlabs.org>; Wed, 08 Jul 2026 06:07:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1783516075; x=1784120875; darn=lists.ozlabs.org;
+        h=in-reply-to:references:to:from:subject:cc:message-id:date
+         :content-transfer-encoding:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=WOOq+NNu+tyhPReYKnu6wDK3tTFUATf17W5IdwFPg9M=;
+        b=UF3FDiWtHPJj8KzV31WdfYMVityTGa/AHNCrBp7EioR6Yhoco2jJ1Oj0+GHQcMFKqs
+         on5wJjPkrp5pSNCsu8dsEujkjqHB412O056chgGq1xj3gETGf1q21MM7ZyIzaZ7uAnvV
+         9qbguLwDFNNrdWSkvCK8ADfBspstY76BjFSA4yuKo0QAiw/5Ogh0UxwN9VPnB83JtxHO
+         ZJA1ffxJ79pIjxE+DBamvnVbtyIbkZ7IXWgYh7RFdfrrjTrEkZQVkDeGf6gzbeaNnPn0
+         pMwhroqX8qmfzvwsOOxGJp1jpL6IwBSRcClNB0IePUDkB//hKC5Zr8YhrGOon86REgSh
+         4w2Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783516075; x=1784120875;
+        h=in-reply-to:references:to:from:subject:cc:message-id:date
+         :content-transfer-encoding:mime-version:x-gm-gg:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=WOOq+NNu+tyhPReYKnu6wDK3tTFUATf17W5IdwFPg9M=;
+        b=aYXepB9Mr2tnjOSCE1IAZnudglSZyztlewLbATbNyQghZWULUnuQD3mvGLrXQ9JRDY
+         65W1sbC+1G8/5JNDiaIp5Kbq4ZZA/6ALZT3wo9Z55ktaZZ7Ek9UB7cDe2jTBfuTzsVeI
+         lMavBNUEW1f4F/auk+8w3GJwJXGD1sicnT3WSBSPTgfQBXjcaiSiDPo4OhV4M/0ONHgl
+         xJw7BxNKqNQHNtAJDYyVv/5vjjKQ9BSS1etZBgDXLHPytHMdLPsVoi7Vf/5QnkFV1apf
+         AB90q4N3OQ6WL9lWYMVAvp0xTDdjkbwVUcvVX0K+ahpIrIyM4Xw9o0wkdfVWrs9DG5Sk
+         NVmQ==
+X-Forwarded-Encrypted: i=1; AHgh+RpxlKrH6z5bqWqLUEdC3yswIqVz2PRjGY4yM2HTSJ6DUTnrLC3osz7vUZnUiwb1y6igS4uwDAFeFj129zA=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzXrLjVoPaf5GlWeLWFKXWK4iD7FnJmZDVKqFFLi5ursSFUueAX
+	Q69cK8uvQ9Slu3JsH32KrAFaqgCdeY3ayPdLGBlgfDp2fG3NAqq7SmQBE40cBtOU2weQD5HhyXU
+	sFzSSMdCHVRTxzYPLsJRUe63WpYAUDVMcE/MyFTFQLGRuCLnKdA59sXVqDODKlTtbjIWg
+X-Gm-Gg: AfdE7cli+Ft/4WBsysn8dH/gdekVFQfx/DzZRDaW15DXk2s52qNeCsGT6xiqg6qiivO
+	STESyM/w3cQ/oes1OydxL02uuubODezBwq3UQoLigu0GbC8Rahz+/BWlaWBen0d3XcOB7Q6cTsl
+	gDrJ73E4hRxigOKcgTEtfxDIxStrvIzWpD5hF5DIeKicCengejNdDOGgWF886OCe1pfx6Ut/rXX
+	xttyrvll3JCGQ4WWVIEcAHQafoRaXN6N2uWiAfC0Pjo0PBix6bHYny+SnSbIGKuEADjWT15hXO6
+	NVB2ia3zpcC6BF2us0e5/TEvo/xIYMDaJCYdY8BvhD7Mw8JsS1ylPlsVo+chBM//WpjVCB2q2TO
+	4KtAGGiz5o++AJw==
+X-Received: by 2002:a05:6102:41a3:b0:73e:9fae:5841 with SMTP id ada2fe7eead31-744dff81cbdmr1130792137.29.1783516075451;
+        Wed, 08 Jul 2026 06:07:55 -0700 (PDT)
+X-Received: by 2002:a05:6102:41a3:b0:73e:9fae:5841 with SMTP id ada2fe7eead31-744dff81cbdmr1130755137.29.1783516075014;
+        Wed, 08 Jul 2026 06:07:55 -0700 (PDT)
+Received: from localhost ([155.117.96.35])
+        by smtp.gmail.com with ESMTPSA id ada2fe7eead31-744d6a3ee7csm1525979137.2.2026.07.08.06.07.47
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 08 Jul 2026 06:07:54 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -101,425 +103,84 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 5/9] drm/pl111: replace struct drm_simple_display_pipe
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 08 Jul 2026 21:07:33 +0800
+Message-Id: <DJT7OBVIB2J3.N6UA6SLKJXZB@oss.qualcomm.com>
+Cc: <dri-devel@lists.freedesktop.org>, <linux-kernel@vger.kernel.org>,
+        <linux-aspeed@lists.ozlabs.org>,
+        <linux-arm-kernel@lists.infradead.org>, <imx@lists.linux.dev>,
+        <xen-devel@lists.xenproject.org>
+Subject: Re: [PATCH 3/9] drm/imx: replace struct drm_simple_display_pipe
  with regular atomic helpers
-To: Ze Huang <ze.huang@oss.qualcomm.com>,
- Alexey Brodkin <abrodkin@synopsys.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, David Airlie <airlied@gmail.com>,
- Simona Vetter <simona@ffwll.ch>, Joel Stanley <joel@jms.id.au>,
- Andrew Jeffery <andrew@codeconstruct.com.au>, Frank Li <Frank.Li@nxp.com>,
- Sascha Hauer <s.hauer@pengutronix.de>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Fabio Estevam <festevam@gmail.com>, Linus Walleij <linusw@kernel.org>,
- Hans de Goede <hansg@kernel.org>, Alex Lanzano <lanzano.alex@gmail.com>,
- Oleksandr Andrushchenko <oleksandr_andrushchenko@epam.com>
-Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
- linux-aspeed@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- imx@lists.linux.dev, xen-devel@lists.xenproject.org
-References: <20260705-drm-simple-kms-removal-v1-0-b4e1ca053623@oss.qualcomm.com>
- <20260705-drm-simple-kms-removal-v1-5-b4e1ca053623@oss.qualcomm.com>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20260705-drm-simple-kms-removal-v1-5-b4e1ca053623@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-3.01 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	SUSPICIOUS_RECIPS(1.50)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	RCPT_COUNT_TWELVE(0.00)[22];
-	FREEMAIL_TO(0.00)[oss.qualcomm.com,synopsys.com,linux.intel.com,kernel.org,gmail.com,ffwll.ch,jms.id.au,codeconstruct.com.au,nxp.com,pengutronix.de,epam.com];
-	MIME_TRACE(0.00)[0:+];
-	ARC_NA(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com];
-	RCVD_TLS_ALL(0.00)[];
-	DKIM_TRACE(0.00)[suse.de:+];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	MID_RHS_MATCH_FROM(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	TAGGED_RCPT(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:url,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.de:mid,suse.de:dkim,qualcomm.com:email]
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Rspamd-Queue-Id: 861A076026
+From: "Ze Huang" <ze.huang@oss.qualcomm.com>
+To: "Thomas Zimmermann" <tzimmermann@suse.de>,
+        "Ze Huang"
+ <ze.huang@oss.qualcomm.com>,
+        "Alexey Brodkin" <abrodkin@synopsys.com>,
+        "Maarten Lankhorst" <maarten.lankhorst@linux.intel.com>,
+        "Maxime Ripard"
+ <mripard@kernel.org>,
+        "David Airlie" <airlied@gmail.com>, "Simona Vetter"
+ <simona@ffwll.ch>,
+        "Joel Stanley" <joel@jms.id.au>,
+        "Andrew Jeffery"
+ <andrew@codeconstruct.com.au>,
+        "Frank Li" <Frank.Li@nxp.com>,
+        "Sascha
+ Hauer" <s.hauer@pengutronix.de>,
+        "Pengutronix Kernel Team"
+ <kernel@pengutronix.de>,
+        "Fabio Estevam" <festevam@gmail.com>,
+        "Linus
+ Walleij" <linusw@kernel.org>,
+        "Hans de Goede" <hansg@kernel.org>,
+        "Alex
+ Lanzano" <lanzano.alex@gmail.com>,
+        "Oleksandr Andrushchenko"
+ <oleksandr_andrushchenko@epam.com>
+X-Mailer: aerc 0.21.0-0-g5549850facc2
+References: <20260705-drm-simple-kms-removal-v1-0-b4e1ca053623@oss.qualcomm.com> <20260705-drm-simple-kms-removal-v1-3-b4e1ca053623@oss.qualcomm.com> <1c84099b-6f0d-4655-9aea-015a821b50db@suse.de>
+In-Reply-To: <1c84099b-6f0d-4655-9aea-015a821b50db@suse.de>
+X-Proofpoint-ORIG-GUID: AhDTSzuEOnJ9m_vwVWUGgC2BLabZiudP
+X-Proofpoint-Spam-Info: AW1haW4tMjYwNzA4MDEyNyBTYWx0ZWRfX0B23Lo753A1c
+ N20t0V53hUsAV1AioQRbEBQW4q8RIA87PVppvSV3kYU+fuCo2He24eYnFurp58Dnnp2LIsmR+74
+ h7A67Xz8uw2VZV/odYA9i2HVYOjvQ6A=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzA4MDEyNyBTYWx0ZWRfXx4cIt6MUSEJs
+ XKRE0WUWAypdjOWC24Rz2QjRRzf+vNrVtf0pbFHhNPjYO4gSWTdAPFZqGGkBEbylYzu4UPOwbXx
+ hwWyD9OojWMXiUyC3pByOvde38Erwq1ZTPNs11hibUM5a3SW0iwjx+HU5MG24/EKh+3TqhQlA8v
+ dWEhKQk5M/HinvmVCTmlj3eO1+N1iQ93KhN2yEqvQFm7PyXyHlYObiviXzCPVJJ3jPgE5X80llw
+ UfusdKw3xCa8Uh0SC7YkHCPMc5KD5f4E6591mmxqv2hpObkM6F/pY9BPjejBw1PY/SWxwQR1Jb9
+ otEpFryWrFXacg34Rhd4IJ8rkB3xSNiaAl9QOUq9kOAnmA5k2KBallJ2cXXrdDy1mi5EbIrzafM
+ IF+zH9FfnCFDczCrPsDiNBC6ms9OqM+zOjCJeWfkEhzD0JHyUy2rUGl72K7doqlDBmDuwfdATcW
+ p611woPBTI5Nq5kH7yw==
+X-Authority-Analysis: v=2.4 cv=HaYkiCE8 c=1 sm=1 tr=0 ts=6a4e4bac cx=c_pps
+ a=N1BjEkVkxJi3uNfLdpvX3g==:117 a=Ilsi1XWDFcrB9FjxRIUvHg==:17
+ a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22
+ a=lv_lVlItrp0lmarviNkA:9 a=QEXdDO2ut3YA:10 a=crWF4MFLhNY0qMRaF8an:22
+X-Proofpoint-GUID: AhDTSzuEOnJ9m_vwVWUGgC2BLabZiudP
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-07-08_02,2026-07-08_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 impostorscore=0 lowpriorityscore=0 clxscore=1015 adultscore=0
+ malwarescore=0 suspectscore=0 priorityscore=1501 spamscore=0 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607080127
 
-
-
-Am 04.07.26 um 20:31 schrieb Ze Huang:
-> Replace PL111 simple display pipe with explicit plane, CRTC and encoder
-> objects.
+On Wed Jul 8, 2026 at 8:44 PM CST, Thomas Zimmermann wrote:
+> Hi,
 >
-> Keep existing hardware programming and vblank behavior, and install GEM
-> framebuffer prepare helper explicitly.
+> the imx driver is well maintained IIRC. I'd advise you to split off this=
+=20
+> patch from the series and send it out separately. That is more likely to=
+=20
+> catch the attention of the driver's maintainers.
 >
-> Signed-off-by: Ze Huang <ze.huang@oss.qualcomm.com>
-> ---
->   drivers/gpu/drm/pl111/pl111_display.c | 174 ++++++++++++++++++++++++++--------
->   drivers/gpu/drm/pl111/pl111_drm.h     |   5 +-
->   drivers/gpu/drm/pl111/pl111_drv.c     |   3 +-
->   3 files changed, 136 insertions(+), 46 deletions(-)
->
-> diff --git a/drivers/gpu/drm/pl111/pl111_display.c b/drivers/gpu/drm/pl111/pl111_display.c
-> index 5d10bc5fdf1f..b1bdd4c9dbe6 100644
-> --- a/drivers/gpu/drm/pl111/pl111_display.c
-> +++ b/drivers/gpu/drm/pl111/pl111_display.c
-> @@ -15,6 +15,7 @@
->   #include <linux/media-bus-format.h>
->   #include <linux/of_graph.h>
->   
-> +#include <drm/drm_atomic_helper.h>
->   #include <drm/drm_fb_dma_helper.h>
->   #include <drm/drm_fourcc.h>
->   #include <drm/drm_framebuffer.h>
-> @@ -37,7 +38,7 @@ irqreturn_t pl111_irq(int irq, void *data)
->   		return IRQ_NONE;
->   
->   	if (irq_stat & CLCD_IRQ_NEXTBASE_UPDATE) {
-> -		drm_crtc_handle_vblank(&priv->pipe.crtc);
-> +		drm_crtc_handle_vblank(&priv->crtc);
->   
->   		status = IRQ_HANDLED;
->   	}
-> @@ -49,10 +50,10 @@ irqreturn_t pl111_irq(int irq, void *data)
->   }
->   
->   static enum drm_mode_status
-> -pl111_mode_valid(struct drm_simple_display_pipe *pipe,
-> -		 const struct drm_display_mode *mode)
-> +pl111_crtc_helper_mode_valid(struct drm_crtc *crtc,
-> +			     const struct drm_display_mode *mode)
->   {
-> -	struct drm_device *drm = pipe->crtc.dev;
-> +	struct drm_device *drm = crtc->dev;
->   	struct pl111_drm_dev_private *priv = drm->dev_private;
->   	u32 cpp = DIV_ROUND_UP(priv->variant->fb_depth, 8);
->   	u64 bw;
-> @@ -83,13 +84,35 @@ pl111_mode_valid(struct drm_simple_display_pipe *pipe,
->   	return MODE_OK;
->   }
->   
-> -static int pl111_display_check(struct drm_simple_display_pipe *pipe,
-> -			       struct drm_plane_state *pstate,
-> -			       struct drm_crtc_state *cstate)
-> +static int pl111_plane_helper_atomic_check(struct drm_plane *plane,
-> +					   struct drm_atomic_commit *state)
->   {
-> -	const struct drm_display_mode *mode = &cstate->mode;
-> -	struct drm_framebuffer *old_fb = pipe->plane.state->fb;
-> +	struct drm_plane_state *pstate = drm_atomic_get_new_plane_state(state, plane);
-> +	struct drm_crtc *crtc = pstate->crtc;
-> +	struct drm_crtc_state *cstate;
-> +	const struct drm_display_mode *mode;
-> +	struct drm_framebuffer *old_fb = plane->state->fb;
->   	struct drm_framebuffer *fb = pstate->fb;
-> +	int ret;
-> +
-> +	if (!crtc)
-> +		return 0;
-> +
-> +	cstate = drm_atomic_get_new_crtc_state(state, crtc);
-> +	if (!cstate)
-> +		return 0;
-> +
-> +	ret = drm_atomic_helper_check_plane_state(pstate, cstate,
-> +						  DRM_PLANE_NO_SCALING,
-> +						  DRM_PLANE_NO_SCALING,
-> +						  false, false);
+> Best regards
+> Thomas
 
-This is another case of _check_plane_state() running conditionally.
-
-> +	if (ret)
-> +		return ret;
-> +
-> +	if (!pstate->visible)
-> +		return 0;
-> +
-> +	mode = &cstate->mode;
->   
->   	if (mode->hdisplay % 16)
->   		return -EINVAL;
-> @@ -117,16 +140,14 @@ static int pl111_display_check(struct drm_simple_display_pipe *pipe,
->   	return 0;
->   }
->   
-> -static void pl111_display_enable(struct drm_simple_display_pipe *pipe,
-> -				 struct drm_crtc_state *cstate,
-> -				 struct drm_plane_state *plane_state)
-> +static void pl111_crtc_helper_atomic_enable(struct drm_crtc *crtc,
-> +					    struct drm_atomic_commit *state)
->   {
-> -	struct drm_crtc *crtc = &pipe->crtc;
-> -	struct drm_plane *plane = &pipe->plane;
->   	struct drm_device *drm = crtc->dev;
->   	struct pl111_drm_dev_private *priv = drm->dev_private;
-> +	struct drm_crtc_state *cstate = crtc->state;
->   	const struct drm_display_mode *mode = &cstate->mode;
-> -	struct drm_framebuffer *fb = plane->state->fb;
-> +	struct drm_framebuffer *fb = priv->plane.state->fb;
->   	struct drm_connector *connector = priv->connector;
->   	struct drm_bridge *bridge = priv->bridge;
->   	bool grayscale = false;
-> @@ -355,9 +376,9 @@ static void pl111_display_enable(struct drm_simple_display_pipe *pipe,
->   		drm_crtc_vblank_on(crtc);
->   }
->   
-> -static void pl111_display_disable(struct drm_simple_display_pipe *pipe)
-> +static void pl111_crtc_helper_atomic_disable(struct drm_crtc *crtc,
-> +					     struct drm_atomic_commit *state)
->   {
-> -	struct drm_crtc *crtc = &pipe->crtc;
->   	struct drm_device *drm = crtc->dev;
->   	struct pl111_drm_dev_private *priv = drm->dev_private;
->   	u32 cntl;
-> @@ -387,17 +408,23 @@ static void pl111_display_disable(struct drm_simple_display_pipe *pipe)
->   	clk_disable_unprepare(priv->clk);
->   }
->   
-> -static void pl111_display_update(struct drm_simple_display_pipe *pipe,
-> -				 struct drm_plane_state *old_pstate)
-> +static void pl111_plane_helper_atomic_update(struct drm_plane *plane,
-> +					     struct drm_atomic_commit *state)
->   {
-> -	struct drm_crtc *crtc = &pipe->crtc;
-> -	struct drm_device *drm = crtc->dev;
-> -	struct pl111_drm_dev_private *priv = drm->dev_private;
-> -	struct drm_pending_vblank_event *event = crtc->state->event;
-> -	struct drm_plane *plane = &pipe->plane;
-> +	struct drm_crtc *crtc = plane->state->crtc;
-> +	struct drm_device *drm;
-> +	struct pl111_drm_dev_private *priv;
-> +	struct drm_pending_vblank_event *event;
->   	struct drm_plane_state *pstate = plane->state;
->   	struct drm_framebuffer *fb = pstate->fb;
->   
-> +	if (!crtc)
-> +		return;
-> +
-> +	drm = crtc->dev;
-> +	priv = drm->dev_private;
-> +	event = crtc->state->event;
-> +
->   	if (fb) {
->   		u32 addr = drm_fb_dma_get_gem_addr(fb, pstate, 0);
->   
-> @@ -416,9 +443,8 @@ static void pl111_display_update(struct drm_simple_display_pipe *pipe,
->   	}
->   }
->   
-> -static int pl111_display_enable_vblank(struct drm_simple_display_pipe *pipe)
-> +static int pl111_display_enable_vblank(struct drm_crtc *crtc)
->   {
-> -	struct drm_crtc *crtc = &pipe->crtc;
->   	struct drm_device *drm = crtc->dev;
->   	struct pl111_drm_dev_private *priv = drm->dev_private;
->   
-> @@ -427,21 +453,63 @@ static int pl111_display_enable_vblank(struct drm_simple_display_pipe *pipe)
->   	return 0;
->   }
->   
-> -static void pl111_display_disable_vblank(struct drm_simple_display_pipe *pipe)
-> +static void pl111_display_disable_vblank(struct drm_crtc *crtc)
->   {
-> -	struct drm_crtc *crtc = &pipe->crtc;
->   	struct drm_device *drm = crtc->dev;
->   	struct pl111_drm_dev_private *priv = drm->dev_private;
->   
->   	writel(0, priv->regs + priv->ienb);
->   }
->   
-> -static struct drm_simple_display_pipe_funcs pl111_display_funcs = {
-> -	.mode_valid = pl111_mode_valid,
-> -	.check = pl111_display_check,
-> -	.enable = pl111_display_enable,
-> -	.disable = pl111_display_disable,
-> -	.update = pl111_display_update,
-> +static int pl111_crtc_helper_atomic_check(struct drm_crtc *crtc, struct drm_atomic_commit *state)
-> +{
-> +	struct drm_crtc_state *crtc_state = drm_atomic_get_new_crtc_state(state, crtc);
-> +	int ret;
-> +
-> +	if (!crtc_state->enable)
-> +		goto out;
-> +
-> +	ret = drm_atomic_helper_check_crtc_primary_plane(crtc_state);
-> +	if (ret)
-> +		return ret;
-> +
-> +out:
-> +	return drm_atomic_add_affected_planes(state, crtc);
-> +}
-> +
-> +static struct drm_crtc_funcs pl111_crtc_funcs = {
-> +	.reset			= drm_atomic_helper_crtc_reset,
-> +	.destroy		= drm_crtc_cleanup,
-> +	.set_config		= drm_atomic_helper_set_config,
-> +	.page_flip		= drm_atomic_helper_page_flip,
-> +	.atomic_duplicate_state	= drm_atomic_helper_crtc_duplicate_state,
-> +	.atomic_destroy_state	= drm_atomic_helper_crtc_destroy_state,
-> +};
-> +
-> +static const struct drm_crtc_helper_funcs pl111_crtc_helper_funcs = {
-> +	.mode_valid	= pl111_crtc_helper_mode_valid,
-> +	.atomic_check	= pl111_crtc_helper_atomic_check,
-> +	.atomic_enable	= pl111_crtc_helper_atomic_enable,
-> +	.atomic_disable	= pl111_crtc_helper_atomic_disable,
-> +};
-> +
-> +static const struct drm_plane_funcs pl111_plane_funcs = {
-> +	.update_plane		= drm_atomic_helper_update_plane,
-> +	.disable_plane		= drm_atomic_helper_disable_plane,
-> +	.reset			= drm_atomic_helper_plane_reset,
-> +	.destroy		= drm_plane_cleanup,
-> +	.atomic_duplicate_state	= drm_atomic_helper_plane_duplicate_state,
-> +	.atomic_destroy_state	= drm_atomic_helper_plane_destroy_state,
-> +};
-> +
-> +static const struct drm_plane_helper_funcs pl111_plane_helper_funcs = {
-> +	.prepare_fb	= drm_gem_plane_helper_prepare_fb,
-> +	.atomic_check	= pl111_plane_helper_atomic_check,
-> +	.atomic_update	= pl111_plane_helper_atomic_update,
-> +};
-> +
-> +static const struct drm_encoder_funcs pl111_encoder_funcs = {
-> +	.destroy = drm_encoder_cleanup,
->   };
->   
->   static int pl111_clk_div_choose_div(struct clk_hw *hw, unsigned long rate,
-> @@ -583,18 +651,40 @@ int pl111_display_init(struct drm_device *drm)
->   		return ret;
->   
->   	if (!priv->variant->broken_vblank) {
-> -		pl111_display_funcs.enable_vblank = pl111_display_enable_vblank;
-> -		pl111_display_funcs.disable_vblank = pl111_display_disable_vblank;
-> +		pl111_crtc_funcs.enable_vblank = pl111_display_enable_vblank;
-> +		pl111_crtc_funcs.disable_vblank = pl111_display_disable_vblank;
->   	}
->   
-> -	ret = drm_simple_display_pipe_init(drm, &priv->pipe,
-> -					   &pl111_display_funcs,
-> -					   priv->variant->formats,
-> -					   priv->variant->nformats,
-> -					   NULL,
-> -					   priv->connector);
-> +	ret = drm_universal_plane_init(drm, &priv->plane, 0,
-> +				       &pl111_plane_funcs,
-> +				       priv->variant->formats,
-> +				       priv->variant->nformats,
-> +				       NULL, DRM_PLANE_TYPE_PRIMARY, NULL);
->   	if (ret)
->   		return ret;
->   
-> +	drm_plane_helper_add(&priv->plane, &pl111_plane_helper_funcs);
-> +
-> +	ret = drm_crtc_init_with_planes(drm, &priv->crtc, &priv->plane,
-> +					NULL, &pl111_crtc_funcs, NULL);
-> +	if (ret)
-> +		return ret;
-> +
-> +	drm_crtc_helper_add(&priv->crtc, &pl111_crtc_helper_funcs);
-> +
-> +	ret = drm_encoder_init(drm, &priv->encoder, &pl111_encoder_funcs,
-> +			       DRM_MODE_ENCODER_NONE, NULL);
-> +	if (ret)
-> +		return ret;
-> +
-> +	priv->encoder.possible_crtcs = drm_crtc_mask(&priv->crtc);
-> +
-> +	if (priv->connector) {
-> +		ret = drm_connector_attach_encoder(priv->connector,
-> +						   &priv->encoder);
-> +		if (ret)
-> +			return ret;
-> +	}
-> +
->   	return 0;
->   }
-> diff --git a/drivers/gpu/drm/pl111/pl111_drm.h b/drivers/gpu/drm/pl111/pl111_drm.h
-> index d1fe756444ee..ec92a5a180a8 100644
-> --- a/drivers/gpu/drm/pl111/pl111_drm.h
-> +++ b/drivers/gpu/drm/pl111/pl111_drm.h
-> @@ -21,7 +21,6 @@
->   #include <drm/drm_encoder.h>
->   #include <drm/drm_gem.h>
->   #include <drm/drm_panel.h>
-> -#include <drm/drm_simple_kms_helper.h>
->   
->   /*
->    * CLCD Controller Internal Register addresses
-> @@ -135,7 +134,9 @@ struct pl111_drm_dev_private {
->   	struct drm_connector *connector;
->   	struct drm_panel *panel;
->   	struct drm_bridge *bridge;
-> -	struct drm_simple_display_pipe pipe;
-> +	struct drm_plane plane;
-> +	struct drm_crtc crtc;
-> +	struct drm_encoder encoder;
->   
->   	void *regs;
->   	u32 memory_bw;
-> diff --git a/drivers/gpu/drm/pl111/pl111_drv.c b/drivers/gpu/drm/pl111/pl111_drv.c
-> index ac7b1d12a0f5..f649c266c33a 100644
-> --- a/drivers/gpu/drm/pl111/pl111_drv.c
-> +++ b/drivers/gpu/drm/pl111/pl111_drv.c
-> @@ -168,8 +168,7 @@ static int pl111_modeset_init(struct drm_device *dev)
->   		goto out_bridge;
->   	}
->   
-> -	ret = drm_simple_display_pipe_attach_bridge(&priv->pipe,
-> -						    bridge);
-> +	ret = drm_bridge_attach(&priv->encoder, bridge, NULL, 0);
->   	if (ret)
->   		return ret;
->   
->
-
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Jochen Jaser, Andrew McDonald, (HRB 36809, AG Nürnberg)
-
-
+OK, thanks
 
