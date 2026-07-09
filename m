@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-4447-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4448-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 256AEC43458
-	for <linux-aspeed@archiver.kernel.org>; Thu,  9 Jul 2026 05:18:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40A34C43458
+	for <linux-aspeed@archiver.kernel.org>; Thu,  9 Jul 2026 05:19:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gwjsR0tfKz3c9w;
-	Thu, 09 Jul 2026 15:18:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783574283;
-	cv=none; b=o0D43fUbYGnYBQg98PCldtlTESx4Y99C3EeVB/WOPOsv21WLfrVTM8fEXCYbplO5SbzFi3D696alnIobowaI5D4czAt/AXzlet3PaR3nXGqisisqgIN7F1Us81lJ7rVVL/CR6FJTddVBGtZOx4lz6g7/l4JLQR29aKyDMB5xrwvzmHGUykRFzKdaLYe5W7dzEDgCyXjqCJPpGSiNpCL+gI76S5+K18EhSULGeIyyK0z+TsIc6CQaVAtH+Ho6HrF+B1jeKlEbahti4Yxrjnrl2Xc72l5cqmUlmQsuQOJ+6EpuqTSt9qVBKqFYcxd9qqrzLYQMbdNGjS6SpOXzGkscHA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gwjth4Kbwz3byZ;
+	Thu, 09 Jul 2026 15:19:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783574348;
+	cv=none; b=gqb3NfFkvQL95HYWzigB3RqusaP/yGyLiJWD1SyhFEcmCPpbOgeLdNQuAY/abakP2LF95RDelociTWCtSv1qwdEsaa21g8ptV3Pmt1lugo2dIIerQKXFFUkVlJC7riYEoSbJARfHwgKOw+4+RzaZg45yPRRnSnffphR+1s464qjCVq4QwQuxfzZ7rmKj75WNzxupL7q0XbAQXjpCNnmK6uhpodM9KUAMZKKbwcaVDXjTr9lNYsD/J66pr/fpoauWT3wLMFQlKXR/BAgJCYjPhGJSwo0cNpX8wKRCh/XSXoPC5Ce+c9vhbNrnfd2y9xlt0lRbEkwIcSbS+/uUnlpqgQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783574283; c=relaxed/relaxed;
-	bh=tQ+V+NoyUcPuvrO7cKOPdWAVnLPgCtZojOaNp2ZcxCc=;
+	t=1783574348; c=relaxed/relaxed;
+	bh=U07Tc0YIkdsfSk0M4VsXB1xF7rMsrEoDAqiLn01Euk8=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ZVoy124d2DlGVjLZWoEFRwmJbW32p3PXUB6UKiFmlhOcuzScoKcYeB0GcZS/0Yg3Y4s1FVTIVUnxMzgWPQ4o7/GnHUu8reLIygiGiPvrWA4rwdafCKlUFCV6QtA6hn8ItXIPXRsGyuEiOquGYZJdXNNykEUisSjVbtnFrax2U6RxeWoKebNP95TTTTf6y85pQLSOmJbG/oGFyVU6Kb+AQQlwG1ZJ/GjnslrxxueoCU3LqLEAQUth6VhRI/4evpPIEof52qID+zMpLmGd0Sye6ARcf29XbeOGFrxljWx9UEfd+ml5x2bpaQr3DogtKbr3qfBidsWvlm7NoS15kGH3aQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=k32G/98M; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=jirislaby@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=fio3/14SNYwwZixiwPF7h+eQQq05PqhOkjTE/u/nQjUdsRabqCzdYYiQ8YdGuvSb2iPdODKcwPiXQLVFwkIx7KfFfeI0M4e2ineyuYieBzUgo72oJtzwSeGTiLbgoc+WRR9zTfXXGz4D+rwDenc6AOflBJRNg6RpeAekOZLM3e9QhP9sZR3fX0H1545KwPhABVKw0EPfdfW2O95yoP+Vi9F5K1JOkNskb9E5LmeYejZ9nm8xZpXrE+mbkEOMwv3wTJ8fMQbA+0sneiU4w2uNE+2YzytSFmi+1KSgAXICzKZSXS5jLflzVm53EAFj3wdY1WPVARgAWRjiN8mIcplqZg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZQgTkk7o; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=jirislaby@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=k32G/98M;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZQgTkk7o;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=jirislaby@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=jirislaby@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwjsP40GTz3c9q
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 09 Jul 2026 15:18:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwjtg3k8jz3bxH
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 09 Jul 2026 15:19:07 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 810516001A;
-	Thu,  9 Jul 2026 05:17:58 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 78A151F000E9;
-	Thu,  9 Jul 2026 05:17:54 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id E1FB24170B;
+	Thu,  9 Jul 2026 05:19:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 551E51F000E9;
+	Thu,  9 Jul 2026 05:19:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783574278;
-	bh=tQ+V+NoyUcPuvrO7cKOPdWAVnLPgCtZojOaNp2ZcxCc=;
+	s=k20260515; t=1783574344;
+	bh=U07Tc0YIkdsfSk0M4VsXB1xF7rMsrEoDAqiLn01Euk8=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=k32G/98MDVwSpEfyGKC/N9IIzGeaQas9poCOPA0KblZhNluiI1Z7fB5vBh8c3W4GK
-	 QKkFwAzJ0DWHo7fPX2BnHa/8JiBIvZi8WiKO2f9Y2hN8QSx3Eq6tsWctpJy3YrLRNi
-	 f9D53gOZGVVGTJUuiJNK7sNxsT5F/jPskZApFqTJNh/vWL/bw7bvy+Q+5+hv6kDpd/
-	 +gKDdASXtSzKsnt8xGKiRtfwHgVOZhIF5FtZW/CILAfYGdMkLGkI/gNCeK+T/ApASP
-	 hJQwkOwwQpI7TMQ0fHRJbjzJ+KYEcMZ6khfk3TrzT46oBQReSYNTPSPlnBy3au1h16
-	 kTyzNnbZcdKdQ==
-Message-ID: <1af9eb75-fcab-4541-8ba7-ec620546f031@kernel.org>
-Date: Thu, 9 Jul 2026 07:17:51 +0200
+	b=ZQgTkk7o5Gtq0vBhgRq3X7NnyvQ48WC5NiKRizm7GFYjlmx1EZ74vLx2y/vXe4W8q
+	 3bCn3NMtd8UdUmQm51tHQZvt7pN1Fp+cXBafzR79pg5S65KftCbLa/z4MCsLtqVfXz
+	 aybFZGLDx2iH1v1QkwN1wuop+TPdStRDkhNE4QJJZsLtknaWkG5rx/0gF8YTwcWvHk
+	 kT7t1dGAFRun27RZnf/T9shpuCNhF6fBMpzufXX8E+pYZRrnOKAcSEh79MYHPlOTNJ
+	 iY/b8tosGccljiA4OrLp2dzde735byWJQZ3mdFaZcd3ROFioJ/PLQscjob0ISvBYVn
+	 0/3nvBlZuuvMw==
+Message-ID: <f391981a-29f8-4ed3-b582-744aa47cbe1d@kernel.org>
+Date: Thu, 9 Jul 2026 07:18:59 +0200
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -61,16 +61,17 @@ Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v4 4/7] serial: 8250_aspeed_vuart: add VUART over PCI
-To: =?UTF-8?Q?Gr=C3=A9goire_Layet?= <gregoire.layet@9elements.com>,
- joel@jms.id.au, andrew@codeconstruct.com.au, lkundrak@v3.sk,
+To: Andrew Lunn <andrew@lunn.ch>,
+ =?UTF-8?Q?Gr=C3=A9goire_Layet?= <gregoire.layet@9elements.com>
+Cc: joel@jms.id.au, andrew@codeconstruct.com.au, lkundrak@v3.sk,
  devicetree@vger.kernel.org, gregkh@linuxfoundation.org, robh@kernel.org,
- krzk+dt@kernel.org, conor+dt@kernel.org
-Cc: andrew@lunn.ch, jacky_chou@aspeedtech.com, yh_chung@aspeedtech.com,
- ninad@linux.ibm.com, anirudhsriniv@gmail.com, linux-serial@vger.kernel.org,
- linux-aspeed@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org
+ krzk+dt@kernel.org, conor+dt@kernel.org, jacky_chou@aspeedtech.com,
+ yh_chung@aspeedtech.com, ninad@linux.ibm.com, anirudhsriniv@gmail.com,
+ linux-serial@vger.kernel.org, linux-aspeed@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 References: <cover.1783524645.git.gregoire.layet@9elements.com>
  <28c6e7c493559feffc7e6231b0a2f0b73b7fda41.1783524645.git.gregoire.layet@9elements.com>
+ <694c7c37-fb42-4994-93eb-04ed4ae299cf@lunn.ch>
 Content-Language: en-US
 From: Jiri Slaby <jirislaby@kernel.org>
 Autocrypt: addr=jirislaby@kernel.org; keydata=
@@ -115,83 +116,30 @@ Autocrypt: addr=jirislaby@kernel.org; keydata=
  f/bIWIr0cqQmqQ33FgRhrG1+Xml6UXyJ2jExmlO8JljuOGeXYh6ZkIEyzqzffzBLXZCujlYQ
  DFXpyMNVJ2ZwPmX2mWEoYuaBU0JN7wM+/zWgOf2zRwhEuD3A2cO2PxoiIfyUEfB9SSmffaK/
  S4xXoB6wvGENZ85Hg37C7WDNdaAt6Xh2uQIly5grkgvWppkNy4ZHxE+jeNsU7tg=
-In-Reply-To: <28c6e7c493559feffc7e6231b0a2f0b73b7fda41.1783524645.git.gregoire.layet@9elements.com>
+In-Reply-To: <694c7c37-fb42-4994-93eb-04ed4ae299cf@lunn.ch>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 
-On 08. 07. 26, 17:35, Grégoire Layet wrote:
-...
-> --- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
-> +++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
-> @@ -32,6 +32,26 @@
->   #define ASPEED_VUART_DEFAULT_SIRQ	4
->   #define ASPEED_VUART_DEFAULT_SIRQ_POLARITY	IRQ_TYPE_LEVEL_LOW
->   
-> +#define ASPEED_SCU_SILICON_REVISION_ID			0x04
-> +#define AST2600A3_REVISION_ID				0x05030303
-> +
-> +#define ASPEED_SCUC24			0xC24
-> +#define  ASPEED_SCUC24_MSI_ROUTING_MASK			GENMASK(11, 10)
-> +#define  ASPEED_SCUC24_MSI_ROUTING_PCIE2LPC_PCIDEV1		(0x2 << 10)
+On 08. 07. 26, 18:46, Andrew Lunn wrote:
+>> +	if (silicon_revision_id == AST2600A3_REVISION_ID)
+>> +		rc = regmap_update_bits(scu, ASPEED_SCUC24,
+>> +					ASPEED_SCUC24_PCIDEV1_INTX_MSI_HOST2BMC_EN | ASPEED_SCUC24_MSI_ROUTING_MASK,
+>> +					ASPEED_SCUC24_PCIDEV1_INTX_MSI_HOST2BMC_EN | ASPEED_SCUC24_MSI_ROUTING_PCIE2LPC_PCIDEV1);
+>> +	else
+>> +		rc = regmap_update_bits(scu, ASPEED_SCUC24,
+>> +					/**
+>> +					 * The bit 14 is reserved in the Datasheet.
+>> +					 */
+>> +					ASPEED_SCUC24_PCIDEV1_INTX_MSI_SCU560_EN | BIT(14) | ASPEED_SCUC24_MSI_ROUTING_MASK,
+>> +					ASPEED_SCUC24_PCIDEV1_INTX_MSI_SCU560_EN | BIT(14) | ASPEED_SCUC24_MSI_ROUTING_PCIE2LPC_PCIDEV1);
+> 
+> checkpatch should be warning about these long lines. Traditionally,
+> the limit is 80 character lines, but recently 100 has been accepted by
+> some subsystems. The exception is when wrapping the lines will make
+> them less readable, but i don't think that applies here.
 
-So is this
-FIELD_PREP(ASPEED_SCUC24_MSI_ROUTING_MASK, 2)
-?
+FWIW 100 is fine by me. 80 is too ancient limit.
 
-> +#define  ASPEED_SCUC24_PCIDEV1_INTX_MSI_HOST2BMC_EN		BIT(18)
-> +#define  ASPEED_SCUC24_PCIDEV1_INTX_MSI_SCU560_EN			BIT(17)
-
-Perhaps switch the two (to be in asc order)? And define 14 as _RESERVED 
-as well?
-
-> +#define ASPEED_SCU_PCIE_CONF_CTRL	0xC20
-
-Hmm, should these go before 0xC24?
-
-> +#define  SCU_PCIE_CONF_BMC_DEV_EN					BIT(8)
-> +#define  SCU_PCIE_CONF_BMC_DEV_EN_MMIO				BIT(9)
-> +#define  SCU_PCIE_CONF_BMC_DEV_EN_MSI				BIT(11)
-> +#define  SCU_PCIE_CONF_BMC_DEV_EN_IRQ				BIT(13)
-> +#define  SCU_PCIE_CONF_BMC_DEV_EN_PCIE_BUS_MASTER	BIT(14)
-> +#define  SCU_PCIE_CONF_BMC_DEV_EN_E2L				BIT(15)
-> +#define  SCU_PCIE_CONF_BMC_DEV_EN_LPC_DECODE		BIT(21)
-> +
-> +#define ASPEED_SCU_BMC_DEV_CLASS	0xC68
-> +
->   struct aspeed_vuart {
->   	struct device		*dev;
->   	int			line;
-> @@ -412,6 +432,63 @@ static int aspeed_vuart_map_irq_polarity(u32 dt)
->   	}
->   }
->   
-> +static int aspeed_ast2600_vuart_over_pci_set_enabled(struct platform_device *pdev)
-> +{
-...
-> +	if (silicon_revision_id == AST2600A3_REVISION_ID)
-> +		rc = regmap_update_bits(scu, ASPEED_SCUC24,
-> +					ASPEED_SCUC24_PCIDEV1_INTX_MSI_HOST2BMC_EN | ASPEED_SCUC24_MSI_ROUTING_MASK,
-> +					ASPEED_SCUC24_PCIDEV1_INTX_MSI_HOST2BMC_EN | ASPEED_SCUC24_MSI_ROUTING_PCIE2LPC_PCIDEV1);
-> +	else
-> +		rc = regmap_update_bits(scu, ASPEED_SCUC24,
-> +					/**
-> +					 * The bit 14 is reserved in the Datasheet.
-> +					 */
-
-If you defined reserved as suggested above, no need for the comment.
-
-> +					ASPEED_SCUC24_PCIDEV1_INTX_MSI_SCU560_EN | BIT(14) | ASPEED_SCUC24_MSI_ROUTING_MASK,
-> +					ASPEED_SCUC24_PCIDEV1_INTX_MSI_SCU560_EN | BIT(14) | ASPEED_SCUC24_MSI_ROUTING_PCIE2LPC_PCIDEV1);
-> +	if (rc) {
-> +		dev_err(dev, "could not set PCI device 1 MSI interrupt routing\n");
-> +		return -EIO;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-
-thanks,
 -- 
 js
 suse labs
