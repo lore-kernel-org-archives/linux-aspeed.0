@@ -1,65 +1,51 @@
-Return-Path: <linux-aspeed+bounces-4446-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4447-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 893CDC43458
-	for <linux-aspeed@archiver.kernel.org>; Thu,  9 Jul 2026 02:15:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 256AEC43458
+	for <linux-aspeed@archiver.kernel.org>; Thu,  9 Jul 2026 05:18:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gwdqL1XPDz3cFD;
-	Thu, 09 Jul 2026 12:15:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783563358;
-	cv=none; b=YE44MFS3ZQ/YdNUO30z1A8sP97NMWORyZgBIMMTm78cggv8mq8E2U77gH1Qq2zPCaKOVitYUuqlDtZc2kooeDAVmTQ3MlG4YU6mTpQkaZmwMuDwfvQY1hZpStPtYHl14d/vwH5xCT5s2W0fkNdlgx8zPfkafoyeyWa3xhy/qqDmWUFjzG1Ysn4c37RlOtLstDiG+PJVnMG0syauXFvwi+t4NZJrBaqQDclre+Nzprp+p2sqTrE7npPn6+5CCL/kmmEtZzU0ETpvK3Gihh3nYjna1t1M4EjiLYXi8aZuQANRi+Ma0ePD+sPomG/skav4KRzItCaOil2tejtHps+lTZg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gwjsR0tfKz3c9w;
+	Thu, 09 Jul 2026 15:18:03 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783574283;
+	cv=none; b=o0D43fUbYGnYBQg98PCldtlTESx4Y99C3EeVB/WOPOsv21WLfrVTM8fEXCYbplO5SbzFi3D696alnIobowaI5D4czAt/AXzlet3PaR3nXGqisisqgIN7F1Us81lJ7rVVL/CR6FJTddVBGtZOx4lz6g7/l4JLQR29aKyDMB5xrwvzmHGUykRFzKdaLYe5W7dzEDgCyXjqCJPpGSiNpCL+gI76S5+K18EhSULGeIyyK0z+TsIc6CQaVAtH+Ho6HrF+B1jeKlEbahti4Yxrjnrl2Xc72l5cqmUlmQsuQOJ+6EpuqTSt9qVBKqFYcxd9qqrzLYQMbdNGjS6SpOXzGkscHA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783563358; c=relaxed/relaxed;
-	bh=tH41RNED5+clJ8bDU3yrsPjDBxC2yWIilI8EOLE574U=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=njKnvu45aibuM6Hno6n3t+HGy/fPju7uvk3c8qvAsBGtjGrNp6V8zO+1l5Usf66Rrls9rmQfYNxgWQt3oVemV8AWKApKXYBzaIVOz4dOO3xjb4oC9U86BeNAbq4eFfa8OJ8WfCcEV0wN8LGafYA0aKW+ihhV9BmmB4FI3RwvzbmezBHCGaXqJ/x+jCcKpZ2ZoBendjjNWa6deD7lVyQG+9dcm4kMBRjsh/4e2nbxhm2EzcSoWlYOb6DrnofOarU2vUQ6nrq3RayGoiHDsFTazS4YN3PnlZMRyOxixkzOYf2EKPepewfW+yz4c0R+4HVATMKl8NT3X5HapUxuToz7nw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=ftms0R3l; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
+	t=1783574283; c=relaxed/relaxed;
+	bh=tQ+V+NoyUcPuvrO7cKOPdWAVnLPgCtZojOaNp2ZcxCc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ZVoy124d2DlGVjLZWoEFRwmJbW32p3PXUB6UKiFmlhOcuzScoKcYeB0GcZS/0Yg3Y4s1FVTIVUnxMzgWPQ4o7/GnHUu8reLIygiGiPvrWA4rwdafCKlUFCV6QtA6hn8ItXIPXRsGyuEiOquGYZJdXNNykEUisSjVbtnFrax2U6RxeWoKebNP95TTTTf6y85pQLSOmJbG/oGFyVU6Kb+AQQlwG1ZJ/GjnslrxxueoCU3LqLEAQUth6VhRI/4evpPIEof52qID+zMpLmGd0Sye6ARcf29XbeOGFrxljWx9UEfd+ml5x2bpaQr3DogtKbr3qfBidsWvlm7NoS15kGH3aQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=k32G/98M; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=jirislaby@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=ftms0R3l;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=k32G/98M;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
-Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=jirislaby@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwdqK1NRqz3c9k
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 09 Jul 2026 12:15:57 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1783563355;
-	bh=tH41RNED5+clJ8bDU3yrsPjDBxC2yWIilI8EOLE574U=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=ftms0R3l1Hxi9KJ9589VO97Frg6kN7OeNXibsjqRd65pV+OUowKvaK4G4y+TYgTcP
-	 uB8ZX8+0DdAGA9lY46OHDqUkT6OKe9E+U6Qv3eAvvB2EFuX83vJgLY32mW9W7R2I3G
-	 +bdp1eQu07nsN0ZxcHvRxL+ScRsJuX6dFWeI1ii/hsUmk6FVy6+KDGykQo2oHiHIm9
-	 4FEHkiIC5/XDz69xWmYZ9N8Ig7zcnjVc4pCi+OBHq3yDJBRjbDDph0P556SoViAXfd
-	 92Bij0zFycrY5a3rYKvMIzMD5MaGxwK7jNQEI3u5uDKgKDeiaeMte/jhozACIZDuW1
-	 4PMwao+akqDRQ==
-Received: from [192.168.68.117] (unknown [180.150.112.11])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 4823960288;
-	Thu,  9 Jul 2026 10:15:53 +0800 (AWST)
-Message-ID: <ddb133ca1a3be605ee776b2276c1907c9ad32491.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v2 2/3] phy: add AST2700 usb3.2 phy driver
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Ryan Chen <ryan_chen@aspeedtech.com>, Vinod Koul <vkoul@kernel.org>, 
- Neil Armstrong <neil.armstrong@linaro.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski	 <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Joel Stanley	 <joel@jms.id.au>, Philipp Zabel
- <p.zabel@pengutronix.de>
-Cc: linux-phy@lists.infradead.org, devicetree@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org
-Date: Thu, 09 Jul 2026 11:45:52 +0930
-In-Reply-To: <20260116-upstream_usb3phy-v2-2-0b0c9f3eb6f4@aspeedtech.com>
-References: <20260116-upstream_usb3phy-v2-0-0b0c9f3eb6f4@aspeedtech.com>
-	 <20260116-upstream_usb3phy-v2-2-0b0c9f3eb6f4@aspeedtech.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.2-0+deb13u1 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gwjsP40GTz3c9q
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 09 Jul 2026 15:18:01 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 810516001A;
+	Thu,  9 Jul 2026 05:17:58 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 78A151F000E9;
+	Thu,  9 Jul 2026 05:17:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1783574278;
+	bh=tQ+V+NoyUcPuvrO7cKOPdWAVnLPgCtZojOaNp2ZcxCc=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=k32G/98MDVwSpEfyGKC/N9IIzGeaQas9poCOPA0KblZhNluiI1Z7fB5vBh8c3W4GK
+	 QKkFwAzJ0DWHo7fPX2BnHa/8JiBIvZi8WiKO2f9Y2hN8QSx3Eq6tsWctpJy3YrLRNi
+	 f9D53gOZGVVGTJUuiJNK7sNxsT5F/jPskZApFqTJNh/vWL/bw7bvy+Q+5+hv6kDpd/
+	 +gKDdASXtSzKsnt8xGKiRtfwHgVOZhIF5FtZW/CILAfYGdMkLGkI/gNCeK+T/ApASP
+	 hJQwkOwwQpI7TMQ0fHRJbjzJ+KYEcMZ6khfk3TrzT46oBQReSYNTPSPlnBy3au1h16
+	 kTyzNnbZcdKdQ==
+Message-ID: <1af9eb75-fcab-4541-8ba7-ec620546f031@kernel.org>
+Date: Thu, 9 Jul 2026 07:17:51 +0200
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -73,128 +59,140 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 4/7] serial: 8250_aspeed_vuart: add VUART over PCI
+To: =?UTF-8?Q?Gr=C3=A9goire_Layet?= <gregoire.layet@9elements.com>,
+ joel@jms.id.au, andrew@codeconstruct.com.au, lkundrak@v3.sk,
+ devicetree@vger.kernel.org, gregkh@linuxfoundation.org, robh@kernel.org,
+ krzk+dt@kernel.org, conor+dt@kernel.org
+Cc: andrew@lunn.ch, jacky_chou@aspeedtech.com, yh_chung@aspeedtech.com,
+ ninad@linux.ibm.com, anirudhsriniv@gmail.com, linux-serial@vger.kernel.org,
+ linux-aspeed@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org
+References: <cover.1783524645.git.gregoire.layet@9elements.com>
+ <28c6e7c493559feffc7e6231b0a2f0b73b7fda41.1783524645.git.gregoire.layet@9elements.com>
+Content-Language: en-US
+From: Jiri Slaby <jirislaby@kernel.org>
+Autocrypt: addr=jirislaby@kernel.org; keydata=
+ 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
+In-Reply-To: <28c6e7c493559feffc7e6231b0a2f0b73b7fda41.1783524645.git.gregoire.layet@9elements.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-Hi Ryan,
-
-On Fri, 2026-01-16 at 10:53 +0800, Ryan Chen wrote:
-
-
+On 08. 07. 26, 17:35, Grégoire Layet wrote:
 ...
-
-> diff --git a/drivers/phy/aspeed/phy-aspeed-usb3.c b/drivers/phy/aspeed/ph=
-y-aspeed-usb3.c
-> new file mode 100644
-> index 000000000000..872d2163fcf5
-> --- /dev/null
-> +++ b/drivers/phy/aspeed/phy-aspeed-usb3.c
-> @@ -0,0 +1,236 @@
-> +// SPDX-License-Identifier: GPL-2.0+
-> +/*
-> + * Copyright 2026 Aspeed Technology Inc.
-> + */
+> --- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
+> +++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+> @@ -32,6 +32,26 @@
+>   #define ASPEED_VUART_DEFAULT_SIRQ	4
+>   #define ASPEED_VUART_DEFAULT_SIRQ_POLARITY	IRQ_TYPE_LEVEL_LOW
+>   
+> +#define ASPEED_SCU_SILICON_REVISION_ID			0x04
+> +#define AST2600A3_REVISION_ID				0x05030303
 > +
-> +#include <linux/bitfield.h>
-> +#include <linux/clk.h>
-> +#include <linux/io.h>
-> +#include <linux/iopoll.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/phy/phy.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/reset.h>
-> +
-> +#define PHY3S00		0x00
-> +#define PHY3S00_INIT_DONE		BIT(15)
-> +#define PHY3S00_SRAM_BYPASS		BIT(7)
-> +#define PHY3S00_SRAM_EXT_LOAD	BIT(6)
->=20
+> +#define ASPEED_SCUC24			0xC24
+> +#define  ASPEED_SCUC24_MSI_ROUTING_MASK			GENMASK(11, 10)
+> +#define  ASPEED_SCUC24_MSI_ROUTING_PCIE2LPC_PCIDEV1		(0x2 << 10)
 
-...
+So is this
+FIELD_PREP(ASPEED_SCUC24_MSI_ROUTING_MASK, 2)
+?
 
+> +#define  ASPEED_SCUC24_PCIDEV1_INTX_MSI_HOST2BMC_EN		BIT(18)
+> +#define  ASPEED_SCUC24_PCIDEV1_INTX_MSI_SCU560_EN			BIT(17)
+
+Perhaps switch the two (to be in asc order)? And define 14 as _RESERVED 
+as well?
+
+> +#define ASPEED_SCU_PCIE_CONF_CTRL	0xC20
+
+Hmm, should these go before 0xC24?
+
+> +#define  SCU_PCIE_CONF_BMC_DEV_EN					BIT(8)
+> +#define  SCU_PCIE_CONF_BMC_DEV_EN_MMIO				BIT(9)
+> +#define  SCU_PCIE_CONF_BMC_DEV_EN_MSI				BIT(11)
+> +#define  SCU_PCIE_CONF_BMC_DEV_EN_IRQ				BIT(13)
+> +#define  SCU_PCIE_CONF_BMC_DEV_EN_PCIE_BUS_MASTER	BIT(14)
+> +#define  SCU_PCIE_CONF_BMC_DEV_EN_E2L				BIT(15)
+> +#define  SCU_PCIE_CONF_BMC_DEV_EN_LPC_DECODE		BIT(21)
 > +
-> +static int aspeed_usb3_phy_init(struct phy *phy)
+> +#define ASPEED_SCU_BMC_DEV_CLASS	0xC68
+> +
+>   struct aspeed_vuart {
+>   	struct device		*dev;
+>   	int			line;
+> @@ -412,6 +432,63 @@ static int aspeed_vuart_map_irq_polarity(u32 dt)
+>   	}
+>   }
+>   
+> +static int aspeed_ast2600_vuart_over_pci_set_enabled(struct platform_device *pdev)
 > +{
-> +	struct aspeed_usb3_phy *aspeed_phy =3D phy_get_drvdata(phy);
-> +	u32 val;
-> +	int ret;
-> +
-> +	ret =3D clk_prepare_enable(aspeed_phy->clk);
-> +	if (ret) {
-> +		dev_err(aspeed_phy->dev, "Failed to enable clock %d\n", ret);
-> +		return ret;
+...
+> +	if (silicon_revision_id == AST2600A3_REVISION_ID)
+> +		rc = regmap_update_bits(scu, ASPEED_SCUC24,
+> +					ASPEED_SCUC24_PCIDEV1_INTX_MSI_HOST2BMC_EN | ASPEED_SCUC24_MSI_ROUTING_MASK,
+> +					ASPEED_SCUC24_PCIDEV1_INTX_MSI_HOST2BMC_EN | ASPEED_SCUC24_MSI_ROUTING_PCIE2LPC_PCIDEV1);
+> +	else
+> +		rc = regmap_update_bits(scu, ASPEED_SCUC24,
+> +					/**
+> +					 * The bit 14 is reserved in the Datasheet.
+> +					 */
+
+If you defined reserved as suggested above, no need for the comment.
+
+> +					ASPEED_SCUC24_PCIDEV1_INTX_MSI_SCU560_EN | BIT(14) | ASPEED_SCUC24_MSI_ROUTING_MASK,
+> +					ASPEED_SCUC24_PCIDEV1_INTX_MSI_SCU560_EN | BIT(14) | ASPEED_SCUC24_MSI_ROUTING_PCIE2LPC_PCIDEV1);
+> +	if (rc) {
+> +		dev_err(dev, "could not set PCI device 1 MSI interrupt routing\n");
+> +		return -EIO;
 > +	}
-> +
-> +	ret =3D reset_control_deassert(aspeed_phy->rst);
-> +	if (ret) {
-> +		clk_disable_unprepare(aspeed_phy->clk);
-> +		return ret;
-
-Nit: Given we have to do this below if the reset_control_deassert()
-succeeds, perhaps add a label below and use goto here?
-
-> +	}
-> +
-> +	/* Wait for USB3 PHY internal SRAM initialization done */
-> +	ret =3D readl_poll_timeout(aspeed_phy->regs + PHY3S00, val,
-> +				 val & PHY3S00_INIT_DONE,
-> +				 USEC_PER_MSEC, 10 * USEC_PER_MSEC);
-> +	if (ret) {
-> +		dev_err(aspeed_phy->dev, "SRAM init timeout\n");
-> +		goto err_assert_reset;
-> +	}
-> +
-> +	val =3D readl(aspeed_phy->regs + PHY3S00);
-> +	val |=3D PHY3S00_SRAM_BYPASS;
-> +	writel(val, aspeed_phy->regs + PHY3S00);
-
-According to the datasheet PHY3S00[15] (PHY3S00_INIT_DONE above)
-indicates that the PHY internal SRAM initialisation is complete. The
-datasheet reports the SRAM is used for configuration of calibration
-among other things. PHY3S00[6] instructs the PHY that software has
-completed loading the configuration data into SRAM, however
-PHY3S00_SRAM_BYPASS (PHY3S00[7]) tells the PHY to load configuration
-from "hard wired" values.
-
-Is it necessary to wait for SRAM initialisation to complete if we're
-bypassing it? Or are there other side-effects involved in the setting
-of PHY3S00[15]?
-
-> +
-> +	/* Set protocol1_ext signals as default PHY3 settings based on SNPS doc=
-uments.
-> +	 * Including PCFGI[54]: protocol1_ext_rx_los_lfps_en for better compati=
-bility
-> +	 */
-> +	writel(PHY3P00_DEFAULT, aspeed_phy->regs + PHY3P00);
-> +	writel(PHY3P04_DEFAULT, aspeed_phy->regs + PHY3P04);
-> +	writel(PHY3P08_DEFAULT, aspeed_phy->regs + PHY3P08);
-> +	writel(PHY3P0C_DEFAULT, aspeed_phy->regs + PHY3P0C);
 > +
 > +	return 0;
-> +
-> +err_assert_reset:
-> +	reset_control_assert(aspeed_phy->rst);
-> +	clk_disable_unprepare(aspeed_phy->clk);
-> +	return ret;
 > +}
->=20
-
-...
-
->=20
-> +static struct platform_driver aspeed_usb3_phy_driver =3D {
-> +	.probe		=3D aspeed_usb3_phy_probe,
-> +	.driver		=3D {
-> +		.name	=3D KBUILD_MODNAME,
-> +		.of_match_table	=3D aspeed_usb3_phy_match_table,
-> +	},
-> +};
-> +module_platform_driver(aspeed_usb3_phy_driver);
 > +
-> +MODULE_LICENSE("GPL");
-> +MODULE_DESCRIPTION("ASPEED USB3.0 PHY Driver");
 
-MODULE_AUTHOR()?
-
-Andrew
+thanks,
+-- 
+js
+suse labs
 
