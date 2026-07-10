@@ -1,95 +1,58 @@
-Return-Path: <linux-aspeed+bounces-4456-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4457-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 363C0C43458
-	for <linux-aspeed@archiver.kernel.org>; Fri, 10 Jul 2026 09:21:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 202E0C43458
+	for <linux-aspeed@archiver.kernel.org>; Sun, 12 Jul 2026 00:54:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gxRCY5LSkz2yS4;
-	Fri, 10 Jul 2026 19:21:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783675273;
-	cv=none; b=WABYQeR+8Y0T+kZKygTxbjEsU8W7VDy/PI7EcOFXcBdHE+MjUviSdKBB3BUar4T0K2l632IkNrFOtjNAqAvcCh5CjjGwSzuq/6PhlqdKd76iFxytBqWFGznNe4jKhZ47uo8nTNhIdHymynkcz1PP/lXd6B3csIH98ACMO1kVZKKsdq86JXf4FqmSKXYohx2aTPhqRxRqxoZt28phRXYJqQEAfTtAGrQnqIvxJFY6/h/nCkksHL5l0UD8L4sojkBh1uJ9QsCUJDBsZZypkkcTkW8vWoPG4SzrxE4M9dBjeKsuJbpuF7PfKKtm5Jc/++E1W4wHyEMDoAbOxux1qDr1AQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gyRsg1xbKz2yYY;
+	Sun, 12 Jul 2026 10:54:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783705566;
+	cv=none; b=dUw3Uj6wZGtcECS5Nq1QFrIW2LtadRfvxz5U5/XzixB6wPULv+cuhYwgF6srhJEOu4Ca+1/a3Xj6cuJWM0SY6v0K74uvOhoqGIay2mVoYjQRTje+mS9ktBHiUO5QLsjN0n40AN6czxM4RrAtYxydbJLOyROqrHWGWhfa9DDrBmltbUC1R1+ZFs5ajd3eVZ9szp38tVm4/V8kfWoYERQOYjITxy/by00s7BAOYQVsYzWHEOhAngCV/ROdB3zijZB9DJq6kA8mufp8yWwone/PL31oxe2Grz7efjn9xMASJeZ2onZ2ZG06tkDCUry/rfV1G/RObzCi0F59OUNXrVws5g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783675273; c=relaxed/relaxed;
-	bh=8qm83c1l0o6q3XoAGYoMaLAsZhnmYdvopXg5ZHUKvsU=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=LhpJTpNvOm/fjdcZsd81GlyA3/So1KMgcwm69ZaB+vWqaWV8jtOVYlPFdjAr6DvLmqRP41HtQ9G6zXcpPr0dVuG9sBgGIJwbExBpye2XzsqDbYl/db+HL6JqE0uiLWdqNwA3fCGIWjM89/4L1IIdk4ybSbRqj3Rvkbf1wL840nr1lDvNEoWIMCQ8KmCR7d3jQ9aLVTdVw2BEl+m+NiR+7xs06mrYsri8Y6B4ntE5c3QD/t6Vj4GBm1MnbfATKn9XUys7xcyoxw5xGiAlOuzMGrWy1HELDIMDFMdqzo/2EYfxKngTsndpE1Ji7fjTySHIInzDHDHkZVWTsMHL/0gmfA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=dILxM/gr; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=87sBJDQk; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=dILxM/gr; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=87sBJDQk; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	t=1783705566; c=relaxed/relaxed;
+	bh=KvBYP+wl2IjCxMaSVmX25pjv+NEzDq5zeL7bHnenBoI=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=i8KUsUuEFybibCUGh4gLEqYC/SBGdxsI4TUuedcTwqJ/KVvWnbs1UfY+zMgMQnBpdP7S8OtmqItrn+D9hEQW9i/tM8FzbEbJ8V9TyT5Nut6LKTpWkKOQEluo2Jkys2rExNm5kXM1JQwiVPNY8nZu4QuC7sRFj30ezgnEf1FNhY08nwVnwxVPk3KLgkXY1tFtVNB+nZ2pFA9ISrTLK1zAIowTJpo4UI+R5E4J9Vs6R2n9GKfW9qQd12UC1TXWm/3USa2mxY9rUZDnzJPPhjBWl80ygcKeWZ5iuS3iqbzDEi2/daseIXeCUwDHrE8089ophdMmS67Fod3divo7ECi5SA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Kj7a6Pu5; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=dILxM/gr;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=87sBJDQk;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=dILxM/gr;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=87sBJDQk;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Kj7a6Pu5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 159529 seconds by postgrey-1.37 at boromir; Fri, 10 Jul 2026 19:21:11 AEST
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2a07:de40:b251:101:10:150:64:1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gxRCW5Nmsz2xlt
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 10 Jul 2026 19:21:11 +1000 (AEST)
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id D50E6766B2;
-	Fri, 10 Jul 2026 09:21:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1783675267; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=8qm83c1l0o6q3XoAGYoMaLAsZhnmYdvopXg5ZHUKvsU=;
-	b=dILxM/grMnkzT//PGjQgvRPzbTCyIqvBUwpem+/INy1OyOSXlBIsz9gqcx8MxRJrJ6EpZX
-	Cpig7crCihNg5sGQ7MQqhcSHYm1taht0DXodMMnHJ4Mb+/tkfV7+s15uwBCTIpFPuCs4Km
-	/5539L0LnwIhNbmOea8tBUeTeEyZvHk=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1783675267;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=8qm83c1l0o6q3XoAGYoMaLAsZhnmYdvopXg5ZHUKvsU=;
-	b=87sBJDQkU9r1dB9EiaLLEplnR13DEPh/Y9k4Hfy/3NsxtVESK1Yh4eBVWlPV4NslXUHVcs
-	iY9Tim/GeeXLNdBA==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b="dILxM/gr";
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=87sBJDQk
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1783675267; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=8qm83c1l0o6q3XoAGYoMaLAsZhnmYdvopXg5ZHUKvsU=;
-	b=dILxM/grMnkzT//PGjQgvRPzbTCyIqvBUwpem+/INy1OyOSXlBIsz9gqcx8MxRJrJ6EpZX
-	Cpig7crCihNg5sGQ7MQqhcSHYm1taht0DXodMMnHJ4Mb+/tkfV7+s15uwBCTIpFPuCs4Km
-	/5539L0LnwIhNbmOea8tBUeTeEyZvHk=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1783675267;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=8qm83c1l0o6q3XoAGYoMaLAsZhnmYdvopXg5ZHUKvsU=;
-	b=87sBJDQkU9r1dB9EiaLLEplnR13DEPh/Y9k4Hfy/3NsxtVESK1Yh4eBVWlPV4NslXUHVcs
-	iY9Tim/GeeXLNdBA==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 4649C779BD;
-	Fri, 10 Jul 2026 09:21:07 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id SMP0D4O5UGpRFQAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Fri, 10 Jul 2026 09:21:07 +0000
-Message-ID: <54ca357b-6069-4c04-b0c2-f1aca96dbd79@suse.de>
-Date: Fri, 10 Jul 2026 11:21:06 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gxfQ51MF0z308X
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 11 Jul 2026 03:46:04 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 331316182F
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 10 Jul 2026 17:46:02 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 08C6E1F00ADF
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 10 Jul 2026 17:46:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1783705562;
+	bh=KvBYP+wl2IjCxMaSVmX25pjv+NEzDq5zeL7bHnenBoI=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=Kj7a6Pu5eehgdCmmTI+vwhf9nbZJIqM/gmnHg3wk7GzSc/sIfh4SLBJdGeaTBEiDv
+	 b8rDzUGmQ/ofpb+jeVOCzO/AAJvsUlpTJmujo/sCcFYlSo5w1qI5V62txkfh20z4kl
+	 8oUrAnr7A+VpIdb3rMwkdCVuO7ctSV2dTRn501mKvbH8XS7Ebz3yLokZ6BfsTxc9Bm
+	 bPq4gjzedbjsGFpMYyyq3+099H0QssWs4bvFBBUd2pgnTSl5SQ1f1xtuAKGKw076b6
+	 m1YLoNVUzOAFOWsUsdRS6GJyVcxI8PKE6nSaCG5S2VX3Fwb/kc2mr1aHX9vD75TnB0
+	 Uq2zAgam/8dZQ==
+Received: by mail-lf1-f42.google.com with SMTP id 2adb3069b0e04-5b01cb18515so1014481e87.2
+        for <linux-aspeed@lists.ozlabs.org>; Fri, 10 Jul 2026 10:46:01 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RqeSrboSZqgJ6KrzJl4DN/MLSnGCBGPBdHZZxqchxhSqVC4emSgKYvnFuDU3rPkA4JdravpNoLGZPelc0U=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YziVe8ii0VyIqbKQKBIdt6emrV9TDP362hasKia45yPcV0ovVjC
+	KssbG+bD5ramgfEK20nxDbbDrsV8RBWBfFDxJ5SZvt4rl4+2clrVqmEdmzzc4o32oMxohjv3YAK
+	y8P/NxKQ+l6ft2J00uwhkAD2r8N2cn90=
+X-Received: by 2002:a05:6512:688f:10b0:5b0:12d6:4c05 with SMTP id
+ 2adb3069b0e04-5b02369c6e8mr17375e87.36.1783705559836; Fri, 10 Jul 2026
+ 10:45:59 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -103,331 +66,77 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 6/9] drm/gm12u320: replace struct drm_simple_display_pipe
- with regular atomic helpers
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: Ze Huang <ze.huang@oss.qualcomm.com>,
- Alexey Brodkin <abrodkin@synopsys.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, David Airlie <airlied@gmail.com>,
- Simona Vetter <simona@ffwll.ch>, Joel Stanley <joel@jms.id.au>,
- Andrew Jeffery <andrew@codeconstruct.com.au>, Frank Li <Frank.Li@nxp.com>,
- Sascha Hauer <s.hauer@pengutronix.de>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Fabio Estevam <festevam@gmail.com>, Linus Walleij <linusw@kernel.org>,
- Hans de Goede <hansg@kernel.org>, Alex Lanzano <lanzano.alex@gmail.com>,
- Oleksandr Andrushchenko <oleksandr_andrushchenko@epam.com>
-Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
- linux-aspeed@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- imx@lists.linux.dev, xen-devel@lists.xenproject.org
-References: <20260705-drm-simple-kms-removal-v1-0-b4e1ca053623@oss.qualcomm.com>
- <20260705-drm-simple-kms-removal-v1-6-b4e1ca053623@oss.qualcomm.com>
- <e69b3cf5-9a9f-46ca-abc8-68c1375ef6ca@suse.de>
-Content-Language: en-US
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <e69b3cf5-9a9f-46ca-abc8-68c1375ef6ca@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Rspamd-Action: no action
-X-Rspamd-Queue-Id: D50E6766B2
-X-Spamd-Result: default: False [-3.01 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	SUSPICIOUS_RECIPS(1.50)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FREEMAIL_TO(0.00)[oss.qualcomm.com,synopsys.com,linux.intel.com,kernel.org,gmail.com,ffwll.ch,jms.id.au,codeconstruct.com.au,nxp.com,pengutronix.de,epam.com];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	MIME_TRACE(0.00)[0:+];
-	ARC_NA(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com];
-	RCVD_TLS_ALL(0.00)[];
-	DKIM_TRACE(0.00)[suse.de:+];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[22];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b281:104:10:150:64:97:from,2a07:de40:b281:106:10:150:64:167:received];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	MID_RHS_MATCH_FROM(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	TAGGED_RCPT(0.00)[];
-	TO_DN_SOME(0.00)[]
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+References: <20260703193855.110619-1-mukesh.ojha@oss.qualcomm.com> <20260703193855.110619-11-mukesh.ojha@oss.qualcomm.com>
+In-Reply-To: <20260703193855.110619-11-mukesh.ojha@oss.qualcomm.com>
+From: Linus Walleij <linusw@kernel.org>
+Date: Fri, 10 Jul 2026 19:45:47 +0200
+X-Gmail-Original-Message-ID: <CAD++jLnUf6j8jPJogpuo4w55EHqgt7LChOQX5JY5h4n2VOf5nQ@mail.gmail.com>
+X-Gm-Features: AUfX_mz2mAY-nRqzEwN08-F9a7Mq7XiQwd_nI9Ppbf1sw-soYPlPLluIapY3fR0
+Message-ID: <CAD++jLnUf6j8jPJogpuo4w55EHqgt7LChOQX5JY5h4n2VOf5nQ@mail.gmail.com>
+Subject: Re: [PATCH 10/42] drm: pl111: Use devm_of_reserved_mem_device_init()
+To: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
+Cc: Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
+	Liviu Dudau <liviu.dudau@arm.com>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+	Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Joel Stanley <joel@jms.id.au>, 
+	Andrew Jeffery <andrew@codeconstruct.com.au>, Paul Cercueil <paul@crapouillou.net>, 
+	Anitha Chrisanthus <anitha.chrisanthus@intel.com>, Paul Kocialkowski <paulk@sys-base.io>, 
+	Chen-Yu Tsai <wens@kernel.org>, Jernej Skrabec <jernej.skrabec@gmail.com>, 
+	Samuel Holland <samuel@sholland.org>, Alexey Brodkin <abrodkin@synopsys.com>, 
+	Laurent Pinchart <laurent.pinchart@ideasonboard.com>, 
+	Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>, Michal Simek <michal.simek@amd.com>, 
+	Daniel Scally <dan.scally@ideasonboard.com>, Jacopo Mondi <jacopo.mondi@ideasonboard.com>, 
+	Mauro Carvalho Chehab <mchehab@kernel.org>, Eddie James <eajames@linux.ibm.com>, 
+	Tiffany Lin <tiffany.lin@mediatek.com>, Andrew-CT Chen <andrew-ct.chen@mediatek.com>, 
+	Yunfei Dong <yunfei.dong@mediatek.com>, Minghsiu Tsai <minghsiu.tsai@mediatek.com>, 
+	Houlong Wei <houlong.wei@mediatek.com>, Matthias Brugger <matthias.bgg@gmail.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Joseph Liu <kwliu@nuvoton.com>, 
+	Marvin Lin <kflin@nuvoton.com>, Dmitry Osipenko <dmitry.osipenko@collabora.com>, 
+	Krzysztof Kozlowski <krzk@kernel.org>, Thierry Reding <thierry.reding@kernel.org>, 
+	Jonathan Hunter <jonathanh@nvidia.com>, Srinivas Kandagatla <srini@kernel.org>, Arnd Bergmann <arnd@arndb.de>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ge Gordon <gordon.ge@bst.ai>, 
+	Adrian Hunter <adrian.hunter@intel.com>, Ulf Hansson <ulfh@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Saravana Kannan <saravanak@kernel.org>, Mathieu Poirier <mathieu.poirier@linaro.org>, 
+	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Shengjiu Wang <shengjiu.wang@gmail.com>, 
+	Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, 
+	Mark Brown <broonie@kernel.org>, Frank Li <Frank.Li@nxp.com>, 
+	Sascha Hauer <s.hauer@pengutronix.de>, Peter Ujfalusi <peter.ujfalusi@linux.intel.com>, 
+	Bard Liao <yung-chuan.liao@linux.intel.com>, Daniel Baluta <daniel.baluta@nxp.com>, 
+	Orson Zhai <orsonzhai@gmail.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, 
+	Peter Chen <peter.chen@cixtech.com>, Fugang Duan <fugang.duan@cixtech.com>, 
+	Ekansh Gupta <ekansh.gupta@oss.qualcomm.com>, 
+	BST Linux Kernel Upstream Group <bst-upstream@bstai.top>, Fabio Estevam <festevam@gmail.com>, 
+	Nicolin Chen <nicoleotsuka@gmail.com>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
+	Kai Vehmanen <kai.vehmanen@linux.intel.com>, 
+	Pierre-Louis Bossart <pierre-louis.bossart@linux.dev>, 
+	Vijendar Mukunda <Vijendar.Mukunda@amd.com>, Chunyan Zhang <zhang.lyra@gmail.com>, 
+	CIX Linux Kernel Upstream Group <cix-kernel-upstream@cixtech.com>, linux-arm-msm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	linux-aspeed@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
+	linux-mips@vger.kernel.org, linux-sunxi@lists.linux.dev, 
+	linux-media@vger.kernel.org, openbmc@lists.ozlabs.org, 
+	linux-mediatek@lists.infradead.org, kernel@collabora.com, 
+	linux-tegra@vger.kernel.org, linux-mmc@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-remoteproc@vger.kernel.org, 
+	linux-staging@lists.linux.dev, linux-sound@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, imx@lists.linux.dev, 
+	sound-open-firmware@alsa-project.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
+On Fri, Jul 3, 2026 at 9:43=E2=80=AFPM Mukesh Ojha <mukesh.ojha@oss.qualcom=
+m.com> wrote:
 
+> Switch to devm_of_reserved_mem_device_init() so the reserved memory
+> region is released automatically on probe failure or device removal.
+> Remove the explicit of_reserved_mem_device_release() calls in the
+> dev_put error path and pl111_amba_remove().
+>
+> Signed-off-by: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
 
-Am 10.07.26 um 11:09 schrieb Thomas Zimmermann:
-> Hi
->
-> Am 04.07.26 um 20:31 schrieb Ze Huang:
->> Convert gm12u320 to direct primary plane, CRTC and encoder setup.
->>
->> Keep shadow-plane helper state, framebuffer access helpers and
->> no-scaling plane-state check from simple-KMS path.
->>
->> Signed-off-by: Ze Huang <ze.huang@oss.qualcomm.com>
->
-> Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
->
-> And I also have this device. Works nicely with the patch
->
-> Tested-by: Thomas Zimmermann <tzimmermann@suse.de>
+Looks good to me:
+Reviewed-by: Linus Walleij <linusw@kernel.org>
 
-Well, see my reply to the Sashiko bot for possible problems.
-
->
->> ---
->>   drivers/gpu/drm/tiny/gm12u320.c | 128 
->> ++++++++++++++++++++++++++++++++--------
->>   1 file changed, 104 insertions(+), 24 deletions(-)
->>
->> diff --git a/drivers/gpu/drm/tiny/gm12u320.c 
->> b/drivers/gpu/drm/tiny/gm12u320.c
->> index d73dfebb4353..992160ea794d 100644
->> --- a/drivers/gpu/drm/tiny/gm12u320.c
->> +++ b/drivers/gpu/drm/tiny/gm12u320.c
->> @@ -8,6 +8,7 @@
->>   #include <linux/usb.h>
->>     #include <drm/clients/drm_client_setup.h>
->> +#include <drm/drm_atomic.h>
->>   #include <drm/drm_atomic_helper.h>
->>   #include <drm/drm_atomic_state_helper.h>
->>   #include <drm/drm_connector.h>
->> @@ -27,7 +28,6 @@
->>   #include <drm/drm_modeset_helper_vtables.h>
->>   #include <drm/drm_print.h>
->>   #include <drm/drm_probe_helper.h>
->> -#include <drm/drm_simple_kms_helper.h>
->>     static bool eco_mode;
->>   module_param(eco_mode, bool, 0644);
->> @@ -87,7 +87,9 @@ MODULE_PARM_DESC(eco_mode, "Turn on Eco mode (less 
->> bright, more silent)");
->>     struct gm12u320_device {
->>       struct drm_device             dev;
->> -    struct drm_simple_display_pipe   pipe;
->> +    struct drm_plane             plane;
->> +    struct drm_crtc                 crtc;
->> +    struct drm_encoder             encoder;
->>       struct drm_connector             conn;
->>       unsigned char                   *cmd_buf;
->>       unsigned char *data_buf[GM12U320_BLOCK_COUNT];
->> @@ -554,31 +556,33 @@ static int gm12u320_conn_init(struct 
->> gm12u320_device *gm12u320)
->>   }
->>     /* 
->> ------------------------------------------------------------------ */
->> -/* gm12u320 (simple) display pipe                      */
->> +/* gm12u320 display pipe                              */
->>   -static void gm12u320_pipe_enable(struct drm_simple_display_pipe 
->> *pipe,
->> -                 struct drm_crtc_state *crtc_state,
->> -                 struct drm_plane_state *plane_state)
->> +static void gm12u320_crtc_helper_atomic_enable(struct drm_crtc *crtc,
->> +                           struct drm_atomic_commit *commit)
->>   {
->>       struct drm_rect rect = { 0, 0, GM12U320_USER_WIDTH, 
->> GM12U320_HEIGHT };
->> -    struct gm12u320_device *gm12u320 = to_gm12u320(pipe->crtc.dev);
->> +    struct gm12u320_device *gm12u320 = to_gm12u320(crtc->dev);
->> +    struct drm_plane_state *plane_state = crtc->primary->state;
->>       struct drm_shadow_plane_state *shadow_plane_state = 
->> to_drm_shadow_plane_state(plane_state);
->>         gm12u320->fb_update.draw_status_timeout = FIRST_FRAME_TIMEOUT;
->>       gm12u320_fb_mark_dirty(plane_state->fb, 
->> &shadow_plane_state->data[0], &rect);
->>   }
->>   -static void gm12u320_pipe_disable(struct drm_simple_display_pipe 
->> *pipe)
->> +static void gm12u320_crtc_helper_atomic_disable(struct drm_crtc *crtc,
->> +                        struct drm_atomic_commit *commit)
->>   {
->> -    struct gm12u320_device *gm12u320 = to_gm12u320(pipe->crtc.dev);
->> +    struct gm12u320_device *gm12u320 = to_gm12u320(crtc->dev);
->>         gm12u320_stop_fb_update(gm12u320);
->>   }
->>   -static void gm12u320_pipe_update(struct drm_simple_display_pipe 
->> *pipe,
->> -                 struct drm_plane_state *old_state)
->> +static void gm12u320_plane_helper_atomic_update(struct drm_plane 
->> *plane,
->> +                        struct drm_atomic_commit *commit)
->>   {
->> -    struct drm_plane_state *state = pipe->plane.state;
->> +    struct drm_plane_state *old_state = 
->> drm_atomic_get_old_plane_state(commit, plane);
->> +    struct drm_plane_state *state = plane->state;
->>       struct drm_shadow_plane_state *shadow_plane_state = 
->> to_drm_shadow_plane_state(state);
->>       struct drm_rect rect;
->>   @@ -586,11 +590,71 @@ static void gm12u320_pipe_update(struct 
->> drm_simple_display_pipe *pipe,
->>           gm12u320_fb_mark_dirty(state->fb, 
->> &shadow_plane_state->data[0], &rect);
->>   }
->>   -static const struct drm_simple_display_pipe_funcs 
->> gm12u320_pipe_funcs = {
->> -    .enable        = gm12u320_pipe_enable,
->> -    .disable    = gm12u320_pipe_disable,
->> -    .update        = gm12u320_pipe_update,
->> -    DRM_GEM_SIMPLE_DISPLAY_PIPE_SHADOW_PLANE_FUNCS,
->> +static const struct drm_plane_funcs gm12u320_plane_funcs = {
->> +    .update_plane    = drm_atomic_helper_update_plane,
->> +    .disable_plane    = drm_atomic_helper_disable_plane,
->> +    .destroy    = drm_plane_cleanup,
->> +    DRM_GEM_SHADOW_PLANE_FUNCS,
->> +};
->> +
->> +static int gm12u320_plane_helper_atomic_check(struct drm_plane *plane,
->> +                          struct drm_atomic_commit *state)
->> +{
->> +    struct drm_plane_state *plane_state = 
->> drm_atomic_get_new_plane_state(state, plane);
->> +    struct drm_crtc *crtc = plane_state->crtc;
->> +    struct drm_crtc_state *crtc_state = NULL;
->> +    int ret;
->> +
->> +    if (crtc)
->> +        crtc_state = drm_atomic_get_new_crtc_state(state, crtc);
->> +
->> +    ret = drm_atomic_helper_check_plane_state(plane_state, crtc_state,
->> +                          DRM_PLANE_NO_SCALING,
->> +                          DRM_PLANE_NO_SCALING,
->> +                          false, false);
->> +    return ret;
->
-> Interestingly, this patch handled _check_plane_state() correctly.
->
-> Best regards
-> Thomas
->
->> +}
->> +
->> +static const struct drm_plane_helper_funcs 
->> gm12u320_plane_helper_funcs = {
->> +    DRM_GEM_SHADOW_PLANE_HELPER_FUNCS,
->> +    .atomic_check    = gm12u320_plane_helper_atomic_check,
->> +    .atomic_update    = gm12u320_plane_helper_atomic_update,
->> +};
->> +
->> +static int gm12u320_crtc_helper_atomic_check(struct drm_crtc *crtc,
->> +                         struct drm_atomic_commit *state)
->> +{
->> +    struct drm_crtc_state *crtc_state = 
->> drm_atomic_get_new_crtc_state(state, crtc);
->> +    int ret;
->> +
->> +    if (!crtc_state->enable)
->> +        goto out;
->> +
->> +    ret = drm_atomic_helper_check_crtc_primary_plane(crtc_state);
->> +    if (ret)
->> +        return ret;
->> +
->> +out:
->> +    return drm_atomic_add_affected_planes(state, crtc);
->> +}
->> +
->> +static const struct drm_crtc_helper_funcs gm12u320_crtc_helper_funcs 
->> = {
->> +    .atomic_check    = gm12u320_crtc_helper_atomic_check,
->> +    .atomic_enable    = gm12u320_crtc_helper_atomic_enable,
->> +    .atomic_disable    = gm12u320_crtc_helper_atomic_disable,
->> +};
->> +
->> +static const struct drm_crtc_funcs gm12u320_crtc_funcs = {
->> +    .set_config        = drm_atomic_helper_set_config,
->> +    .page_flip        = drm_atomic_helper_page_flip,
->> +    .reset            = drm_atomic_helper_crtc_reset,
->> +    .destroy        = drm_crtc_cleanup,
->> +    .atomic_duplicate_state    = 
->> drm_atomic_helper_crtc_duplicate_state,
->> +    .atomic_destroy_state    = drm_atomic_helper_crtc_destroy_state,
->> +};
->> +
->> +static const struct drm_encoder_funcs gm12u320_encoder_funcs = {
->> +    .destroy = drm_encoder_cleanup,
->>   };
->>     static const uint32_t gm12u320_pipe_formats[] = {
->> @@ -677,13 +741,29 @@ static int gm12u320_usb_probe(struct 
->> usb_interface *interface,
->>       if (ret)
->>           return ret;
->>   -    ret = drm_simple_display_pipe_init(&gm12u320->dev,
->> -                       &gm12u320->pipe,
->> -                       &gm12u320_pipe_funcs,
->> -                       gm12u320_pipe_formats,
->> -                       ARRAY_SIZE(gm12u320_pipe_formats),
->> -                       gm12u320_pipe_modifiers,
->> -                       &gm12u320->conn);
->> +    ret = drm_universal_plane_init(dev, &gm12u320->plane, 0,
->> +                       &gm12u320_plane_funcs,
->> +                       gm12u320_pipe_formats,
->> +                       ARRAY_SIZE(gm12u320_pipe_formats),
->> +                       gm12u320_pipe_modifiers,
->> +                       DRM_PLANE_TYPE_PRIMARY, NULL);
->> +    if (ret)
->> +        return ret;
->> +    drm_plane_helper_add(&gm12u320->plane, 
->> &gm12u320_plane_helper_funcs);
->> +
->> +    ret = drm_crtc_init_with_planes(dev, &gm12u320->crtc, 
->> &gm12u320->plane, NULL,
->> +                    &gm12u320_crtc_funcs, NULL);
->> +    if (ret)
->> +        return ret;
->> +    drm_crtc_helper_add(&gm12u320->crtc, &gm12u320_crtc_helper_funcs);
->> +
->> +    ret = drm_encoder_init(dev, &gm12u320->encoder, 
->> &gm12u320_encoder_funcs,
->> +                   DRM_MODE_ENCODER_NONE, NULL);
->> +    if (ret)
->> +        return ret;
->> +    gm12u320->encoder.possible_crtcs = drm_crtc_mask(&gm12u320->crtc);
->> +
->> +    ret = drm_connector_attach_encoder(&gm12u320->conn, 
->> &gm12u320->encoder);
->>       if (ret)
->>           return ret;
->>
->
-
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Jochen Jaser, Andrew McDonald, (HRB 36809, AG Nürnberg)
-
-
+Yours,
+Linus Walleij
 
