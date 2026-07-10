@@ -1,58 +1,90 @@
-Return-Path: <linux-aspeed+bounces-4457-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4458-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 202E0C43458
-	for <linux-aspeed@archiver.kernel.org>; Sun, 12 Jul 2026 00:54:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6EE03C43458
+	for <linux-aspeed@archiver.kernel.org>; Sun, 12 Jul 2026 00:55:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gyRsg1xbKz2yYY;
-	Sun, 12 Jul 2026 10:54:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783705566;
-	cv=none; b=dUw3Uj6wZGtcECS5Nq1QFrIW2LtadRfvxz5U5/XzixB6wPULv+cuhYwgF6srhJEOu4Ca+1/a3Xj6cuJWM0SY6v0K74uvOhoqGIay2mVoYjQRTje+mS9ktBHiUO5QLsjN0n40AN6czxM4RrAtYxydbJLOyROqrHWGWhfa9DDrBmltbUC1R1+ZFs5ajd3eVZ9szp38tVm4/V8kfWoYERQOYjITxy/by00s7BAOYQVsYzWHEOhAngCV/ROdB3zijZB9DJq6kA8mufp8yWwone/PL31oxe2Grz7efjn9xMASJeZ2onZ2ZG06tkDCUry/rfV1G/RObzCi0F59OUNXrVws5g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gyRtj6fPGz2yVv;
+	Sun, 12 Jul 2026 10:55:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1031"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783681663;
+	cv=none; b=IHUgJjLGowbqbuaW0Zi7EV9KjuKk6AJcF8XU/U5wPthhFMXY7Or2VEYHr/fAgOksS7aTRP36FUPy1WWmowzfQcSL9VLGYtT1CyKoBtBh+uOEotQpFtC/0SXZTypU5h3gKsWk2tARqz2enK+dQCdBG1fj/NL9H4qru1oKmMp5mwixtbUq/yM6oWD/Xcytv/K+mkDvtMz1xrEbny/yUR+aXQP2uEoBQ0hFFo4Mg+I2zBof3ACeJ7cl60gZbgyVTmNuFwYhrxbfU7T22OdHUMmQWAc/EvELMdVDL3Qs5xMmZy5yfPZUFkUY15OTEPAcP13pb7CBZTiZVC8gMBfN8rKc/w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783705566; c=relaxed/relaxed;
-	bh=KvBYP+wl2IjCxMaSVmX25pjv+NEzDq5zeL7bHnenBoI=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=i8KUsUuEFybibCUGh4gLEqYC/SBGdxsI4TUuedcTwqJ/KVvWnbs1UfY+zMgMQnBpdP7S8OtmqItrn+D9hEQW9i/tM8FzbEbJ8V9TyT5Nut6LKTpWkKOQEluo2Jkys2rExNm5kXM1JQwiVPNY8nZu4QuC7sRFj30ezgnEf1FNhY08nwVnwxVPk3KLgkXY1tFtVNB+nZ2pFA9ISrTLK1zAIowTJpo4UI+R5E4J9Vs6R2n9GKfW9qQd12UC1TXWm/3USa2mxY9rUZDnzJPPhjBWl80ygcKeWZ5iuS3iqbzDEi2/daseIXeCUwDHrE8089ophdMmS67Fod3divo7ECi5SA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Kj7a6Pu5; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1783681663; c=relaxed/relaxed;
+	bh=QMK3eVT0/oAQlr0eGKAyS3VOV21a/B1AmoQDrAJ9a3s=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=oZWzipEszOTGImaaCpLI0pxJG2xpEnPeWn0/BtTZsvTHA+UExVkaaLpZxQ79WsorChA0k9mpjCtRkjoi7LxwA3HXZ7+ZA4EvhhKr1sqHvIOWMx5kMFvdhFW6aJXo9FhrQbN5PspukzOLe7rDrs93EX4w8ItEzWXS/OGed32vDJbElT+h5oNTeIkxRUm+PaebywhwCCn2vw17jU7hc+yAqKJ6f0TP4osR3O9mGoNFau6+h8ZJnF1yHWXvOxzd339uaeuKdXFv9cAnH4MmAIoq2qgbwAuO2uSQ8+Wq82tt4FbMaNIHjSXh++xCplmqRk9lROSNG9UJpPU16mkE3At1vQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=kV4m75yN; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1031; helo=mail-pj1-x1031.google.com; envelope-from=ahmisaranrao@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Kj7a6Pu5;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=kV4m75yN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1031; helo=mail-pj1-x1031.google.com; envelope-from=ahmisaranrao@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1031.google.com (mail-pj1-x1031.google.com [IPv6:2607:f8b0:4864:20::1031])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gxfQ51MF0z308X
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 11 Jul 2026 03:46:04 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 331316182F
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 10 Jul 2026 17:46:02 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 08C6E1F00ADF
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 10 Jul 2026 17:46:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1783705562;
-	bh=KvBYP+wl2IjCxMaSVmX25pjv+NEzDq5zeL7bHnenBoI=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=Kj7a6Pu5eehgdCmmTI+vwhf9nbZJIqM/gmnHg3wk7GzSc/sIfh4SLBJdGeaTBEiDv
-	 b8rDzUGmQ/ofpb+jeVOCzO/AAJvsUlpTJmujo/sCcFYlSo5w1qI5V62txkfh20z4kl
-	 8oUrAnr7A+VpIdb3rMwkdCVuO7ctSV2dTRn501mKvbH8XS7Ebz3yLokZ6BfsTxc9Bm
-	 bPq4gjzedbjsGFpMYyyq3+099H0QssWs4bvFBBUd2pgnTSl5SQ1f1xtuAKGKw076b6
-	 m1YLoNVUzOAFOWsUsdRS6GJyVcxI8PKE6nSaCG5S2VX3Fwb/kc2mr1aHX9vD75TnB0
-	 Uq2zAgam/8dZQ==
-Received: by mail-lf1-f42.google.com with SMTP id 2adb3069b0e04-5b01cb18515so1014481e87.2
-        for <linux-aspeed@lists.ozlabs.org>; Fri, 10 Jul 2026 10:46:01 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RqeSrboSZqgJ6KrzJl4DN/MLSnGCBGPBdHZZxqchxhSqVC4emSgKYvnFuDU3rPkA4JdravpNoLGZPelc0U=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YziVe8ii0VyIqbKQKBIdt6emrV9TDP362hasKia45yPcV0ovVjC
-	KssbG+bD5ramgfEK20nxDbbDrsV8RBWBfFDxJ5SZvt4rl4+2clrVqmEdmzzc4o32oMxohjv3YAK
-	y8P/NxKQ+l6ft2J00uwhkAD2r8N2cn90=
-X-Received: by 2002:a05:6512:688f:10b0:5b0:12d6:4c05 with SMTP id
- 2adb3069b0e04-5b02369c6e8mr17375e87.36.1783705559836; Fri, 10 Jul 2026
- 10:45:59 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gxTZQ1jrnz2yS4
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 10 Jul 2026 21:07:41 +1000 (AEST)
+Received: by mail-pj1-x1031.google.com with SMTP id 98e67ed59e1d1-381018b9375so1024523a91.0
+        for <linux-aspeed@lists.ozlabs.org>; Fri, 10 Jul 2026 04:07:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1783681659; x=1784286459; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=QMK3eVT0/oAQlr0eGKAyS3VOV21a/B1AmoQDrAJ9a3s=;
+        b=kV4m75yNMNUXKP2yRb9jNqyK6zEDQG77X16S7wrtKZ1nk+ZoPMb4w5WBUG1gE26bZI
+         l6qylM8II7kY5vfaeGhhNvvTr9fGpIbzpwI6hLcfCdrPJFESoxJMhwFfBaSjiLzWkjDc
+         rI9x9149YmusW4cikroj3NJe5DgKj2FCLqFWinlLX56iG/HNNab7Xw4iMnVJTxyfnb+2
+         swJie4Z8eBJ7SDANU3i0uc8EFo+nPmjmy9v6I9hDRmZfp0s2I4TUnjuswIbnF2u6SJh+
+         NOoQGkWHlRfANr8qar2w7cHVXbsoutiibTVO8FhKzQ1er04YAEcAJwrdo9CTYy9IDiRw
+         TuZQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783681659; x=1784286459;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=QMK3eVT0/oAQlr0eGKAyS3VOV21a/B1AmoQDrAJ9a3s=;
+        b=IFhD3Vl+V3q6GZwwKcToq8hf1H9sdDrD+emZjGd4zi01tYtjcXLU8g6CWigw5X4FMe
+         c0Q3Ib5SurV7oDbMBT6EaW6bIG+0coLG6X/kBP9/qsBQERLtCBwA/uaOmXYGLb7usw5T
+         /fDULsZAf4kace/7RhjyRWEMnUtBcXJFjFl9CkG0U+SxW9QiSsrhEOkrT3Wzr98SyiF5
+         LMQP6GzhvMmhVr+wlfITn+lcHT6LxPk7NZCKgc6AUYwT8gvOYhL+PTxTTjiGI+lYdDgr
+         gKM9hBsrGh/7UJWprcdjplh/ftSS6RClD/vsHb2OB45USniq26pqVjgx+RD/CyOp1+m2
+         Ntfw==
+X-Forwarded-Encrypted: i=1; AHgh+RoyhAo/ajBGP0GSh1E1f19wGM46Yqc4vlmM/coqStNNXEDPtApxoJl3vDPNf6onAQqnJe7qI6kPVaJCMes=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yw8+m/gaYbNYMZ5Js28hK8LRkgfgq6cVPtaR2Wh5fHqJTr/8Z7p
+	rpPs2LeH8jJ7J7AIjl1ozkARccU++0a7Ayk8PLAmvvk/XJh0+lQ/swui
+X-Gm-Gg: AfdE7clCql7MfjwrY9jZApXmrrQ5ufWSUIO3p4vZW3fcAMjAkZ7KHTLN+632o7i23Lj
+	3+uvGOtBAsMPpbr3pTCmv3STHfOG9XKdMmlexkSM6ibFKzxB6OLdKXwXSJJWoABuAPasmAzRbv/
+	4BZm1AYNz23CGFisDuGTimM1oLURQxXOWZKGuQGs5kNgx4sdawXMyn0RRn3Nk1YZoWwnW5AcgGT
+	ZBxlxqelt1aUgBjZNuHt5Exs9IdhplUUE+8jQsj3/AoORjN5B9fkQZkDUQW+lMKfhyJa7OR8cK2
+	/YkE3IYkqcnZEM5PEwWZbg0xTQrhZZZ17q1Nsg7HM8ubUz5+/6zaTzWO1wFSAomkCPoUNFN9l+p
+	BYDP+g3RBQwqjsUvUrJwldnlDH9kngtCZTh1cw8QhOIB53+/gNGxqql4nV3oNV/lDj2eHQFyp9f
+	f0BaTwGkFSw9gHNSOtCjF7zJpxfLg=
+X-Received: by 2002:a17:90b:564f:b0:37f:d6d5:8e8c with SMTP id 98e67ed59e1d1-3893d91fed4mr10524502a91.0.1783681659012;
+        Fri, 10 Jul 2026 04:07:39 -0700 (PDT)
+Received: from ahmi-PC.. ([2401:4900:88f4:a225:f83:5ab4:33ab:8313])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-311838c9235sm35061109eec.21.2026.07.10.04.07.34
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 10 Jul 2026 04:07:38 -0700 (PDT)
+From: Narasimharao Vadlamudi <ahmisaranrao@gmail.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>,
+	"David S . Miller" <davem@davemloft.net>
+Cc: Neal Liu <neal_liu@aspeedtech.com>,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	YueHaibing <yuehaibing@huawei.com>,
+	linux-aspeed@lists.ozlabs.org,
+	linux-crypto@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	Narasimharao Vadlamudi <ahmisaranrao@gmail.com>
+Subject: [PATCH] crypto: aspeed: Propagate platform_get_irq() errors
+Date: Fri, 10 Jul 2026 16:37:29 +0530
+Message-ID: <20260710110729.224090-1-ahmisaranrao@gmail.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -66,77 +98,50 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260703193855.110619-1-mukesh.ojha@oss.qualcomm.com> <20260703193855.110619-11-mukesh.ojha@oss.qualcomm.com>
-In-Reply-To: <20260703193855.110619-11-mukesh.ojha@oss.qualcomm.com>
-From: Linus Walleij <linusw@kernel.org>
-Date: Fri, 10 Jul 2026 19:45:47 +0200
-X-Gmail-Original-Message-ID: <CAD++jLnUf6j8jPJogpuo4w55EHqgt7LChOQX5JY5h4n2VOf5nQ@mail.gmail.com>
-X-Gm-Features: AUfX_mz2mAY-nRqzEwN08-F9a7Mq7XiQwd_nI9Ppbf1sw-soYPlPLluIapY3fR0
-Message-ID: <CAD++jLnUf6j8jPJogpuo4w55EHqgt7LChOQX5JY5h4n2VOf5nQ@mail.gmail.com>
-Subject: Re: [PATCH 10/42] drm: pl111: Use devm_of_reserved_mem_device_init()
-To: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
-Cc: Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
-	Liviu Dudau <liviu.dudau@arm.com>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
-	Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Joel Stanley <joel@jms.id.au>, 
-	Andrew Jeffery <andrew@codeconstruct.com.au>, Paul Cercueil <paul@crapouillou.net>, 
-	Anitha Chrisanthus <anitha.chrisanthus@intel.com>, Paul Kocialkowski <paulk@sys-base.io>, 
-	Chen-Yu Tsai <wens@kernel.org>, Jernej Skrabec <jernej.skrabec@gmail.com>, 
-	Samuel Holland <samuel@sholland.org>, Alexey Brodkin <abrodkin@synopsys.com>, 
-	Laurent Pinchart <laurent.pinchart@ideasonboard.com>, 
-	Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>, Michal Simek <michal.simek@amd.com>, 
-	Daniel Scally <dan.scally@ideasonboard.com>, Jacopo Mondi <jacopo.mondi@ideasonboard.com>, 
-	Mauro Carvalho Chehab <mchehab@kernel.org>, Eddie James <eajames@linux.ibm.com>, 
-	Tiffany Lin <tiffany.lin@mediatek.com>, Andrew-CT Chen <andrew-ct.chen@mediatek.com>, 
-	Yunfei Dong <yunfei.dong@mediatek.com>, Minghsiu Tsai <minghsiu.tsai@mediatek.com>, 
-	Houlong Wei <houlong.wei@mediatek.com>, Matthias Brugger <matthias.bgg@gmail.com>, 
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Joseph Liu <kwliu@nuvoton.com>, 
-	Marvin Lin <kflin@nuvoton.com>, Dmitry Osipenko <dmitry.osipenko@collabora.com>, 
-	Krzysztof Kozlowski <krzk@kernel.org>, Thierry Reding <thierry.reding@kernel.org>, 
-	Jonathan Hunter <jonathanh@nvidia.com>, Srinivas Kandagatla <srini@kernel.org>, Arnd Bergmann <arnd@arndb.de>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ge Gordon <gordon.ge@bst.ai>, 
-	Adrian Hunter <adrian.hunter@intel.com>, Ulf Hansson <ulfh@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Saravana Kannan <saravanak@kernel.org>, Mathieu Poirier <mathieu.poirier@linaro.org>, 
-	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Shengjiu Wang <shengjiu.wang@gmail.com>, 
-	Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, 
-	Mark Brown <broonie@kernel.org>, Frank Li <Frank.Li@nxp.com>, 
-	Sascha Hauer <s.hauer@pengutronix.de>, Peter Ujfalusi <peter.ujfalusi@linux.intel.com>, 
-	Bard Liao <yung-chuan.liao@linux.intel.com>, Daniel Baluta <daniel.baluta@nxp.com>, 
-	Orson Zhai <orsonzhai@gmail.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, 
-	Peter Chen <peter.chen@cixtech.com>, Fugang Duan <fugang.duan@cixtech.com>, 
-	Ekansh Gupta <ekansh.gupta@oss.qualcomm.com>, 
-	BST Linux Kernel Upstream Group <bst-upstream@bstai.top>, Fabio Estevam <festevam@gmail.com>, 
-	Nicolin Chen <nicoleotsuka@gmail.com>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
-	Kai Vehmanen <kai.vehmanen@linux.intel.com>, 
-	Pierre-Louis Bossart <pierre-louis.bossart@linux.dev>, 
-	Vijendar Mukunda <Vijendar.Mukunda@amd.com>, Chunyan Zhang <zhang.lyra@gmail.com>, 
-	CIX Linux Kernel Upstream Group <cix-kernel-upstream@cixtech.com>, linux-arm-msm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-	linux-aspeed@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
-	linux-mips@vger.kernel.org, linux-sunxi@lists.linux.dev, 
-	linux-media@vger.kernel.org, openbmc@lists.ozlabs.org, 
-	linux-mediatek@lists.infradead.org, kernel@collabora.com, 
-	linux-tegra@vger.kernel.org, linux-mmc@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-remoteproc@vger.kernel.org, 
-	linux-staging@lists.linux.dev, linux-sound@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, imx@lists.linux.dev, 
-	sound-open-firmware@alsa-project.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Fri, Jul 3, 2026 at 9:43=E2=80=AFPM Mukesh Ojha <mukesh.ojha@oss.qualcom=
-m.com> wrote:
+platform_get_irq() returns a positive IRQ number on success and a negative
+error code on failure. aspeed_acry_probe() and aspeed_hace_probe()
+already detect negative returns, but both convert every failure to -ENXIO.
 
-> Switch to devm_of_reserved_mem_device_init() so the reserved memory
-> region is released automatically on probe failure or device removal.
-> Remove the explicit of_reserved_mem_device_release() calls in the
-> dev_put error path and pl111_amba_remove().
->
-> Signed-off-by: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
+Return the original error code so callers can handle errors such as
+-EPROBE_DEFER correctly.
 
-Looks good to me:
-Reviewed-by: Linus Walleij <linusw@kernel.org>
+Fixes: 2f1cf4e50c95 ("crypto: aspeed - Add ACRY RSA driver")
+Fixes: 70513e1d6559 ("crypto: aspeed - Fix check for platform_get_irq() errors")
+Signed-off-by: Narasimharao Vadlamudi <ahmisaranrao@gmail.com>
+---
+ drivers/crypto/aspeed/aspeed-acry.c | 2 +-
+ drivers/crypto/aspeed/aspeed-hace.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Yours,
-Linus Walleij
+diff --git a/drivers/crypto/aspeed/aspeed-acry.c b/drivers/crypto/aspeed/aspeed-acry.c
+index 5993bcba9716..301612556a76 100644
+--- a/drivers/crypto/aspeed/aspeed-acry.c
++++ b/drivers/crypto/aspeed/aspeed-acry.c
+@@ -728,7 +728,7 @@ static int aspeed_acry_probe(struct platform_device *pdev)
+ 	/* Get irq number and register it */
+ 	acry_dev->irq = platform_get_irq(pdev, 0);
+ 	if (acry_dev->irq < 0)
+-		return -ENXIO;
++		return acry_dev->irq;
+ 
+ 	rc = devm_request_irq(dev, acry_dev->irq, aspeed_acry_irq, 0,
+ 			      dev_name(dev), acry_dev);
+diff --git a/drivers/crypto/aspeed/aspeed-hace.c b/drivers/crypto/aspeed/aspeed-hace.c
+index 3fe644bfe037..1f9afa002ae8 100644
+--- a/drivers/crypto/aspeed/aspeed-hace.c
++++ b/drivers/crypto/aspeed/aspeed-hace.c
+@@ -127,7 +127,7 @@ static int aspeed_hace_probe(struct platform_device *pdev)
+ 	/* Get irq number and register it */
+ 	hace_dev->irq = platform_get_irq(pdev, 0);
+ 	if (hace_dev->irq < 0)
+-		return -ENXIO;
++		return hace_dev->irq;
+ 
+ 	rc = devm_request_irq(&pdev->dev, hace_dev->irq, aspeed_hace_irq, 0,
+ 			      dev_name(&pdev->dev), hace_dev);
+-- 
+2.43.0
+
 
