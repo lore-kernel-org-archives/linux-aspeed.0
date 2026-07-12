@@ -1,142 +1,91 @@
-Return-Path: <linux-aspeed+bounces-4484-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4485-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 92B85C44508
-	for <linux-aspeed@archiver.kernel.org>; Wed, 15 Jul 2026 07:38:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4AF13C44508
+	for <linux-aspeed@archiver.kernel.org>; Wed, 15 Jul 2026 07:39:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h0Shz0pdsz304x;
-	Wed, 15 Jul 2026 17:38:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c406::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783920885;
-	cv=pass; b=mOmls5CImofnze22ln3zZtNtwaTri5DiNDROSEGlj1NxVXSwMbNQigxXEZTCKILcxu7g96K9cqCbzwoGiAH0aSjnB+SVktXmyLb6Li+ZOj87AvBHHvmB2+Eq0l2jZDPBR9l7Srr0edRy/XFn0WaOasuYQS/6vxeR6vn8xqnQAn0o0XT4L/PiYsn9eYgpkb0Ba+VhhenwEee22ubp3GpGNwzyPzrtAz7dM85ZhGCGuAK2UK1+g9oQznBQmv1bLkK7Hdlpdonh0OYvDSp/d0mo3UgDQjyhwePwH0Fryhd4zSnonNx/IiYs6/nHPQPlLp9JUWqDac6YndZnINzH4E0bZw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783920885; c=relaxed/relaxed;
-	bh=UuXYe5HvREAo9l6/5lOOmQOiQhAErjxuKKwZDIpGJ9c=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=Q0Bv88Lo6INoUFF20K89+eo9WYClfFuqPZbINEA/31zZu9RyiKGCzyNWuDgR0gfptTMH4XlSLTJELOxXIkFaKZWELAfIA2HQMlgwn84xR1vyV6rfB6ntKl/fGNFFTxvs4g4aCk06KxEBBaR3CS5JdxU2C6sYwqRvsXzvJLDGVL8qs3tLrGrtZKdnhVjNOKPJiZD2J9EdjSSw3E6Trw8nBsEx7Z62jI2uDpWUbtNzbtNL3m1ERD96NFSoMOxYao/pn41FDiOTYPLUTeU3Zdp4lPLW9SjwW8LGWW3sf5x7HqnqPgFdppWq7vA9grA1V+7Jb/biGpUPnOmWJbmrap52cw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=h3SX35bd; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c406::3; helo=os8pr02cu002.outbound.protection.outlook.com; envelope-from=yc_hsieh@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h0Sk55y5Mz304x;
+	Wed, 15 Jul 2026 17:39:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783872270;
+	cv=none; b=ds5vLEOiS2iVxMp+7RWn1am2KpDmw1NAAliH/TnMTveLN44QWVq3RxsxIiPceCs8JkhhXbwYc0A7QM0ID3yJkU/a8H1O3wa5OGzPXr7iG5YsBFiehBgeI+op9gwkUwz3h/dOYH2bOpmBNrUM1RHx3rqP3s6dDUzywV6W51ZdC4asZyw4dBuDjS6aHLkieEZN0gS+qOj6uKOMwo8UIZa8BuKIeYGlvVoTT6oIwPgD9IaH0JJ0nL+Cq0DRVCPyT1RIoth6HlkuBsBDcPfB+1KQZKlfJYnxQXBbmtbqUlPBryjvWGjMr4S+BhR2y9LoEZ+4WaFQK/L1Pc2LvAo3rmCOfg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1783872270; c=relaxed/relaxed;
+	bh=k7WWDimv3b4NdwES6tpNCGufjtNL62BZYyk5PVukc5o=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=QJx7gSL6h7r/zLTH1QYP6f5DN978EmYmTyOEpVrouQuKHNnOQ1IKxuqJL9qcaZ7KZENhKPU1jsXFU8aAHT2JMAmgivBdjoCMFXS14hJZqQ6X88pNT0oKohEennOvXi/c3iWv+4XUIbKvwhIOrSHd+Fzd+vb0y4EdWdfEBkzlsw5Ni8SGEANApEAI56z6AfAqW7zzOYir8pj9GJeBhkHqxJh3OqSESs+CGyg4+7gVPHaf8c7ou80PTgtcTpAe/SGBIG9RtUdXFh+PyymzBntV09G4wkEXYmADU0uDTA0Jc8+AZlPj+y0jNCekeaOUmET2DVDCA5TN+Ihtk0S0gq6w5Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=b97641US; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32c; helo=mail-wm1-x32c.google.com; envelope-from=kmehltretter@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=h3SX35bd;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=b97641US;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:c406::3; helo=os8pr02cu002.outbound.protection.outlook.com; envelope-from=yc_hsieh@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from OS8PR02CU002.outbound.protection.outlook.com (mail-japanwestazlp170120003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c406::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::32c; helo=mail-wm1-x32c.google.com; envelope-from=kmehltretter@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x32c.google.com (mail-wm1-x32c.google.com [IPv6:2a00:1450:4864:20::32c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzB2p5pgYz2xqM
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 13 Jul 2026 15:34:42 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=tsYCVCJIl0hUDyoJJbKueHCXjxUC/7+xR7CIbPy3Ctqip9QSi36mz6OfsSI+joxoE5SSN8GAo+6rgc6YZRTuyC6AzDJxBOG8Y0V+WUJ4d7tgLbF6KqQJZPCRLuk/yoGuuzf5wqpKh4b6OBfg5C2qvCi28uVLB1mc7BwSuNjH1CAdDV1MyGXNcGnoJBOV+2sRt6bmUrpGq5UieH4iJxKO4tbuFLPtIhNSL74UaoGBPQWrO6vJllJaYw5AHycTtQMqOYL4EGnntZ4vHeNhOSCl3uoETBbEdeAwzggVlpox/mrgCqXY2aagfKVrw3jdYOkgARIdb54Qs6brmOVPveX3kA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=UuXYe5HvREAo9l6/5lOOmQOiQhAErjxuKKwZDIpGJ9c=;
- b=NZvVms6vyF/PGtf2mxGFsFZdtttBDNMz6oV8zrVf8WUMnyxpo0RiT/ChFR9egFgWyj9x1oZxxXX0ka/UGDtdWq1LOM0SYMGDgJqIcfNFpPBqgCKWqx1J2NW9OWGoW0qbwZFBiMy8/zRTKIpbHUWppE1Y5DqHuZatCdNnlNBaTpFYjeEmvM2tTDPcCLvEOo6fcoxI+LtSLlqHvJFVL/Ek6jjE0XnlX6+5MCc8tYMuE3q7K6rD1WaOKBz8hsmtl9IRz/mu3LMMWm5x5jKWLsdYKmJv/wdHrJmTaoHGv77HMKBdD/Rn9JEl87qnW9vgfNoMYTG0+VdBfa0nFQcBKBcPuQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
- header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=UuXYe5HvREAo9l6/5lOOmQOiQhAErjxuKKwZDIpGJ9c=;
- b=h3SX35bdnY3ccCMUio+pgwREc+P1cDWdsSS5UrNA95jPVoPUiNUf0xbkgq1l2ubBAK5YfVtGelLJkPExmuuFn6c5Oav0tKs799iqgZM4J9UOzvkUmJspv8OR+Vc7ChggQKr24DPBxkWbeVKGrwJW6iB+m1fVkx3C8+Sq6NXujMDU8sDyD1A35QcKh8PkJnA8aG+l5LivC0/c7g83QL/3SmXQ1CLIQB5XzQmDwZdCgSB0s4ji4eUxFqzdiM1DTbp3+YFaS7LGwd6T3We6KdDXrOP0/s+FnFzm1pGWLmlspsBJ5rbciycIwAJWoE/eNbPFeZ6QmzQqOZArTfmOIHL1Lw==
-Received: from TY0PR06MB6855.apcprd06.prod.outlook.com (2603:1096:405:13::10)
- by SEZPR06MB5713.apcprd06.prod.outlook.com (2603:1096:101:9d::9) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.202.18; Mon, 13 Jul
- 2026 05:34:16 +0000
-Received: from TY0PR06MB6855.apcprd06.prod.outlook.com
- ([fe80::9405:99c0:aadd:7e05]) by TY0PR06MB6855.apcprd06.prod.outlook.com
- ([fe80::9405:99c0:aadd:7e05%6]) with mapi id 15.21.0181.017; Mon, 13 Jul 2026
- 05:34:16 +0000
-From: YC Hsieh <yc_hsieh@aspeedtech.com>
-To: Krzysztof Kozlowski <krzk@kernel.org>, Corey Minyard <corey@minyard.net>,
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, Andrew
- Jeffery <andrew@codeconstruct.com.au>
-CC: "openipmi-developer@lists.sourceforge.net"
-	<openipmi-developer@lists.sourceforge.net>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org"
-	<devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
-	<linux-aspeed@lists.ozlabs.org>
-Subject:
- =?big5?B?pl7C0DogW1BBVENIIDMvNF0gZHQtYmluZGluZ3M6IGlwbWk6IEFkZCBvcHRpb25h?=
- =?big5?Q?l_LPC_properties_to_ASPEED_BT_devices?=
-Thread-Topic: [PATCH 3/4] dt-bindings: ipmi: Add optional LPC properties to
- ASPEED BT devices
-Thread-Index: AQHdB5N07GOCG0yUdU+n8UrPxJS92rZWn3MAgBRgtcA=
-Date: Mon, 13 Jul 2026 05:34:16 +0000
-Message-ID:
- <TY0PR06MB6855F4F499246CD5C44DB23893FA2@TY0PR06MB6855.apcprd06.prod.outlook.com>
-References:
- <20260629-aspeed-bt-bmc-multichannel-v1-0-fc23ee337f7a@aspeedtech.com>
- <20260629-aspeed-bt-bmc-multichannel-v1-3-fc23ee337f7a@aspeedtech.com>
- <35a8e3b3-7725-4d1b-8667-84e6fa24b2ca@kernel.org>
-In-Reply-To: <35a8e3b3-7725-4d1b-8667-84e6fa24b2ca@kernel.org>
-Accept-Language: zh-TW, en-US
-Content-Language: zh-TW
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-msip_labels:
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=aspeedtech.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: TY0PR06MB6855:EE_|SEZPR06MB5713:EE_
-x-ms-office365-filtering-correlation-id: bb4d90c3-4608-4895-ee86-08dee0a06114
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|366016|1800799024|23010399003|7416014|376014|3023799007|6133799003|38070700021|18002099003|22082099003|56012099006|4143699003|8096899003;
-x-microsoft-antispam-message-info:
- 94JKcYwszho6ZXyHm0oX0csYD8b+3eT3wK8J/1Ol6wBhXnPPlD+A1jfBRmYMZvyPc6mCHfFR4+v1NojLJw1jqHWy/OsZpAmU+RwFvP514cn0rBLkP4OS114pm5+oL8es9xNvoxHIkBRKVmUwUlInZZibOifODS9BEXH6Thm3AcH2TPjSSNt2YgA/CZXmRpz+hIV41ZuPNP20nAOc8Cm69bks5gEmH8JoUWHk9+ghXgfeVSBcCkbcoZnnNk/dPeD1sL6wJ6QK0TNewzTrE/IvPAI5UoJ0keurt0PGS2ZRgb1axjIPrSupH2tAajHiWxT5Yg5091kdER+G60ChOn7PZDi1oKIi/oSNVezoPx9PiB8gJ0dFYPM04i7C41IWQKtzrOxhmPCiPS5yU0iKru84dlmwdF4pJRRBlKRoshbwZ8EapieScXc3IS0s44WbI6khZeBz9v9++ZzULai6flnmeFLz6cDiqd3TXkoPBBQl3VMPbFdnKLxrl5RsiQlU0jLwugODUY42nCfu9sUQEADhedAfFyLurcmt8J5/w3VPAXhn9IIIQL8ANvKWBHpbLMqYow1tGgKNTXOEoUZnrCcXVlHbzGLajxNd399Ge29yunTR1AV1PO+fGtaDra62mc7YGz/JZUzWoEoDJBfv8GLUyR7WmaC8/qufZ6zPHbjLphcB+huK2rmXjYQCSwsQrzYedf9vavDjlfTKaSTCkCYnpV7K52fdN8Kjioc0heAPDIA=
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:zh-tw;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TY0PR06MB6855.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(23010399003)(7416014)(376014)(3023799007)(6133799003)(38070700021)(18002099003)(22082099003)(56012099006)(4143699003)(8096899003);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?big5?B?dU90bTE3cVVMa0VSaTVJNWc5ZE84SElaQnhtemlqTFRXcG5PTVJIY2VCUm1VMnRJ?=
- =?big5?B?elJWbnRQM1VvcjVrWFpWZUFCU2pRWjg4M0VjSzJsRXk3MVJNUjNYVWdYM0FucnRn?=
- =?big5?B?bDlmRU92NVJId01wMTVrRDZoaUtyc2NOdC9VV0swQU9mVzBRdW56M1VLRkczQXlY?=
- =?big5?B?MnNOMzhXOVhyY3lwT0Z1SjcyWFErOUNHOURPdm80RHZSekFVd3hLZVJlZllYSE01?=
- =?big5?B?ZTV6R0t6L2c3OHdpbVd6VXlSODZ1R1R0cFVubld6b1VBNG9BcGwydnA3MWdYK2pl?=
- =?big5?B?SFBocDNEMHlsMDUyN0lFL1pYcEdCRmV6d0pXNXp6MnhxYzJhMjIyZGJhc3FoSUZM?=
- =?big5?B?M1pHOFpXUU56eEF6ekFRMng1SUtURkJjYndWWHMwYVdzY09SVVlheCtXOUN6V09C?=
- =?big5?B?UnRXY3pYdjBLTUNaSzVTZzFXZ1A0M3c4OXBzZUhIdEh1ZWZraHJ0bnpTbFk5NVQr?=
- =?big5?B?bkdZZ293d01idHR6dnVSbDlJR1pUSkI3T0IxU0tsc01aWUR0Mm1JZVdCdHQzUk5E?=
- =?big5?B?aktrajVUY0tkTUxxaTNvZVpWaWJZaFRRS0FYaTV5T2dNbGl6NmZKSEc3dnZha0JQ?=
- =?big5?B?MGZza0dWNmhQbTJzM3Yvai84R1B3N0l3MXk3YTd3S0Z4QUU4a200eVNWWGpnbHR6?=
- =?big5?B?Y0hLZjRoUlBsVzlnR2FpZCtid3M2aHdRQkhCcmJaWFpJVi84eWdUa1g4QW1yMkxs?=
- =?big5?B?Z1pudTU4d3lMWmdtM2pacDVtdUZ3b2JUT3hKbXlLeXlURTJSQ0N3KzliVlExZjJH?=
- =?big5?B?RjIwUlJIaTlLNytMN3pWeFVjd3E5TnZXNE1OMDdjRlhRZWh3WTR6L2FhYVVPSFk3?=
- =?big5?B?QWV5ZW5BZVE3YUxkKzFnaStvNDdwWTNreVBVUnI3QlFlM2VJWkswU09hV2dnOW9p?=
- =?big5?B?T25SWXpIWXVoVUJWLzc3U2FIMUpJSUcyWkxULzE3QllBMmFjS0J2TTVGT3MySi9q?=
- =?big5?B?bS9GbE5lVC91dEM1UzFaNU9ya3NaTXRPUlpwenhHZks5THZmdzVINWhvNkFqU3BJ?=
- =?big5?B?ZU8zM2g2K0d6SllTYUx0RkhYZi81WjZ4ZS9zaHB2aXAvYlNkb1RQSExNM2NRdjMz?=
- =?big5?B?OGM1bi9Ra0MvWGJXcXpDT1FyR21TVDNKYTBTdzdwaVh2ekZUTWlzM0hoellxa0s4?=
- =?big5?B?eHFZMGtDdm96OVhEc3dLZk9nYlJNWnJ4RmtlWGNsRE5OZHNqT1V0YjRJZGUzcUUz?=
- =?big5?B?QkFqVGJocGdEL0hOMTI3VXdWTGtiQjdJVzNPWTNwQjVLSU1DVlYyTmN0L0oxUTNX?=
- =?big5?B?SGozNUJvazYvOG9Nc1U0RFdFUUwyYVZPMnZYT0FRSndVL3FrbVYrbzdwY21iRlJi?=
- =?big5?B?Q1d4VG1LeEZCZ3MvcS9rWnlkZVgxWkJWUFpIendiVVIxTExjZnhQeWJ4U0JXTitn?=
- =?big5?B?QWR0UUJjeFRFTjJQYjM3a0xJS0hnTVA0ZUNxZkFiMkRyY09wbWExUHkxejkxNVNu?=
- =?big5?B?RWJ2NENyN3UvYVBPeDBqME9FSHBNRkVGSlU5QjU0T0JhN1pTYUhzeFZIWEZndCtC?=
- =?big5?B?OWwzS25FUnM2QzR6SEwwT1g1dCtMNzlqRkdHTmUzWERJS3JCWkxSMkVWZEVpUVlU?=
- =?big5?B?UUdGUnVmeWhFSHkzakxtbUJtdGxrUE9ySmpBRHdsZzFrc0JUQUk0Q092T1Z6dGdZ?=
- =?big5?B?MEk4UkZYRGJKWTdkcXZ2eFVBWVo4ZEJadkhVb0xvcDAxYWtHaTJpNlE0WDJXWmxv?=
- =?big5?B?S1UvRzE1dnVpNHpOQ3hqR3RTRlNWU1pLcE1LYUxNaTV4clprMFdvL01ZMGtjbU1j?=
- =?big5?B?UEZMMTd6OGtKNmlEMEJSRlVFTmxmZVo4aitNTGFMZVJ3SnpkZWpDRFJnbTFFMTgv?=
- =?big5?B?V2VSNjFMaEczTWxCUnRkR2ZRTWNmWHdCQkZVdzhyb3NrbHBvUHJkd0c3VDBGTHNG?=
- =?big5?B?WWRjZmQ2TGgvZGsrNCtLNVliU3dGOWRmNlBUQmE5VU0wbHhCMk1RcU5CTzBiYXZJ?=
- =?big5?B?T3FqYUk1Zk5uMUIyZkcrVjNCMEo3djZEOSswb0hJenpISFZ5ZHI0Ukc0cFBYbVpF?=
- =?big5?B?T01qRmJibExCQWQ5Z0VWK3hJdHYwL1QvWnJqNjM3THBLa2NRR1lkZjV5d2ZKanRr?=
- =?big5?B?eDdJZTBRRUJIUG9vLzNxZWtibTAxTGg0VGMxSy90czJqQ1RTdmFHSlVJNzRERzEy?=
- =?big5?B?K1BXY1p1aG9uUmZrS2Z1YVJ2TWNHai9qeFhXUUtKSzdQcDhHTWFlMW9kN1gwem92?=
- =?big5?B?THZEemMwd0J4dEJ1SEl6TExoRXUwdz09?=
-Content-Type: multipart/alternative;
-	boundary="_000_TY0PR06MB6855F4F499246CD5C44DB23893FA2TY0PR06MB6855apcp_"
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gyr3x0KZhz2xqM
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 13 Jul 2026 02:04:27 +1000 (AEST)
+Received: by mail-wm1-x32c.google.com with SMTP id 5b1f17b1804b1-493b7612475so19020375e9.3
+        for <linux-aspeed@lists.ozlabs.org>; Sun, 12 Jul 2026 09:04:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1783872264; x=1784477064; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=k7WWDimv3b4NdwES6tpNCGufjtNL62BZYyk5PVukc5o=;
+        b=b97641US/+t3ViXPmGP7SI0V5SiHFdYpjiXRnxJ0S768+SrTiWw/jEqkcOcCwH4l/p
+         hF1j26cQSOl8QxmFfifO30+VoqPcZ0FG2fRA+ln4k8mZMUq+IHRk9BXNQRkpPMybtFJi
+         FLbCFLwzHAKhjnzMeYkhAZJmnEWJ83w90m4cnHbdLDofSsqJdQWmGdozsW8/b3yJ54yR
+         g/gdl8nqnsxqLmu4O4SHV4SMWQ5jeof5FKgK5RQML+VkYhRrvrNM4riBs82djfSUCq9D
+         UHMcMtFi3Q++QrF82lD0O3Qg7KmmRFADeTaVCFyYXpLJbUvjXPEPKYIl/mR1V88D3FE2
+         /2Gw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1783872264; x=1784477064;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=k7WWDimv3b4NdwES6tpNCGufjtNL62BZYyk5PVukc5o=;
+        b=qs3PHtKclW8NyfFegmrFL8IkRXQE/XIhRRk5SpG5rlP9bjJ7b0jlM0Lkt8XwMslq+D
+         XKEgxGHvnDNvC8juacjN4OBakTHSLnIjy0MURLZF5PdWauNwVzkVSOkjN4R95c9kbzqw
+         SAXsVLuFdTQ980RugrX3w2kGLji3aUTIfgAZ4x7ZD53nWfo5sDyzkgPhV5sTryvPnWPC
+         OMLlOyHZ1ZImjiRnFh80h5cIA8r3AZoS3WfSLOvK1VgCA+Pbs99zJ4+KsrcjZU5U7U28
+         keP4MudosnPqHFTlUxtSslxVPaNSnUQhsWSjMhLg6zfWIylt2ELEPkhN9l8IN3EQekgx
+         zS5g==
+X-Forwarded-Encrypted: i=1; AHgh+Ro279s8AXedDT8bQAE3I8GhA01d+dmG3rIoy5edq4Of9iNUC11v0P8DSm0qiO0CYzxf1YxTcAM1dg3/VGI=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyoojdwzBUXhwfbk68NPPSfuFkt+f8SHk6c0kFQjKBj8TJCY/qj
+	aVD7+JckSp/1IDV6CoZ1hU6yzL3mS63hY4li3c9HGUe492bdNSzisaoa
+X-Gm-Gg: AfdE7cnccOUN4jHNOQLfV7QnL03O9QmY/Xfmz7glf0gKsmn9ZCIBtcw81pDa/rx9Bh9
+	veBjgOJA6W4E21PVDFZHB80fl4oAtgo+giRDVSDVmL3IasVFWcy0nAck0Kb1En1PRX4U/OWgcpb
+	HL2lijTyxHoD3aHR/DTmi7/XcelmwAety8jQHndlerqCfHnhS8lcyAm2ymhwlbccEqzSzVmWApk
+	TgBmQqnZu5MhRnvbK2jXs3kk8XndugxAryFGZC0+Kec2ZPfdq866jW3//0m9OBfglVg4hLuCG+r
+	dWr/EDuFMFF88eTpFWkiloVnRq+9kpranZE/cGaK6Pax4oyV2vAFxv05E+sZteDZLlSwiwPUpVo
+	VwlBjQwqy848ONqX0qpG+Ev1UeZ8KX1OjSxyoyzylT8sT3zQ2WjETddHh9T11oxCDecIDjWSEAa
+	5i9dtjTNHsaqObYCV5AqpFkJMMpYwNCPcnEdw6aBTdx9DgZfaKX20NkHVnNQz4+zL95jJuN9++T
+	0ckGZ1CZLKpE0b47/p/Pssfn0pNZ9ADrMjTBvfDSge2MtkYrtwjkzwz
+X-Received: by 2002:a05:600c:5392:b0:493:b811:e549 with SMTP id 5b1f17b1804b1-493f8829963mr60790915e9.29.1783872263381;
+        Sun, 12 Jul 2026 09:04:23 -0700 (PDT)
+Received: from localhost.localdomain (dynamic-095-117-112-249.95.117.pool.telefonica.de. [95.117.112.249])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-493f2c8de2asm204774265e9.1.2026.07.12.09.04.22
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Sun, 12 Jul 2026 09:04:22 -0700 (PDT)
+From: Karl Mehltretter <kmehltretter@gmail.com>
+To: Stephen Boyd <sboyd@kernel.org>,
+	Michael Turquette <mturquette@baylibre.com>,
+	Ryan Chen <ryan_chen@aspeedtech.com>
+Cc: Joel Stanley <joel@jms.id.au>,
+	Brian Masney <bmasney@redhat.com>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	linux-clk@vger.kernel.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	Karl Mehltretter <kmehltretter@gmail.com>
+Subject: [PATCH] clk: aspeed: ast2700: select AUXILIARY_BUS
+Date: Sun, 12 Jul 2026 18:03:01 +0200
+Message-Id: <20260712160301.98941-1-kmehltretter@gmail.com>
+X-Mailer: git-send-email 2.39.5 (Apple Git-154)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -150,379 +99,45 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-OriginatorOrg: aspeedtech.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: TY0PR06MB6855.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: bb4d90c3-4608-4895-ee86-08dee0a06114
-X-MS-Exchange-CrossTenant-originalarrivaltime: 13 Jul 2026 05:34:16.0567
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: NH6fmECNkyfra9IqhEmnCB2Ml/GFOPOieS0XQnH0Bdi4vPF2laQ7yMS30MyUNqLZi1oHvEOLl2khHh3IeD3nng==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SEZPR06MB5713
+Content-Transfer-Encoding: 8bit
 
---_000_TY0PR06MB6855F4F499246CD5C44DB23893FA2TY0PR06MB6855apcp_
-Content-Type: text/plain; charset="big5"
-Content-Transfer-Encoding: base64
+The AST2700 clock driver also exposes the SoC reset controller: it hands
+its register base to a reset auxiliary device via
+devm_auxiliary_device_create(), which the separate ASPEED reset driver
+(RESET_ASPEED) then binds to. That create call needs the auxiliary bus
+core (AUXILIARY_BUS), not the reset driver itself, but COMMON_CLK_AST2700
+does not select AUXILIARY_BUS.
 
-T24gVHVlLCBKdW4gMzAsIDIwMjYgYXQgMDg6MTE6MzRBTSArMDIwMCwgS3J6eXN6dG9mIEtvemxv
-d3NraSB3cm90ZToNCg0KPiBXaGF0DQo+DQo+IGlzDQo+DQo+IHdpdGgNCj4NCj4gdGhpcw0KPg0K
-PiBsaW5lIGJyZWFrcz8NCg0KQXBvbG9naWVzIGZvciB0aGUgYnJva2VuIGZvcm1hdHRpbmcgaW4g
-dGhlIGNvbW1pdCBtZXNzYWdlLg0KSSB3aWxsIGZpeCBpdCBpbiB0aGUgbmV4dCByZXZpc2lvbi4N
-Cg0KPiBObywgeW91IGRvIG5vdCBnZXQgc2Vjb25kIHJlZyBwcm9wZXJ0eS4NCj4NCj4gTm8sIHlv
-dSBkbyBub3QgZ2V0IHNlY29uZCBpbnRlcnJ1cHRzIHByb3BlcnR5Lg0KDQpVbmRlcnN0b29kLg0K
-DQpUaGVzZSB2YWx1ZXMgYXJlIG5vdCBhZGRyZXNzYWJsZSByZXNvdXJjZXMgb2YgdGhlIEJNQyBu
-b2RlIGl0c2VsZjsNCnJhdGhlciwgdGhleSBkZXNjcmliZSBob3cgdGhlIEJNQydzIExQQyBlbmdp
-bmUgaXMgZXhwb3NlZCBvbiB0aGUgaG9zdA0KTFBDIGJ1cy4gSSBhbSBub3Qgc3VyZSBob3cgdGhl
-eSBzaG91bGQgYmUgcmVwcmVzZW50ZWQgaW4gRFQsIHNpbmNlDQp0aGV5IGRvIG5vdCBzZWVtIHRv
-IGZpdCB0aGUgdXN1YWwgc2VtYW50aWNzIG9mIGVpdGhlciAicmVnIiBvciAiaW50ZXJydXB0cyIu
-DQoNCkRvIHlvdSBoYXZlIGEgcHJlZmVycmVkIHdheSB0byByZXByZXNlbnQgdGhpcyBraW5kIG9m
-IGhvc3QtZmFjaW5nIExQQw0KY29uZmlndXJhdGlvbiBpbiB0aGUgYmluZGluZz8NCg0KVGhhbmtz
-LA0KWXUtQ2hlDQoNCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fDQqxSKXzqsw6IEty
-enlzenRvZiBLb3psb3dza2kgPGtyemtAa2VybmVsLm9yZz4NCqR3tsewZTogrFC0waRHLCAyMDI2
-IKZ+IDYgpOsgMzAgpOkgpFWkyCAwMjoxMQ0Kpqyl86rMOiBZQyBIc2llaCA8eWNfaHNpZWhAYXNw
-ZWVkdGVjaC5jb20+OyBDb3JleSBNaW55YXJkIDxjb3JleUBtaW55YXJkLm5ldD47IFJvYiBIZXJy
-aW5nIDxyb2JoQGtlcm5lbC5vcmc+OyBLcnp5c3p0b2YgS296bG93c2tpIDxrcnprK2R0QGtlcm5l
-bC5vcmc+OyBDb25vciBEb29sZXkgPGNvbm9yK2R0QGtlcm5lbC5vcmc+OyBKb2VsIFN0YW5sZXkg
-PGpvZWxAam1zLmlkLmF1PjsgQW5kcmV3IEplZmZlcnkgPGFuZHJld0Bjb2RlY29uc3RydWN0LmNv
-bS5hdT4NCrDGpbs6IG9wZW5pcG1pLWRldmVsb3BlckBsaXN0cy5zb3VyY2Vmb3JnZS5uZXQgPG9w
-ZW5pcG1pLWRldmVsb3BlckBsaXN0cy5zb3VyY2Vmb3JnZS5uZXQ+OyBsaW51eC1rZXJuZWxAdmdl
-ci5rZXJuZWwub3JnIDxsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnPjsgZGV2aWNldHJlZUB2
-Z2VyLmtlcm5lbC5vcmcgPGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnPjsgbGludXgtYXJtLWtl
-cm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnIDxsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVh
-ZC5vcmc+OyBsaW51eC1hc3BlZWRAbGlzdHMub3psYWJzLm9yZyA8bGludXgtYXNwZWVkQGxpc3Rz
-Lm96bGFicy5vcmc+DQqlRKauOiBSZTogW1BBVENIIDMvNF0gZHQtYmluZGluZ3M6IGlwbWk6IEFk
-ZCBvcHRpb25hbCBMUEMgcHJvcGVydGllcyB0byBBU1BFRUQgQlQgZGV2aWNlcw0KDQpPbiAyOS8w
-Ni8yMDI2IDA4OjQ5LCBZdS1DaGUgSHNpZWggdmlhIEI0IFJlbGF5IHdyb3RlOg0KPiBGcm9tOiBZ
-dS1DaGUgSHNpZWggPHljX2hzaWVoQGFzcGVlZHRlY2guY29tPg0KPg0KPiBBbGxvY2F0aW5nIElP
-IGFuZCBJUlEgcmVzb3VyY2VzIHRvIExQQyBkZXZpY2VzIGlzIGluLXRoZW9yeSBhbiBvcGVyYXRp
-b24NCj4NCj4gZm9yIHRoZSBob3N0LCBob3dldmVyIEFTUEVFRCBzeXN0ZW1zIGRlc2NyaWJlIHRo
-ZXNlIHJlc291cmNlcyB0aHJvdWdoDQo+DQo+IEJNQy1pbnRlcm5hbCBjb25maWd1cmF0aW9uLCBh
-cyBhbHJlYWR5IHN1cHBvcnRlZCBieSB0aGUgQVNQRUVEIEtDUyBCTUMNCg0KV2hhdA0KDQppcw0K
-DQp3aXRoDQoNCnRoaXMNCg0KbGluZSBicmVha3M/DQoNCg0KPg0KPiBiaW5kaW5nLg0KPg0KPiBB
-ZGQgYXNwZWVkLGxwYy1pby1yZWcgYW5kIGFzcGVlZCxscGMtaW50ZXJydXB0cyB0byB0aGUgQVNQ
-RUVEIEJUIEJNQw0KPg0KPiBiaW5kaW5nIHNvIGZpcm13YXJlIGNhbiBkZXNjcmliZSB0aGUgaG9z
-dCBMUEMgSU8gYWRkcmVzcyBhbmQgU2VySVJRDQo+DQo+IGNvbmZpZ3VyYXRpb24gdXNpbmcgdGhl
-IHNhbWUgcHJvcGVydGllcyBhcyBLQ1MgZGV2aWNlcy4NCj4NCj4gU2lnbmVkLW9mZi1ieTogWXUt
-Q2hlIEhzaWVoIDx5Y19oc2llaEBhc3BlZWR0ZWNoLmNvbT4NCj4gLS0tDQo+IC4uLi9iaW5kaW5n
-cy9pcG1pL2FzcGVlZCxhc3QyNDAwLWlidC1ibWMueWFtbCAgICAgICB8IDIxICsrKysrKysrKysr
-KysrKysrKysrKw0KPiAgMSBmaWxlIGNoYW5nZWQsIDIxIGluc2VydGlvbnMoKykNCj4NCj4gZGlm
-ZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9pcG1pL2FzcGVlZCxh
-c3QyNDAwLWlidC1ibWMueWFtbCBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9p
-cG1pL2FzcGVlZCxhc3QyNDAwLWlidC1ibWMueWFtbA0KPiBpbmRleCBjNGY3Y2RiYmUxNmIuLjE4
-MDNjNmJiYWU5MyAxMDA2NDQNCj4gLS0tIGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRp
-bmdzL2lwbWkvYXNwZWVkLGFzdDI0MDAtaWJ0LWJtYy55YW1sDQo+ICsrKyBiL0RvY3VtZW50YXRp
-b24vZGV2aWNldHJlZS9iaW5kaW5ncy9pcG1pL2FzcGVlZCxhc3QyNDAwLWlidC1ibWMueWFtbA0K
-PiBAQCAtMjUsNiArMjUsMjQgQEAgcHJvcGVydGllczoNCj4gICAgaW50ZXJydXB0czoNCj4gICAg
-ICBtYXhJdGVtczogMQ0KPg0KPiArICBhc3BlZWQsbHBjLWlvLXJlZzoNCj4gKyAgICAkcmVmOiAv
-c2NoZW1hcy90eXBlcy55YW1sIy9kZWZpbml0aW9ucy91aW50MzItYXJyYXkNCj4gKyAgICBtYXhJ
-dGVtczogMQ0KPiArICAgIGRlc2NyaXB0aW9uOiB8DQo+ICsgICAgICBUaGUgaG9zdCBDUFUgTFBD
-IElPIGFkZHJlc3MgZm9yIHRoZSBCVCBkZXZpY2UuDQoNCk5vLCB5b3UgZG8gbm90IGdldCBzZWNv
-bmQgcmVnIHByb3BlcnR5Lg0KDQo+ICsNCj4gKyAgYXNwZWVkLGxwYy1pbnRlcnJ1cHRzOg0KPiAr
-ICAgICRyZWY6IC9zY2hlbWFzL3R5cGVzLnlhbWwjL2RlZmluaXRpb25zL3VpbnQzMi1hcnJheQ0K
-PiArICAgIG1pbkl0ZW1zOiAyDQo+ICsgICAgbWF4SXRlbXM6IDINCj4gKyAgICBkZXNjcmlwdGlv
-bjogfA0KPiArICAgICAgQSAyLWNlbGwgcHJvcGVydHkgZXhwcmVzc2luZyB0aGUgTFBDIFNlcklS
-USBudW1iZXIgYW5kIHRoZSBpbnRlcnJ1cHQNCj4gKyAgICAgIGxldmVsL3NlbnNlIGVuY29kaW5n
-IChzcGVjaWZpZWQgaW4gdGhlIHN0YW5kYXJkIGZhc2hpb24pLg0KPiArDQo+ICsgICAgICBOb3Rl
-IHRoYXQgdGhlIGdlbmVyYXRlZCBpbnRlcnJ1cHQgaXMgaXNzdWVkIGZyb20gdGhlIEJNQyB0byB0
-aGUgaG9zdCwgYW5kDQo+ICsgICAgICB0aHVzIHRoZSB0YXJnZXQgaW50ZXJydXB0IGNvbnRyb2xs
-ZXIgaXMgbm90IGNhcHR1cmVkIGJ5IHRoZSBCTUMncw0KPiArICAgICBkZXZpY2V0cmVlLg0KDQpO
-bywgeW91IGRvIG5vdCBnZXQgc2Vjb25kIGludGVycnVwdHMgcHJvcGVydHkuDQoNCj4NCg0KDQpC
-ZXN0IHJlZ2FyZHMsDQpLcnp5c3p0b2YNCg==
+It builds today only because RESET_ASPEED selects AUXILIARY_BUS and is
+normally enabled alongside the clock driver. On a randconfig with
+COMMON_CLK_AST2700=y and RESET_ASPEED=n, nothing pulls the auxiliary bus
+in and the kernel fails to link:
 
---_000_TY0PR06MB6855F4F499246CD5C44DB23893FA2TY0PR06MB6855apcp_
-Content-Type: text/html; charset="big5"
-Content-Transfer-Encoding: quoted-printable
+  ld: drivers/clk/aspeed/clk-ast2700.o: in function `ast2700_soc_clk_probe':
+  clk-ast2700.c:(.text+0x147c): undefined reference to `__devm_auxiliary_device_create'
 
-<html>
-<head>
-<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dbig5">
-<style type=3D"text/css" style=3D"display:none;"> P {margin-top:0;margin-bo=
-ttom:0;} </style>
-</head>
-<body dir=3D"ltr">
-<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
-quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
- Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
-b(0, 0, 0);">
-On Tue, Jun 30, 2026 at 08:11:34AM +0200, Krzysztof Kozlowski wrote:</div>
-<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
-quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
- Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
-b(0, 0, 0);">
-<br>
-</div>
-<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
-quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
- Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
-b(0, 0, 0);">
-&gt; What</div>
-<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
-quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
- Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
-b(0, 0, 0);">
-&gt;&nbsp;</div>
-<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
-quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
- Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
-b(0, 0, 0);">
-&gt; is</div>
-<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
-quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
- Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
-b(0, 0, 0);">
-&gt;&nbsp;</div>
-<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
-quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
- Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
-b(0, 0, 0);">
-&gt; with</div>
-<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
-quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
- Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
-b(0, 0, 0);">
-&gt;</div>
-<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
-quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
- Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
-b(0, 0, 0);">
-&gt; this</div>
-<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
-quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
- Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
-b(0, 0, 0);">
-&gt;</div>
-<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
-quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
- Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
-b(0, 0, 0);">
-&gt; line breaks?</div>
-<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
-quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
- Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
-b(0, 0, 0);">
-<br>
-</div>
-<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
-quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
- Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
-b(0, 0, 0);">
-Apologies for the broken formatting in the commit message.</div>
-<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
-quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
- Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
-b(0, 0, 0);">
-I will fix it in the next revision.</div>
-<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
-quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
- Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
-b(0, 0, 0);">
-<br>
-</div>
-<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
-quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
- Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
-b(0, 0, 0);">
-&gt; No, you do not get second reg property.</div>
-<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
-quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
- Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
-b(0, 0, 0);">
-&gt;</div>
-<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
-quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
- Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
-b(0, 0, 0);">
-&gt; No, you do not get second interrupts property.</div>
-<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
-quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
- Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
-b(0, 0, 0);">
-<br>
-</div>
-<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
-quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
- Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
-b(0, 0, 0);">
-Understood.</div>
-<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
-quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
- Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
-b(0, 0, 0);">
-<br>
-</div>
-<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
-quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
- Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
-b(0, 0, 0);">
-These values are not addressable resources of the BMC node itself;</div>
-<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
-quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
- Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
-b(0, 0, 0);">
-rather, they describe how the BMC's LPC engine is exposed on the host</div>
-<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
-quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
- Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
-b(0, 0, 0);">
-LPC bus. I am not sure how they should be represented in DT, since</div>
-<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
-quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
- Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
-b(0, 0, 0);">
-they do not seem to fit the usual semantics of either &quot;reg&quot; or &q=
-uot;interrupts&quot;.</div>
-<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
-quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
- Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
-b(0, 0, 0);">
-<br>
-</div>
-<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
-quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
- Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
-b(0, 0, 0);">
-Do you have a preferred way to represent this kind of host-facing LPC</div>
-<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
-quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
- Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
-b(0, 0, 0);">
-configuration in the binding?</div>
-<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
-quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
- Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
-b(0, 0, 0);">
-<br>
-</div>
-<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
-quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
- Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
-b(0, 0, 0);">
-Thanks,</div>
-<div style=3D"font-family: &quot;Segoe UI&quot;, &quot;Segoe UI Web (West E=
-uropean)&quot;, -apple-system, BlinkMacSystemFont, Roboto, &quot;Helvetica =
-Neue&quot;, sans-serif; font-size: 11pt; color: rgb(0, 0, 0);">
-Yu-Che</div>
-<div style=3D"font-family: Calibri, Arial, Helvetica, sans-serif; font-size=
-: 12pt; color: rgb(0, 0, 0);">
-<br>
-</div>
-<hr style=3D"display: inline-block; width: 98%;">
-<div style=3D"font-family: Calibri, Arial, Helvetica, sans-serif; font-size=
-: 12pt; color: rgb(0, 0, 0);">
-<b>=B1H=A5=F3=AA=CC:</b> Krzysztof Kozlowski &lt;krzk@kernel.org&gt;<br>
-<b>=A4w=B6=C7=B0e:</b> =ACP=B4=C1=A4G, 2026 =A6~ 6 =A4=EB 30 =A4=E9 =A4U=A4=
-=C8 02:11<br>
-<b>=A6=AC=A5=F3=AA=CC:</b> YC Hsieh &lt;yc_hsieh@aspeedtech.com&gt;; Corey =
-Minyard &lt;corey@minyard.net&gt;; Rob Herring &lt;robh@kernel.org&gt;; Krz=
-ysztof Kozlowski &lt;krzk+dt@kernel.org&gt;; Conor Dooley &lt;conor+dt@kern=
-el.org&gt;; Joel Stanley &lt;joel@jms.id.au&gt;; Andrew Jeffery &lt;andrew@=
-codeconstruct.com.au&gt;<br>
-<b>=B0=C6=A5=BB:</b> openipmi-developer@lists.sourceforge.net &lt;openipmi-=
-developer@lists.sourceforge.net&gt;; linux-kernel@vger.kernel.org &lt;linux=
--kernel@vger.kernel.org&gt;; devicetree@vger.kernel.org &lt;devicetree@vger=
-.kernel.org&gt;; linux-arm-kernel@lists.infradead.org &lt;linux-arm-kernel@=
-lists.infradead.org&gt;;
- linux-aspeed@lists.ozlabs.org &lt;linux-aspeed@lists.ozlabs.org&gt;<br>
-<b>=A5D=A6=AE:</b> Re: [PATCH 3/4] dt-bindings: ipmi: Add optional LPC prop=
-erties to ASPEED BT devices
-</div>
-<div style=3D"font-family: Calibri, Arial, Helvetica, sans-serif; font-size=
-: 12pt; color: rgb(0, 0, 0);">
-<br>
-</div>
-<div style=3D"font-size: 11pt;">On 29/06/2026 08:49, Yu-Che Hsieh via B4 Re=
-lay wrote:<br>
-&gt; From: Yu-Che Hsieh &lt;yc_hsieh@aspeedtech.com&gt;<br>
-&gt;<br>
-&gt; Allocating IO and IRQ resources to LPC devices is in-theory an operati=
-on<br>
-&gt;<br>
-&gt; for the host, however ASPEED systems describe these resources through<=
-br>
-&gt;<br>
-&gt; BMC-internal configuration, as already supported by the ASPEED KCS BMC=
-<br>
-<br>
-What<br>
-<br>
-is<br>
-<br>
-with<br>
-<br>
-this<br>
-<br>
-line breaks?<br>
-<br>
-<br>
-&gt;<br>
-&gt; binding.<br>
-&gt;<br>
-&gt; Add aspeed,lpc-io-reg and aspeed,lpc-interrupts to the ASPEED BT BMC<b=
-r>
-&gt;<br>
-&gt; binding so firmware can describe the host LPC IO address and SerIRQ<br=
->
-&gt;<br>
-&gt; configuration using the same properties as KCS devices.<br>
-&gt;<br>
-&gt; Signed-off-by: Yu-Che Hsieh &lt;yc_hsieh@aspeedtech.com&gt;<br>
-&gt; ---<br>
-&gt; .../bindings/ipmi/aspeed,ast2400-ibt-bmc.yaml&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp; | 21 +++++++++++++++++++++<br>
-&gt;&nbsp; 1 file changed, 21 insertions(+)<br>
-&gt;<br>
-&gt; diff --git a/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt=
--bmc.yaml b/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt-bmc.y=
-aml<br>
-&gt; index c4f7cdbbe16b..1803c6bbae93 100644<br>
-&gt; --- a/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt-bmc.ya=
-ml<br>
-&gt; +++ b/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt-bmc.ya=
-ml<br>
-&gt; @@ -25,6 +25,24 @@ properties:<br>
-&gt;&nbsp;&nbsp;&nbsp; interrupts:<br>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; maxItems: 1<br>
-&gt;&nbsp;<br>
-&gt; +&nbsp; aspeed,lpc-io-reg:<br>
-&gt; +&nbsp;&nbsp;&nbsp; $ref: /schemas/types.yaml#/definitions/uint32-arra=
-y<br>
-&gt; +&nbsp;&nbsp;&nbsp; maxItems: 1<br>
-&gt; +&nbsp;&nbsp;&nbsp; description: |<br>
-&gt; +&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The host CPU LPC IO address for the BT=
- device.<br>
-<br>
-No, you do not get second reg property.<br>
-<br>
-&gt; +<br>
-&gt; +&nbsp; aspeed,lpc-interrupts:<br>
-&gt; +&nbsp;&nbsp;&nbsp; $ref: /schemas/types.yaml#/definitions/uint32-arra=
-y<br>
-&gt; +&nbsp;&nbsp;&nbsp; minItems: 2<br>
-&gt; +&nbsp;&nbsp;&nbsp; maxItems: 2<br>
-&gt; +&nbsp;&nbsp;&nbsp; description: |<br>
-&gt; +&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; A 2-cell property expressing the LPC S=
-erIRQ number and the interrupt<br>
-&gt; +&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; level/sense encoding (specified in the=
- standard fashion).<br>
-&gt; +<br>
-&gt; +&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Note that the generated interrupt is i=
-ssued from the BMC to the host, and<br>
-&gt; +&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; thus the target interrupt controller i=
-s not captured by the BMC's<br>
-&gt; +&nbsp;&nbsp;&nbsp;&nbsp; devicetree.<br>
-<br>
-No, you do not get second interrupts property.<br>
-<br>
-&gt;<br>
-<br>
-<br>
-Best regards,<br>
-Krzysztof<br>
-</div>
-</body>
-</html>
+Select AUXILIARY_BUS directly, as other clock drivers that create
+auxiliary devices do, so it builds regardless of the reset driver.
 
---_000_TY0PR06MB6855F4F499246CD5C44DB23893FA2TY0PR06MB6855apcp_--
+Fixes: fdc1eb624ddc ("clk: aspeed: add AST2700 clock driver")
+Signed-off-by: Karl Mehltretter <kmehltretter@gmail.com>
+---
+ drivers/clk/aspeed/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/clk/aspeed/Kconfig b/drivers/clk/aspeed/Kconfig
+index ef50481c31ff..2f505eb3ca95 100644
+--- a/drivers/clk/aspeed/Kconfig
++++ b/drivers/clk/aspeed/Kconfig
+@@ -15,6 +15,7 @@ config COMMON_CLK_ASPEED
+ config COMMON_CLK_AST2700
+         bool "Clock driver for AST2700 SoC"
+         depends on ARCH_ASPEED || COMPILE_TEST
++        select AUXILIARY_BUS
+         help
+           This driver provides support for clock on AST2700 SoC.
+           The driver is responsible for managing the various clocks required
+-- 
+2.39.5 (Apple Git-154)
+
 
