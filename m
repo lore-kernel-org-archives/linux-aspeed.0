@@ -1,58 +1,58 @@
-Return-Path: <linux-aspeed+bounces-4483-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4484-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 978A6C44508
-	for <linux-aspeed@archiver.kernel.org>; Wed, 15 Jul 2026 07:37:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 92B85C44508
+	for <linux-aspeed@archiver.kernel.org>; Wed, 15 Jul 2026 07:38:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h0SgV33mdz2ywn;
-	Wed, 15 Jul 2026 17:37:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h0Shz0pdsz304x;
+	Wed, 15 Jul 2026 17:38:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c406::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783926573;
-	cv=pass; b=eSQrFYNcQ4xMcTq3IF76duV7X075IOneIcNw/WAnF8d0cj84Jr6nAJRStjuASk84cTsgNqh6sWaNaEyaknoG+srjLOmRtRZsRcdIfwVXyPxqoYTXbjLFMNaB7Upducr8jDQ0+9s6P52nu1xDSnFeLhUlQ+y1iXcHfBS8A49CYNfB8LHOyfAG83GzbszpjlZ97ctCIcPk4ZHF6YkU8OYyN5mBST00kutWfSOjrTF5H+qhCPHMLj/ey3SrIncsTw8JCzpC7EDGEOvz/MzcX0f9kAavfc4BhM+oUOYhJbXG7OuejcgUy/rjfRRMpjJF13UtjMUI/C73l3UrggD+zFEk7Q==
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1783920885;
+	cv=pass; b=mOmls5CImofnze22ln3zZtNtwaTri5DiNDROSEGlj1NxVXSwMbNQigxXEZTCKILcxu7g96K9cqCbzwoGiAH0aSjnB+SVktXmyLb6Li+ZOj87AvBHHvmB2+Eq0l2jZDPBR9l7Srr0edRy/XFn0WaOasuYQS/6vxeR6vn8xqnQAn0o0XT4L/PiYsn9eYgpkb0Ba+VhhenwEee22ubp3GpGNwzyPzrtAz7dM85ZhGCGuAK2UK1+g9oQznBQmv1bLkK7Hdlpdonh0OYvDSp/d0mo3UgDQjyhwePwH0Fryhd4zSnonNx/IiYs6/nHPQPlLp9JUWqDac6YndZnINzH4E0bZw==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1783926573; c=relaxed/relaxed;
-	bh=j8zqGlLSBUjVuasN+OM06JdfC2joRIDI0Cw8I1JSC80=;
+	t=1783920885; c=relaxed/relaxed;
+	bh=UuXYe5HvREAo9l6/5lOOmQOiQhAErjxuKKwZDIpGJ9c=;
 	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=edSdr7jmG+ZCUWf1zBcoSduKfnW0UA1bGbf91kCvbfMjsHkiSr5uQT8IA6U5Aaw0i1xGWpRpv7BKCM23iAxa8CSJnmO5hOUlgM7LnndQT9axpwN1leimqBlxgYsgGdTEXYRGshHsBH1xzBY9jdKW1PxwPN965Wsch6+3oeUf2OH/O7ZRe1EwdRxzrZgLcG6QXLsk/Q8CO3kdRG6YqHiNIejZtxknKGM1v+bJAprS8x5TnEZ4b+JJI0HHt3bI36HJQtRWWBff1psGtcK6xY4KQt0wV5vMSbALhp7/ZV8fF8/LXK5wk9TyvbELYs8SUnrT0Y0kTvSLvjOrPmzXGX4alw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=diK4D0Vo; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c406::3; helo=os8pr02cu002.outbound.protection.outlook.com; envelope-from=yc_hsieh@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+	 Content-Type:MIME-Version; b=Q0Bv88Lo6INoUFF20K89+eo9WYClfFuqPZbINEA/31zZu9RyiKGCzyNWuDgR0gfptTMH4XlSLTJELOxXIkFaKZWELAfIA2HQMlgwn84xR1vyV6rfB6ntKl/fGNFFTxvs4g4aCk06KxEBBaR3CS5JdxU2C6sYwqRvsXzvJLDGVL8qs3tLrGrtZKdnhVjNOKPJiZD2J9EdjSSw3E6Trw8nBsEx7Z62jI2uDpWUbtNzbtNL3m1ERD96NFSoMOxYao/pn41FDiOTYPLUTeU3Zdp4lPLW9SjwW8LGWW3sf5x7HqnqPgFdppWq7vA9grA1V+7Jb/biGpUPnOmWJbmrap52cw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=h3SX35bd; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c406::3; helo=os8pr02cu002.outbound.protection.outlook.com; envelope-from=yc_hsieh@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=diK4D0Vo;
+	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=h3SX35bd;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:c406::3; helo=os8pr02cu002.outbound.protection.outlook.com; envelope-from=yc_hsieh@aspeedtech.com; receiver=lists.ozlabs.org)
 Received: from OS8PR02CU002.outbound.protection.outlook.com (mail-japanwestazlp170120003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c406::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzD8C5Vxfz2xqM
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 13 Jul 2026 17:09:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzB2p5pgYz2xqM
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 13 Jul 2026 15:34:42 +1000 (AEST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=b9XCc1+Jpd8PltD9tY7LlSAqu7usjt5WK8pI4AkIbRyhJTIzDM3Z7nvzpFAbhDOTbYBJC3h35DRs1uZqkHFxZLJJ6O+FdzlzzEfl+7cqcawp7Vx21V/yDZfGq7vJpGbMNH6dPWn+IKxU1uGqpV8R6HOvydb0to2esu1tNwFV7411gPpkEx4GOTSkf1MHzrVfYGEyLa2GbsSNh8x6Ae54WPisPFqDeKPOfL5QVrmWSNoTQMiS6SN+rmis1lugGs8QdyKlZnXio0pGj01WDz7ctPFGAN1+1VmtLocl7w/KLRndKH7irtEvk9tt09U7WVcOfHAT6X+3C/zPiZeEedxh9g==
+ b=tsYCVCJIl0hUDyoJJbKueHCXjxUC/7+xR7CIbPy3Ctqip9QSi36mz6OfsSI+joxoE5SSN8GAo+6rgc6YZRTuyC6AzDJxBOG8Y0V+WUJ4d7tgLbF6KqQJZPCRLuk/yoGuuzf5wqpKh4b6OBfg5C2qvCi28uVLB1mc7BwSuNjH1CAdDV1MyGXNcGnoJBOV+2sRt6bmUrpGq5UieH4iJxKO4tbuFLPtIhNSL74UaoGBPQWrO6vJllJaYw5AHycTtQMqOYL4EGnntZ4vHeNhOSCl3uoETBbEdeAwzggVlpox/mrgCqXY2aagfKVrw3jdYOkgARIdb54Qs6brmOVPveX3kA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=j8zqGlLSBUjVuasN+OM06JdfC2joRIDI0Cw8I1JSC80=;
- b=i9eSQqltc4AR5s/biqdigEu5KJ5y5rivQE5LkN9olq/8vygVTSO6xtwYtnEcrJy5wLL6zIGToLTV0VW9J4LUONiaKmtx9HLTyhw6Jd6cotkrvzg5D1Eqrgds7qqmxuCmpW9zauSClPF7Wikaz/7cDS8iukqzJdwg0B97WsCUzL5h/qAvrDSx04bu2raJpXUDcWFmgLkNiKwyFhM5OYzjVyz7quZ0YY+MLz1hJFjJKRjtx0swvhUske2UzWO8C2hoQs0iMQTavUhEitnxl7pOgftysYXaa8DvrPYsra1Esd/UpCHM9EeS46eoO+6sXOmoLpbOENVa2jRZvGeCUpPuow==
+ bh=UuXYe5HvREAo9l6/5lOOmQOiQhAErjxuKKwZDIpGJ9c=;
+ b=NZvVms6vyF/PGtf2mxGFsFZdtttBDNMz6oV8zrVf8WUMnyxpo0RiT/ChFR9egFgWyj9x1oZxxXX0ka/UGDtdWq1LOM0SYMGDgJqIcfNFpPBqgCKWqx1J2NW9OWGoW0qbwZFBiMy8/zRTKIpbHUWppE1Y5DqHuZatCdNnlNBaTpFYjeEmvM2tTDPcCLvEOo6fcoxI+LtSLlqHvJFVL/Ek6jjE0XnlX6+5MCc8tYMuE3q7K6rD1WaOKBz8hsmtl9IRz/mu3LMMWm5x5jKWLsdYKmJv/wdHrJmTaoHGv77HMKBdD/Rn9JEl87qnW9vgfNoMYTG0+VdBfa0nFQcBKBcPuQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
  header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
  s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=j8zqGlLSBUjVuasN+OM06JdfC2joRIDI0Cw8I1JSC80=;
- b=diK4D0VonKhZEMYCMjgmbaQtjfsK3OywjKaxy2hcyH0fKq46JqR2eI/4N/vN9pWI2ECdtFTreNChVgRlXakwSFeGq/o8eW/2pm402DqB83VVwg4vQ6S7F9XS+IkIVrHd1RJcwXlortWaQtxeY0N2P0WG75DonyCR/2Qf95DJxEhm5GFrtaoIxIXTvnGOWiJiPzlfNzR5vL6jTf3Fv9jCaXbC3vdS+NTFa0bSR9jD9D2V3LYfp6l9nL90xJ/Vu/JegnRDhvwmFBguvbJG3AG8/rkRvpRO+VYmjxQSjDS9NsmvyAZoAacZFB2P6jo5aHvB/EYI/PmPP5AgMae1ZCqMAw==
+ bh=UuXYe5HvREAo9l6/5lOOmQOiQhAErjxuKKwZDIpGJ9c=;
+ b=h3SX35bdnY3ccCMUio+pgwREc+P1cDWdsSS5UrNA95jPVoPUiNUf0xbkgq1l2ubBAK5YfVtGelLJkPExmuuFn6c5Oav0tKs799iqgZM4J9UOzvkUmJspv8OR+Vc7ChggQKr24DPBxkWbeVKGrwJW6iB+m1fVkx3C8+Sq6NXujMDU8sDyD1A35QcKh8PkJnA8aG+l5LivC0/c7g83QL/3SmXQ1CLIQB5XzQmDwZdCgSB0s4ji4eUxFqzdiM1DTbp3+YFaS7LGwd6T3We6KdDXrOP0/s+FnFzm1pGWLmlspsBJ5rbciycIwAJWoE/eNbPFeZ6QmzQqOZArTfmOIHL1Lw==
 Received: from TY0PR06MB6855.apcprd06.prod.outlook.com (2603:1096:405:13::10)
- by JH0PR06MB7198.apcprd06.prod.outlook.com (2603:1096:990:98::7) with
+ by SEZPR06MB5713.apcprd06.prod.outlook.com (2603:1096:101:9d::9) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.181.23; Mon, 13 Jul
- 2026 07:09:01 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.202.18; Mon, 13 Jul
+ 2026 05:34:16 +0000
 Received: from TY0PR06MB6855.apcprd06.prod.outlook.com
  ([fe80::9405:99c0:aadd:7e05]) by TY0PR06MB6855.apcprd06.prod.outlook.com
  ([fe80::9405:99c0:aadd:7e05%6]) with mapi id 15.21.0181.017; Mon, 13 Jul 2026
- 07:09:01 +0000
+ 05:34:16 +0000
 From: YC Hsieh <yc_hsieh@aspeedtech.com>
 To: Krzysztof Kozlowski <krzk@kernel.org>, Corey Minyard <corey@minyard.net>,
 	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -65,22 +65,19 @@ CC: "openipmi-developer@lists.sourceforge.net"
 	<linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
 	<linux-aspeed@lists.ozlabs.org>
 Subject:
- =?big5?B?pl7C0Dogpl7C0DogW1BBVENIIDMvNF0gZHQtYmluZGluZ3M6IGlwbWk6IEFkZCBv?=
- =?big5?Q?ptional_LPC_properties_to_ASPEED_BT_devices?=
-Thread-Topic:
  =?big5?B?pl7C0DogW1BBVENIIDMvNF0gZHQtYmluZGluZ3M6IGlwbWk6IEFkZCBvcHRpb25h?=
  =?big5?Q?l_LPC_properties_to_ASPEED_BT_devices?=
-Thread-Index: AQHdB5N07GOCG0yUdU+n8UrPxJS92rZWn3MAgBRgtcCAAAlHAIAAEoW7
-Date: Mon, 13 Jul 2026 07:09:01 +0000
+Thread-Topic: [PATCH 3/4] dt-bindings: ipmi: Add optional LPC properties to
+ ASPEED BT devices
+Thread-Index: AQHdB5N07GOCG0yUdU+n8UrPxJS92rZWn3MAgBRgtcA=
+Date: Mon, 13 Jul 2026 05:34:16 +0000
 Message-ID:
- <TY0PR06MB68558AD7FBBCEBB09DFAFCF593FA2@TY0PR06MB6855.apcprd06.prod.outlook.com>
+ <TY0PR06MB6855F4F499246CD5C44DB23893FA2@TY0PR06MB6855.apcprd06.prod.outlook.com>
 References:
  <20260629-aspeed-bt-bmc-multichannel-v1-0-fc23ee337f7a@aspeedtech.com>
  <20260629-aspeed-bt-bmc-multichannel-v1-3-fc23ee337f7a@aspeedtech.com>
  <35a8e3b3-7725-4d1b-8667-84e6fa24b2ca@kernel.org>
- <TY0PR06MB6855F4F499246CD5C44DB23893FA2@TY0PR06MB6855.apcprd06.prod.outlook.com>
- <31df2c13-9c31-4a78-975f-b0152ad3356d@kernel.org>
-In-Reply-To: <31df2c13-9c31-4a78-975f-b0152ad3356d@kernel.org>
+In-Reply-To: <35a8e3b3-7725-4d1b-8667-84e6fa24b2ca@kernel.org>
 Accept-Language: zh-TW, en-US
 Content-Language: zh-TW
 X-MS-Has-Attach:
@@ -89,57 +86,57 @@ msip_labels:
 authentication-results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=aspeedtech.com;
 x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: TY0PR06MB6855:EE_|JH0PR06MB7198:EE_
-x-ms-office365-filtering-correlation-id: 898386bc-aac8-4f18-ed6d-08dee0ad9d9c
+x-ms-traffictypediagnostic: TY0PR06MB6855:EE_|SEZPR06MB5713:EE_
+x-ms-office365-filtering-correlation-id: bb4d90c3-4608-4895-ee86-08dee0a06114
 x-ms-exchange-senderadcheck: 1
 x-ms-exchange-antispam-relay: 0
 x-microsoft-antispam:
- BCL:0;ARA:13230040|366016|23010399003|1800799024|376014|7416014|18002099003|22082099003|38070700021|56012099006|6133799003|4143699003|3023799007;
+ BCL:0;ARA:13230040|366016|1800799024|23010399003|7416014|376014|3023799007|6133799003|38070700021|18002099003|22082099003|56012099006|4143699003|8096899003;
 x-microsoft-antispam-message-info:
- co75iRvIRF/oTJjNvj5uxoBNkwYZhSvzu5PgOd1y/L7jLoZa2TOF63+JDwQIWCWDBRV5Y17xTQ8/x6iESSbbbUfZuB6zIO0WtQuB3Z8mW9qYZDxSkzSnxFytIKjMJOq0JjLU3WECummhWwNjsbN414Ac7ch67McpNuBewlGyRMX33ENajDWOa9BEyD9/pU+qA/UxK7WLGq1kIYIAE3gwsK7GS3U9g5mcx0EP8HaLF9WQUsyTU1nogrD28XStVzjpaJECZrmyFE8UyCQS1Nq97grAC129BcdJZEkIfGWzBqqr3hhGPkZcNhCjMabD0GkyMymDdrq+iQLGKSh0L0KwsL/vEMUn5UK0yJCHMK02UCWrGXCctn5dRX1jFX7ylqmy4qhniWcpAilaQxsXjKtP2x7TluxQJEI4cYZVfzf3/xnnbeucJ7ZnY2cMdoYN+9U9FwhcxsZT+RBVSTPMI2QXzkUs+faFXfe67iCpxfsjmeh37sjQ80VvpEFGYoTSFb/BSN9dwv1QwGZ8DUFLX0nPrzXt4B8SQqQ5Zh/P660v4B/sdNhb2kpdbTGXPNVZlY5bcSjaewalkOF3eOq5VZKZ9EUd5+XZly8KHwZWaEl6L/savAD511VKV5T0nuZclSvxainfsO7amIUdjarDH6+xvWE9CvuJW9fFbpsgZ4ah7+LWwY296S22MfyA6miL9RuM8QmI1SLD9eZ4DWY4I5o6Lovsn/BK+raiUQ7ohIKEo+A=
+ 94JKcYwszho6ZXyHm0oX0csYD8b+3eT3wK8J/1Ol6wBhXnPPlD+A1jfBRmYMZvyPc6mCHfFR4+v1NojLJw1jqHWy/OsZpAmU+RwFvP514cn0rBLkP4OS114pm5+oL8es9xNvoxHIkBRKVmUwUlInZZibOifODS9BEXH6Thm3AcH2TPjSSNt2YgA/CZXmRpz+hIV41ZuPNP20nAOc8Cm69bks5gEmH8JoUWHk9+ghXgfeVSBcCkbcoZnnNk/dPeD1sL6wJ6QK0TNewzTrE/IvPAI5UoJ0keurt0PGS2ZRgb1axjIPrSupH2tAajHiWxT5Yg5091kdER+G60ChOn7PZDi1oKIi/oSNVezoPx9PiB8gJ0dFYPM04i7C41IWQKtzrOxhmPCiPS5yU0iKru84dlmwdF4pJRRBlKRoshbwZ8EapieScXc3IS0s44WbI6khZeBz9v9++ZzULai6flnmeFLz6cDiqd3TXkoPBBQl3VMPbFdnKLxrl5RsiQlU0jLwugODUY42nCfu9sUQEADhedAfFyLurcmt8J5/w3VPAXhn9IIIQL8ANvKWBHpbLMqYow1tGgKNTXOEoUZnrCcXVlHbzGLajxNd399Ge29yunTR1AV1PO+fGtaDra62mc7YGz/JZUzWoEoDJBfv8GLUyR7WmaC8/qufZ6zPHbjLphcB+huK2rmXjYQCSwsQrzYedf9vavDjlfTKaSTCkCYnpV7K52fdN8Kjioc0heAPDIA=
 x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:zh-tw;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TY0PR06MB6855.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(23010399003)(1800799024)(376014)(7416014)(18002099003)(22082099003)(38070700021)(56012099006)(6133799003)(4143699003)(3023799007);DIR:OUT;SFP:1102;
+ CIP:255.255.255.255;CTRY:;LANG:zh-tw;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TY0PR06MB6855.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(23010399003)(7416014)(376014)(3023799007)(6133799003)(38070700021)(18002099003)(22082099003)(56012099006)(4143699003)(8096899003);DIR:OUT;SFP:1102;
 x-ms-exchange-antispam-messagedata-chunkcount: 1
 x-ms-exchange-antispam-messagedata-0:
- =?big5?B?c09oanpOK29JVGI4ajlrMVkvYmsrSVR1Z1M1cGNxeUhsNFdCNVQ3UUg1bUJJUnBO?=
- =?big5?B?QmRsUjRTVS9aL0dsLzBVaHVMS1E4aFJFTUJ5RmJDT2xzbVJJVko2TEtwTjVYam5o?=
- =?big5?B?RzRuNE5EbVNsb1AyejFRc2ZvV3JWeFdZMkY4bGlvU09TaFVHeWxrUUxKdmlvaVY1?=
- =?big5?B?R2JDendxU2R5YytGbmVMWnd4OWdTR1hoQmxpS3V4Q1o4UTdWNEpKY1NldjlWcXgv?=
- =?big5?B?YjE4SmVsanY1OTcrV0F0djZucWQxY2l1M0FpR3IxZFpqR0lTSFNyT1FReVFTVmw0?=
- =?big5?B?TVZwNzRVbVJtd2NtQTZFMUJ3cFNLSmlGLzJteEF6cDFMTDF1ZkI3eGpycExlYnIv?=
- =?big5?B?S0pWM2VtWldUOHJPRnhydzhjN085ZkMyWHpFQnpIZWhxTzZadEhkTk0vWGFnK0Zz?=
- =?big5?B?cjlGcjJGRVJxRFNvNjBKZHdlSDcrSjdHeVE3T3BFQ3RKemtINjdTKy84eFZlYmZq?=
- =?big5?B?SGE5ektUak1mWEg4V1lwM216cE0zemN3eXJtZmFPRWJFRU8wcHBvWmRVcUdTN1Rz?=
- =?big5?B?ajhWbFAzV2VSSnlSUVJRTWt1cWRVTzJweXpnb3R3VjU0WHBDaVNxbVpiMCt0bTkz?=
- =?big5?B?dFhuZFdmaTNCVjdHbEdYeFdNU0xOZmNUaW9vRXh6MkdQczkvSlpsMlhGMkxrclhl?=
- =?big5?B?RXdObDdxbUo3cnJSQ1g1SGZBSXFTMjg0b2Jvc1pnczRMZHozeUJRNklDUm1BUjdy?=
- =?big5?B?RkwvSFJlUFFiRjhOS2dmdlJGbjdhMXdiRVNCUkhYdnVmWmJmczNmTm4ralZQeEtn?=
- =?big5?B?V2R2OXZSNWhvWGxhMlhRZVhtcHJwY2ZEMVBIZFdoVW50eXNCUU44S25FcGdZaXRw?=
- =?big5?B?MmU1YnQ3ai9IOFY5cEZDREgyRmROT0pRRjhtWklmRmJ0YkNIdEVWVmRIYmVIR3Ja?=
- =?big5?B?K3FwaUZaZVlQdEV1YkZJdXJhK2V1SGJhR2dTY1ZUcmdReWwvaktWcm1meVFxd2NL?=
- =?big5?B?SHRBc2RQOEVWRktxakZySjhkbmhnbmgxOG5UT1lOb2drL0g5azBzUFBGYmh0MWg5?=
- =?big5?B?NTFuSTRERnNlMXV5TXBEZ09mamUrczMzckN2NGZ4dnRBTStWRnQ2VVdBakw3TzVL?=
- =?big5?B?WXU1MmxtMkFBYzdpSU9aMjAxNjU4a21FK04wdFQ1T0NJMnZ0RkRGQ29oMERYd3pT?=
- =?big5?B?WnV2aWNKVDJFWWtXMUZTSW5jaFJjc3hlbi9Sb3RaWm5icGNRc1BIYlZjSnRnR3ha?=
- =?big5?B?bHJ6YUNKR3loVU1XT1UwYUdwbFlIVjJ5dUtYTXJtNm9hSjZaU2d1NE5KeHBMNHYr?=
- =?big5?B?Y3dNVzJYZ3pQYUpUN0VYVUh1dFl0RlJYYU9MUDhYMVg4Y0ZWOW5aQm92cEJBdi9G?=
- =?big5?B?OGFMazQ2cEZ6dVlXbGFoSFMwcThWTXNpeStJM0Z2SFZQZHE0VUJBVEI3cU1GT2M0?=
- =?big5?B?TnVIdzhSRzB4b2VKaG5uK0xYeGVWT3hLV2d1M2pjZldtcm16UHZGV3Z1cHJGUHU4?=
- =?big5?B?bVpTR29uQlN5ZnllSDFJak54RU1aUzNORzN3a1l1NFduN3dXdFNCZkxLSUpHalBZ?=
- =?big5?B?Y0NrUUo1RkJWdWQ1dVJ0c1cvUTd3eUQ3MlVQNEpjNXhyMmtpUzdERWhtR25RUnpr?=
- =?big5?B?VjkvS2NXZ2JTOWhqeFpHQmJuUHJzNXJNNlh1cjBMbUFzYnhKSFJLM2xYQkIwYnpU?=
- =?big5?B?MXh6YkY5aHROSlU2SmYvZ2lvanU4NFU0QXQ3QUZVMStMeVNWd1BqTkJOR3B2WFRH?=
- =?big5?B?eGJ5c01rRFlxQm05Y3NWNUxlT2ZqbUliNVdGUFpxcVhpN2t6WkFhZ3JEa2lBRmNM?=
- =?big5?B?OUtPN2ZFYzE5NFUyaU5ELzQvYzR3aXBWNC9oaW5JWEljY1hTVU1tRkFQL2I3ZVIy?=
- =?big5?B?cWlDdC9YOGhCYWdFUllYeWVpUE9qRUJIOExuVVNoeTUyZU1XT2J1UysvQVpVdkl2?=
- =?big5?B?RGp1N0kzOU5PTGJDUWlqNGFteWNIOUNwa0h0ZldOdkROczRjb1c4dDVwWGVrZ01E?=
- =?big5?B?K1ZFb0ZPZzgwUUtiU2dIVjh3WEZML3laUkVUangwK2hKblN2NXo0RzFFNDJJemFR?=
- =?big5?B?UmtKMVR1ZmZWd0xHVGFMbHVyaTVrVDA0NzErdCtva0JZaFNRKzRjNjk5dklKZnpq?=
- =?big5?B?ZWtVRkdUUlpkSDRsbnhJdVNzN2xXeFJSVEIrdkFyQ3RzUldmWmJEOWJRUGRQRmpI?=
- =?big5?B?czRqNEc5UUdCYTZqYXlzUU1BRHgrRTkvYVJUdHBWNEp5WjZKVmp3R05QeWgrcVFX?=
- =?big5?B?SkR3TlhFWEI1QmxXTHZWTEs1QnJjUT09?=
-Content-Type: text/plain; charset="big5"
-Content-Transfer-Encoding: base64
+ =?big5?B?dU90bTE3cVVMa0VSaTVJNWc5ZE84SElaQnhtemlqTFRXcG5PTVJIY2VCUm1VMnRJ?=
+ =?big5?B?elJWbnRQM1VvcjVrWFpWZUFCU2pRWjg4M0VjSzJsRXk3MVJNUjNYVWdYM0FucnRn?=
+ =?big5?B?bDlmRU92NVJId01wMTVrRDZoaUtyc2NOdC9VV0swQU9mVzBRdW56M1VLRkczQXlY?=
+ =?big5?B?MnNOMzhXOVhyY3lwT0Z1SjcyWFErOUNHOURPdm80RHZSekFVd3hLZVJlZllYSE01?=
+ =?big5?B?ZTV6R0t6L2c3OHdpbVd6VXlSODZ1R1R0cFVubld6b1VBNG9BcGwydnA3MWdYK2pl?=
+ =?big5?B?SFBocDNEMHlsMDUyN0lFL1pYcEdCRmV6d0pXNXp6MnhxYzJhMjIyZGJhc3FoSUZM?=
+ =?big5?B?M1pHOFpXUU56eEF6ekFRMng1SUtURkJjYndWWHMwYVdzY09SVVlheCtXOUN6V09C?=
+ =?big5?B?UnRXY3pYdjBLTUNaSzVTZzFXZ1A0M3c4OXBzZUhIdEh1ZWZraHJ0bnpTbFk5NVQr?=
+ =?big5?B?bkdZZ293d01idHR6dnVSbDlJR1pUSkI3T0IxU0tsc01aWUR0Mm1JZVdCdHQzUk5E?=
+ =?big5?B?aktrajVUY0tkTUxxaTNvZVpWaWJZaFRRS0FYaTV5T2dNbGl6NmZKSEc3dnZha0JQ?=
+ =?big5?B?MGZza0dWNmhQbTJzM3Yvai84R1B3N0l3MXk3YTd3S0Z4QUU4a200eVNWWGpnbHR6?=
+ =?big5?B?Y0hLZjRoUlBsVzlnR2FpZCtid3M2aHdRQkhCcmJaWFpJVi84eWdUa1g4QW1yMkxs?=
+ =?big5?B?Z1pudTU4d3lMWmdtM2pacDVtdUZ3b2JUT3hKbXlLeXlURTJSQ0N3KzliVlExZjJH?=
+ =?big5?B?RjIwUlJIaTlLNytMN3pWeFVjd3E5TnZXNE1OMDdjRlhRZWh3WTR6L2FhYVVPSFk3?=
+ =?big5?B?QWV5ZW5BZVE3YUxkKzFnaStvNDdwWTNreVBVUnI3QlFlM2VJWkswU09hV2dnOW9p?=
+ =?big5?B?T25SWXpIWXVoVUJWLzc3U2FIMUpJSUcyWkxULzE3QllBMmFjS0J2TTVGT3MySi9q?=
+ =?big5?B?bS9GbE5lVC91dEM1UzFaNU9ya3NaTXRPUlpwenhHZks5THZmdzVINWhvNkFqU3BJ?=
+ =?big5?B?ZU8zM2g2K0d6SllTYUx0RkhYZi81WjZ4ZS9zaHB2aXAvYlNkb1RQSExNM2NRdjMz?=
+ =?big5?B?OGM1bi9Ra0MvWGJXcXpDT1FyR21TVDNKYTBTdzdwaVh2ekZUTWlzM0hoellxa0s4?=
+ =?big5?B?eHFZMGtDdm96OVhEc3dLZk9nYlJNWnJ4RmtlWGNsRE5OZHNqT1V0YjRJZGUzcUUz?=
+ =?big5?B?QkFqVGJocGdEL0hOMTI3VXdWTGtiQjdJVzNPWTNwQjVLSU1DVlYyTmN0L0oxUTNX?=
+ =?big5?B?SGozNUJvazYvOG9Nc1U0RFdFUUwyYVZPMnZYT0FRSndVL3FrbVYrbzdwY21iRlJi?=
+ =?big5?B?Q1d4VG1LeEZCZ3MvcS9rWnlkZVgxWkJWUFpIendiVVIxTExjZnhQeWJ4U0JXTitn?=
+ =?big5?B?QWR0UUJjeFRFTjJQYjM3a0xJS0hnTVA0ZUNxZkFiMkRyY09wbWExUHkxejkxNVNu?=
+ =?big5?B?RWJ2NENyN3UvYVBPeDBqME9FSHBNRkVGSlU5QjU0T0JhN1pTYUhzeFZIWEZndCtC?=
+ =?big5?B?OWwzS25FUnM2QzR6SEwwT1g1dCtMNzlqRkdHTmUzWERJS3JCWkxSMkVWZEVpUVlU?=
+ =?big5?B?UUdGUnVmeWhFSHkzakxtbUJtdGxrUE9ySmpBRHdsZzFrc0JUQUk0Q092T1Z6dGdZ?=
+ =?big5?B?MEk4UkZYRGJKWTdkcXZ2eFVBWVo4ZEJadkhVb0xvcDAxYWtHaTJpNlE0WDJXWmxv?=
+ =?big5?B?S1UvRzE1dnVpNHpOQ3hqR3RTRlNWU1pLcE1LYUxNaTV4clprMFdvL01ZMGtjbU1j?=
+ =?big5?B?UEZMMTd6OGtKNmlEMEJSRlVFTmxmZVo4aitNTGFMZVJ3SnpkZWpDRFJnbTFFMTgv?=
+ =?big5?B?V2VSNjFMaEczTWxCUnRkR2ZRTWNmWHdCQkZVdzhyb3NrbHBvUHJkd0c3VDBGTHNG?=
+ =?big5?B?WWRjZmQ2TGgvZGsrNCtLNVliU3dGOWRmNlBUQmE5VU0wbHhCMk1RcU5CTzBiYXZJ?=
+ =?big5?B?T3FqYUk1Zk5uMUIyZkcrVjNCMEo3djZEOSswb0hJenpISFZ5ZHI0Ukc0cFBYbVpF?=
+ =?big5?B?T01qRmJibExCQWQ5Z0VWK3hJdHYwL1QvWnJqNjM3THBLa2NRR1lkZjV5d2ZKanRr?=
+ =?big5?B?eDdJZTBRRUJIUG9vLzNxZWtibTAxTGg0VGMxSy90czJqQ1RTdmFHSlVJNzRERzEy?=
+ =?big5?B?K1BXY1p1aG9uUmZrS2Z1YVJ2TWNHai9qeFhXUUtKSzdQcDhHTWFlMW9kN1gwem92?=
+ =?big5?B?THZEemMwd0J4dEJ1SEl6TExoRXUwdz09?=
+Content-Type: multipart/alternative;
+	boundary="_000_TY0PR06MB6855F4F499246CD5C44DB23893FA2TY0PR06MB6855apcp_"
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -156,46 +153,376 @@ MIME-Version: 1.0
 X-OriginatorOrg: aspeedtech.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
 X-MS-Exchange-CrossTenant-AuthSource: TY0PR06MB6855.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 898386bc-aac8-4f18-ed6d-08dee0ad9d9c
-X-MS-Exchange-CrossTenant-originalarrivaltime: 13 Jul 2026 07:09:01.0986
+X-MS-Exchange-CrossTenant-Network-Message-Id: bb4d90c3-4608-4895-ee86-08dee0a06114
+X-MS-Exchange-CrossTenant-originalarrivaltime: 13 Jul 2026 05:34:16.0567
  (UTC)
 X-MS-Exchange-CrossTenant-fromentityheader: Hosted
 X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
 X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: OUdH3BaHV6D3TpX5jpEhAsttVPobtCmYENx97au9fBg6+OklM+5UuE2FmiHIOjDB1HHeXVa384znsyBJwDmVdg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: JH0PR06MB7198
+X-MS-Exchange-CrossTenant-userprincipalname: NH6fmECNkyfra9IqhEmnCB2Ml/GFOPOieS0XQnH0Bdi4vPF2laQ7yMS30MyUNqLZi1oHvEOLl2khHh3IeD3nng==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SEZPR06MB5713
 
-PiBJIGRvbid0IHVuZGVyc3RhbmQgd2hhdCB5b3UgYXJlIHJlZmVycmluZyB0bywgZW50aXJlIGNv
-bnRleHQgaXMgZ29uZQo+IGJlY2F1c2UgZXNzZW50aWFsbHkgeW91IHRvcC1wb3N0ZWQuCgpTb3Jy
-eSBhYm91dCB0aGF0LiBJIG1pc3VuZGVyc3Rvb2QgdGhlIG1haWxpbmcgbGlzdCBldGlxdWV0dGUu
-CklubGluZSByZXBseSBiZWxvdy4KCk9uIDI5LzA2LzIwMjYgMDg6NDksIFl1LUNoZSBIc2llaCB2
-aWEgQjQgUmVsYXkgd3JvdGU6Cj4+IEZyb206IFl1LUNoZSBIc2llaCA8eWNfaHNpZWhAYXNwZWVk
-dGVjaC5jb20+Cj4+Cj4+IEFsbG9jYXRpbmcgSU8gYW5kIElSUSByZXNvdXJjZXMgdG8gTFBDIGRl
-dmljZXMgaXMgaW4tdGhlb3J5IGFuIG9wZXJhdGlvbgo+Pgo+PiBmb3IgdGhlIGhvc3QsIGhvd2V2
-ZXIgQVNQRUVEIHN5c3RlbXMgZGVzY3JpYmUgdGhlc2UgcmVzb3VyY2VzIHRocm91Z2gKPj4KPj4g
-Qk1DLWludGVybmFsIGNvbmZpZ3VyYXRpb24sIGFzIGFscmVhZHkgc3VwcG9ydGVkIGJ5IHRoZSBB
-U1BFRUQgS0NTIEJNQwoKPiBXaGF0Cj4KPiBpcwo+Cj4gd2l0aAo+Cj4gdGhpcwo+Cj4gbGluZSBi
-cmVha3M/CgpBcG9sb2dpZXMgZm9yIHRoZSBicm9rZW4gZm9ybWF0dGluZyBpbiB0aGUgY29tbWl0
-IG1lc3NhZ2UuCkkgd2lsbCBmaXggaXQgaW4gdGhlIG5leHQgcmV2aXNpb24uCgo+PiArICBhc3Bl
-ZWQsbHBjLWlvLXJlZzoKPj4gKyAgICAkcmVmOiAvc2NoZW1hcy90eXBlcy55YW1sIy9kZWZpbml0
-aW9ucy91aW50MzItYXJyYXkKPj4gKyAgICBtYXhJdGVtczogMQo+PiArICAgIGRlc2NyaXB0aW9u
-OiB8Cj4+ICsgICAgICBUaGUgaG9zdCBDUFUgTFBDIElPIGFkZHJlc3MgZm9yIHRoZSBCVCBkZXZp
-Y2UuCgo+IE5vLCB5b3UgZG8gbm90IGdldCBzZWNvbmQgcmVnIHByb3BlcnR5LgoKPj4gKwo+PiAr
-ICBhc3BlZWQsbHBjLWludGVycnVwdHM6Cj4+ICsgICAgJHJlZjogL3NjaGVtYXMvdHlwZXMueWFt
-bCMvZGVmaW5pdGlvbnMvdWludDMyLWFycmF5Cj4+ICsgICAgbWluSXRlbXM6IDIKPj4gKyAgICBt
-YXhJdGVtczogMgo+PiArICAgIGRlc2NyaXB0aW9uOiB8Cj4+ICsgICAgICBBIDItY2VsbCBwcm9w
-ZXJ0eSBleHByZXNzaW5nIHRoZSBMUEMgU2VySVJRIG51bWJlciBhbmQgdGhlIGludGVycnVwdAo+
-PiArICAgICAgbGV2ZWwvc2Vuc2UgZW5jb2RpbmcgKHNwZWNpZmllZCBpbiB0aGUgc3RhbmRhcmQg
-ZmFzaGlvbikuCj4+ICsKPj4gKyAgICAgIE5vdGUgdGhhdCB0aGUgZ2VuZXJhdGVkIGludGVycnVw
-dCBpcyBpc3N1ZWQgZnJvbSB0aGUgQk1DIHRvIHRoZSBob3N0LCBhbmQKPj4gKyAgICAgIHRodXMg
-dGhlIHRhcmdldCBpbnRlcnJ1cHQgY29udHJvbGxlciBpcyBub3QgY2FwdHVyZWQgYnkgdGhlIEJN
-QydzCj4gKyAgICAgZGV2aWNldHJlZS4KCj4gTm8sIHlvdSBkbyBub3QgZ2V0IHNlY29uZCBpbnRl
-cnJ1cHRzIHByb3BlcnR5LgoKVW5kZXJzdG9vZC4KClRoZXNlIHZhbHVlcyBhcmUgbm90IGFkZHJl
-c3NhYmxlIHJlc291cmNlcyBvZiB0aGUgQk1DIG5vZGUgaXRzZWxmOwpyYXRoZXIsIHRoZXkgZGVz
-Y3JpYmUgaG93IHRoZSBCTUMncyBMUEMgZW5naW5lIGlzIGV4cG9zZWQgb24gdGhlIGhvc3QKTFBD
-IGJ1cy4gSSBhbSBub3Qgc3VyZSBob3cgdGhleSBzaG91bGQgYmUgcmVwcmVzZW50ZWQgaW4gRFQs
-IHNpbmNlCnRoZXkgZG8gbm90IHNlZW0gdG8gZml0IHRoZSB1c3VhbCBzZW1hbnRpY3Mgb2YgZWl0
-aGVyICJyZWciIG9yICJpbnRlcnJ1cHRzIi4KCkRvIHlvdSBoYXZlIGEgcHJlZmVycmVkIHdheSB0
-byByZXByZXNlbnQgdGhpcyBraW5kIG9mIGhvc3QtZmFjaW5nIExQQwpjb25maWd1cmF0aW9uIGlu
-IHRoZSBiaW5kaW5nPwoKVGhhbmtzLApZdS1DaGU=
+--_000_TY0PR06MB6855F4F499246CD5C44DB23893FA2TY0PR06MB6855apcp_
+Content-Type: text/plain; charset="big5"
+Content-Transfer-Encoding: base64
+
+T24gVHVlLCBKdW4gMzAsIDIwMjYgYXQgMDg6MTE6MzRBTSArMDIwMCwgS3J6eXN6dG9mIEtvemxv
+d3NraSB3cm90ZToNCg0KPiBXaGF0DQo+DQo+IGlzDQo+DQo+IHdpdGgNCj4NCj4gdGhpcw0KPg0K
+PiBsaW5lIGJyZWFrcz8NCg0KQXBvbG9naWVzIGZvciB0aGUgYnJva2VuIGZvcm1hdHRpbmcgaW4g
+dGhlIGNvbW1pdCBtZXNzYWdlLg0KSSB3aWxsIGZpeCBpdCBpbiB0aGUgbmV4dCByZXZpc2lvbi4N
+Cg0KPiBObywgeW91IGRvIG5vdCBnZXQgc2Vjb25kIHJlZyBwcm9wZXJ0eS4NCj4NCj4gTm8sIHlv
+dSBkbyBub3QgZ2V0IHNlY29uZCBpbnRlcnJ1cHRzIHByb3BlcnR5Lg0KDQpVbmRlcnN0b29kLg0K
+DQpUaGVzZSB2YWx1ZXMgYXJlIG5vdCBhZGRyZXNzYWJsZSByZXNvdXJjZXMgb2YgdGhlIEJNQyBu
+b2RlIGl0c2VsZjsNCnJhdGhlciwgdGhleSBkZXNjcmliZSBob3cgdGhlIEJNQydzIExQQyBlbmdp
+bmUgaXMgZXhwb3NlZCBvbiB0aGUgaG9zdA0KTFBDIGJ1cy4gSSBhbSBub3Qgc3VyZSBob3cgdGhl
+eSBzaG91bGQgYmUgcmVwcmVzZW50ZWQgaW4gRFQsIHNpbmNlDQp0aGV5IGRvIG5vdCBzZWVtIHRv
+IGZpdCB0aGUgdXN1YWwgc2VtYW50aWNzIG9mIGVpdGhlciAicmVnIiBvciAiaW50ZXJydXB0cyIu
+DQoNCkRvIHlvdSBoYXZlIGEgcHJlZmVycmVkIHdheSB0byByZXByZXNlbnQgdGhpcyBraW5kIG9m
+IGhvc3QtZmFjaW5nIExQQw0KY29uZmlndXJhdGlvbiBpbiB0aGUgYmluZGluZz8NCg0KVGhhbmtz
+LA0KWXUtQ2hlDQoNCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fDQqxSKXzqsw6IEty
+enlzenRvZiBLb3psb3dza2kgPGtyemtAa2VybmVsLm9yZz4NCqR3tsewZTogrFC0waRHLCAyMDI2
+IKZ+IDYgpOsgMzAgpOkgpFWkyCAwMjoxMQ0Kpqyl86rMOiBZQyBIc2llaCA8eWNfaHNpZWhAYXNw
+ZWVkdGVjaC5jb20+OyBDb3JleSBNaW55YXJkIDxjb3JleUBtaW55YXJkLm5ldD47IFJvYiBIZXJy
+aW5nIDxyb2JoQGtlcm5lbC5vcmc+OyBLcnp5c3p0b2YgS296bG93c2tpIDxrcnprK2R0QGtlcm5l
+bC5vcmc+OyBDb25vciBEb29sZXkgPGNvbm9yK2R0QGtlcm5lbC5vcmc+OyBKb2VsIFN0YW5sZXkg
+PGpvZWxAam1zLmlkLmF1PjsgQW5kcmV3IEplZmZlcnkgPGFuZHJld0Bjb2RlY29uc3RydWN0LmNv
+bS5hdT4NCrDGpbs6IG9wZW5pcG1pLWRldmVsb3BlckBsaXN0cy5zb3VyY2Vmb3JnZS5uZXQgPG9w
+ZW5pcG1pLWRldmVsb3BlckBsaXN0cy5zb3VyY2Vmb3JnZS5uZXQ+OyBsaW51eC1rZXJuZWxAdmdl
+ci5rZXJuZWwub3JnIDxsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnPjsgZGV2aWNldHJlZUB2
+Z2VyLmtlcm5lbC5vcmcgPGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnPjsgbGludXgtYXJtLWtl
+cm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnIDxsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVh
+ZC5vcmc+OyBsaW51eC1hc3BlZWRAbGlzdHMub3psYWJzLm9yZyA8bGludXgtYXNwZWVkQGxpc3Rz
+Lm96bGFicy5vcmc+DQqlRKauOiBSZTogW1BBVENIIDMvNF0gZHQtYmluZGluZ3M6IGlwbWk6IEFk
+ZCBvcHRpb25hbCBMUEMgcHJvcGVydGllcyB0byBBU1BFRUQgQlQgZGV2aWNlcw0KDQpPbiAyOS8w
+Ni8yMDI2IDA4OjQ5LCBZdS1DaGUgSHNpZWggdmlhIEI0IFJlbGF5IHdyb3RlOg0KPiBGcm9tOiBZ
+dS1DaGUgSHNpZWggPHljX2hzaWVoQGFzcGVlZHRlY2guY29tPg0KPg0KPiBBbGxvY2F0aW5nIElP
+IGFuZCBJUlEgcmVzb3VyY2VzIHRvIExQQyBkZXZpY2VzIGlzIGluLXRoZW9yeSBhbiBvcGVyYXRp
+b24NCj4NCj4gZm9yIHRoZSBob3N0LCBob3dldmVyIEFTUEVFRCBzeXN0ZW1zIGRlc2NyaWJlIHRo
+ZXNlIHJlc291cmNlcyB0aHJvdWdoDQo+DQo+IEJNQy1pbnRlcm5hbCBjb25maWd1cmF0aW9uLCBh
+cyBhbHJlYWR5IHN1cHBvcnRlZCBieSB0aGUgQVNQRUVEIEtDUyBCTUMNCg0KV2hhdA0KDQppcw0K
+DQp3aXRoDQoNCnRoaXMNCg0KbGluZSBicmVha3M/DQoNCg0KPg0KPiBiaW5kaW5nLg0KPg0KPiBB
+ZGQgYXNwZWVkLGxwYy1pby1yZWcgYW5kIGFzcGVlZCxscGMtaW50ZXJydXB0cyB0byB0aGUgQVNQ
+RUVEIEJUIEJNQw0KPg0KPiBiaW5kaW5nIHNvIGZpcm13YXJlIGNhbiBkZXNjcmliZSB0aGUgaG9z
+dCBMUEMgSU8gYWRkcmVzcyBhbmQgU2VySVJRDQo+DQo+IGNvbmZpZ3VyYXRpb24gdXNpbmcgdGhl
+IHNhbWUgcHJvcGVydGllcyBhcyBLQ1MgZGV2aWNlcy4NCj4NCj4gU2lnbmVkLW9mZi1ieTogWXUt
+Q2hlIEhzaWVoIDx5Y19oc2llaEBhc3BlZWR0ZWNoLmNvbT4NCj4gLS0tDQo+IC4uLi9iaW5kaW5n
+cy9pcG1pL2FzcGVlZCxhc3QyNDAwLWlidC1ibWMueWFtbCAgICAgICB8IDIxICsrKysrKysrKysr
+KysrKysrKysrKw0KPiAgMSBmaWxlIGNoYW5nZWQsIDIxIGluc2VydGlvbnMoKykNCj4NCj4gZGlm
+ZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9pcG1pL2FzcGVlZCxh
+c3QyNDAwLWlidC1ibWMueWFtbCBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9p
+cG1pL2FzcGVlZCxhc3QyNDAwLWlidC1ibWMueWFtbA0KPiBpbmRleCBjNGY3Y2RiYmUxNmIuLjE4
+MDNjNmJiYWU5MyAxMDA2NDQNCj4gLS0tIGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRp
+bmdzL2lwbWkvYXNwZWVkLGFzdDI0MDAtaWJ0LWJtYy55YW1sDQo+ICsrKyBiL0RvY3VtZW50YXRp
+b24vZGV2aWNldHJlZS9iaW5kaW5ncy9pcG1pL2FzcGVlZCxhc3QyNDAwLWlidC1ibWMueWFtbA0K
+PiBAQCAtMjUsNiArMjUsMjQgQEAgcHJvcGVydGllczoNCj4gICAgaW50ZXJydXB0czoNCj4gICAg
+ICBtYXhJdGVtczogMQ0KPg0KPiArICBhc3BlZWQsbHBjLWlvLXJlZzoNCj4gKyAgICAkcmVmOiAv
+c2NoZW1hcy90eXBlcy55YW1sIy9kZWZpbml0aW9ucy91aW50MzItYXJyYXkNCj4gKyAgICBtYXhJ
+dGVtczogMQ0KPiArICAgIGRlc2NyaXB0aW9uOiB8DQo+ICsgICAgICBUaGUgaG9zdCBDUFUgTFBD
+IElPIGFkZHJlc3MgZm9yIHRoZSBCVCBkZXZpY2UuDQoNCk5vLCB5b3UgZG8gbm90IGdldCBzZWNv
+bmQgcmVnIHByb3BlcnR5Lg0KDQo+ICsNCj4gKyAgYXNwZWVkLGxwYy1pbnRlcnJ1cHRzOg0KPiAr
+ICAgICRyZWY6IC9zY2hlbWFzL3R5cGVzLnlhbWwjL2RlZmluaXRpb25zL3VpbnQzMi1hcnJheQ0K
+PiArICAgIG1pbkl0ZW1zOiAyDQo+ICsgICAgbWF4SXRlbXM6IDINCj4gKyAgICBkZXNjcmlwdGlv
+bjogfA0KPiArICAgICAgQSAyLWNlbGwgcHJvcGVydHkgZXhwcmVzc2luZyB0aGUgTFBDIFNlcklS
+USBudW1iZXIgYW5kIHRoZSBpbnRlcnJ1cHQNCj4gKyAgICAgIGxldmVsL3NlbnNlIGVuY29kaW5n
+IChzcGVjaWZpZWQgaW4gdGhlIHN0YW5kYXJkIGZhc2hpb24pLg0KPiArDQo+ICsgICAgICBOb3Rl
+IHRoYXQgdGhlIGdlbmVyYXRlZCBpbnRlcnJ1cHQgaXMgaXNzdWVkIGZyb20gdGhlIEJNQyB0byB0
+aGUgaG9zdCwgYW5kDQo+ICsgICAgICB0aHVzIHRoZSB0YXJnZXQgaW50ZXJydXB0IGNvbnRyb2xs
+ZXIgaXMgbm90IGNhcHR1cmVkIGJ5IHRoZSBCTUMncw0KPiArICAgICBkZXZpY2V0cmVlLg0KDQpO
+bywgeW91IGRvIG5vdCBnZXQgc2Vjb25kIGludGVycnVwdHMgcHJvcGVydHkuDQoNCj4NCg0KDQpC
+ZXN0IHJlZ2FyZHMsDQpLcnp5c3p0b2YNCg==
+
+--_000_TY0PR06MB6855F4F499246CD5C44DB23893FA2TY0PR06MB6855apcp_
+Content-Type: text/html; charset="big5"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dbig5">
+<style type=3D"text/css" style=3D"display:none;"> P {margin-top:0;margin-bo=
+ttom:0;} </style>
+</head>
+<body dir=3D"ltr">
+<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
+quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
+ Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
+b(0, 0, 0);">
+On Tue, Jun 30, 2026 at 08:11:34AM +0200, Krzysztof Kozlowski wrote:</div>
+<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
+quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
+ Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
+b(0, 0, 0);">
+<br>
+</div>
+<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
+quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
+ Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
+b(0, 0, 0);">
+&gt; What</div>
+<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
+quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
+ Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
+b(0, 0, 0);">
+&gt;&nbsp;</div>
+<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
+quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
+ Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
+b(0, 0, 0);">
+&gt; is</div>
+<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
+quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
+ Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
+b(0, 0, 0);">
+&gt;&nbsp;</div>
+<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
+quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
+ Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
+b(0, 0, 0);">
+&gt; with</div>
+<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
+quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
+ Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
+b(0, 0, 0);">
+&gt;</div>
+<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
+quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
+ Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
+b(0, 0, 0);">
+&gt; this</div>
+<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
+quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
+ Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
+b(0, 0, 0);">
+&gt;</div>
+<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
+quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
+ Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
+b(0, 0, 0);">
+&gt; line breaks?</div>
+<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
+quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
+ Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
+b(0, 0, 0);">
+<br>
+</div>
+<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
+quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
+ Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
+b(0, 0, 0);">
+Apologies for the broken formatting in the commit message.</div>
+<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
+quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
+ Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
+b(0, 0, 0);">
+I will fix it in the next revision.</div>
+<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
+quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
+ Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
+b(0, 0, 0);">
+<br>
+</div>
+<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
+quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
+ Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
+b(0, 0, 0);">
+&gt; No, you do not get second reg property.</div>
+<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
+quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
+ Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
+b(0, 0, 0);">
+&gt;</div>
+<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
+quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
+ Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
+b(0, 0, 0);">
+&gt; No, you do not get second interrupts property.</div>
+<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
+quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
+ Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
+b(0, 0, 0);">
+<br>
+</div>
+<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
+quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
+ Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
+b(0, 0, 0);">
+Understood.</div>
+<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
+quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
+ Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
+b(0, 0, 0);">
+<br>
+</div>
+<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
+quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
+ Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
+b(0, 0, 0);">
+These values are not addressable resources of the BMC node itself;</div>
+<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
+quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
+ Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
+b(0, 0, 0);">
+rather, they describe how the BMC's LPC engine is exposed on the host</div>
+<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
+quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
+ Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
+b(0, 0, 0);">
+LPC bus. I am not sure how they should be represented in DT, since</div>
+<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
+quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
+ Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
+b(0, 0, 0);">
+they do not seem to fit the usual semantics of either &quot;reg&quot; or &q=
+uot;interrupts&quot;.</div>
+<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
+quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
+ Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
+b(0, 0, 0);">
+<br>
+</div>
+<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
+quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
+ Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
+b(0, 0, 0);">
+Do you have a preferred way to represent this kind of host-facing LPC</div>
+<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
+quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
+ Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
+b(0, 0, 0);">
+configuration in the binding?</div>
+<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
+quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
+ Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
+b(0, 0, 0);">
+<br>
+</div>
+<div class=3D"elementToProof" style=3D"font-family: &quot;Segoe UI&quot;, &=
+quot;Segoe UI Web (West European)&quot;, -apple-system, BlinkMacSystemFont,=
+ Roboto, &quot;Helvetica Neue&quot;, sans-serif; font-size: 11pt; color: rg=
+b(0, 0, 0);">
+Thanks,</div>
+<div style=3D"font-family: &quot;Segoe UI&quot;, &quot;Segoe UI Web (West E=
+uropean)&quot;, -apple-system, BlinkMacSystemFont, Roboto, &quot;Helvetica =
+Neue&quot;, sans-serif; font-size: 11pt; color: rgb(0, 0, 0);">
+Yu-Che</div>
+<div style=3D"font-family: Calibri, Arial, Helvetica, sans-serif; font-size=
+: 12pt; color: rgb(0, 0, 0);">
+<br>
+</div>
+<hr style=3D"display: inline-block; width: 98%;">
+<div style=3D"font-family: Calibri, Arial, Helvetica, sans-serif; font-size=
+: 12pt; color: rgb(0, 0, 0);">
+<b>=B1H=A5=F3=AA=CC:</b> Krzysztof Kozlowski &lt;krzk@kernel.org&gt;<br>
+<b>=A4w=B6=C7=B0e:</b> =ACP=B4=C1=A4G, 2026 =A6~ 6 =A4=EB 30 =A4=E9 =A4U=A4=
+=C8 02:11<br>
+<b>=A6=AC=A5=F3=AA=CC:</b> YC Hsieh &lt;yc_hsieh@aspeedtech.com&gt;; Corey =
+Minyard &lt;corey@minyard.net&gt;; Rob Herring &lt;robh@kernel.org&gt;; Krz=
+ysztof Kozlowski &lt;krzk+dt@kernel.org&gt;; Conor Dooley &lt;conor+dt@kern=
+el.org&gt;; Joel Stanley &lt;joel@jms.id.au&gt;; Andrew Jeffery &lt;andrew@=
+codeconstruct.com.au&gt;<br>
+<b>=B0=C6=A5=BB:</b> openipmi-developer@lists.sourceforge.net &lt;openipmi-=
+developer@lists.sourceforge.net&gt;; linux-kernel@vger.kernel.org &lt;linux=
+-kernel@vger.kernel.org&gt;; devicetree@vger.kernel.org &lt;devicetree@vger=
+.kernel.org&gt;; linux-arm-kernel@lists.infradead.org &lt;linux-arm-kernel@=
+lists.infradead.org&gt;;
+ linux-aspeed@lists.ozlabs.org &lt;linux-aspeed@lists.ozlabs.org&gt;<br>
+<b>=A5D=A6=AE:</b> Re: [PATCH 3/4] dt-bindings: ipmi: Add optional LPC prop=
+erties to ASPEED BT devices
+</div>
+<div style=3D"font-family: Calibri, Arial, Helvetica, sans-serif; font-size=
+: 12pt; color: rgb(0, 0, 0);">
+<br>
+</div>
+<div style=3D"font-size: 11pt;">On 29/06/2026 08:49, Yu-Che Hsieh via B4 Re=
+lay wrote:<br>
+&gt; From: Yu-Che Hsieh &lt;yc_hsieh@aspeedtech.com&gt;<br>
+&gt;<br>
+&gt; Allocating IO and IRQ resources to LPC devices is in-theory an operati=
+on<br>
+&gt;<br>
+&gt; for the host, however ASPEED systems describe these resources through<=
+br>
+&gt;<br>
+&gt; BMC-internal configuration, as already supported by the ASPEED KCS BMC=
+<br>
+<br>
+What<br>
+<br>
+is<br>
+<br>
+with<br>
+<br>
+this<br>
+<br>
+line breaks?<br>
+<br>
+<br>
+&gt;<br>
+&gt; binding.<br>
+&gt;<br>
+&gt; Add aspeed,lpc-io-reg and aspeed,lpc-interrupts to the ASPEED BT BMC<b=
+r>
+&gt;<br>
+&gt; binding so firmware can describe the host LPC IO address and SerIRQ<br=
+>
+&gt;<br>
+&gt; configuration using the same properties as KCS devices.<br>
+&gt;<br>
+&gt; Signed-off-by: Yu-Che Hsieh &lt;yc_hsieh@aspeedtech.com&gt;<br>
+&gt; ---<br>
+&gt; .../bindings/ipmi/aspeed,ast2400-ibt-bmc.yaml&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp; | 21 +++++++++++++++++++++<br>
+&gt;&nbsp; 1 file changed, 21 insertions(+)<br>
+&gt;<br>
+&gt; diff --git a/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt=
+-bmc.yaml b/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt-bmc.y=
+aml<br>
+&gt; index c4f7cdbbe16b..1803c6bbae93 100644<br>
+&gt; --- a/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt-bmc.ya=
+ml<br>
+&gt; +++ b/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt-bmc.ya=
+ml<br>
+&gt; @@ -25,6 +25,24 @@ properties:<br>
+&gt;&nbsp;&nbsp;&nbsp; interrupts:<br>
+&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; maxItems: 1<br>
+&gt;&nbsp;<br>
+&gt; +&nbsp; aspeed,lpc-io-reg:<br>
+&gt; +&nbsp;&nbsp;&nbsp; $ref: /schemas/types.yaml#/definitions/uint32-arra=
+y<br>
+&gt; +&nbsp;&nbsp;&nbsp; maxItems: 1<br>
+&gt; +&nbsp;&nbsp;&nbsp; description: |<br>
+&gt; +&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The host CPU LPC IO address for the BT=
+ device.<br>
+<br>
+No, you do not get second reg property.<br>
+<br>
+&gt; +<br>
+&gt; +&nbsp; aspeed,lpc-interrupts:<br>
+&gt; +&nbsp;&nbsp;&nbsp; $ref: /schemas/types.yaml#/definitions/uint32-arra=
+y<br>
+&gt; +&nbsp;&nbsp;&nbsp; minItems: 2<br>
+&gt; +&nbsp;&nbsp;&nbsp; maxItems: 2<br>
+&gt; +&nbsp;&nbsp;&nbsp; description: |<br>
+&gt; +&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; A 2-cell property expressing the LPC S=
+erIRQ number and the interrupt<br>
+&gt; +&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; level/sense encoding (specified in the=
+ standard fashion).<br>
+&gt; +<br>
+&gt; +&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Note that the generated interrupt is i=
+ssued from the BMC to the host, and<br>
+&gt; +&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; thus the target interrupt controller i=
+s not captured by the BMC's<br>
+&gt; +&nbsp;&nbsp;&nbsp;&nbsp; devicetree.<br>
+<br>
+No, you do not get second interrupts property.<br>
+<br>
+&gt;<br>
+<br>
+<br>
+Best regards,<br>
+Krzysztof<br>
+</div>
+</body>
+</html>
+
+--_000_TY0PR06MB6855F4F499246CD5C44DB23893FA2TY0PR06MB6855apcp_--
 
