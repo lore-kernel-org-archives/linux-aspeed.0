@@ -1,79 +1,89 @@
-Return-Path: <linux-aspeed+bounces-4478-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4479-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4698DC44508
-	for <linux-aspeed@archiver.kernel.org>; Wed, 15 Jul 2026 07:31:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0FDFFC44501
+	for <linux-aspeed@archiver.kernel.org>; Wed, 15 Jul 2026 07:32:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h0SY60rGrz2xWP;
-	Wed, 15 Jul 2026 17:31:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=162.62.57.210
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784046816;
-	cv=none; b=ebfcQBTL5iZR/Ma/4dXaw+5tHdtg8FEexH6CvtmJtgre9BpOlv3KnDEey/NPsg+5dWK1sPuA0GEPT4L31xszbonK1uV91vmNeBhd1QNo8wG4csRVXOJbsrQr3XsYbm4onuXu5qRweamQNU+yYUrrj3M01mcga1WWQGj6Gc3FgXW7X5d/LycgQ414zXJrsFwP9Q1PmzHaHH1UjFXEfnGntUHGlTwuGkmFqWHI64F2/XTSujDMIb/OfMDqyb+lqxsNpcIC33Ch9e4BNu+7SRL3i5aHIJlkh4GqwrPObwpK0Z2Ibu3EyFAWHlLlUnff91y70qsIB7ceNf0JMF6ZrlBFLw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h0SYQ2pGhz303X;
+	Wed, 15 Jul 2026 17:32:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784032385;
+	cv=none; b=V2KUZYWi3uJ6OdKGb6KAoyzgWVkRd9JHHdLOmS4IkbcwBm+SUg4tfengybKdPgg7X2fCDfLtabJV0O/epfHLHxTitiAZ5ggijEuaWsmjXuV8p21RRFfrEkDvkZp94JBY0CbKaHuODM5uY/WLxk40Psbu/Q73HN8zYoKnjCxE5YZGxWQtxng6yImNwF0+XhdIL5Y5+2Y7H+ZVBQ8FUOUwgEIw5E1X6oJwwP3xi5qadXXJAvPJroRA6NR7dz9VF7LrseKuktYBSoH3y8gK6Cnsoo1fiw2/sUutsGPL22BkLFKOQ7lbFFXYbpUUL9UMIXOPD76Cy4LeknNxI7XOnd0dhQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784046816; c=relaxed/relaxed;
-	bh=SbwCLFKbdOzKV5i/+UY6gKXliGQuPyrcEE9A2zGzU44=;
-	h=Message-ID:From:To:Cc:Subject:Date:In-Reply-To:References:
-	 MIME-Version; b=orKyfgj5ZA1DtEqBu+BsqcgfUwU02uu6tHOj5Qlt3CmzYVaz0OP60Lu56Lcue1lgrI93UwSHfPAxUlZH07pBt+oopPHehTWwm36bSKT6UqAVTyHilg4OcxMOlY4PDj9Ri6PCPPJQYBVap2KdnjCuSlhj8L0VkkJXq9Woz5Vde2CCG3GtfC94pvEAu63TUpeza20A4InsKk/QMvzouhcDMukoDzwHLXDquLPnn7rrmZw4xsasam270C5r/Hntmh9LUkRmwY+Kuq/qJa3qrnfcbZGwtqcTlZkfLAdf1sZFojOl5lyQ/e0tYX4TodJmAmxLT86KsMkp1XdM2y5aJCAbRw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com; dkim=pass (1024-bit key; unprotected) header.d=qq.com header.i=@qq.com header.a=rsa-sha256 header.s=s201512 header.b=jTg3tL0S; dkim-atps=neutral; spf=pass (client-ip=162.62.57.210; helo=out162-62-57-210.mail.qq.com; envelope-from=920484857@qq.com; receiver=lists.ozlabs.org) smtp.mailfrom=qq.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com
+	t=1784032385; c=relaxed/relaxed;
+	bh=DNvAJagM0h/ttBqvPmQVo9CO+v+pNiBOB9YPIRh2j6k=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=As69sTeoGX6hYbbAM46OGuUzJlRz3z50RAnW0Bn6Ol9P3Gsv2UBIRseKuBx54c0UL4v9KCjfZ+jSMRikdxvnmHxuelp8/BcqJdmL+VozuZt8hk5tTzZ2KtWPYpMZ5/jtrySBOzuL8J8YBTjW+gXaG+Iwz9cQ+G91uerGcohpG12lxNqjjeSqNsBC7xt6aCozBQ+ZEkjrM5rGnSe0IQ7YkvC5AyIvVHmbpGhlyu2MelGQWjVhUgHtobnqyMsGFEmdpyF80CIlyY37EiTNbDpnM8HwSp14IJceVfuCDdelDxavBqN/J3ROUHfoCAghuV9G6yn+salFULQSMZFC2AV37Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=X2jX3l/s; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102e; helo=mail-pj1-x102e.google.com; envelope-from=lgs201920130244@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=qq.com header.i=@qq.com header.a=rsa-sha256 header.s=s201512 header.b=jTg3tL0S;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=X2jX3l/s;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=qq.com (client-ip=162.62.57.210; helo=out162-62-57-210.mail.qq.com; envelope-from=920484857@qq.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 11019 seconds by postgrey-1.37 at boromir; Wed, 15 Jul 2026 02:33:30 AEST
-Received: from out162-62-57-210.mail.qq.com (out162-62-57-210.mail.qq.com [162.62.57.210])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102e; helo=mail-pj1-x102e.google.com; envelope-from=lgs201920130244@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com [IPv6:2607:f8b0:4864:20::102e])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4h04cV2W7Nz2y8p
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 15 Jul 2026 02:33:24 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qq.com; s=s201512;
-	t=1784046796; bh=SbwCLFKbdOzKV5i/+UY6gKXliGQuPyrcEE9A2zGzU44=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=jTg3tL0SDeXkx9IXLXPtREYsdyrvTyPftXH5sBCZW1GOpgBA6/D2/Cunvk9PtDcDc
-	 bB3CBOUQGraWDkC+BkJqVu9LBkQ21TW4xFyxkqfYH4lmqadnqkvuee8Ubwv8fMROXk
-	 tTpmylr8bmVV0+u1q+SM3ViuMifsW5RSYx2X+MaY=
-Received: from localhost.localdomain ([116.128.244.169])
-	by newxmesmtplogicsvrsza63-0.qq.com (NewEsmtp) with SMTP
-	id 70B1EC6E; Tue, 14 Jul 2026 21:28:11 +0800
-X-QQ-mid: xmsmtpt1784035692t4weielk1
-Message-ID: <tencent_B8B26921190C2CF6D2C906B793EDA107720A@qq.com>
-X-QQ-XMAILINFO: NxKoLLhE22aTd/x9fnDR3jp18PMFxxKgbHYDQIOpNvDpEBX+nVa4VyweCRJzxf
-	 1fjJObbD3tZsMMrIRl5PTBVqq53QCVi5Wu567Z3V/NX6HG2gDiroCFfFZs8P28FUu+71rBbCdqDX
-	 V7ZOc/voIoB61FnfK8VOclBigTkP0Pm/IMqLM5N+rVVchytNR4fvbhz21sUr5QHPYoopjuxykJTD
-	 aZTkxLWHeN55Z2MRfnl6gpG6FxfNjPSSfPOWrVqVNXp61NANepUsB9qc9Yc1+lET9sJmdurncwAr
-	 kKNwRqBx36r/71dudQFkUM9ABymWJlnCMODAi2x+W9bSZQA53Fpcm+r2YY+cd8ReJw/PZhJe3EIB
-	 Oem6t9VNhiQ+cgxXhVZ5OxxoaVCf7dIrAuTPmiG9/Pq0dPMxlOJFZWeFTiENjuq44osnRc8iQyrS
-	 yKsYJ2wr51Ii2nsIr9eXMhddexY578jnlllg2vQRhbXmZe+Xaho6w+7XIAJYxa9BY2Zg1sww/diK
-	 u+C+r9x4AXyk9qerLGF6UCd/V8VKflV6rUZNDbA5HnPDydFZV3Xcplx/fuXcn2xdkNhVOGsFMw4N
-	 zD9bnPhsrZHBx0nh4bOlmiaJQiTK3DnEhy2vyz3GhnAC6+iyaoyqOtavYDfDxFcwlBGYu4MQ82ne
-	 P9GZBm65Pg5PJQmtbxduSAVR43i8+JQQxFKRfgYxzfcA7yGdMid3bvjmxIFnND7IFWsbZrLAEMo1
-	 T2VYBTGy8KNxrQ+78t8PE6AeO/zaviMoLY8UJMgcO/8pnmZwo5mL3fqlGHZk/lAjlShWl1t14epe
-	 5s96cJu1pm8beDBTpxz/I86cWJj8HnyZC9ly5QivJPAstQtT1ikp2GLrGeGzeXDQJxrQDQxBF5lc
-	 /CgwNg4RqNE3Q9gynASlFEmL0FK6nKirz/hFU8y9l4BWEpox2lCuLAh7IAG6/uyxBdlLQl5oj7qa
-	 YE8onleiEVAfjsRdIvPPLE/gAf3yXwYnFJ1sk2aLvyI1FOyHtK2Y1WOqKymr9EeIzQRx2Zhg3u4F
-	 S2/wbGXvWNgDMETcyOuBNRXEkgLYS9oUKSsOJ0QtayJSTHb77BGntP/q7mMGnYCCqNvx3n2Q==
-X-QQ-XMRINFO: NI4Ajvh11aEjEMj13RCX7UuhPEoou2bs1g==
-From: Haofeng Li <920484857@qq.com>
-To: tglx@kernel.org
-Cc: linux-kernel@vger.kernel.org,
-	Haofeng Li <13266079573@163.com>,
-	Haofeng Li <lihaofeng@kylinos.cn>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzzH40Ydjz2y71
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 14 Jul 2026 22:33:03 +1000 (AEST)
+Received: by mail-pj1-x102e.google.com with SMTP id 98e67ed59e1d1-385ea3ce80dso4465888a91.2
+        for <linux-aspeed@lists.ozlabs.org>; Tue, 14 Jul 2026 05:33:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1784032381; x=1784637181; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=DNvAJagM0h/ttBqvPmQVo9CO+v+pNiBOB9YPIRh2j6k=;
+        b=X2jX3l/sot77TVw6QCy44rdbYCFEKFctulZrYmNSibn314v1XnSl9hGhcplLOJz9Yr
+         iGVCgWzj22c7EsbyS7kjUCk7pLRVRkyJfQjniQYV+NRoTti9pdcPJbKjZ4YI4w18Y2is
+         YA8Z6xIlUOpr9xF9S+rKrGFv43PIBw0AKBnwCRaV7OolpkDIeUufUEuC1H5GlvmrPpV2
+         QNLG9xtpEi5DVlAZLLynJrx6yXrKFu5Jl+Nyr+d0S2FxyUy89h414FIlcnxHSsWknfUj
+         89b6K9YGd02V8usbTygqNR1LunqxavmF+i+YuxDJjQdOvjtGv6iSMZG5B4RQLqNc6wee
+         T1wA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1784032381; x=1784637181;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=DNvAJagM0h/ttBqvPmQVo9CO+v+pNiBOB9YPIRh2j6k=;
+        b=ABqUkmtTIHkyqOjlc/v7XcG8uTFPs9461YS7FACLYiX+0EW39CkkxUL4sSmEPqTdlV
+         xXODsJLIDP93N3Ob1n2OFp0aqQOkzRzf74I6wractt+p6mYcDut4muVFO2ADrqf+R975
+         y4jLM7ZKcF6NMaGPLp4I8vxoYEHFfCasby4y2xxcGTCdTxf81h53T703+FkaTEzCPusG
+         lXyXlm9m3a6vsvaSSAlOyjECbpZJH6/x/uiZjRYarp1OF3rvfHeHrM+zNuLqTJHFNxXY
+         WgkrF8NZ+b9yzMakv9WHMk4HbiwpHVlttdzoy/uUkIC02p8zVrdZu+8DkggORfQUNZRS
+         2nTw==
+X-Forwarded-Encrypted: i=1; AHgh+RpHTkvHGxf5s6IQfyvvnoWpsur69HEv0/UU2/FAB4VPoL9t0D3Llbs6QpL7Yv8Nusx/zZn+6iTl+rMmk8s=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Ywv6ZBSkvnzxhDzPZXantky3lMBQ7Q7PF/epCy+U6h22J+pJJUe
+	dHLhwqIPPYHpasoAOp8C7ouVdtNmwQhwrndH+wggAq7YCgg+knZS50sa
+X-Gm-Gg: AfdE7cms2GWvr1j9Bl1Bb+ujUM8Kkd8WzL5MZzH7woqw7vRd22nDGvWOrzwwNfmitwj
+	7yLTSXmeN0HkvAw6OQvSf4FxyUxuMsuhjNgIEHWHMs6aq7q6OjJZcp0hvu9o7FS4zTpUcZagDkR
+	6rxGE8phsmfh5Syuw7pd9eFkurgLp/P9/c57dvpwvdr4peE9eyLeyF2BHiTPKSdfIPbLFwG+0IG
+	lkbbVkjx7O7OPJUzJm86D1bNe3sZyDtEdMmIzD0zdGXU3uIGQOpWHULN6SJm20l874DleFdaU7i
+	seXcHbYUs6hSAZyZ1aAizf5ypUfyDJvfMT31wwE3QvbbvJnV9hlFwhZig/nwk7J810cN+EPjDU5
+	A2kqvnfIkDvoI3XT1i3sPpcbtrCy2GjKT0Fb/mIPnntOINqPXla9yDBmVqWQa4EPIsEWA66Y=
+X-Received: by 2002:a17:90b:53c6:b0:38d:dfd1:7c1 with SMTP id 98e67ed59e1d1-38e17d96421mr2942124a91.2.1784032381474;
+        Tue, 14 Jul 2026 05:33:01 -0700 (PDT)
+Received: from lgs.. ([2001:250:5800:1000::f280])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-38e172b6d08sm1443513a91.2.2026.07.14.05.32.56
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 14 Jul 2026 05:33:01 -0700 (PDT)
+From: Guangshuo Li <lgs201920130244@gmail.com>
+To: Eddie James <eajames@linux.ibm.com>,
+	Ninad Palsule <ninad@linux.ibm.com>,
 	Joel Stanley <joel@jms.id.au>,
 	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Jason Cooper <jason@lakedaemon.net>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Alistair Popple <alistair@popple.id.au>,
+	linux-fsi@lists.ozlabs.org,
 	linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org
-Subject: [PATCH 10/16] irqchip/aspeed-vic: publish handler only after domain creation
-Date: Tue, 14 Jul 2026 21:24:46 +0800
-X-OQ-MSGID: <20260714132453.3302672-8-920484857@qq.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20260714132453.3302672-1-920484857@qq.com>
-References: <20260714122351.3274006-1-lihaofeng@kylinos.cn>
- <20260714132453.3302672-1-920484857@qq.com>
+	linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Cc: Guangshuo Li <lgs201920130244@gmail.com>
+Subject: [PATCH] fsi: aspeed: Fix refcount leak on registration failure
+Date: Tue, 14 Jul 2026 20:30:38 +0800
+Message-ID: <20260714123038.1523162-1-lgs201920130244@gmail.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -89,72 +99,61 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Haofeng Li <lihaofeng@kylinos.cn>
+fsi_master_aspeed_probe() allocates aspeed and passes its embedded
+master device to fsi_master_register().
 
-avic_of_init() publishes system_avic and installs the root IRQ
-handler before creating the IRQ domain, then returns success even if
-irq_domain_create_simple() fails.
+After the master index is allocated, fsi_master_register() calls
+device_register(), which initializes master.dev and takes its initial
+reference. If device registration fails, the reference remains held
+when fsi_master_register() returns an error.
 
-Freeing the VIC after the root handler has been installed would leave
-avic_handle_irq() pointing at a cleared or freed controller. Create
-the domain first, then publish the controller and install the handler.
-Also handle set_handle_irq() failure by removing the domain and
-releasing all resources before the handler has been changed.
+The probe error path then calls kfree(aspeed) directly without dropping
+the device reference. This leaves the initialized master.dev reference
+stranded and bypasses aspeed_master_release().
 
-Fixes: 5952884258e5 ("irqchip/aspeed-vic: Add irq controller for Aspeed")
+Disable the clock and call put_device() when registration fails after
+the master index has been allocated. Keep the direct kfree() path for
+failures that occur before master.dev is initialized.
 
-Signed-off-by: Haofeng Li <lihaofeng@kylinos.cn>
+This issue was found by a static analysis tool I am developing.
+
+Fixes: 606397d67f41 ("fsi: Add ast2600 master driver")
+Signed-off-by: Guangshuo Li <lgs201920130244@gmail.com>
 ---
- drivers/irqchip/irq-aspeed-vic.c | 23 +++++++++++++++++++----
- 1 file changed, 19 insertions(+), 4 deletions(-)
+ drivers/fsi/fsi-master-aspeed.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/irqchip/irq-aspeed-vic.c b/drivers/irqchip/irq-aspeed-vic.c
-index 6649b893f39c..bb3cceec375f 100644
---- a/drivers/irqchip/irq-aspeed-vic.c
-+++ b/drivers/irqchip/irq-aspeed-vic.c
-@@ -186,6 +186,7 @@ static int __init avic_of_init(struct device_node *node,
- {
- 	void __iomem *regs;
- 	struct aspeed_vic *vic;
-+	int ret;
+diff --git a/drivers/fsi/fsi-master-aspeed.c b/drivers/fsi/fsi-master-aspeed.c
+index aa1380cdff33..2a54b6fa3394 100644
+--- a/drivers/fsi/fsi-master-aspeed.c
++++ b/drivers/fsi/fsi-master-aspeed.c
+@@ -626,8 +626,12 @@ static int fsi_master_aspeed_probe(struct platform_device *pdev)
+ 	aspeed_master_init(aspeed);
  
- 	if (WARN(parent, "non-root Aspeed VIC not supported"))
- 		return -EINVAL;
-@@ -206,15 +207,29 @@ static int __init avic_of_init(struct device_node *node,
- 	/* Initialize sources, all masked */
- 	vic_init_hw(vic);
- 
--	/* Ready to receive interrupts */
--	system_avic = vic;
--	set_handle_irq(avic_handle_irq);
--
- 	/* Register our domain */
- 	vic->dom = irq_domain_create_simple(of_fwnode_handle(node), NUM_IRQS, 0,
- 					    &avic_dom_ops, vic);
-+	if (!vic->dom) {
-+		ret = -ENOMEM;
-+		goto err_free_vic;
+ 	rc = fsi_master_register(&aspeed->master);
+-	if (rc)
+-		goto err_release;
++	if (rc) {
++		if (aspeed->master.idx < 0)
++			goto err_release;
++
++		goto err_put_master;
 +	}
-+
-+	/* Ready to receive interrupts */
-+	system_avic = vic;
-+	ret = set_handle_irq(avic_handle_irq);
-+	if (ret)
-+		goto err_remove_domain;
  
+ 	/* At this point, fsi_master_register performs the device_initialize(),
+ 	 * and holds the sole reference on master.dev. This means the device
+@@ -638,6 +642,10 @@ static int fsi_master_aspeed_probe(struct platform_device *pdev)
+ 	 */
+ 	get_device(&aspeed->master.dev);
  	return 0;
-+
-+err_remove_domain:
-+	system_avic = NULL;
-+	irq_domain_remove(vic->dom);
-+err_free_vic:
-+	iounmap(regs);
-+	kfree(vic);
-+	return ret;
- }
++err_put_master:
++	clk_disable_unprepare(aspeed->clk);
++	put_device(&aspeed->master.dev);
++	return rc;
  
- IRQCHIP_DECLARE(ast2400_vic, "aspeed,ast2400-vic", avic_of_init);
+ err_release:
+ 	clk_disable_unprepare(aspeed->clk);
 -- 
-2.25.1
+2.43.0
 
 
