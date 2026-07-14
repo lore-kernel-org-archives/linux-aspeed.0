@@ -1,94 +1,77 @@
-Return-Path: <linux-aspeed+bounces-4472-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4473-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54119C44501
-	for <linux-aspeed@archiver.kernel.org>; Tue, 14 Jul 2026 12:08:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B88FDC44507
+	for <linux-aspeed@archiver.kernel.org>; Tue, 14 Jul 2026 18:53:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gzykk4l00z2yRl;
-	Tue, 14 Jul 2026 22:08:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1032"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784030910;
-	cv=none; b=lJ8qxGCrLkXS1pUNPwn0yvSfSVBpoX772oJbJZm3w5Tn5kc0XoWxYLKXFNH5QngyJp89coa3jigFnRoOUBNIm0huQfnbLEyTgudbC1AKijS1CTJuTq6aeXzHVu9D8hpFbE2ndzUA4bkg2aKNawgIU5JVdiW2sXEYcm1vc9Wym1buqHdML12XfT7FbBokFh6/oJiJx6vCQwz9JuUjXelPaeQBtyYm79IxFbrF1rfw69V5/5QVP5xDruCRdgVrXBrU50JNML9wOr8+iW8l5XdNzQaJx0NOCeh4edStVSUJL82t5yCe1RXe50uVmvPjphUyf8nkzTuBNOA/BbJCBi79bg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h07jj5C2kz2yRl;
+	Wed, 15 Jul 2026 04:53:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::335"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784055193;
+	cv=none; b=SEcnxUwvkzsvWx9kh5XyAdHBk5cOLghk15TWTjd2aDH89CijEi1T2MJkxiJP6kAvsLrdHtUHIYpf4kD55q2HHX/ZNDezcAahAi/OZOQFWRN/HmWp2MI5Q3qO+kFCrEv//pz8YVFCMmJo8Af2NpGs8qTojC9zXsJMpsjVL8xVnJvwLXc0B1tbdyf4TZOFb6EBpt2RSX+1t6K6Py9eS04lRPLf68fY87lQ3bZWa+ygztXIVJHRfdXxGJq9NhNt2ImM3bROnmcekv5qG2Nx1zQhjYZ56DuwowPLqigNsWpdIyXpei6oJH0uke2PZqZsWgPv6NYEqpELsnmYUb5Qp5qt1Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784030910; c=relaxed/relaxed;
-	bh=m+sHQh7xsIPCcx3DDu2sbd8ZKJKkQ8GLklEL0hevIC8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=KjOXDnzA3JN5o6LTqR+ELbp8OCSYZF9VIxy3FIHzXdSS/ga8p/z9vj/mI2qEYKRK9Ei1ruUZ5APbryi8mfEKLmiKyRPRAEN0wHD5QnHNboNHZTJdwOWrggspDVmN07xyUL/UiNmYzBLNR9EiRvusi8znM6HQHL38EWHVmxREdAc547P+FN978tF6OfwszgOtkeBoN2zrBCR8tGxCcTe9Bd2EtGhFkgThlBOdZUAs7um437DaErHfk5OrQZARgx9R7EE+gdNmDvh0HPSoV2VAjCbR6l1Mk9mOejYAhMS8awhqEKBkvDgHW+w44fteoCZbfKc9bLSj3zoadAVWgApjeQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=b3a1OMvZ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1032; helo=mail-pj1-x1032.google.com; envelope-from=chou.cosmo@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1784055193; c=relaxed/relaxed;
+	bh=v81RYgZzr05KCDxoR1cyj6HFcz85Vml1RF/7JkwpDYw=;
+	h=MIME-Version:Content-Type:Subject:From:To:Cc:In-Reply-To:
+	 References:Date:Message-Id; b=Q8xOISlgmZmT49vz0hF7Dy6/+JTPeZYwruQULbD7pf/l7uFgVPgvEO5hQNO1X5LL7cYON76rnVGFEHjmrJbXxyzVOr/zIbifKthMdAzqjrD9qbL7XvzzBARDxz+/JGX4mlbfAxxVw4ODFZj2KvJZk6G3D82EKXGW0s3swWLVgijnrSiP1ylJB6eIx++LmJoBoGkcCmlP2+hqluA30G7wtmhwgNeB+vauUn8qYjrJf1rIR505J3Nbs6zrznjJmWJ94Z5WnH/KkPc9/VMAQyK14yyvM78wLapqfTqD+MwQCBKBADht+ObB3VSq0PzoCntvxIaTZwH5aLEToV0b1MdgSA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=9elements.com; dkim=pass (2048-bit key; secure) header.d=9elements.com header.i=@9elements.com header.a=rsa-sha256 header.s=google header.b=FYJnku9z; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::335; helo=mail-wm1-x335.google.com; envelope-from=tan.siewert@9elements.com; receiver=lists.ozlabs.org) smtp.mailfrom=9elements.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=9elements.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=b3a1OMvZ;
+	dkim=pass (2048-bit key; secure) header.d=9elements.com header.i=@9elements.com header.a=rsa-sha256 header.s=google header.b=FYJnku9z;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1032; helo=mail-pj1-x1032.google.com; envelope-from=chou.cosmo@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com [IPv6:2607:f8b0:4864:20::1032])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=9elements.com (client-ip=2a00:1450:4864:20::335; helo=mail-wm1-x335.google.com; envelope-from=tan.siewert@9elements.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x335.google.com (mail-wm1-x335.google.com [IPv6:2a00:1450:4864:20::335])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gzykj6Bzmz2xqn
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 14 Jul 2026 22:08:29 +1000 (AEST)
-Received: by mail-pj1-x1032.google.com with SMTP id 98e67ed59e1d1-381ed661712so4725819a91.2
-        for <linux-aspeed@lists.ozlabs.org>; Tue, 14 Jul 2026 05:08:29 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h07jg5v0xz2xqM
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 15 Jul 2026 04:53:10 +1000 (AEST)
+Received: by mail-wm1-x335.google.com with SMTP id 5b1f17b1804b1-493e8d4f4dcso35733875e9.0
+        for <linux-aspeed@lists.ozlabs.org>; Tue, 14 Jul 2026 11:53:10 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1784030908; x=1784635708; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=m+sHQh7xsIPCcx3DDu2sbd8ZKJKkQ8GLklEL0hevIC8=;
-        b=b3a1OMvZ4tZ+qO3Ae4ub22X5efiW0Kdi2Mro7UPOXgCNK8rFTYn8ELkUkrKbtRriAB
-         AqYjxgBOEDP1P0YAiyQlOKLlgZ6JOaMOBkeKnSV3jXbv9FSMOFrpYAbU/+OR9is/6UFH
-         4GI5sZhrz0IB8rzQAi1NE08DqHQlV5z6uZ2C+LkEwOqKembxommp1nz8msDQesb8tzzZ
-         SfciEDhpIxb7dQq/TkSXv97JtdYYLsRNwmKko60fGfwHo/w/RhdrkxpfYONCDUYXpRO9
-         +209ine1uFgNAfCZl5rezD/ERXnu32vatnaYLb+Sr8+/7/Sqn1ubO8/h+uJekSyJjW1a
-         esMA==
+        d=9elements.com; s=google; t=1784055187; x=1784659987; darn=lists.ozlabs.org;
+        h=message-id:date:references:in-reply-to:cc:to:from:subject
+         :content-transfer-encoding:content-type:mime-version:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=v81RYgZzr05KCDxoR1cyj6HFcz85Vml1RF/7JkwpDYw=;
+        b=FYJnku9zL4f9hYZpGgboQ0PKMS2iRRwWrdrCIUWExzZbP+6Ek8QqV1fwwbOXu/pSSN
+         UT4K5RZYLmKjutxODpJ3qXB6r1LItyYvZP2TehlydAgfLk/6sIOymJpZhzwpW4GJiT+R
+         +zHiiZiLGD0U+v9ltbOLZ2ikdnrqQSwbQ6aUoC0iG3dH10Q3PYtWfY2ZArp50CZb1Vl+
+         aQMOUplAHiQEVW5HIvaXJZ4S1OgcYdBxkSCZsvWFbh8XnGum9Hk/pUz/YQ4Bsl0a4nZe
+         Z6ZHj5MGei03dcpZePDPu7M7eOSdi2rxrRpJq/FYF8177j1egmhAoGNEqPhljMqKKA9b
+         rNug==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784030908; x=1784635708;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=m+sHQh7xsIPCcx3DDu2sbd8ZKJKkQ8GLklEL0hevIC8=;
-        b=likSv0diKMYkUEGOI5fPEvC1IHInVQPFECKMmHWML6AK48V/rT+jGcEsFHgfSUbxbn
-         cQ4eZ4V24KELkc1vumx/JrUvKmuyuyA+AqbkRziagfCQo4z+R7LUpSg6HNfhxL+CzF8C
-         v1GSHBeGqdAeCtZX8g9pUVq6TJkEAUlhxRREMPMbrhOrHt47B81V5dmgPE031EqbudcF
-         UBr253S4ZahNUh78OoGoI+HtlO6TohAY/odY0AnVzv5BE8sHPqeYyNfjFxbXMYJGis2G
-         1r9F6E7q/tCRVy/3iGnSC5GIKuNcL6uj5/8lFVMgkOqk9ae4esRDRWoIFGlcKCztPi3I
-         Yv8g==
-X-Forwarded-Encrypted: i=1; AHgh+Rpy59S7HIk+dmlCp11/eIDNWBOYBg00z0bGSKlEVIqnevUvFmS/NWhuVj0fiZNs1YPBudTyW78HR+SfrqQ=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yw9Khs51TbCYWL4brr+gFchaPeogjUbj4MtW+VpK4Vw7xJ6pW+c
-	iIaVJkEuCf4N0CZRiuoVxu9PbkF0h6xFp4nCEcaEr20nMfGutRiLZQyM
-X-Gm-Gg: AfdE7cmLow9HxIXJvM0uvwXa4cDwY4/OM8VLSFaxzcPzWpRWqgvhXHLtBSffS07dZuM
-	KjMoSAW7i0PFUF54xceaPp2mhFVqzm18Zx2SOpsFvoHLp+lYWdoW2XWL2adIFk7uEucNdIpRhva
-	t5ePyp67Jkdx+mFyGpsNikfijXyIMxl+5nRUJpbAxj1SbkfW6BqRmY5pVZUUuuLVRQdrNRiQfX1
-	WK0W5X/m6/LLrmdZ5YXl0ouQe8CPpJqfjkGdRRSWHbjuoZmPSkVZPMKXyU+NVb8oCfEU6dVrH78
-	HxnDdXbo01ZWAXmdg5ZGjMRTP9SXgBZCwNU6ep9kwRitQbuacWWo1AwO5RtOfC0oVXjPawWJUzE
-	5Yo9qw1zvF/mjguTdve/vyGclb3kzWVhNyf/pqu+6dNKPEFw9Up1Mc7K+vebVj+GNyfSI6eDsOE
-	nAP8it5XPGer1x84kPclxRs5HQtko9RnurHsXo2xKcl0bA425CVT7UcyaNwrY=
-X-Received: by 2002:a17:90b:180d:b0:37f:9ce1:736a with SMTP id 98e67ed59e1d1-38e1af3481amr2454300a91.32.1784030907614;
-        Tue, 14 Jul 2026 05:08:27 -0700 (PDT)
-Received: from cosmo-ubuntu-2404.. (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-38e172dc530sm1384425a91.8.2026.07.14.05.08.25
+        d=1e100.net; s=20251104; t=1784055187; x=1784659987;
+        h=message-id:date:references:in-reply-to:cc:to:from:subject
+         :content-transfer-encoding:content-type:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=v81RYgZzr05KCDxoR1cyj6HFcz85Vml1RF/7JkwpDYw=;
+        b=rWmX2g8H2HFNIfGcafB0HxhLlysCukfkyTtQB+gPORO47F5yR1PHQjvtVCcktJeJW9
+         aPZfZPFZvM/QLhaQfN2SztyDLB2ae1ZwJr7H8DNTQ2koQdedoZib2NcVoxYSkylfzJWA
+         hNzpgt1Pq1NI94khJocoGA91zNfzk9A7t/iGPSvYWj9HaE+wpjtsbgVANAn1pVWSzjb1
+         QaA6M+By5Qzi57doP9qnhahYuok84v9vnMfCMIt9j17zW5Gu7LDosPezXoDvjuqw86cy
+         6Kg5+fUfejW2ASey/KnUr5GYHUQtLvNvyYLuyxVL7Z4bPN8ZhGjrtuOsUVhzxC6cht5S
+         kLGQ==
+X-Forwarded-Encrypted: i=1; AHgh+Rou6ow/jFyZBTRpWGAHlF0WL4JNEIy0GRWFSUvbif0oBXfCpAydv9Ue8T4pmvAmEt5O/EIpxzFAJkdaMQw=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yzqclc7Ro1ZNhT5zorTGK39RH/cTqHyNMACQ48c7z3YraWTY8ew
+	wCz2esNt09isQPmnBj6SzV6NXWQtRcNIEWuq6yJg2nzKxjW55WZcBpGkl//lIORCPG8=
+X-Gm-Gg: AfdE7ckApTVlUMzQWbMkAlRUIC/BXf1dSj+3+bSJ7feMvMRHpwCY+Zff9Oc50xvFnK0
+	qcSwwgpY/9wfe0mQbopWlHUxRpp6GErye8TkKTrZ5YoAGTQPwoeyU6c0g4eMo9aUuV1F7Ptqvja
+	6EdaUVGMC8eUf5hmVZLAo3XBXWqnjAY4+3NRUUxLCjcg5g/QsJyn6Gh2g35dNii76S7WwNFplZ8
+	jkW2f/7PKYxxhCmW22AchAgrPL5Vjn9vdmOYEJFhxOlY7e0JWgO7NdOoi0ys1YNqj5VTJd2Meh4
+	nYK+7Inlf1pDIEd+NeopKHz75GDOp7lsCXfaffuG8I8l7xs1tbzHRtNnAXyzRsLsf2eaVkd7PUM
+	fYtU6k6wo1/cME8gOQiDkIUiR9Hd3sJF4zfZtuZhQQvrGilg+KyFZlG6D63mlTzDKPNt+4pU8Kg
+	UDEYrpWqxPwMMa6fSZi1agr6ap+IUrkg==
+X-Received: by 2002:a05:600c:3150:b0:492:53e8:3bc1 with SMTP id 5b1f17b1804b1-4953c1624bdmr714135e9.17.1784055187650;
+        Tue, 14 Jul 2026 11:53:07 -0700 (PDT)
+Received: from [192.168.254.124] ([2001:9e8:2fb:8201:c26a:83ef:161a:409b])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-49508725c0bsm94908715e9.2.2026.07.14.11.53.06
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 14 Jul 2026 05:08:27 -0700 (PDT)
-From: Cosmo Chou <chou.cosmo@gmail.com>
-To: robh@kernel.org,
-	krzk+dt@kernel.org,
-	conor+dt@kernel.org,
-	joel@jms.id.au,
-	andrew@codeconstruct.com.au
-Cc: devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	cosmo.chou@quantatw.com,
-	Cosmo Chou <chou.cosmo@gmail.com>
-Subject: [PATCH 2/2] ARM: dts: aspeed: bletchley: Add second source PCA9532 LED controllers
-Date: Tue, 14 Jul 2026 20:08:16 +0800
-Message-ID: <20260714120816.1504058-3-chou.cosmo@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260714120816.1504058-1-chou.cosmo@gmail.com>
-References: <20260714120816.1504058-1-chou.cosmo@gmail.com>
+        Tue, 14 Jul 2026 11:53:07 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -102,415 +85,137 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
+Subject: Re: [PATCH v4 4/7] serial: 8250_aspeed_vuart: add VUART over PCI
+From: Tan Siewert <tan.siewert@9elements.com>
+To: =?utf-8?q?Gr=C3=A9goire_Layet?= <gregoire.layet@9elements.com>
+Cc: joel@jms.id.au, andrew@codeconstruct.com.au, lkundrak@v3.sk, 
+ devicetree@vger.kernel.org, gregkh@linuxfoundation.org, 
+ jirislaby@kernel.org, robh@kernel.org, krzk+dt@kernel.org, 
+ conor+dt@kernel.org, andrew@lunn.ch, jacky_chou@aspeedtech.com, 
+ yh_chung@aspeedtech.com, ninad@linux.ibm.com, anirudhsriniv@gmail.com, 
+ linux-serial@vger.kernel.org, linux-aspeed@lists.ozlabs.org, 
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+In-Reply-To: <28c6e7c493559feffc7e6231b0a2f0b73b7fda41.1783524645.git.gregoire.layet@9elements.com>
+References: <cover.1783524645.git.gregoire.layet@9elements.com>
+ <28c6e7c493559feffc7e6231b0a2f0b73b7fda41.1783524645.git.gregoire.layet@9elements.com>
+Date: Tue, 14 Jul 2026 20:53:03 +0200
+Message-Id: <178405518337.194693.16062290686593842402.b4-review@b4>
+X-Mailer: b4 0.16-dev
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1784055186; l=4160;
+ i=tan.siewert@9elements.com; s=20260527; h=from:subject:message-id;
+ bh=ZdMjtjALJ9INUjixbUCM2kZrdun7GikDbIME1A+PLD4=;
+ b=GZ6jzOrhucR05WwmvOfO9a6YYLoB752Rjv/H4tteyWXK0nQoP0J4vtOVuXDGA+QefmBBarWe8
+ Ma1Cg3Obz4gAvCucwwSYpECAuo9Mbmv2Y1RTdL+yzoGUgXHEqBazp7d
+X-Developer-Key: i=tan.siewert@9elements.com; a=ed25519;
+ pk=ORQd/zQf+LsAvJGXP1CjQwVO6t6iEOGq/eGUsmRVTG4=
 
-Add alternative PCA9532 LED controllers at address 0x66 to support boards
-populated with the PCA9532 instead of the primary PCA9552 at 0x67.
+> Enable the VUART over PCI for the AST2600. Activate it only if the
+> 'aspeed,vuart-over-pci' property flag is set on an
+> 'ast2600-vuart' compatible node.
+> 
+> The AST2600 has 2 VUART that are usable over PCI. These are already defined as
+> the VUART3 and VUART4 in the 'aspeed-g6.dtsi'.
+> 
+> Sets the BMC PCI device enable bits, sets the PCI class code to
+> unassgined/device specific, and configures MSI interrupts.
+> 
+> There is no disable function. Removing this driver should not disable
+> the BMC PCI device, as other drivers could use it.
+> However, if all the drivers using it are removed, the
+> BMC PCI device will still be activated, which is not ideal. But in reality,
+> this is not a use case for a BMC, the drivers will never be removed.
+> 
+> This is useful on PCIe BMC expansion cards that use the AST2600, such as the
+> ASUS Kommando IPMI Expansion Card.
+> 
+> Register initialisation taken from ASPEED 6.18 Kernel SDK.
+> Add return code checks to each register write.
+> Simplify the code and add macros.
+> 
+> The ASPEED_SCUC24 regmap update is missing a macro for 'BIT(14)'. I was
+> unable to determine the purpose of this bit. In the AST2600 A3
+> datasheet it is marked as 'reserved'. It is only used on the other
+> revision. As I only have the AST2600A3, I was unable to try this code
+> path. This BIT14 was set in the ASPEED SDK so I kept it.
+> I can remove it and the untested path if necessary.
 
-Signed-off-by: Cosmo Chou <chou.cosmo@gmail.com>
----
- .../aspeed/aspeed-bmc-facebook-bletchley.dts  | 289 ++++++++++++++++++
- 1 file changed, 289 insertions(+)
+There's not even a reference in the datasheet changelog, so I suspect that it
+has always been reserved.
+I'd be in favour of removing it.
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-bletchley.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-bletchley.dts
-index a966be69f..86e2b5aec 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-bletchley.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-bletchley.dts
-@@ -6,6 +6,7 @@
- #include <dt-bindings/gpio/aspeed-gpio.h>
- #include <dt-bindings/usb/pd.h>
- #include <dt-bindings/leds/leds-pca955x.h>
-+#include <dt-bindings/leds/leds-pca9532.h>
- #include <dt-bindings/interrupt-controller/irq.h>
- #include <dt-bindings/i2c/i2c.h>
- 
-@@ -113,6 +114,58 @@ led-7 {
- 		};
- 	};
- 
-+	fan_gpio_leds_alt {
-+		compatible = "gpio-leds";
-+		led-0 {
-+			label = "fan0_blue";
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&fan_leds_alt 8 GPIO_ACTIVE_HIGH>;
-+		};
-+		led-1 {
-+			label = "fan1_blue";
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&fan_leds_alt 9 GPIO_ACTIVE_HIGH>;
-+		};
-+		led-2 {
-+			label = "fan2_blue";
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&fan_leds_alt 10 GPIO_ACTIVE_HIGH>;
-+		};
-+		led-3 {
-+			label = "fan3_blue";
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&fan_leds_alt 11 GPIO_ACTIVE_HIGH>;
-+		};
-+		led-4 {
-+			label = "fan0_amber";
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&fan_leds_alt 12 GPIO_ACTIVE_HIGH>;
-+		};
-+		led-5 {
-+			label = "fan1_amber";
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&fan_leds_alt 13 GPIO_ACTIVE_HIGH>;
-+		};
-+		led-6 {
-+			label = "fan2_amber";
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&fan_leds_alt 14 GPIO_ACTIVE_HIGH>;
-+		};
-+		led-7 {
-+			label = "fan3_amber";
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&fan_leds_alt 15 GPIO_ACTIVE_HIGH>;
-+		};
-+	};
-+
- 	sled1_gpio_leds {
- 		compatible = "gpio-leds";
- 		led-0 {
-@@ -129,6 +182,22 @@ led-1 {
- 		};
- 	};
- 
-+	sled1_gpio_leds_alt {
-+		compatible = "gpio-leds";
-+		led-0 {
-+			label = "sled1_amber";
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&sled1_leds_alt 0 GPIO_ACTIVE_LOW>;
-+		};
-+		led-1 {
-+			label = "sled1_blue";
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&sled1_leds_alt 1 GPIO_ACTIVE_LOW>;
-+		};
-+	};
-+
- 	sled2_gpio_leds {
- 		compatible = "gpio-leds";
- 		led-0 {
-@@ -145,6 +214,22 @@ led-1 {
- 		};
- 	};
- 
-+	sled2_gpio_leds_alt {
-+		compatible = "gpio-leds";
-+		led-0 {
-+			label = "sled2_amber";
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&sled2_leds_alt 0 GPIO_ACTIVE_LOW>;
-+		};
-+		led-1 {
-+			label = "sled2_blue";
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&sled2_leds_alt 1 GPIO_ACTIVE_LOW>;
-+		};
-+	};
-+
- 	sled3_gpio_leds {
- 		compatible = "gpio-leds";
- 		led-0 {
-@@ -161,6 +246,22 @@ led-1 {
- 		};
- 	};
- 
-+	sled3_gpio_leds_alt {
-+		compatible = "gpio-leds";
-+		led-0 {
-+			label = "sled3_amber";
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&sled3_leds_alt 0 GPIO_ACTIVE_LOW>;
-+		};
-+		led-1 {
-+			label = "sled3_blue";
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&sled3_leds_alt 1 GPIO_ACTIVE_LOW>;
-+		};
-+	};
-+
- 	sled4_gpio_leds {
- 		compatible = "gpio-leds";
- 		led-0 {
-@@ -177,6 +278,22 @@ led-1 {
- 		};
- 	};
- 
-+	sled4_gpio_leds_alt {
-+		compatible = "gpio-leds";
-+		led-0 {
-+			label = "sled4_amber";
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&sled4_leds_alt 0 GPIO_ACTIVE_LOW>;
-+		};
-+		led-1 {
-+			label = "sled4_blue";
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&sled4_leds_alt 1 GPIO_ACTIVE_LOW>;
-+		};
-+	};
-+
- 	sled5_gpio_leds {
- 		compatible = "gpio-leds";
- 		led-0 {
-@@ -193,6 +310,22 @@ led-1 {
- 		};
- 	};
- 
-+	sled5_gpio_leds_alt {
-+		compatible = "gpio-leds";
-+		led-0 {
-+			label = "sled5_amber";
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&sled5_leds_alt 0 GPIO_ACTIVE_LOW>;
-+		};
-+		led-1 {
-+			label = "sled5_blue";
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&sled5_leds_alt 1 GPIO_ACTIVE_LOW>;
-+		};
-+	};
-+
- 	sled6_gpio_leds {
- 		compatible = "gpio-leds";
- 		led-0 {
-@@ -209,6 +342,22 @@ led-1 {
- 		};
- 	};
- 
-+	sled6_gpio_leds_alt {
-+		compatible = "gpio-leds";
-+		led-0 {
-+			label = "sled6_amber";
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&sled6_leds_alt 0 GPIO_ACTIVE_LOW>;
-+		};
-+		led-1 {
-+			label = "sled6_blue";
-+			retain-state-shutdown;
-+			default-state = "keep";
-+			gpios = <&sled6_leds_alt 1 GPIO_ACTIVE_LOW>;
-+		};
-+	};
-+
- 	gpio-keys {
- 		compatible = "gpio-keys";
- 
-@@ -401,6 +550,24 @@ sled1_leds: pca9552@67 {
- 		"","","","";
- 	};
- 
-+	sled1_leds_alt: pca9532@66 {
-+		compatible = "nxp,pca9532";
-+		reg = <0x66>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+
-+		gpio-line-names =
-+		"led-sled1-amber","led-sled1-blue","SLED1_RST_IOEXP","SLED1_MD_REF_PWM",
-+		"","","","",
-+		"","","","",
-+		"","","","";
-+
-+		led-0 { type = <PCA9532_TYPE_GPIO>; };
-+		led-1 { type = <PCA9532_TYPE_GPIO>; };
-+		led-2 { type = <PCA9532_TYPE_GPIO>; };
-+		led-3 { type = <PCA9532_TYPE_GPIO>; };
-+	};
-+
- 	sled1_fusb302: typec-portc@22 {
- 		compatible = "fcs,fusb302";
- 		reg = <0x22>;
-@@ -487,6 +654,24 @@ sled2_leds: pca9552@67 {
- 		"","","","";
- 	};
- 
-+	sled2_leds_alt: pca9532@66 {
-+		compatible = "nxp,pca9532";
-+		reg = <0x66>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+
-+		gpio-line-names =
-+		"led-sled2-amber","led-sled2-blue","SLED2_RST_IOEXP","SLED2_MD_REF_PWM",
-+		"","","","",
-+		"","","","",
-+		"","","","";
-+
-+		led-0 { type = <PCA9532_TYPE_GPIO>; };
-+		led-1 { type = <PCA9532_TYPE_GPIO>; };
-+		led-2 { type = <PCA9532_TYPE_GPIO>; };
-+		led-3 { type = <PCA9532_TYPE_GPIO>; };
-+	};
-+
- 	sled2_fusb302: typec-portc@22 {
- 		compatible = "fcs,fusb302";
- 		reg = <0x22>;
-@@ -573,6 +758,24 @@ sled3_leds: pca9552@67 {
- 		"","","","";
- 	};
- 
-+	sled3_leds_alt: pca9532@66 {
-+		compatible = "nxp,pca9532";
-+		reg = <0x66>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+
-+		gpio-line-names =
-+		"led-sled3-amber","led-sled3-blue","SLED3_RST_IOEXP","SLED3_MD_REF_PWM",
-+		"","","","",
-+		"","","","",
-+		"","","","";
-+
-+		led-0 { type = <PCA9532_TYPE_GPIO>; };
-+		led-1 { type = <PCA9532_TYPE_GPIO>; };
-+		led-2 { type = <PCA9532_TYPE_GPIO>; };
-+		led-3 { type = <PCA9532_TYPE_GPIO>; };
-+	};
-+
- 	sled3_fusb302: typec-portc@22 {
- 		compatible = "fcs,fusb302";
- 		reg = <0x22>;
-@@ -659,6 +862,24 @@ sled4_leds: pca9552@67 {
- 		"","","","";
- 	};
- 
-+	sled4_leds_alt: pca9532@66 {
-+		compatible = "nxp,pca9532";
-+		reg = <0x66>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+
-+		gpio-line-names =
-+		"led-sled4-amber","led-sled4-blue","SLED4_RST_IOEXP","SLED4_MD_REF_PWM",
-+		"","","","",
-+		"","","","",
-+		"","","","";
-+
-+		led-0 { type = <PCA9532_TYPE_GPIO>; };
-+		led-1 { type = <PCA9532_TYPE_GPIO>; };
-+		led-2 { type = <PCA9532_TYPE_GPIO>; };
-+		led-3 { type = <PCA9532_TYPE_GPIO>; };
-+	};
-+
- 	sled4_fusb302: typec-portc@22 {
- 		compatible = "fcs,fusb302";
- 		reg = <0x22>;
-@@ -745,6 +966,24 @@ sled5_leds: pca9552@67 {
- 		"","","","";
- 	};
- 
-+	sled5_leds_alt: pca9532@66 {
-+		compatible = "nxp,pca9532";
-+		reg = <0x66>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+
-+		gpio-line-names =
-+		"led-sled5-amber","led-sled5-blue","SLED5_RST_IOEXP","SLED5_MD_REF_PWM",
-+		"","","","",
-+		"","","","",
-+		"","","","";
-+
-+		led-0 { type = <PCA9532_TYPE_GPIO>; };
-+		led-1 { type = <PCA9532_TYPE_GPIO>; };
-+		led-2 { type = <PCA9532_TYPE_GPIO>; };
-+		led-3 { type = <PCA9532_TYPE_GPIO>; };
-+	};
-+
- 	sled5_fusb302: typec-portc@22 {
- 		compatible = "fcs,fusb302";
- 		reg = <0x22>;
-@@ -831,6 +1070,24 @@ sled6_leds: pca9552@67 {
- 		"","","","";
- 	};
- 
-+	sled6_leds_alt: pca9532@66 {
-+		compatible = "nxp,pca9532";
-+		reg = <0x66>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+
-+		gpio-line-names =
-+		"led-sled6-amber","led-sled6-blue","SLED6_RST_IOEXP","SLED6_MD_REF_PWM",
-+		"","","","",
-+		"","","","",
-+		"","","","";
-+
-+		led-0 { type = <PCA9532_TYPE_GPIO>; };
-+		led-1 { type = <PCA9532_TYPE_GPIO>; };
-+		led-2 { type = <PCA9532_TYPE_GPIO>; };
-+		led-3 { type = <PCA9532_TYPE_GPIO>; };
-+	};
-+
- 	sled6_fusb302: typec-portc@22 {
- 		compatible = "fcs,fusb302";
- 		reg = <0x22>;
-@@ -957,6 +1214,38 @@ fan_leds: pca9552@67 {
- 		"","","","",
- 		"","","","";
- 	};
-+
-+	fan_leds_alt: pca9532@66 {
-+		compatible = "nxp,pca9532";
-+		reg = <0x66>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+
-+		gpio-line-names =
-+		"presence-fan0","presence-fan1",
-+		"presence-fan2","presence-fan3",
-+		"power-fan0-good","power-fan1-good",
-+		"power-fan2-good","power-fan3-good",
-+		"","","","",
-+		"","","","";
-+
-+		led-0 { type = <PCA9532_TYPE_GPIO>; };
-+		led-1 { type = <PCA9532_TYPE_GPIO>; };
-+		led-2 { type = <PCA9532_TYPE_GPIO>; };
-+		led-3 { type = <PCA9532_TYPE_GPIO>; };
-+		led-4 { type = <PCA9532_TYPE_GPIO>; };
-+		led-5 { type = <PCA9532_TYPE_GPIO>; };
-+		led-6 { type = <PCA9532_TYPE_GPIO>; };
-+		led-7 { type = <PCA9532_TYPE_GPIO>; };
-+		led-8 { type = <PCA9532_TYPE_GPIO>; };
-+		led-9 { type = <PCA9532_TYPE_GPIO>; };
-+		led-10 { type = <PCA9532_TYPE_GPIO>; };
-+		led-11 { type = <PCA9532_TYPE_GPIO>; };
-+		led-12 { type = <PCA9532_TYPE_GPIO>; };
-+		led-13 { type = <PCA9532_TYPE_GPIO>; };
-+		led-14 { type = <PCA9532_TYPE_GPIO>; };
-+		led-15 { type = <PCA9532_TYPE_GPIO>; };
-+	};
- };
- 
- &i2c13 {
+> 
+> Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
+> Signed-off-by: aspeedyh <yh_chung@aspeedtech.com>
+> Signed-off-by: Grégoire Layet <gregoire.layet@9elements.com>
+>
+> diff --git a/drivers/tty/serial/8250/8250_aspeed_vuart.c b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+> index 6afa2f4057e1..4d09c04cb972 100644
+> --- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
+> +++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+
+*snip*
+
+> +static int aspeed_ast2600_vuart_over_pci_set_enabled(struct platform_device *pdev)
+> +{
+> +	struct device *dev = &pdev->dev;
+> +	u32 silicon_revision_id;
+> +	struct regmap *scu;
+> +	int rc;
+> +
+> +	u32 pcie_config_ctl = SCU_PCIE_CONF_BMC_DEV_EN_IRQ |
+> +				SCU_PCIE_CONF_BMC_DEV_EN_MMIO |
+> +				SCU_PCIE_CONF_BMC_DEV_EN_MSI |
+> +				SCU_PCIE_CONF_BMC_DEV_EN_PCIE_BUS_MASTER |
+> +				SCU_PCIE_CONF_BMC_DEV_EN_E2L |
+> +				SCU_PCIE_CONF_BMC_DEV_EN_LPC_DECODE |
+> +				SCU_PCIE_CONF_BMC_DEV_EN;
+> +
+> +	scu = syscon_regmap_lookup_by_phandle(dev->of_node, "syscon");
+> +	if (IS_ERR(scu)) {
+> +		dev_err(&pdev->dev, "failed to find SCU regmap\n");
+
+dev_err(dev, ...) instead of &pdev->dev (defined above).
+
+> +		return PTR_ERR(scu);
+> +	}
+> +
+> +	/* update class code to be an Unassigned/device specific class device */
+> +	if (regmap_write(scu, ASPEED_SCU_BMC_DEV_CLASS, 0xff000000)) {
+> +		dev_err(dev, "could not set PCI class code\n");
+> +		return -EIO;
+> +	}
+> +
+> +	if (regmap_update_bits(scu, ASPEED_SCU_PCIE_CONF_CTRL,
+> +			       pcie_config_ctl, pcie_config_ctl)) {
+> +		dev_err(dev, "could not set PCIe configuration\n");
+> +		return -EIO;
+> +	}
+> +
+> +	if (regmap_read(scu, ASPEED_SCU_SILICON_REVISION_ID, &silicon_revision_id)) {
+> +		dev_err(dev, "could not read silicon revision\n");
+> +		return -EIO;
+> +	}
+> +
+> +	if (silicon_revision_id == AST2600A3_REVISION_ID)
+> +		rc = regmap_update_bits(scu, ASPEED_SCUC24,
+> +					ASPEED_SCUC24_PCIDEV1_INTX_MSI_HOST2BMC_EN | ASPEED_SCUC24_MSI_ROUTING_MASK,
+> +					ASPEED_SCUC24_PCIDEV1_INTX_MSI_HOST2BMC_EN | ASPEED_SCUC24_MSI_ROUTING_PCIE2LPC_PCIDEV1);
+> +	else
+> +		rc = regmap_update_bits(scu, ASPEED_SCUC24,
+> +					/**
+> +					 * The bit 14 is reserved in the Datasheet.
+> +					 */
+
+Even in the oldest datasheet that I've got (which was for A2 apparently) it is
+marked as reserved.
+
+Maybe some ASPEED folks can enlighten us what Bits 14 till 16 were used for on
+A0-A2, and if they are relevant for PCIe INTx/MSI routing on the older silicons.
+
+	Tan
+
 -- 
-2.53.0
-
+Tan Siewert <tan.siewert@9elements.com>
 
