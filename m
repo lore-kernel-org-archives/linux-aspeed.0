@@ -1,62 +1,62 @@
-Return-Path: <linux-aspeed+bounces-4489-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4490-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4626BC44515
-	for <linux-aspeed@archiver.kernel.org>; Thu, 16 Jul 2026 17:45:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 418E1C44515
+	for <linux-aspeed@archiver.kernel.org>; Thu, 16 Jul 2026 17:46:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h1L6h3P0pz3brH;
-	Fri, 17 Jul 2026 03:45:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.19
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784223932;
-	cv=none; b=GzkPMHzNtFi9QQIt8e/tx7Y+1Tj08wsV+MSsFx2SGvtm45QOum0UWDtdVMhWrOP9QaKliMlm8GT/yG4JCBv+u9iDWZDJgNTeEGpP08mhnL98QIN8O9ygp8V5i/2SeQtj0oOZni/dBMO+ePkps2ILOYYM3qW5WDex3Ju4FUH57p6DAMh6YeoiR4Y5Sl7TdQTxuoi0LHMQTRDhQlEk5zH+uJdei6U3woxQgK8FksMbEQP2JS+tShHp5kZGD3Nmo97ZpuWoZEn4pV4yapIdjvI/lhW7IsjGuAiH19+sDouw0lpx7zNuIPMJz7We70e7LLEGvJBLhuyziLKcVzGuZWvczw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h1L7t2npDz3bs0;
+	Fri, 17 Jul 2026 03:46:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.16
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784223994;
+	cv=none; b=HVqIiyV6ww0AqaMdiQcwkkp8OyWh9++ztqXpo1gC+RKNT9yd5WsGRVIR9BriEPkr+LTd3GGBSFOU1CjQ1Dxph8hsIeBp+edOCE6jLkVc0vcxOmOIxd1r1hG+Z1hMcFb6YdjBVIich0hTpC2J9w8m52wWlEQ6Kxe9FrcvJ4dyj3MOIqB5E9SecycJWI0yEPXt+JTde/AXNF9nG5wY0LAGngKWcLWbPmHVmPWbFkXOxWjxoitFdoFz32c7Smh8HFsnYypYM6iFbAf7gz4foYuNpSn9Oq+UOavHWrwJic6OOnvIE/mqb0VOeDn9qtjRzd6zmue4Dmo0VPbMg4RiQ1xTBg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784223932; c=relaxed/relaxed;
-	bh=tVLdSx79+8Bzgir/Sc66ApOsik9GIIidNucjbg3PmSM=;
+	t=1784223994; c=relaxed/relaxed;
+	bh=j7c4B+c5M1YCLKZUbglFnT73p8ZRNDReD6Xa3fF06Tw=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ULshgfKM6ym3FLGUTSSKRL2e0++e47cPM0olsIc6MBpEf57w1TwhJtOx1Tgcvw+EyrOgYefrKs0Ei95nkRojQeczRVUPx/0f6S7rG4sgyxtsHW7/nIjEMx/qN5hitv/py1hwppxobRAUWHMZddYh2cZxvJE8KLsKYIC7S/jeSNuQkrmFo77jL7c0oEAtiYzdRyGUtqHSE4dQe6QL2a13Oa4YLX0c6lpR+q6cC6EIMuNAY/Xc/0+iAgSTpWbggiiu84fEZpk8soNwcobdjl/8JSaunO0P2WteKppDWPrYtL4hVk5+7UHgpFf/VoyZQWMmh+v1e0UtAMSVbqbRJTd/XA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=WxEqJ51a; dkim-atps=neutral; spf=pass (client-ip=192.198.163.19; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=HrbVzrTWElPp8bKJ1hVmOH7DZC2jzMtv1gGxGX3XybCeGL+slYn96kjk0PlYA+nDKle7IY6JKPaKBi69fENpVSKdxSMMAeRpC0aqy/bIFvdg77rcitJkGaLzqSqfuOXmbIWzStBrydgJDYMFVjJW8h/t+tvwDZpBFFNLqd0OhCSn1hQ59aK8eoCMXMRJBRO+hRmLYWwr5mlETyphB+fjwWEVRvJ4UZskYqWMHtfAreuEu3Wr7HmYz4bzbkGwQeUuy6BpqRtfvpkgLYIERGCd9W8uelHdOVQJPdBY1YEp4GR3G61vdbIavS9/nWEvKBz8hIgjptG1Nw+0Nsov6vuSQg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Q62pRzHh; dkim-atps=neutral; spf=pass (client-ip=198.175.65.16; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=WxEqJ51a;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Q62pRzHh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.19; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 66 seconds by postgrey-1.37 at boromir; Fri, 17 Jul 2026 03:45:28 AEST
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.16; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 66 seconds by postgrey-1.37 at boromir; Fri, 17 Jul 2026 03:46:32 AEST
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h1L6c1fpxz30FB;
-	Fri, 17 Jul 2026 03:45:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h1L7r1Lmcz3brm;
+	Fri, 17 Jul 2026 03:46:31 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1784223929; x=1815759929;
+  t=1784223993; x=1815759993;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:content-transfer-encoding:in-reply-to;
-  bh=jR5j9NUUUDWrKfOXsM73JV6fyT1VqUxtuhsCIIn6jKM=;
-  b=WxEqJ51a59GMuAJAjPa6qq9s1VwGefJhGi1sV21NW/VuEYfEGL7/NRvK
-   VtidpVQlrneBwMYyRj4oqbdEW/EMHPUaH77ROwhBQl586C2/EGP+4TJBa
-   Q/+5X5cuZbaLJdByamNPq4o8tAOdsx0iqFS/O534VrhRzYGDCVyUFMA/V
-   yyJcIYGOtDJhRULn9jOEp4/WN9DTYZ0rxkj08Tkag6Y1GhKJfxZObWhCb
-   kFsbW7k0NuFQ60XWUtIKKE1kePEirnFVswY7n9mwivWTmJgzgGyEnfhTF
-   +6Aa/7ihI6mZmHMSWFXAAGr2cy3SbXKN1OxRUUGK+uucjol5SQvrMGKOC
+  bh=zbVibP9aLTK8oNvSIhVNQ4AgGcuyaBeKvV56UEcTcpQ=;
+  b=Q62pRzHhHx3VCbqjf5KnliFTkHoZYW8aEWXj2vH4tUey4szk6XTEljro
+   7HCRku96ef+XqElBXTphshK/RNxU9uyf4v+8/+u+UnYsYESBed+o+69v7
+   MpBlPlrdJpPTwIdnn+HGSP1tlH1Lq/3yN20txwY2jR8Mq1UHiUk0Jm0Kx
+   TAyUiwscFUo4j7SENe2yAfIbwwrAi2T+JX1FJnONOzd5mbFv8uGX/7P9f
+   11AhxZ4NPAGkrlqr9KObyaJXG+mTKUPDhlGcz2XpySUcHQ9/Bn94e3JUd
+   gg5PtNX+G7O/TK97m9WVKrtMxH82+fUjMGhEAfKk47/5ukYt5jAYrJqKK
    Q==;
-X-CSE-ConnectionGUID: SN6X+v/yRDCaZBKnvaSBGA==
-X-CSE-MsgGUID: MTl9Sf/nQDC9d9hRlwZgQA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11848"; a="83877234"
+X-CSE-ConnectionGUID: pG7vwOgMSaKHf3NdRIGDCQ==
+X-CSE-MsgGUID: 5kRpdFsvQCi1k2lVEpuXoQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11848"; a="85090288"
 X-IronPort-AV: E=Sophos;i="6.25,167,1779174000"; 
-   d="scan'208";a="83877234"
-Received: from orviesa008.jf.intel.com ([10.64.159.148])
-  by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Jul 2026 10:44:15 -0700
-X-CSE-ConnectionGUID: aMxhVdAuQT2VWNRoxPa/nw==
-X-CSE-MsgGUID: NDeukz9TQ02LlIOQEavzaw==
+   d="scan'208";a="85090288"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Jul 2026 10:45:22 -0700
+X-CSE-ConnectionGUID: tUarK1GxR1ydTColBfz7Rw==
+X-CSE-MsgGUID: kqVQX9ajR9KmsayDkRu5Zg==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.25,167,1779174000"; 
-   d="scan'208";a="256023287"
+   d="scan'208";a="279834026"
 Received: from conormcd-mobl2.ger.corp.intel.com (HELO localhost) ([10.245.245.26])
-  by orviesa008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Jul 2026 10:43:55 -0700
-Date: Thu, 16 Jul 2026 20:43:53 +0300
+  by fmviesa002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Jul 2026 10:45:03 -0700
+Date: Thu, 16 Jul 2026 20:45:01 +0300
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig_=28The_Capable_Hub=29?= <u.kleine-koenig@baylibre.com>
 Cc: Linus Walleij <linusw@kernel.org>,
@@ -136,8 +136,9 @@ Cc: Linus Walleij <linusw@kernel.org>,
 	Michael Buesch <m@bues.ch>, William Breathitt Gray <wbg@kernel.org>,
 	Robert Richter <rric@kernel.org>, linux-acpi@vger.kernel.org
 Subject: Re: [PATCH v2 00/21] gpio: Improvements around device-id arrays
-Message-ID: <alkYWcuMsfE5jkLR@ashevche-desk.local>
+Message-ID: <alkYnQdzZlKf2bfB@ashevche-desk.local>
 References: <cover.1784133987.git.u.kleine-koenig@baylibre.com>
+ <alkYWcuMsfE5jkLR@ashevche-desk.local>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -154,25 +155,29 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <cover.1784133987.git.u.kleine-koenig@baylibre.com>
+In-Reply-To: <alkYWcuMsfE5jkLR@ashevche-desk.local>
 Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
  krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On Wed, Jul 15, 2026 at 06:55:05PM +0200, Uwe Kleine-König (The Capable Hub) wrote:
-> Hello,
+On Thu, Jul 16, 2026 at 08:44:14PM +0300, Andy Shevchenko wrote:
+> On Wed, Jul 15, 2026 at 06:55:05PM +0200, Uwe Kleine-König (The Capable Hub) wrote:
+> > Hello,
+> > 
+> > as with v1 the original motivation for this series are the patches that
+> > convert the arrays to use named initializers, see
+> > https://lore.kernel.org/all/cover.1780048925.git.u.kleine-koenig@baylibre.com/
+> > for the idea behind it. Then by not closing the eyes for small issues
+> > spotted while working on that, this series grew a bit.
+> > 
+> > Changes since v1 (available at
+> > https://lore.kernel.org/linux-kernel/cover.1784013063.git.u.kleine-koenig@baylibre.com):
 > 
-> as with v1 the original motivation for this series are the patches that
-> convert the arrays to use named initializers, see
-> https://lore.kernel.org/all/cover.1780048925.git.u.kleine-koenig@baylibre.com/
-> for the idea behind it. Then by not closing the eyes for small issues
-> spotted while working on that, this series grew a bit.
-> 
-> Changes since v1 (available at
-> https://lore.kernel.org/linux-kernel/cover.1784013063.git.u.kleine-koenig@baylibre.com):
+> Sorry, but at first glance it seems this version is messed up.
+> I'm not going to look into it deeply, waiting for *carefully*
+> checked v3...
 
-Sorry, but at first glance it seems this version is messed up.
-I'm not going to look into it deeply, waiting for *carefully*
-checked v3...
+And with the above being said, my tags against v2 are not valid
+(withdrawn).
 
 -- 
 With Best Regards,
