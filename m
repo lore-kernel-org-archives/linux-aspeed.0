@@ -1,79 +1,143 @@
-Return-Path: <linux-aspeed+bounces-4488-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4489-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CFCA6C44501
-	for <linux-aspeed@archiver.kernel.org>; Thu, 16 Jul 2026 02:34:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4626BC44515
+	for <linux-aspeed@archiver.kernel.org>; Thu, 16 Jul 2026 17:45:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h0xty0KKVz2yT0;
-	Thu, 16 Jul 2026 12:34:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::633"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784169241;
-	cv=none; b=fJYTU2GFb/hHg5jdsvxgoy23Uc0+7128lbBSBwNeb1LfKlilePs+xdUl7KVLHMZGWWFTnnVt+Nwm5oxsksp7s7LaTKrl5R10xYE8YAETFjfkSbahV/97Pzmc6sAUrJtRgMQ+cQabIgYwo3SBpCLF+fbTcb74P80ijQTFhBEUxTQG4CxPgpzCXCpAtY8EWK23XO0BRkA5ur7Pe4JkZKA1XvmUHXaIuuqPoWYmgHOekJGaO28J+KAOByWLQ/A1Us8UjQSIDrZSF4w5MRiX4Wa5A2HYLF1yujayt3WVX27rDLoqGdNJigpy1yW8zBJ09FACV5L9uN3Ic+F0uG7ZVv6jsA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h1L6h3P0pz3brH;
+	Fri, 17 Jul 2026 03:45:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.19
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784223932;
+	cv=none; b=GzkPMHzNtFi9QQIt8e/tx7Y+1Tj08wsV+MSsFx2SGvtm45QOum0UWDtdVMhWrOP9QaKliMlm8GT/yG4JCBv+u9iDWZDJgNTeEGpP08mhnL98QIN8O9ygp8V5i/2SeQtj0oOZni/dBMO+ePkps2ILOYYM3qW5WDex3Ju4FUH57p6DAMh6YeoiR4Y5Sl7TdQTxuoi0LHMQTRDhQlEk5zH+uJdei6U3woxQgK8FksMbEQP2JS+tShHp5kZGD3Nmo97ZpuWoZEn4pV4yapIdjvI/lhW7IsjGuAiH19+sDouw0lpx7zNuIPMJz7We70e7LLEGvJBLhuyziLKcVzGuZWvczw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784169241; c=relaxed/relaxed;
-	bh=ufvoepbkxBTccdbf849+Ndmklty3uX56AMakRenyADg=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=mC9rl4j7ofxuoQK3OqVPNlOxlHukIwq5ixl3uDtDp5uJhYNTRsR0/86rR/nXiqTODnvIs7bFyYLfofta5kekAoLsFy2kDagPqBx9MTGAQQM5XnzPEShWFoDPIhYaG5GYW7SamLWxxvJD3il8ytMRqF0g9mXUGUVYGJhOZ2V/g8Xnf/Oqi/1JIe53G691Cf/SlbgJqDc5sxf3Dfd9sz7liexJ6KaBg3akFn/i6J4ppep9PIFq8OONN8rkSio7gZ0D4m9egj/geQ41jVGBiLRU8/6sQv9U97K3MZSGtiIBjEVHSZOgJvFpd+iYnBkdp7XLCPDiRMcBv6F5dO2bjueuAQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=kOwPzAz3; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::633; helo=mail-pl1-x633.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1784223932; c=relaxed/relaxed;
+	bh=tVLdSx79+8Bzgir/Sc66ApOsik9GIIidNucjbg3PmSM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ULshgfKM6ym3FLGUTSSKRL2e0++e47cPM0olsIc6MBpEf57w1TwhJtOx1Tgcvw+EyrOgYefrKs0Ei95nkRojQeczRVUPx/0f6S7rG4sgyxtsHW7/nIjEMx/qN5hitv/py1hwppxobRAUWHMZddYh2cZxvJE8KLsKYIC7S/jeSNuQkrmFo77jL7c0oEAtiYzdRyGUtqHSE4dQe6QL2a13Oa4YLX0c6lpR+q6cC6EIMuNAY/Xc/0+iAgSTpWbggiiu84fEZpk8soNwcobdjl/8JSaunO0P2WteKppDWPrYtL4hVk5+7UHgpFf/VoyZQWMmh+v1e0UtAMSVbqbRJTd/XA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=WxEqJ51a; dkim-atps=neutral; spf=pass (client-ip=192.198.163.19; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=kOwPzAz3;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=WxEqJ51a;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::633; helo=mail-pl1-x633.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x633.google.com (mail-pl1-x633.google.com [IPv6:2607:f8b0:4864:20::633])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.19; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 66 seconds by postgrey-1.37 at boromir; Fri, 17 Jul 2026 03:45:28 AEST
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h0xtw1s6Jz2xd2
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 16 Jul 2026 12:33:59 +1000 (AEST)
-Received: by mail-pl1-x633.google.com with SMTP id d9443c01a7336-2cee9b74ee1so27160345ad.3
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 15 Jul 2026 19:33:59 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1784169237; x=1784774037; darn=lists.ozlabs.org;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=ufvoepbkxBTccdbf849+Ndmklty3uX56AMakRenyADg=;
-        b=kOwPzAz34E2/yNgVEnvWWz0VgDK1+W32Toy0oPmaLggxsgN5FXQN9Y2yQleReT5VS2
-         cHMsuYPzRn26jwhfUTKaZehpfD775k1ahBm4RkTjfjzHfWERHm5lP/FthwiBl5F82jyR
-         qriTEFTFAetFgUTy7lEFlnrwkKG26uaWVD/bPuCvWJ5ikYxpJRxt7HGNQ7lQqe9wyvwN
-         tm4hAz4s/0YHZsqZ0ryKB6ifdmK1esCvzgBRm9nSVoPDivL1ESMAAXPHCQgILfZhcQhL
-         JHYDkgoSilAr+Q1nDSDLwJ3VUUZZ1fuu+FSHnYRuqpX+zQl1KDdO89ISx88gv/obuKah
-         /I0Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784169237; x=1784774037;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=ufvoepbkxBTccdbf849+Ndmklty3uX56AMakRenyADg=;
-        b=btbvVF8hgbFU9P8Y5BSudELIJ/NJHeiVRn+WpFY0j7T/kqCQeKt7vAk0Jv5I7lWbS0
-         yTUn+12NH5WCTivhl0d6Cx1hxV7sjSUH/VqBk22bvoAomkHJec/y8oDFBJH3GcCBX9Ck
-         Quky3JMxRNeKJ53UJdQH+Fzipju9ZSk3CmC0P+/HwRX3VOQ3I3x4K7oJO6pegCjYjaRf
-         yDlc2oB6SNYSwQX9RWZ71kBUXdnlnhLJMVuQTo2sq8dx1RgvOVcLJnJVbP/PaDvNeHz0
-         lJGmvg3ykrnzKjREZeHfQqZQc1zedNDwVFhtLLiNwAX73gPNwf6o16H9+Ps2krhpFXrW
-         cQxg==
-X-Forwarded-Encrypted: i=1; AHgh+Ro+L9HK+VAf4hN6SKfPPPm7Ds0stP3Ew66JZeu307SH3n9ZJW5nCCyhnMIhVE/tUWt/vTl4DR/sdaQB9B8=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwUrBIZjGp+syBgQ4BN3grfqLphdBoGZxY5/2c35/OSrrjNDrOe
-	T2iUJlT84ovnSUWR2NQSVrafxgMRSLZuMX8PSQpsin60vi2cbKSfhOoW
-X-Gm-Gg: AfdE7cnj9+PRTasxq7V1UAqL5xyFkvAg6ghta4yEN8f41VCCkk2yy+ZIGdBqOOhGKpe
-	OgyeAQw4yNvN7UJ+lvhze4+20hZBFPVM7gvlvbKQVjyT5qaceG90pKE7EIlOJ8Dg5WC+73rnqDf
-	L0knPrSnxmyqxtsrsvL0uEP3fOfBSoy8wyFPgJdUJEe0AKMKbeq/a2Bd9LqCQA5so96Q9SrvBXb
-	S3ida+wDHaKQ500e2vUNjl2+RnKnUo7rOiQiypImReSqt9raTZjvhrF6qfqKjz0yVEh7amsFdMc
-	7zwX6YV5MykPERAmu9k6+2hoo78UQEhv9B4ARSpJ2M+jKN8RnjqXML6YqXbVmpEUfTgQ86UkS/U
-	5QF2V7RsVMkx5eveYnSAXJVki+r4mKXh/wXzU2/YQ49V0uQ7ow/n867z2p8hBNSowYAKwW5SQV0
-	1wtJHac/5t1FOz3M+y/GLdZRG5O2iLENWO59RNymR05HbhjxxUUU0PVrs=
-X-Received: by 2002:a17:902:ef0c:b0:2ce:ed59:7044 with SMTP id d9443c01a7336-2cf03da0b8dmr49619015ad.30.1784169237122;
-        Wed, 15 Jul 2026 19:33:57 -0700 (PDT)
-Received: from [10.10.15.228] (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2cf105bc642sm11540255ad.63.2026.07.15.19.33.54
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 15 Jul 2026 19:33:56 -0700 (PDT)
-From: Potin Lai <potin.lai.pt@gmail.com>
-Date: Thu, 16 Jul 2026 10:31:17 +0800
-Subject: [PATCH] ARM: dts: aspeed: sanmiguel: fix PWRGD_RMC_N active-low
- hog configuration
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h1L6c1fpxz30FB;
+	Fri, 17 Jul 2026 03:45:27 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1784223929; x=1815759929;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=jR5j9NUUUDWrKfOXsM73JV6fyT1VqUxtuhsCIIn6jKM=;
+  b=WxEqJ51a59GMuAJAjPa6qq9s1VwGefJhGi1sV21NW/VuEYfEGL7/NRvK
+   VtidpVQlrneBwMYyRj4oqbdEW/EMHPUaH77ROwhBQl586C2/EGP+4TJBa
+   Q/+5X5cuZbaLJdByamNPq4o8tAOdsx0iqFS/O534VrhRzYGDCVyUFMA/V
+   yyJcIYGOtDJhRULn9jOEp4/WN9DTYZ0rxkj08Tkag6Y1GhKJfxZObWhCb
+   kFsbW7k0NuFQ60XWUtIKKE1kePEirnFVswY7n9mwivWTmJgzgGyEnfhTF
+   +6Aa/7ihI6mZmHMSWFXAAGr2cy3SbXKN1OxRUUGK+uucjol5SQvrMGKOC
+   Q==;
+X-CSE-ConnectionGUID: SN6X+v/yRDCaZBKnvaSBGA==
+X-CSE-MsgGUID: MTl9Sf/nQDC9d9hRlwZgQA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11848"; a="83877234"
+X-IronPort-AV: E=Sophos;i="6.25,167,1779174000"; 
+   d="scan'208";a="83877234"
+Received: from orviesa008.jf.intel.com ([10.64.159.148])
+  by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Jul 2026 10:44:15 -0700
+X-CSE-ConnectionGUID: aMxhVdAuQT2VWNRoxPa/nw==
+X-CSE-MsgGUID: NDeukz9TQ02LlIOQEavzaw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.25,167,1779174000"; 
+   d="scan'208";a="256023287"
+Received: from conormcd-mobl2.ger.corp.intel.com (HELO localhost) ([10.245.245.26])
+  by orviesa008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Jul 2026 10:43:55 -0700
+Date: Thu, 16 Jul 2026 20:43:53 +0300
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig_=28The_Capable_Hub=29?= <u.kleine-koenig@baylibre.com>
+Cc: Linus Walleij <linusw@kernel.org>,
+	Bartosz Golaszewski <brgl@kernel.org>, linux-gpio@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Lixu Zhang <lixu.zhang@intel.com>,
+	Sakari Ailus <sakari.ailus@linux.intel.com>,
+	Hans de Goede <hansg@kernel.org>, Andy Shevchenko <andy@kernel.org>,
+	Ray Jui <rjui@broadcom.com>,
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+	Florian Fainelli <florian.fainelli@broadcom.com>,
+	Scott Branden <sbranden@broadcom.com>,
+	Eugeniy Paltsev <Eugeniy.Paltsev@synopsys.com>,
+	Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>, Imre Kaloz <kaloz@openwrt.org>,
+	Conor Dooley <conor.dooley@microchip.com>,
+	Daire McNamara <daire.mcnamara@microchip.com>,
+	Daniel Palmer <daniel@thingy.jp>,
+	Romain Perier <romain.perier@gmail.com>,
+	Robert Jarzmik <robert.jarzmik@free.fr>, imx@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	linux-riscv@lists.infradead.org,
+	Hoan Tran <hoan@os.amperecomputing.com>,
+	Alan Borzeszkowski <alan.borzeszkowski@linux.intel.com>,
+	Mika Westerberg <westeri@kernel.org>,
+	"Enrico Weigelt, metux IT consult" <info@metux.net>,
+	Viresh Kumar <vireshk@kernel.org>, virtualization@lists.linux.dev,
+	Yinbo Zhu <zhuyinbo@loongson.cn>,
+	Thierry Reding <thierry.reding@kernel.org>,
+	Jonathan Hunter <jonathanh@nvidia.com>, linux-tegra@vger.kernel.org,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Alban Bedel <albeu@free.fr>,
+	James Cowgill <james.cowgill@blaize.com>,
+	Matt Redfearn <matt.redfearn@blaize.com>,
+	Neil Jones <neil.jones@blaize.com>,
+	Nikolaos Pasaloukos <nikolaos.pasaloukos@blaize.com>,
+	Doug Berger <opendmb@gmail.com>, Keerthy <j-keerthy@ti.com>,
+	Vladimir Zapolskiy <vz@mleia.com>,
+	Piotr Wojtaszczyk <piotr.wojtaszczyk@timesys.com>,
+	Sven Peter <sven@kernel.org>, Janne Grunau <j@jannau.net>,
+	Neal Gompa <neal@gompa.dev>,
+	Mathieu Dubois-Briand <mathieu.dubois-briand@bootlin.com>,
+	=?iso-8859-1?Q?Andr=E9?= Draszik <andre.draszik@linaro.org>,
+	Bamvor Jian Zhang <bamv2005@gmail.com>,
+	Marek =?iso-8859-1?Q?Beh=FAn?= <kabel@kernel.org>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+	Avi Fishman <avifishman70@gmail.com>,
+	Tomer Maimon <tmaimon77@gmail.com>,
+	Tali Perry <tali.perry1@gmail.com>,
+	Patrick Venture <venture@google.com>, Nancy Yuen <yuenn@google.com>,
+	Benjamin Fair <benjaminfair@google.com>,
+	Santosh Shilimkar <ssantosh@kernel.org>,
+	Kevin Hilman <khilman@kernel.org>, Orson Zhai <orsonzhai@gmail.com>,
+	Baolin Wang <baolin.wang@linux.alibaba.com>,
+	Chunyan Zhang <zhang.lyra@gmail.com>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	Manivannan Sadhasivam <mani@kernel.org>,
+	Heiko Stuebner <heiko@sntech.de>,
+	Ludovic Desroches <ludovic.desroches@microchip.com>,
+	Paul Walmsley <pjw@kernel.org>,
+	Samuel Holland <samuel.holland@sifive.com>,
+	Michael Walle <mwalle@kernel.org>,
+	Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+	Alexandre Torgue <alexandre.torgue@foss.st.com>,
+	Nobuhiro Iwamatsu <nobuhiro.iwamatsu.x90@mail.toshiba>,
+	Shubhrajyoti Datta <shubhrajyoti.datta@amd.com>,
+	Srinivas Neeli <srinivas.neeli@amd.com>,
+	Michal Simek <michal.simek@amd.com>, linux-aspeed@lists.ozlabs.org,
+	asahi@lists.linux.dev, linux-mediatek@lists.infradead.org,
+	openbmc@lists.ozlabs.org, linux-omap@vger.kernel.org,
+	linux-renesas-soc@vger.kernel.org, linux-unisoc@lists.infradead.org,
+	linux-rockchip@lists.infradead.org,
+	linux-stm32@st-md-mailman.stormreply.com,
+	Michael Buesch <m@bues.ch>, William Breathitt Gray <wbg@kernel.org>,
+	Robert Richter <rric@kernel.org>, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH v2 00/21] gpio: Improvements around device-id arrays
+Message-ID: <alkYWcuMsfE5jkLR@ashevche-desk.local>
+References: <cover.1784133987.git.u.kleine-koenig@baylibre.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -87,66 +151,32 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260716-upstream-sanmiguel-fix-pwrgd-rmc-n-v1-1-8287b306e02a@gmail.com>
-X-B4-Tracking: v=1; b=H4sIAHRCWGoC/yXNQQrCMBCF4auUWTvQdBGDVxEXSTrGERPDTFOF0
- rsbdfnB438bKAmTwmnYQGhl5WfpMIcB4s2XRMhzN0zjZMejsdiqLkI+o/qSOTV64JXfWF+SZpQ
- csaBxFENwzk5koYeqUJ/8Ts6Xv7WFO8XlW4Z9/wCZYzsfhgAAAA==
-X-Change-ID: 20260716-upstream-sanmiguel-fix-pwrgd-rmc-n-18ecbb8862e6
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- Andrew Jeffery <andrew@codeconstruct.com.au>, 
- Patrick Williams <patrick@stwcx.xyz>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- Cosmo Chou <cosmo.chou@quantatw.com>, Mike Hsieh <Mike_Hsieh@quantatw.com>, 
- Mik Lin <Mik.Lin@quantatw.com>, Potin Lai <potin.lai.pt@gmail.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1784169234; l=1357;
- i=potin.lai.pt@gmail.com; s=20260522; h=from:subject:message-id;
- bh=DcxIBTDfGFMcjuFLqAGUh8B8eNoT1j4rQhiygNTbZAU=;
- b=AQKaX++ClRwxml6UKIVBauBZJ8nnK2N/HuEGZjzFOYDNDs1nhvSfaa7KcbzWT81FNH/I24l0P
- Z/PKYqJgPqvCg8F7vsL5rVg7sxRe2+PIyfIT7ci50DeBG3axZfL98LE
-X-Developer-Key: i=potin.lai.pt@gmail.com; a=ed25519;
- pk=j3/nMxzz1ZPpp1revghyZ8IqOnwi6RWfuxXN2XrNMRE=
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <cover.1784133987.git.u.kleine-koenig@baylibre.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-GPIO 14 on the fio_ioexp (pca9555) controller corresponds to the
-PWRGD_RMC_N signal, which is active-low.
+On Wed, Jul 15, 2026 at 06:55:05PM +0200, Uwe Kleine-König (The Capable Hub) wrote:
+> Hello,
+> 
+> as with v1 the original motivation for this series are the patches that
+> convert the arrays to use named initializers, see
+> https://lore.kernel.org/all/cover.1780048925.git.u.kleine-koenig@baylibre.com/
+> for the idea behind it. Then by not closing the eyes for small issues
+> spotted while working on that, this series grew a bit.
+> 
+> Changes since v1 (available at
+> https://lore.kernel.org/linux-kernel/cover.1784013063.git.u.kleine-koenig@baylibre.com):
 
-The pwrgd-rmc-hog node currently specifies output-low for this GPIO
-with GPIO_ACTIVE_LOW flags. Under Linux gpiolib, configuring an
-active-low GPIO hog with output-low sets the logical value to inactive
-(0), causing the subsystem to drive the physical line high.
+Sorry, but at first glance it seems this version is messed up.
+I'm not going to look into it deeply, waiting for *carefully*
+checked v3...
 
-Correct the hog configuration to output-high, which sets the logical
-value to active (1), driving the physical pin low on boot as intended.
+-- 
+With Best Regards,
+Andy Shevchenko
 
-Signed-off-by: Potin Lai <potin.lai.pt@gmail.com>
----
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-sanmiguel.dts | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-sanmiguel.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-sanmiguel.dts
-index d7ed497d7227..ba71f1f9768a 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-sanmiguel.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-sanmiguel.dts
-@@ -592,7 +592,7 @@ fio_ioexp: gpio@20 {
- 		pwrgd-rmc-hog {
- 			gpio-hog;
- 			gpios = <14 GPIO_ACTIVE_LOW>;
--			output-low;
-+			output-high;
- 		};
- 	};
- 
-
----
-base-commit: bd22661baff3295747e864c8647003e8eba46dd9
-change-id: 20260716-upstream-sanmiguel-fix-pwrgd-rmc-n-18ecbb8862e6
-
-Best regards,
---  
-Potin Lai <potin.lai.pt@gmail.com>
 
 
