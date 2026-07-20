@@ -1,97 +1,63 @@
-Return-Path: <linux-aspeed+bounces-4510-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4511-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D6DDC44512
-	for <linux-aspeed@archiver.kernel.org>; Sun, 19 Jul 2026 23:54:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B533BC4452A
+	for <linux-aspeed@archiver.kernel.org>; Mon, 20 Jul 2026 13:31:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h3L8q4bSHz2y8m;
-	Mon, 20 Jul 2026 09:54:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.168.131
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784389348;
-	cv=none; b=BaX9L/BeWAhv0jHaut27RDXtHFfYRGbKwcUIngF5L9Ux4zjyW6CxF8Gh8izedLxZz4lAQ9mcEMHRVS0Z4Fo8zOsvKaFyRIk7Ad+DKroSqRLHUFcub8QFTYAjeq8aI6wsSg3dwp7mjlqWMCX6+ZIZqu8/8ccXW5LMW/XURIvzNqB6LPxLhGtZwBByPOgkw25j1FLOhMpCUMe4yLptFwLwj0duHIuyPs7xP+i84ea/9rubqZki31G6BwiiemnB2uuyulyBpe4tQuaEaN9P2RZ5GYLrnXBX5jrQca8C4T5DbIJRDXgx2+utKuqu0LdAdjxVr0Sl3GRK59HZ+TfYx3oVsg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h3hHr6WCPz2y8F;
+	Mon, 20 Jul 2026 23:31:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784553441;
+	cv=none; b=cd3Q/Wrq5QIqpoW+QPjrTZjq05DLcy3MzLS6+d0g2ie0qQvt0r7XuNmYGibOmHtok2lEqbx9j0ZPMYbNlRcYOiXKFEv/CZWf2IB9SNvC9DvKvyLvrPx/3UbclLxZ60V8hDsN2b6P6TKs6+ZWYVeK5Au/QphG+6AXKIkownDvTkCvB6G/9RCws2N8bMD9gsVgn/SyNFbFK9mUMura1re0NO+6W3fFF2LntMcgm+r9DykY8Grf+wDq5O/ZxsN2tuY/4S/I6xlb8NhcUKeb5HuwMgOw54u/mT6juxzRz0P+2KSXrHmvFavo+sQcrdhCKY+urTGgUsQHW2otas7lZcyvMw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784389348; c=relaxed/relaxed;
-	bh=B3Tozc6XvAyXDRXhNm08ssVPc4HklhucZjeYpfFjPmA=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
-	 References:In-Reply-To; b=cft60qkYVttf4gWZ3FAjjpou1YgzIhjwakIZvDsclUXlgZXt+8WlwNhRpUex8zkD4BR/Z9Ll4h4O8wsFxGn1CYn6bh7POZvxEAj7nOhN/rGQp5r5DHqIRvlk6nPJ/pV+7OZ7u511aaE9pX2Gm6TTwpCE7tvDSsONmabP5mC+caGZ1KiPiQuQ5x2lmoMZ8N2rJYalIa74v/GyRi03/seRR3ll3TyHDNFZQb3KhJ8XtZUl+v7WgKLvtPxT6hKwjipMmB4xSLRH+UQAsedto7suNxaJTO6SFv0o8JMR86YRtezvh1TMHYDCGdPM1V0KtE138bS0xOmf5BfncgmNyv8nPw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=l9F6S0Gn; dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Uyv0wJQt; dkim-atps=neutral; spf=pass (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=ze.huang@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+	t=1784553441; c=relaxed/relaxed;
+	bh=QhC99x7vdLxugeCtGkIpVFaFlhQmyHyfood4QTosfNY=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=omX/tzXECzkdEZP5+aLZ41PNNqzjkP7Isk6RPSwz0nhhLF+TS1UWRzUUVx3r8/uIF29wdiJS3d5pA+ja5Y7gTpCUVDSeWDCKXPliyJV3o5dkVDmijYiNfFA/DWbbYNZLtfa0mkl5Y4qOpXQr60MVwIlwMfTQs/pJ5LdYTl0IbVC9R5cqsgdsCLXCggjqW061ne5xzNz6s4m0M1KtjvmgVwO5qMiSeUhMFAM+3Q3agZxbBsWSiGtundF5aqPQ7QCeX75h+zKSPIvSEWTNQFTN5ceEDBj457qiaX/gz9I5/7KbPH1Dg7lUbccMHABOLrMN6Uhzflh1Q3+A78LARcxJiQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ekx0qK/S; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=gd/7=fo=oss.qualcomm.com=manivannan.sadhasivam@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=l9F6S0Gn;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Uyv0wJQt;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ekx0qK/S;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=ze.huang@oss.qualcomm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=gd/7=fo=oss.qualcomm.com=manivannan.sadhasivam@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h2WHk2TGSz2xYg
-	for <linux-aspeed@lists.ozlabs.org>; Sun, 19 Jul 2026 01:42:24 +1000 (AEST)
-Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66IDDcCt1853435
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 18 Jul 2026 15:42:20 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	B3Tozc6XvAyXDRXhNm08ssVPc4HklhucZjeYpfFjPmA=; b=l9F6S0Gnb2vjgD6a
-	NBQfReSJBOyCIXwIUgjQE9ha1CjdNnqVi17UErZCTYSlBRo/TxMbCbjqKp2d0Yy8
-	2grbSegaeCpYWBsCtdZz1Mn3v8FEv1j5UcVICfCZoIiXa6CDvpkRuAbnTODcJZ/U
-	B2BcXlqo9x1yKCfP3m63lMsLAwNF6umECQ3O2BYkakRH9Y3pltrWALui4/z2ZZDB
-	Oohi70BkTEVI9LYX4Az4ZXFHWOAsSgFmcQVj/yBR+bc/KWRawPM7IARiYuzeczGl
-	2Z7prJm/hdBFhaSSwCdQjPyC6p/fQJ948P1wqkX9Tl6bHTlDilZ5bfpKV/jZ9sV8
-	GzU+Jw==
-Received: from mail-pg1-f200.google.com (mail-pg1-f200.google.com [209.85.215.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fg2aas2n6-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 18 Jul 2026 15:42:20 +0000 (GMT)
-Received: by mail-pg1-f200.google.com with SMTP id 41be03b00d2f7-cab3e9cd922so4296948a12.0
-        for <linux-aspeed@lists.ozlabs.org>; Sat, 18 Jul 2026 08:42:20 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1784389339; x=1784994139; darn=lists.ozlabs.org;
-        h=in-reply-to:references:to:from:subject:cc:message-id:date
-         :content-type:content-transfer-encoding:mime-version:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=B3Tozc6XvAyXDRXhNm08ssVPc4HklhucZjeYpfFjPmA=;
-        b=Uyv0wJQtSebkUstf4e+G5hoMuAQCvFlSIR8Gq4Honc9Hugk2s8u8BWbiuw1XomEKG8
-         uPwPwgudqAMWXoLaU0XcgGUwHISFu7m9FT1uKlZnD58UZZjb6vTTHrCsLACmGpIGp3tX
-         OaAaUMcPiX9VLH0j8gXXOInrQr49Q9zMuM6EaSFmUyrREyzoYXsf6fKTqC1MiPbqZd0u
-         ajss+1/PnwR3DDLYtaJFdZHlrYV8SgTuAYikU5baDzye1LQlS9sF6o1LrzseK3qUO/WK
-         wNGu499gM08mJY7PAFNLLXdKyazsACHN5pRV0KIh+GJjZOd3yz4nltSjSwxx2n6HaILT
-         CflQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784389339; x=1784994139;
-        h=in-reply-to:references:to:from:subject:cc:message-id:date
-         :content-type:content-transfer-encoding:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=B3Tozc6XvAyXDRXhNm08ssVPc4HklhucZjeYpfFjPmA=;
-        b=fIkNiTCpe18niZFG83HjtunQeFbDcd+52qr4cI+id6DY8BVqQF2ynNIEJgaziExcVS
-         VmsMgvHARSLHEmWT/MgfW/7cUH1TmM7VluqVjQGb5qiQIIyQkANTBkSiNTZkmQ8A5cSR
-         U/fDsw4va4z39buETjVB1kSVDSOdgbyZUkCKOnAFtmEdN9xpUArkN5K+EnMmN/LPe8XO
-         fjKJ/frAW8azZNeegJ82h09PoXBI3l7in52cwp6zwlFC5b/OepUtzbRVdlTsk6v/Jh8d
-         LmxJlIQ+3sDTKLnphMFOGvG4VNsBP0HwCKKEJ7uhy2GlIxFDfhhRGBD+syEa8ctsfLhJ
-         QhaQ==
-X-Forwarded-Encrypted: i=1; AHgh+RrsFWux0gZlyh1yLqjDJWIGXDewaQGxwor1uNpDz1+mTJpz3g8tR2O5vr0O0r1tKl8WneClvw93b3bTweE=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yxw5VFeqH8i5wW2+RpcvYMaGdGOOmnHJclQ9OBAGMk+9uwkZp8e
-	x7ZyX3U95Zb0hrwDhG4Faww5Q7iFIpt8JhwHNbeRv8C5dI3EtHYDUS6H/f2WXSE3TQVnpsxprPS
-	fZOPwZFt5LUdlRBLndN274pb1OIH79ycnxPumcxOfSRJ9lM95ft1ivAi3Y3JdR8+3ezj0
-X-Gm-Gg: AfdE7clOF71BWYP0fBtxCuOY0GvmyI91zalyU/Am9EFb4ZyfFSfj/7Yv1XzHPydE/2z
-	9gwJkGX1rmd7wcjjdHF8scSdK/ItEU85eIg+PBb2p6oRG1GKL46cIYOim9gI8RIv1vVoheuYjRa
-	dSHVAp+DanX4VGGeJxzIDsNSOCJxCvoKn+CAxDWEcZthfr+yCXKKRrrQteKQpwQE2mOXLztmyvd
-	6aOupqswYgr7E8wERANvFlnknv0JAUeipbEpsiTg92uAfcDRVxOi5tMmDSL3zxpCFBlwdVk124f
-	7r9X+Tj0fbiglC6nitrKyI1Fqx5r6WXsq9HImww2JDzcSQHzWD1tC2U68HgT61uJEUkPlRJk3Hc
-	d9SI0ZQ==
-X-Received: by 2002:a05:6300:95:b0:3bf:e2f1:1b08 with SMTP id adf61e73a8af0-3c3ad9717d4mr7925886637.40.1784389339433;
-        Sat, 18 Jul 2026 08:42:19 -0700 (PDT)
-X-Received: by 2002:a05:6300:95:b0:3bf:e2f1:1b08 with SMTP id adf61e73a8af0-3c3ad9717d4mr7925851637.40.1784389338852;
-        Sat, 18 Jul 2026 08:42:18 -0700 (PDT)
-Received: from localhost ([188.253.117.185])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-31429f9d439sm22974922eec.5.2026.07.18.08.42.13
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sat, 18 Jul 2026 08:42:18 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h3gzN2hj9z2xlZ
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 20 Jul 2026 23:17:20 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id D114B41957;
+	Mon, 20 Jul 2026 13:17:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 00AE71F000E9;
+	Mon, 20 Jul 2026 13:17:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1784553437;
+	bh=QhC99x7vdLxugeCtGkIpVFaFlhQmyHyfood4QTosfNY=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date;
+	b=Ekx0qK/Srb8oSP2eKbdTYsBPRyxMt/d9O3yjxos43A26fm14PVGfA99xc1oFaUNRH
+	 t33/CXj4ytIGGRt26MnPn2GM3yH32lCmh3J0EUkGbmryEjN4mrgRsZ1tpDtOEQz8Hy
+	 4QxR55IuxVkS02SgFKDZ0WSYhYKgc5DcDIqZdxqSMJFZQdRInsuvu+Bgit/wx0OEby
+	 YB/2d3xzxjXnYSDAahvKQRQ3ewu3NupVczdRvQXI6TDe7ApQsF5top5L4+CsQ8icyg
+	 SD8vyge5RQ40E6ems95LfxdFijgsxt98ytN7q+tX8TcxRtqAt0KzwtjH+5GJDO/VvS
+	 85f/TrAelG57A==
+From: Manivannan Sadhasivam <mani@kernel.org>
+To: bhelgaas@google.com, "Jiri Slaby (SUSE)" <jirislaby@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@kernel.org>, 
+ Jacky Chou <jacky_chou@aspeedtech.com>, 
+ Lorenzo Pieralisi <lpieralisi@kernel.org>, 
+ =?utf-8?q?Krzysztof_Wilczy=C5=84ski?= <kwilczynski@kernel.org>, 
+ Rob Herring <robh@kernel.org>, Joel Stanley <joel@jms.id.au>, 
+ Andrew Jeffery <andrew@codeconstruct.com.au>, linux-aspeed@lists.ozlabs.org, 
+ linux-pci@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+In-Reply-To: <20260708095814.385480-1-jirislaby@kernel.org>
+References: <20260708095814.385480-1-jirislaby@kernel.org>
+Subject: Re: [PATCH] PCI: aspeed: Switch to irq_domain_create_linear()
+Message-Id: <178455343360.25926.10984869704341739230.b4-ty@b4>
+Date: Mon, 20 Jul 2026 15:17:13 +0200
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -104,143 +70,34 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Sat, 18 Jul 2026 23:42:10 +0800
-Message-Id: <DK1T85P7OAAY.RXCY4AX71VRX@oss.qualcomm.com>
-Cc: <dri-devel@lists.freedesktop.org>, <linux-kernel@vger.kernel.org>,
-        <linux-aspeed@lists.ozlabs.org>,
-        <linux-arm-kernel@lists.infradead.org>, <imx@lists.linux.dev>,
-        <xen-devel@lists.xenproject.org>
-Subject: Re: [PATCH v2 5/8] drm/gm12u320: replace struct
- drm_simple_display_pipe with regular atomic helpers
-From: "Ze Huang" <ze.huang@oss.qualcomm.com>
-To: "Thomas Zimmermann" <tzimmermann@suse.de>,
-        "Ze Huang"
- <ze.huang@oss.qualcomm.com>,
-        "Alexey Brodkin" <abrodkin@synopsys.com>,
-        "Maarten Lankhorst" <maarten.lankhorst@linux.intel.com>,
-        "Maxime Ripard"
- <mripard@kernel.org>,
-        "David Airlie" <airlied@gmail.com>, "Simona Vetter"
- <simona@ffwll.ch>,
-        "Joel Stanley" <joel@jms.id.au>,
-        "Andrew Jeffery"
- <andrew@codeconstruct.com.au>,
-        "Frank Li" <Frank.Li@nxp.com>,
-        "Sascha
- Hauer" <s.hauer@pengutronix.de>,
-        "Pengutronix Kernel Team"
- <kernel@pengutronix.de>,
-        "Fabio Estevam" <festevam@gmail.com>,
-        "Linus
- Walleij" <linusw@kernel.org>,
-        "Hans de Goede" <hansg@kernel.org>,
-        "Alex
- Lanzano" <lanzano.alex@gmail.com>,
-        "Oleksandr Andrushchenko"
- <oleksandr_andrushchenko@epam.com>
-X-Mailer: aerc 0.21.0-0-g5549850facc2
-References: <20260716-drm-simple-kms-removal-v2-0-1133a8fc3785@oss.qualcomm.com> <20260716-drm-simple-kms-removal-v2-5-1133a8fc3785@oss.qualcomm.com> <26981ae1-4aef-4965-8600-f5e30a1b564a@suse.de>
-In-Reply-To: <26981ae1-4aef-4965-8600-f5e30a1b564a@suse.de>
-X-Proofpoint-GUID: PrHOdzQYmtvF6z5dtJPHrjleYjMiChbC
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzE4MDE2MyBTYWx0ZWRfXxYe2PLTUDDeK
- kjNdNkte+LKZb9CBxxFHvbHV+cS+DnjFve90B7eY/hwoAH/FIFv5ZxnwoSh92lGtOVxdB3KVgUE
- cY/FvW6GRDns61a+1uQSCk8lZtLf4Ec=
-X-Authority-Analysis: v=2.4 cv=b9aCJNGx c=1 sm=1 tr=0 ts=6a5b9edc cx=c_pps
- a=oF/VQ+ItUULfLr/lQ2/icg==:117 a=RQ3dwY0XcLBFaqRX7rIGyg==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22
- a=EUspDBNiAAAA:8 a=ZBS7nKAnUslcPLfxFb0A:9 a=QEXdDO2ut3YA:10
- a=3WC7DwWrALyhR5TkjVHa:22
-X-Proofpoint-ORIG-GUID: PrHOdzQYmtvF6z5dtJPHrjleYjMiChbC
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzE4MDE2MyBTYWx0ZWRfX95wJM6FUvPqc
- DltrO3DvIK62vLy+Jcdgr7USwX1+JDrZGzZYKTG//g8vPc9k8ginGAyj5/B2c89rx1zORP25OXN
- Pn01K+mkNBCmibNIlLZ8Jw25JwFByNcO1sYlTZDIMJNRPGzSnc621su9AreecJuAypTm7nwIh4G
- x7NAqV+BNi01ArHUNT0YzAmt4Wf2rDmSyO7Q5YBN+V37xGZ5WT5r3FMUMv21oIcmSEwest/hAsf
- FHnShsrjb6ROtOyyk9tiK7Lwc+dDPqpU3M9Km3B5Jl64zetY4kQ0KPBUaaKmy7fWI3oemRzKK9U
- vUz1Go5fC8FHChM10Y8rbQZxfDGONZab5TWkttXgXbqkxz39MqEzpd8Jv6+PgooK7AF0osWwpuo
- v9ev3gFIJDHZFH5IiFlqVKYXfTpl0ywBoWXEDz1PSoCXfVQ/8Vrl3dsaBzuxAOWYFZUQVGT0c/O
- +HRW/Ah6NZTI2Afoylw==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-18_04,2026-07-17_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 suspectscore=0 phishscore=0 priorityscore=1501
- lowpriorityscore=0 clxscore=1015 adultscore=0 malwarescore=0 bulkscore=0
- spamscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
- adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
- definitions=main-2607180163
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-Mailer: b4 0.15.2
 
-On Fri Jul 17, 2026 at 3:18 PM CST, Thomas Zimmermann wrote:
-> Hi
->
-> Am 16.07.26 um 11:01 schrieb Ze Huang:
->> Convert gm12u320 to direct primary plane, CRTC and encoder setup.
->>
->> Keep shadow-plane helper state, framebuffer access helpers and
->> no-scaling plane-state check from simple-KMS path.
->>
->> Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
->> Tested-by: Thomas Zimmermann <tzimmermann@suse.de>
->> Signed-off-by: Ze Huang <ze.huang@oss.qualcomm.com>
->> ---
->>   drivers/gpu/drm/tiny/gm12u320.c | 132 ++++++++++++++++++++++++++++++++=
---------
->>   1 file changed, 107 insertions(+), 25 deletions(-)
->>
+
+On Wed, 08 Jul 2026 11:58:14 +0200, Jiri Slaby (SUSE) wrote:
+> irq_domain_add_linear() is going away as being obsolete now. Switch to
+> the preferred irq_domain_create_linear(). That differs in the first
+> parameter: It takes more generic struct fwnode_handle instead of struct
+> device_node. Therefore, of_fwnode_handle() is added around the
+> parameter.
+> 
+> Note some of the users can likely use dev->fwnode directly instead of
+> indirect of_fwnode_handle(dev->of_node). But dev->fwnode is not
+> guaranteed to be set for all, so this has to be investigated on case to
+> case basis (by people who can actually test with the HW).
+> 
 > [...]
->>  =20
->> -static void gm12u320_pipe_enable(struct drm_simple_display_pipe *pipe,
->> -				 struct drm_crtc_state *crtc_state,
->> -				 struct drm_plane_state *plane_state)
->> +static void gm12u320_crtc_helper_atomic_enable(struct drm_crtc *crtc,
->> +					       struct drm_atomic_commit *commit)
->>   {
->>   	struct drm_rect rect =3D { 0, 0, GM12U320_USER_WIDTH, GM12U320_HEIGHT=
- };
->> -	struct gm12u320_device *gm12u320 =3D to_gm12u320(pipe->crtc.dev);
->> +	struct gm12u320_device *gm12u320 =3D to_gm12u320(crtc->dev);
->> +	struct drm_plane_state *plane_state =3D gm12u320->plane.state;
->
-> Did you see the reply from the Sashiko bot?
->
-> What happens is that user space can apply multiple atomic commits in a=20
-> row, but they are applied to hardware asynchronously. So if you take the=
-=20
-> plane state here directly from the plane, it could have been replaced by=
-=20
-> a later atomic commit already.=C2=A0 Rather get the correct plane state w=
-ith=20
-> the helper drm_atomic_get_new_plane_state().
->
 
-I think I misunderstood this point. I had assumed that
-drm_atomic_get_*_state() was only needed for the state object directly
-matching the helper callback, for example crtc_state in
-*_crtc_helper_atomic_enable() and plane_state in
-*_plane_helper_atomic_update(), while other state could be accessed via
-the device-private structure.
+Applied, thanks!
 
-From your explanation, I see that this is wrong. In the atomic commit
-path, any state associated with the current commit should be obtained
-through drm_atomic_get_*_state(), because the object=E2=80=99s ->state may
-already refer to a later commit.
+[1/1] PCI: aspeed: Switch to irq_domain_create_linear()
+      commit: f944349dcbaeaa9d6e1c8f2f8182f5560ba79581
 
-> I did not look at all of the series' patches for this problem, but the ru=
-le
-> applies to all of the mode-setting code.
->
-> Best regards
-> Thomas
+Best regards,
+-- 
+மணிவண்ணன் சதாசிவம்
 
-This affects other patches in the series as well, and some drivers may
-need additional fixes in internal helpers too, e.g. arc_pgu_set_pxl_fmt()
-in arcpgu.c [1].
 
-I will audit the full series and fix such cases in the next version.
-
-Best regards
-Ze
 
