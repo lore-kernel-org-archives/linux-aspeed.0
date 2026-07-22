@@ -1,45 +1,56 @@
-Return-Path: <linux-aspeed+bounces-4534-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4535-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8595C44539
-	for <linux-aspeed@archiver.kernel.org>; Wed, 22 Jul 2026 13:16:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA5D6C44539
+	for <linux-aspeed@archiver.kernel.org>; Wed, 22 Jul 2026 15:08:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h4vsg1fTpz2y8p;
-	Wed, 22 Jul 2026 23:16:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=220.197.31.4
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784725715;
-	cv=none; b=obMQhON+nA1/2pf/qahlbt2rP/52ajXs66O3rhp5c0aqVd31BNGAEJOo5GacXRrPcjE9oTtxzAfhqDy5YCZRmmcQE6fva9JRJ5eqQ7y4s+3u2l9pUF2nNNyx2/IN3+/2y6xSXL/5ji6gsPJ0LBf6ZSUf7GsPZy8z+n7Ya/QspytgOhb/ItqykvhV7lDp8Z3Op6xcuZTjJkFmvKnO3ontlxu61Ihei9UYR4WnQlegXfo4ZjGdjT2VldVhg4E2knofcE9ZlfZjXOI0zSq7J0H/aX6EGl4UI3TeVfpE4Fr1xq+Vw5aSsAz0r8QTnk47hQsjY4bwpDE2wsMtR/7VJZySSA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h4yLl6Bp5z2yVd;
+	Thu, 23 Jul 2026 01:08:31 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784732911;
+	cv=none; b=adeXjZYzSYhK+rBnUmcPtfNEyEKOqTehXL4N1tZS7oa/ZDQCw3vXDtmM9vQV17mknNoYQcuOikTJ6Qx+O27NZgN9ZBTNZhDJFOGkzu8ZYncxP2oBQtxbSxsBWG9332P7Bk/Fn5I6eEqxxu/I82A4fbjRKseQ6sJs7M4g/4jmNl68Gk7EcrxVSTuPNRHo7IA9ZjhdHpcR/3hADSLfVYMBVEbzZ5p12pj7PefWGphvHi5gFnlOphcQ7Yl95m9S7r8gj49BXCiZtF2Ypn7sG17r4Gcmm3lxKPbgyVQr2isXKmd53MxvTfyZLfgdsiuY68J2yYu6QSOqOZ7DkNh8pWgOrQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784725715; c=relaxed/relaxed;
-	bh=WaPDbwxCsdcx+B/dCejKtJh2wWTua00Ci6Hpi0ul8C8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=EMHSri3Hp4s3GAZ/NHkAreCc0zK0rD9TvAOtCD8spBCqzFdOvI9+fxmMGLO5Sg+A8R4ke/85Z08PWN9GGSTu0Ll2+9GFTgGOXbtkxXnni+Q4s1ZrV/JbyYKYCIWrVdETH1XjF4BSguoQlMX+lPRoyvXl2Kl6TRyMyhiywsUrAgM2GyoVCJeWFYMaVVjqCR3Sh+eWAHvFtygHfz0pW1w1vfy7iEhFFy8WkDMV0jA2oHPDEaue5MCk+uIQBGmoVnKkbES5yIuBcFeQIypn3vpkDSOfay/LEJAQCwSDxkk0kj1yFGg0SpqYxpZflqQot+1bsRlzHh/i6AelBVOfqGHO6A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com; dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=H7xCUMUY; dkim-atps=neutral; spf=pass (client-ip=220.197.31.4; helo=m16.mail.163.com; envelope-from=haiyuewa@163.com; receiver=lists.ozlabs.org) smtp.mailfrom=163.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com
+	t=1784732911; c=relaxed/relaxed;
+	bh=9ViNF3ZI4IEPivZK4iQepPlauUrX461PctikME+T1V0=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=eOZMWli9K494ATx3Rh2a/cHqSUFaJHVsCRqNSjObNcbBWxKJAjWAU+ArvmjOA/rbSRnAMRHJGGEFvflq8u1MPu2bOKJXtADFPJOYnY6ukgzT/lUHIrCTSMTEIp3HIIuP2QBPbSzGDwJfOi07fL4dVm62iu6A1Yt6y7N7Q93UeEwLUoDrtrQEZj8ASFnwsHTrijOwO3we+kSEKG2ZQCmOD2p0QPYXE0Cz7vGyMAaJgbzifedSVuK6kY/vvnvlVqiuzvc3fQFQhugPKeCyPv9q69Rqzf1D+nfBp9gTsYIltT4TuzFcduE86h0B6wkUnf03aQ8K/Cm3929gPLCNO+T/uA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=Zj8k9ffq; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=H7xCUMUY;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=Zj8k9ffq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=163.com (client-ip=220.197.31.4; helo=m16.mail.163.com; envelope-from=haiyuewa@163.com; receiver=lists.ozlabs.org)
-Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.4])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
+Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h4vhH4B3mz2xBb
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 22 Jul 2026 23:08:28 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=Message-ID:Date:MIME-Version:Subject:To:From:
-	Content-Type; bh=WaPDbwxCsdcx+B/dCejKtJh2wWTua00Ci6Hpi0ul8C8=;
-	b=H7xCUMUYc/LooIzd+CSV4M98TEu1QIbG+rVULphn8ypPW3Ek4oRmPTSrR0BTeb
-	oJ+jvvyj4Tvlx9myhIVE9GLwTQWXpVxr5nJrn1A21G2Dn6DGGBvLvBJ2ndJevJxe
-	bOKiqmNQ83H0B5Z0k83upy/IwqMDvMgOipJcBqsqzaTH0=
-Received: from [192.168.1.104] (unknown [])
-	by gzsmtp2 (Coremail) with SMTP id PSgvCgCndQKNwGBqqIFOHw--.52029S2;
-	Wed, 22 Jul 2026 21:07:26 +0800 (CST)
-Message-ID: <c85229c4-2c9c-4231-b294-e8012c3fead6@163.com>
-Date: Wed, 22 Jul 2026 21:07:23 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h4yLl0bxhz2yFK
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 23 Jul 2026 01:08:30 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=codeconstruct.com.au; s=2022a; t=1784732908;
+	bh=9ViNF3ZI4IEPivZK4iQepPlauUrX461PctikME+T1V0=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date;
+	b=Zj8k9ffqCugrCsViAKam4XcJyJfzIq74EQQtQaQTCHHc1OZGrWgBPqCTx3y3QW7ij
+	 e78BTqGHnU59QRC1sS6MI7NK+yv696QwJvsy4YIx7YGBoX2SWoSG9iTs0G6BhY0TlE
+	 xgFbEqoP0BiA97teg6QcdVB2u7Y/tAXGyqZCCVIYcdugHbiMYCNSUCMW6VTXvEy2pV
+	 cuIvQ8HEfVPkdJfRmS94AuWOkIg13yTQ4LHQ1+u8uPXVZ42CKVPRxR3hFTO3WSFt/E
+	 oC5dd0TyEIUOHNmEBhAGELAYImd0IYTxjfqKdCgsMupdHufWBAx/j3d3NeUUhd3cSB
+	 2wCRiUAHdmzMw==
+Received: from [127.0.1.1] (unknown [180.150.112.11])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 0799B65B37;
+	Wed, 22 Jul 2026 23:08:25 +0800 (AWST)
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+To: Joel Stanley <joel@jms.id.au>, Pengpeng Hou <pengpeng@iscas.ac.cn>
+Cc: linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
+ linux-kernel@vger.kernel.org
+In-Reply-To: <20260704122442.85499-1-pengpeng@iscas.ac.cn>
+References: <20260704122442.85499-1-pengpeng@iscas.ac.cn>
+Subject: Re: [PATCH] soc: aspeed: add missing MODULE_DEVICE_TABLE()
+Message-Id: <178473290536.1914149.8003428473620995771.b4-ty@b4>
+Date: Thu, 23 Jul 2026 00:38:25 +0930
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -53,46 +64,26 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1] ARM: dts: aspeed: g6: Use KCS AST2600 compatible
- string
-To: Andrew Jeffery <andrew@codeconstruct.com.au>, devicetree@vger.kernel.org
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
- "moderated list:ARM/ASPEED MACHINE SUPPORT"
- <linux-arm-kernel@lists.infradead.org>,
- "moderated list:ARM/ASPEED MACHINE SUPPORT" <linux-aspeed@lists.ozlabs.org>,
- open list <linux-kernel@vger.kernel.org>
-References: <20260627052708.172918-1-haiyuewa@163.com>
- <5333a3912656d4c85fd063dc5726106e38150ad6.camel@codeconstruct.com.au>
-Content-Language: en-US
-From: Haiyue Wang <haiyuewa@163.com>
-In-Reply-To: <5333a3912656d4c85fd063dc5726106e38150ad6.camel@codeconstruct.com.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-CM-TRANSID:PSgvCgCndQKNwGBqqIFOHw--.52029S2
-X-Coremail-Antispam: 1Uf129KBjDUn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7v73
-	VFW2AGmfu7bjvjm3AaLaJ3UbIYCTnIWIevJa73UjIFyTuYvjxUjVbkUUUUU
-X-Originating-IP: [101.228.92.86]
-X-CM-SenderInfo: 5kdl53xhzdqiywtou0bp/xtbCzQ4GcWpgwI7TFAAA33
+X-Mailer: b4 0.15.2
 
-
-
-On 7/22/2026 8:55 PM, Andrew Jeffery wrote:
-> On Sat, 2026-06-27 at 13:27 +0800, Haiyue Wang wrote:
->> As the commit 2596f6b93a60 ("ipmi: kcs: aspeed: Add AST2600 compatible
->> string") does, change the AST2600 DTS file to use kcs ast2600 compatible
->> string.
+On Sat, 04 Jul 2026 20:24:42 +0800, Pengpeng Hou wrote:
+> The driver has an OF match table wired to .of_match_table, but does
+> not export the table with MODULE_DEVICE_TABLE().
 > 
-> Is there some other motivation? It's been a while, why now?
+> Add the missing MODULE_DEVICE_TABLE(of, ...) entry so module alias
+> information is generated for OF based module autoloading.
 > 
+> This is a source-level fix.  It does not claim dynamic hardware
+> reproduction; the evidence is the driver-owned match table, its use by
+> the platform driver, and the missing module alias publication.
+> 
+> [...]
 
-Just happened to see 'ast2500' when adding other nodes in DTS. Nothing 
-special.
+Thanks, I've applied this to the BMC tree.
 
-BR,
-Haiyue
-
-> Andrew
+-- 
+Andrew Jeffery <andrew@codeconstruct.com.au>
 
 
