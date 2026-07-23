@@ -1,94 +1,93 @@
-Return-Path: <linux-aspeed+bounces-4547-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4548-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E26EC531CB
-	for <linux-aspeed@archiver.kernel.org>; Thu, 23 Jul 2026 07:56:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 791E6C531CD
+	for <linux-aspeed@archiver.kernel.org>; Thu, 23 Jul 2026 08:38:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h5Nk32XChz2yFg;
-	Thu, 23 Jul 2026 17:56:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::42c" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784793403;
-	cv=pass; b=D+ukrMdaOY/Sm5SGCLYww7ZA/maRCQJFEYOmtsS102sIdO9DjnTwpd4Bz/bizMWgtz+NFUKBQ+E/9Y9Y5Pd+rami6Qy6BqVazFZnYuWkKotHDrmDeJy+CSw3PmG/zRJmIdb8uEsWPRHcxznQBTSHz1qIyDVimbrx/PzRHZ4d5HbZzR+yyEdxox5OTGSgVORfTxveQt8vk3nKhAw4x7OScrEkidR/OlL+A9fqROXfKI3dB1TeiI9Mb++emTpQUoY0US8ebzTRvBiZaXEtWtM1C/aDeUfpPnlDplmeAjBPHKfof2Igrs2yJ51VDR2JKYsC4LrqFS5orI+96jKA57hOaA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h5Pfh3cTlz2xrL;
+	Thu, 23 Jul 2026 18:38:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::130" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1784795932;
+	cv=pass; b=FbzMqazcqG1NhzDaWzxdx2At5qlxpMtkd6ggyVxS8oqJPR9erGtEiDIl9EfJkpfUHV3LrUuatnXr22q30IVWfzNCd2xrlnVE48II2DE6A7FOHyHQWD+0wBdKn6DtrIRul0jeqVglm29y4pEu15yEKuGDdMMJVfRNIzssZoeNFlBLyE0BH++HyY30X4wLVEK2uTxSPq34R/wsvhmEmIXtkEg4qhqfGpzG5xuJ3rPdwbjRgp38R3Qs76gUfX3JT6wZ48OD3fBaRqMEtFmYVI5mnUX5i8Xx6J2umQD18dRvFS3fmcDY9Gj4cYBN02TFO1/rVKmHjqTfWxjErqkI2PNWVw==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1784793403; c=relaxed/relaxed;
-	bh=b6DqJBZMRrtqgXe1EMHqbmVcaqG/4/r6dtGHJCM8y1k=;
+	t=1784795932; c=relaxed/relaxed;
+	bh=JMndNBDrNRSXZklDAozkSv6Z/iRQ8qtJLkHPftqq8ss=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=HCY8q9aW9oMvxl1K5LhhVPjp+ClZGqqkLp4mKTLIbcfSAwJSDbfW18Gy22eyIpUx+AYCUjPGa4YUBTLrNh1F3cIgVWmTcYhCzPpNOJxlv19Qv7Lo3eNpf4mUx7NF+VADBRNH+r5/oftKfjQx2VIoZ94Dolq1QQ67m+EhHxUCMFh72D5eeTbO2X/PAYEHNUD5DpKJTiQ/aOYnsPt4o/gYMtggl2NxV4NzjRkjINDgvM+qxyn8kUQc9DRXXx9jzGfCOquUw1HQXx1vits4ivx1oOVilYXrAzhVWvsS0Yjq3PIXe/3VYitoSs3XVBEKXps1nbaz0oN4FbrvlT83n69qSg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=9elements.com; dkim=pass (2048-bit key; secure) header.d=9elements.com header.i=@9elements.com header.a=rsa-sha256 header.s=google header.b=Q9DsY2iM; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::42c; helo=mail-wr1-x42c.google.com; envelope-from=gregoire.layet@9elements.com; receiver=lists.ozlabs.org) smtp.mailfrom=9elements.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=9elements.com
+	 To:Cc:Content-Type; b=VOZuGBB0ys6Q4J5dDyy4wH1cOP06uvqK0J78R+k61YOh5Sx5wIDRv3jKlGeReUjVjuIb35g/++OVHTdmCegdunZ/+/A05bS3DjSsjHxqQkekXWcqN7zf8SglvEFejmFYZKvxk1crGr85KW1N7yFPwHznhpstdC1C1463KAVL+sFc94legyytXi7LPxuKD7C3sfZ97DdvroVhmVCZEvJYr1fSdFwpOSlYJV7ywQNIr8HBg5log4QeOfI2Y7XTBwKp505M49Y5jZ3BT/v2zhTtq+0TTKTvSwApPBpfZeJNPzNpz0Qnsd6IfzIuGHtB+hZMSDvbhqFl8Q0IzqcbjHg1xA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=eYXF/F8u; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::130; helo=mail-lf1-x130.google.com; envelope-from=kylehsieh1995@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=9elements.com header.i=@9elements.com header.a=rsa-sha256 header.s=google header.b=Q9DsY2iM;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=eYXF/F8u;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=9elements.com (client-ip=2a00:1450:4864:20::42c; helo=mail-wr1-x42c.google.com; envelope-from=gregoire.layet@9elements.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x42c.google.com (mail-wr1-x42c.google.com [IPv6:2a00:1450:4864:20::42c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::130; helo=mail-lf1-x130.google.com; envelope-from=kylehsieh1995@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-lf1-x130.google.com (mail-lf1-x130.google.com [IPv6:2a00:1450:4864:20::130])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h5Nk13T8Hz2xqJ
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 23 Jul 2026 17:56:40 +1000 (AEST)
-Received: by mail-wr1-x42c.google.com with SMTP id ffacd0b85a97d-475417f010dso206543f8f.2
-        for <linux-aspeed@lists.ozlabs.org>; Thu, 23 Jul 2026 00:56:40 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1784793396; cv=none;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h5Pfg1tmLz2xJT
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 23 Jul 2026 18:38:50 +1000 (AEST)
+Received: by mail-lf1-x130.google.com with SMTP id 2adb3069b0e04-5b015532f7bso363439e87.0
+        for <linux-aspeed@lists.ozlabs.org>; Thu, 23 Jul 2026 01:38:49 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1784795926; cv=none;
         d=google.com; s=arc-20260327;
-        b=WF2kSwcioUdrNF0ZO9VnO8gGqoQd02c3/pTU7/qXv0vYbJwmWXPx9axzpTw2BeTelS
-         EbpYj+IAJ8rrIjM+DeDvOa6nZz7HACruZr+hJAFIVsL217WhSwkzxM7vW5mANECIgj3F
-         buZZVWtZo4gBNNrgXeU0DenCoWFiNNlq5T74/iQn0rxciGXjihzXK0rwIgvVdyH24nCn
-         cL/+aeD54GHsFZkctWIZbHM4t4uJoOHK1qQSHwGjaEJM9j5Jw4eWDcWXiDIz+rjMk4k4
-         XJONLBbYDanI51XGIG2PHW4YyTaeHn4McX8CKgLeSOjdW8NqrwfYcORm2nqt/pWIjN6+
-         gIvg==
+        b=aWbvctxr6tcO4L0c3n16DEl/v3RIlr/KBZX/TZveqeAGETm+owPBJdVKGBGlfq67l3
+         uGtoDkzxscOzgrtCXmvUEM6FfM+gUHctVbkcbmgo1SMH1CGPypoKs+Romj3RX7e0tW8d
+         xNXDixoiRMavZyQzAXKkHDkB0QWX+aaTyhKc7ls7ceuwsCHvMYjdgfF/n6Me+5JEerDX
+         vYkDW6MVCEKMFUS3mQKXGRX6iVIDrYSp15FbBoGqvraCz+PTYw8GQcsBRS22yoC8wMfM
+         kCfU9RDMA9iFEmwbtW9udKEaIJZ9rmPTxDuhG3tEASY4ftru/S6Dyox4muY2AQK/4M40
+         e+mQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=b6DqJBZMRrtqgXe1EMHqbmVcaqG/4/r6dtGHJCM8y1k=;
-        fh=7ViU8n2nevWdpR0E+vR/IdITP1IyD5cQKjZP9uI1uX4=;
-        b=IUVyOMEpI0/IjvyiwiHS+2IpJe6jmyU1wMDL6zMU/5UvKI/amcHLdZZSFoMRND2l1f
-         p0dKEnf0vXTCkC1ZxN8nfUg1zfWKov2JIqUCIg+ueJA0dXaZ9UzD6ZdxV6t9/hkOrNpC
-         LNztXtMru871pvgyHWhfMgShV+xjpFiw3Y3lDUr4S+ArzD2K17X+ODq/PDcFtLB/PjeW
-         s3xRYvYbnhbWWzlV8bpvTDztqoFu0lIW3NwehGGTHt10SCi+o1Uj2H/IU6u1h0v0ntW/
-         5gwsm4c+wPfN6hWEZcuiZw82jy54f7+F/FdScvBpyqteUeYRb36nJ+7V9E5HNYzstl7V
-         XOgw==;
+        bh=JMndNBDrNRSXZklDAozkSv6Z/iRQ8qtJLkHPftqq8ss=;
+        fh=m7KCggBilQPT/iDbGWu+1yKiTgqMbLFS5vQkzfK9Vg4=;
+        b=hRIk2C8di2wGoehszK6AGSXTIvp2HyJFmL29BNPEr1wz2HBy3dtK+HJFYA1nZo6JLP
+         erWXmpjl+8DguqWxXavcWc37HCRBFW+2I+VCxf2VnndiYqafZwqTYjOejT2ueDbxVTa1
+         799QJECLet9j7AUi6JKYDMXnLoJoxdb7DIkcFDgb6vpxoxaJ2HHes1pkToFrol7n2BK2
+         RnCobHrm1DTdcqwu1LJsK7S23yExzPDA7RQkXeODIRaxFny3gaXCt8oTLQoGP+prDjIm
+         angYA0GRL1dlIdHv7ACbrGRh0hFy4u4bVejtya18jVWzxZgm9PxkS5ygNELYrk6izyyk
+         PtAA==;
         darn=lists.ozlabs.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=9elements.com; s=google; t=1784793396; x=1785398196; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1784795926; x=1785400726; darn=lists.ozlabs.org;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=b6DqJBZMRrtqgXe1EMHqbmVcaqG/4/r6dtGHJCM8y1k=;
-        b=Q9DsY2iM+WbSfakJ2vWhCi4vHz23cY4KaEtifzqMOyApHVncnYl6Fa1mC2IVbRsJFJ
-         Et84ZgRZr0SylAijpGzonVOM9yerWf3nd/rneY8Fkn0jVrMT6SLFuN0sICpmbTdlj1b0
-         dPdJczkYvXBP5qn6YgqM+YDaX01qYjL2MRn64Rzl2hjmOnk4W9+MjOTANZhNJAyO43NE
-         tMGmyb1jGuDSn//UMSsB9AgX8p02uAt++xn8HvIpTWHo7VH8pcGR9yEL4YEaT9xlSlPL
-         qjhwoaSbx0xXLazYI7fHFCKZJJuVVqKFQK0fzU01K67Ho6anBv3ynX3Adu0aWfFJX1rR
-         2m3w==
+        bh=JMndNBDrNRSXZklDAozkSv6Z/iRQ8qtJLkHPftqq8ss=;
+        b=eYXF/F8uJXa2tkYtpTN/ApjcqFNXW9+htw2QL8xQk39gLQP5+LvIUtTnlTPH5i4grg
+         w/WKdL9C6k9tLHSLWrcEAVT1F6H7Rq+7YSsp87kwoF1A4c4Aaa55OHmzhnPQiPgALz2w
+         tnDCUVMvNpxeQkigjbc0AZGyv5XyJJTJoMDXEPTO8Pjvnaouq/08uu8TiLqK/a+9gA1S
+         SFxDr9EIJy4vOrL2miXrBskMTzSUVYzLkFYWhGjjQZ6t42ROn5V2/u7rPMKieyBZ/AS4
+         d9KqWxopjjiMHWmWdNZ8+IgTUuN+bCfQ4PaDOAlP+C4YEm04zrNHfXWqYB4xclPqxH5M
+         0dFg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1784793396; x=1785398196;
+        d=1e100.net; s=20251104; t=1784795926; x=1785400726;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=b6DqJBZMRrtqgXe1EMHqbmVcaqG/4/r6dtGHJCM8y1k=;
-        b=YypXYTeE24j80zKjQYZ4PDHPQJydC+44ELUb4Y26SjjMfjCJjMIUIiuOnfAS/eExDl
-         KwFO8W4puSOW6VC9/fSnc8ZY6fMC9tf3bQbsSJi26bLXwWYCC+3nJf1ue2pmkK146G5m
-         LGpFOVrDoiKYC4VEmcmG528vW7ySoDqwNS5vLXclbIUwopKEk6Zzy1Xe9Dq6ihw82UWn
-         RW4/EN+dySdhKkuPP7UUENYm28vFoKErsbVkiUmuF4timrPh4Urwq6q3Lw+Ptl0UeCSy
-         72Z4fnji6bEWXqVCNzLScO31K58VRXD7kZUHolF5f5zFOKIqpnNTWfRxUBqz5ricX5Dp
-         WIXg==
-X-Forwarded-Encrypted: i=1; AHgh+RoJ3AE9ladwZiHukFyKqlzovy1I/9bVm+/JbxChGYJjhtpQbOjCGtwePcVZduGKVhLDIzYg1kT1Sd1P2f0=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyY0G1IhK6I9oWh8p31bPYLfjcXTJS0aOmY1FOKnWFEzFg3N0LP
-	54U8ahA12AMUXj6k60Oz7OcXjBxMn+0hvTiOKyNCrbTybsn+6z1CjD/+oiIGCxxa5p2vaEkPvIh
-	0N0ePd1aXjEly6jKEbKtJSy2lzQfdEfWukk/n6L2jEA==
-X-Gm-Gg: AR+sD11iq6F3Xo2UNEJhso228y1FYjHBbQRe11gO0e4GyRKGJ0418Z51EvGvZOuMtwT
-	JBsbnZJB1+r+L5zstlFx6jouWNoY5oVuNDfM3CxnAOPvKTK3xysek7nxXxU3D8zKylvRtZEwm6R
-	SLH4SQk6ZEpZnAQaBFtBHCTKKSVCbdIUtOaw64/PGgBQJhojfc1cC0IOQMEpUfUB3hhfM2APVmT
-	KF7XBJRKD2npQpUDTzR3u1JfcCgEuDTZkOU1Fu5VCEiHewBfNfOFtd8CA8nKvLTWSEDYRIMgKcy
-	1u3uh/1aa7f3uDB5C5vZRSOdUDkQIWXL6NCkMVQIZFXIlKQ=
-X-Received: by 2002:a05:6000:4717:b0:47f:9254:d45c with SMTP id
- ffacd0b85a97d-47f9254d53dmr642099f8f.31.1784793396668; Thu, 23 Jul 2026
- 00:56:36 -0700 (PDT)
+        bh=JMndNBDrNRSXZklDAozkSv6Z/iRQ8qtJLkHPftqq8ss=;
+        b=NJpap3SwpcYpLn6xmXIGi3GKiC4Ph6Ek3qf0jFgLNgdWdnb+zAQMcMrPTAQSnqvXCY
+         gYWXSpBUAIn4LwMIoNK0mZVE3OBuyGYzT3f7aS3UepmtR75fm46ScEFbVKLJdj7SNkNM
+         qOS1+XLb38iP1zsoP7AbjVZl0rbOR7Nh/qnBSrr0XyP4eipWAa1es519mGTEgyzcwC7S
+         /fs4yCXaDBauRJ3bYyW/719K8Zs/7X0MTMj9t4f/9JSsZ+Uy2NtS4LjBoAkJUNmPIT3G
+         7tJzz8EBMpIFKwiEcgCo5I4K6FL6QImoWPEToF7+B9SxOurno0BImk51fUHqzEkYPzMX
+         JlMA==
+X-Forwarded-Encrypted: i=1; AHgh+RpmlRSFDKAwcsvcMR8OijfktgAJc8Q4DgYRVF0e2vy/VC8FRFNJNVa9yFBzV6m0iujX0gueuHl9bm1Wu2E=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzrjdUMCdswYRjtb1cZM+XoMj/3OjO3Q7eaK1Q7i/oGRmvkzyLX
+	rRQ6Z4oBSSvLaFivyXKlUPPOXjJ1HXJ2gOlAlpqSe6UURmf9xpsPkvbubgY9WX1mvSGOWIkI2xq
+	vMHg9bAsPiSnPskV8KBmxqV3Gy4CMt4I=
+X-Gm-Gg: AR+sD11c7CvQHcQ9eI5EGC9ct1uUNfEpuo9JJfOoxYHWnp0bQabLnGSNftrTRKKS5YV
+	yML8amyoW1poGsR4/+HP4Vve2AVfgBWLCf3KRIHwyYg6irMf9YABvHEsGe5YhgdQRmhhD5okfql
+	/TG+pt2t0jL7jZ9aULLjOgB5YxVOLZHsEzdoAz6Zj2l1iaBaD3yMB+crmSASWFIwTWh7iLt2qB4
+	WmpTJx8bU/6hzUihyEz37mBNJ0ceqOfodJup+iG0L2syOP8apias23+IRJtxwo=
+X-Received: by 2002:a05:6512:3f4:b0:5b0:7766:54d1 with SMTP id
+ 2adb3069b0e04-5b2b2f54040mr266927e87.27.1784795925744; Thu, 23 Jul 2026
+ 01:38:45 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -102,53 +101,118 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <cover.1784732161.git.gregoire.layet@9elements.com>
- <0b97a66762efc05c9073c14112cc489624871947.1784732161.git.gregoire.layet@9elements.com>
- <afa321db51d5e6cc8e0c15badc7204faa0925251.camel@codeconstruct.com.au>
-In-Reply-To: <afa321db51d5e6cc8e0c15badc7204faa0925251.camel@codeconstruct.com.au>
-From: =?UTF-8?Q?Gr=C3=A9goire_Layet?= <gregoire.layet@9elements.com>
-Date: Thu, 23 Jul 2026 09:56:24 +0200
-X-Gm-Features: AUfX_mxaanYxpNJpBfBXDiyLmy6JFC6syJV6bIP4iGx_AuR3yr8T2VahIy9zQKo
-Message-ID: <CAFi2wKbNCVqZzApbG_xcDzyrN6yt_Wc01PVVqtPROcjVnp8hRg@mail.gmail.com>
-Subject: Re: [PATCH v2 2/2] ARM: dts: aspeed-g6: add pcie-kcs4
+References: <20260615-ventura2_initial_dts-v8-0-c89f92c80447@gmail.com>
+ <20260615-ventura2_initial_dts-v8-2-c89f92c80447@gmail.com> <de6f82c5601a4481e418270171e803340368bd2a.camel@codeconstruct.com.au>
+In-Reply-To: <de6f82c5601a4481e418270171e803340368bd2a.camel@codeconstruct.com.au>
+From: Kyle Hsieh <kylehsieh1995@gmail.com>
+Date: Thu, 23 Jul 2026 16:40:32 +0800
+X-Gm-Features: AUfX_mzgVslcyDePfLi1-LkdPZo905qgCpAOduekKppC45gZMvMEvUh9-ZO5AuY
+Message-ID: <CAF7HswMG1HWxELQxTSaEWVeWi2Mjk8HpuM18AAVLCV5j_r467Q@mail.gmail.com>
+Subject: Re: [PATCH v8 2/2] ARM: dts: aspeed: ventura2: Add Meta ventura2 BMC
 To: Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: joel@jms.id.au, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, 
-	corey@minyard.net, devicetree@vger.kernel.org, 
-	openipmi-developer@lists.sourceforge.net, linux-aspeed@lists.ozlabs.org, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, devicetree@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
 Hi Andrew,
 
-> >  arch/arm/boot/dts/aspeed/aspeed-g6.dtsi | 7 +++++++
-> >  1 file changed, 7 insertions(+)
-> >
-> > diff --git a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi b/arch/arm/boot/dt=
-s/aspeed/aspeed-g6.dtsi
-> > index 56bb3b0444f7..a93fa4cf5d8f 100644
-> > --- a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
-> > +++ b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
-> > @@ -617,6 +617,13 @@ kcs4: kcs@114 {
-> >                                       status =3D "disabled";
-> >                               };
-> >
-> > +                             pcie_kcs4: kcs@914 {
+Thanks for taking the time to review this.
+On Wed, Jul 22, 2026 at 7:46=E2=80=AFPM Andrew Jeffery
+<andrew@codeconstruct.com.au> wrote:
 >
-> Nodes need to be ordered by ascending address:
+> On Mon, 2026-06-15 at 10:46 +0800, Kyle Hsieh wrote:
+> > Ventura2 is a Rack Management Controller. It is a modular
+> > device designed to manage liquid cooling systems and monitor hardware
+> > states within an IT rack. The system uses an AST2600 BMC for management=
+.
+> >
+> > RMCv2 serves several critical roles:
+> > - Detects liquid leakage at both tray and rack levels.
+> > - Communicates with and controls liquid cooling equipment.
+> > - Manages leakage events and executes system recovery protocols.
+> >
+> > Key hardware features include:
+> > - An extensive I2C and IO expander topology to support comprehensive
+> >   sensor monitoring and backward compatibility with legacy trays.
+> > - MCTP over I2C support for asynchronous device communications.
+> > - A dual-flash design for BMC firmware redundancy.
+> >
+> > Signed-off-by: Kyle Hsieh <kylehsieh1995@gmail.com>
+> > ---
+> >  arch/arm/boot/dts/aspeed/Makefile                  |    1 +
+> >  .../dts/aspeed/aspeed-bmc-facebook-ventura2.dts    | 2903 ++++++++++++=
+++++++++
+> >  2 files changed, 2904 insertions(+)
+>
+> We now have scripts/dtc/dt-check-style. Running it over the dts with '-
+> -mode relaxed' yields 49 instances of 'mixed-indent-chars' - these must
+> be fixed. Further, can you please look at the output with '--mode
+> strict', address all the warnings that are reasonable, and then discuss
+> what's left?
+I have fixed all 49 instances of the 'mixed-indent-chars' formatting issues=
+.
+I also ran it with '--mode strict' and addressed the formatting
+warnings accordingly.
+>
+> Otherwise, there are still some concerns reported against the bindings:
+>
+>    $ make CHECK_DTBS=3Dy aspeed/aspeed-bmc-facebook-ventura2.dtb W=3D1
+>    ...
+>      DTC [C] arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura2.dtb
+>    arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura2.dtb: /ahb/apb/lp=
+c@1e789000/lhc@a0: failed to match any schema with compatible: ['aspeed,ast=
+2600-lhc']
+>    /home/andrew/src/kernel.org/linux/origin/build.arm.aspeed_g5/arch/arm/=
+boot/dts/aspeed/aspeed-bmc-facebook-ventura2.dtb: fan-controller@20 (maxim,=
+max31790): 'channel@2', 'channel@5' do not match any of the regexes: '^fan@=
+[0-9]+$', '^pinctrl-[0-9]+$'
+>            from schema $id: http://devicetree.org/schemas/hwmon/maxim,max=
+31790.yaml
+>    /home/andrew/src/kernel.org/linux/origin/build.arm.aspeed_g5/arch/arm/=
+boot/dts/aspeed/aspeed-bmc-facebook-ventura2.dtb: i2c@400 (aspeed,ast2600-i=
+2c-bus): Unevaluated properties are not allowed ('aspeed,hw-timeout-ms' was=
+ unexpected)
+>            from schema $id: http://devicetree.org/schemas/i2c/aspeed,i2c.=
+yaml
+>    /home/andrew/src/kernel.org/linux/origin/build.arm.aspeed_g5/arch/arm/=
+boot/dts/aspeed/aspeed-bmc-facebook-ventura2.dtb: adc@48 (ti,ads1015): '#ad=
+dress-cells' is a required property
+>            from schema $id: http://devicetree.org/schemas/iio/adc/ti,ads1=
+015.yaml
+>    /home/andrew/src/kernel.org/linux/origin/build.arm.aspeed_g5/arch/arm/=
+boot/dts/aspeed/aspeed-bmc-facebook-ventura2.dtb: adc@48 (ti,ads1015): '#si=
+ze-cells' is a required property
+>            from schema $id: http://devicetree.org/schemas/iio/adc/ti,ads1=
+015.yaml
+>    arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura2.dtb: /ahb/apb/bu=
+s@1e78a000/i2c@580/power-monitor@69: failed to match any schema with compat=
+ible: ['pmbus']
+>    arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura2.dtb: /ahb/apb/bu=
+s@1e7a0000/syscon@0: failed to match any schema with compatible: ['aspeed,a=
+st2600-i3c-global', 'syscon']
+>
+> Can you please tidy these up?
+The board-specific bindings have been fixed:
+- Removed the invalid `channel@X` subnodes from the `maxim,max31790`
+fan controller.
+- Dropped the deprecated `aspeed,hw-timeout-ms` property from the I2C bus.
+- Removed the incomplete `ti,ads1015` ADC and generic `pmbus` power
+monitor nodes to fully comply with upstream schemas.
 
-The existing kcs4 node is already not in ascending order of address.
+However, the warnings for `aspeed,ast2600-lhc` and
+`aspeed,ast2600-i3c-global` still remain.
+Since these nodes are inherited directly from the SoC level
+(`aspeed-g6.dtsi`), it seems their YAML bindings are not yet merged
+upstream.
 
-'kcs4: kcs@114' is before 'lpc_ctrl: lpc-ctrl@80'
+>
+> Thanks,
+>
+> Andrew
 
-pcie_kcs4 has been placed here to have ascending addresses locally on
-the kcs nodes and still
-having all the kcs nodes next to each other. This matches the kcs4
-node ordering.
-
-If ascending address is still preferred, I'll change pcie_kcs4 order of cou=
-rse.
-
-Regards,
-Gr=C3=A9goire
+Thanks,
+Kyle
 
