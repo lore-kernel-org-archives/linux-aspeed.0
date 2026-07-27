@@ -1,99 +1,99 @@
-Return-Path: <linux-aspeed+bounces-4567-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4568-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72C6BC53209
-	for <linux-aspeed@archiver.kernel.org>; Mon, 27 Jul 2026 00:07:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF75EC53219
+	for <linux-aspeed@archiver.kernel.org>; Mon, 27 Jul 2026 00:35:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h7f7271HJz2ydn;
-	Mon, 27 Jul 2026 10:07:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.168.131
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785095023;
-	cv=none; b=M6SwgSOC+zmrso+4KWtOk3CSgll4kEHrgXywyvniZdurVV3TVToTI+CPg4POb482Y2UKe4QE3nhDoJKN0GsQibhYEKNCr9rU5WdDH6zizQ7lfIrI0z+wp4bG46CqK/ZhL6xyWKrba9t8+MHZILNHOaw6MNfVfsrzzAvi8SG9+7X+O28CLWC+c+2dsB0Etgrh7KAGbUKh96NHCfc3XfDAew67A9dct9DXZhKJwz1A32o5tJW29/EEJDc6sBl4aDC20URvz76qF9+PB+96B/1RZR6ikVjo9tSIM55SgBUptTlyYkkg/KqvPUi5bAp1MAjK2djzZR9QLibRME6gFs7msA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h7flS3FBQz2yPR;
+	Mon, 27 Jul 2026 10:35:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=180.181.231.80
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785112548;
+	cv=none; b=CXx8/7sBMEQbnJnE2EhmiYUxvprZSF2RGYfnwWGYKh61mjWTfGhUiSxkODXI8sAm6RRex0AKjvZ/0OfGPIOljsFcRxCOJxDklm8ZDlArCxcqGLBl/OHYj5EEXI29pXAebfRkBL5zp8v1Vi0aXDRYCdNIVJt5tuV4sXCWC5sBWvLCaTmNg+gVjJL/qj3kEznlGfvIJCxePiPEgd7fMSNyX7WZubDj6rEzd9d6zb97DlqaEJyj0ngAr/6p+zWjvG23UiwqfdFWGNPX913WVmHJ/EhFBjqIpljJ/040VlEEQBYIgoagQxKYjURSxihdTk5y6afWCdkEU++RnhMvM+qTKw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785095023; c=relaxed/relaxed;
-	bh=FDQIeXpPD+dwLpKCV5Porvy3ne6CU+pJakDyD+AScDY=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=N06lR4t6/iAxfonZCp9NvlzF+WV7s+GNQSUkV9MBEC5KwoAD1aqx9tZsALjxvATihbGrulR6wWaFCb81yXx1wWWcIeUjDGcasaIUfANR/IBH/U3TZhVI5Z4pW/ItEhJlRr6GcMkmIC5ubmdraASSsYD8RRJf+zcEa+X4r2b1X5SQ8T5ExLEc+sFwK0GWWwQw4LYwVxdqBPHP+qQrlA0B8CdtWUzLhl0GT3AJWgo6eWbENU5ANVxvQTmBGcxXRQ8iIMnZFG1a6NB9RUKXoEHPWND+RzyGvvb5C6bspyGrKU/aSabIlNBcJazTupe+PJn5a8zpgS+W47jcD7UOGC9ONQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=pAZEOG1U; dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=SLdrKhHs; dkim-atps=neutral; spf=pass (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=ze.huang@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+	t=1785112548; c=relaxed/relaxed;
+	bh=7A3LFRZ61WV2Y8KMKIOzkO8WcMNetvJNv/MmH+S50Fg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=f0bwg0puzS2svbJKUjneTsV5Lcevi6tlH26bQrnuQ2fAwcvf/XhLvE3P+NmZGI6vbNSHuLIF7OkXqD70aqjA5WueT+T2AUz0VE5/wCMiOyNNRHBn3BhxFUkSqfpeMlkLSTXHmtrVO9Qh3fXYjjoSNwld805RC6/mm5e+HQztTltRMstoqmfNeG1rKL7ZhWfO0bLdnfSKMgIUcCWGwAzAiOz1tyQmRdbSWvXFfEudsX6ah74RDFfSaCnYNt40xaeCDg6HIMJXg6CzYrIqUaBq1R54W83TaplSkZeJJVTuBdVhmL2fVZGwdvuS2RQs/yL5Nb21kvQjPlG1T32E7HuXPg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=gondor.apana.org.au; dkim=pass (2048-bit key; unprotected) header.d=gondor.apana.org.au header.i=@gondor.apana.org.au header.a=rsa-sha256 header.s=h01 header.b=rb9lAWnl; dkim-atps=neutral; spf=pass (client-ip=180.181.231.80; helo=abb.hmeau.com; envelope-from=herbert@gondor.apana.org.au; receiver=lists.ozlabs.org) smtp.mailfrom=gondor.apana.org.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=gondor.apana.org.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=pAZEOG1U;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=SLdrKhHs;
+	dkim=pass (2048-bit key; unprotected) header.d=gondor.apana.org.au header.i=@gondor.apana.org.au header.a=rsa-sha256 header.s=h01 header.b=rb9lAWnl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=ze.huang@oss.qualcomm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gondor.apana.org.au (client-ip=180.181.231.80; helo=abb.hmeau.com; envelope-from=herbert@gondor.apana.org.au; receiver=lists.ozlabs.org)
+Received: from abb.hmeau.com (abb.hmeau.com [180.181.231.80])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h7XGP1CQ5z2xWY
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 27 Jul 2026 05:43:38 +1000 (AEST)
-Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 66QH6ibS1522888
-	for <linux-aspeed@lists.ozlabs.org>; Sun, 26 Jul 2026 19:43:35 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=qcppdkim1; bh=FDQIeXpPD+dwLpKCV5Porv
-	y3ne6CU+pJakDyD+AScDY=; b=pAZEOG1UWrwTp6+Udv9XpGfugtOEAbIEc8xh32
-	izDKpGGoq0uH1WZWcQJmbJh+NgBE/f+Uy+hkdw7i28QDjdp4ViKCyfkO6VwS31Rf
-	mPq41EFbFh3JI6QUTWEmXHsgHUGiynrS2EXPL8ZkcGbth9TSJM0wOlwvSBZpQM8B
-	S9RjIOpjJQY3oPTTWsdlHzfSuVc90CxICcka85UZSEoOl5LywkG8t9kdG5gFsMwx
-	lewic+xOYkv8Oo6dLPBQixW7/Z3DgUgfa8U0YswMXMz76jIhiG6QgcCMmaHZOpAh
-	3/lvfjR7c+MmmS1k1XWZ+opI3fWzDVLKNYC2G95V8q3IShMg==
-Received: from mail-pg1-f199.google.com (mail-pg1-f199.google.com [209.85.215.199])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4fmm3sbnxj-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-aspeed@lists.ozlabs.org>; Sun, 26 Jul 2026 19:43:34 +0000 (GMT)
-Received: by mail-pg1-f199.google.com with SMTP id 41be03b00d2f7-cb835525b10so2464653a12.2
-        for <linux-aspeed@lists.ozlabs.org>; Sun, 26 Jul 2026 12:43:34 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1785095014; x=1785699814; darn=lists.ozlabs.org;
-        h=cc:to:content-transfer-encoding:content-type:mime-version
-         :message-id:date:subject:from:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=FDQIeXpPD+dwLpKCV5Porvy3ne6CU+pJakDyD+AScDY=;
-        b=SLdrKhHs8ET/dXl0Gk24TNt7Jbg5HIS1rzmyGpllR25DOMExp39HvYp+Op85dvInBR
-         qY117rFaGkzFEII95L8UAp1KlhtNXEAGvCHUmwZfihCaDLfsM7XqS51gMMFVzDpwPe69
-         Mln0FynGtSkrLSr64e2EcroE9SCuDGd/RqESKKgydmgYAVfjiW2/1cscr9fkuSS2Rd58
-         WmYzJFRillzfvDwRQHCimE7QUzWHoT0CjbpghQ5iucAKmMv7IUBFNRklyD+4lsmfkO45
-         UyhQVwVX6aMhgG8ndL6MvL9eTuN5kRrwK75JRWs722fDK2cP50B1CZpUy0loLYxInlSW
-         hmbw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785095014; x=1785699814;
-        h=cc:to:content-transfer-encoding:content-type:mime-version
-         :message-id:date:subject:from:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=FDQIeXpPD+dwLpKCV5Porvy3ne6CU+pJakDyD+AScDY=;
-        b=kFeX738aOmNGP9BmHTmNPh2IvIAU/7n/j18EVyOQplt0RWTey9+rYeu2rgNPBA2ZAd
-         wG978rCQUYQMCszLbVodfExFHK2mTPhVbL4pIL4cWrooeeFdi0AGGPK0Bj2nD14jmELm
-         qWsrSGIrNhPB0/dCQPqqMSm1feIURvRpXDnd7f71W1g+piOJnK8airw8/+9sFXtTofzy
-         Uldm7/77uad+qbWX/d/MyhgzMqG0HanPi8WIBRN3UndsPVY9+N9a0lj/T0imfOtnE0Og
-         /Yp8zRVnKYtpOmSGwpgtRGvSo1BufG2/18pPBXxp5WAdHwqFm1pkgSmQwQmBeUFtF/v8
-         lYqg==
-X-Forwarded-Encrypted: i=1; AHgh+Rq5oPdP4g+SJDQYVoK4iffJiJchT37t9wlsU2BFxuUMdwaFEkCmI+LtyWFRKbHb7ePk0wQ6g5o35VlGmCo=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YziRjDJnEuOK6SQgrNS63OHfwjYM6/ygCYVpm+SC3599n6UTBst
-	L7RF/loVgz4gCLFJgNmw5T9fL53HWpD/prgd9EQ7Qd6eSRq4wE7RjkTFhEyenEJB+NbDEOY2VAG
-	MucRD59U/Smjkrn9znbuiUEnxCrLJAzkVe2Xj5J9DaeI15/hEFGhRfKtHgRMdzxHN7Kid
-X-Gm-Gg: AR+sD11tX8PgklnhAnyH8ydolqFXmNbYtVl3aStnPCRh/t1Qf0gyM5wODBEBgnRrH92
-	qA3r9P2VwC1tXNcvHu5lhjK+IvGdH+AOHweTjiZlifAQen/cIEWjV3E0uuSvu+av5WFBMTZtkUE
-	jQ5dkLrymA8Ki8UwWnOJJNJQTjlTV7RiXhEXWEAeSaArN8ShiIgbtSQ+dzDbL/QfapYms4IzJKx
-	6W5pRv9CizwujgRzG+w+JMpEQifNOCwTbYJvV6wZdst/QsmAQ35P6dHp8bPERX8FJ1M+it6W3Zj
-	+c9dO6hSXsfU1omZMTIMaaLI3Oy9iQ9N/utNW1X9ijr9ZtYkZXyM92CZ22iDRilHMHtVuEJE/Lu
-	i5lWKQcOZ8UCHR33nnh2O
-X-Received: by 2002:a05:6a20:43ac:b0:3b3:2703:115 with SMTP id adf61e73a8af0-3c67dc41ae3mr5548171637.16.1785095014256;
-        Sun, 26 Jul 2026 12:43:34 -0700 (PDT)
-X-Received: by 2002:a05:6a20:43ac:b0:3b3:2703:115 with SMTP id adf61e73a8af0-3c67dc41ae3mr5548148637.16.1785095013838;
-        Sun, 26 Jul 2026 12:43:33 -0700 (PDT)
-Received: from le-cd01-lnx.qualcomm.com ([114.94.8.21])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cbbb66dcd38sm2312070a12.29.2026.07.26.12.43.25
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 26 Jul 2026 12:43:32 -0700 (PDT)
-From: Ze Huang <ze.huang@oss.qualcomm.com>
-Subject: [PATCH v3 0/2] drm: replace simple display pipe users with atomic
- helpers
-Date: Mon, 27 Jul 2026 03:42:31 +0800
-Message-Id: <20260727-drm-simple-kms-removal-v3-0-de36e534f7a1@oss.qualcomm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h7flP68W2z2yMn
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 27 Jul 2026 10:35:44 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=gondor.apana.org.au; s=h01; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:cc:to:subject:message-id:date:
+	from:content-type:reply-to; bh=7A3LFRZ61WV2Y8KMKIOzkO8WcMNetvJNv/MmH+S50Fg=; 
+	b=rb9lAWnlFuVHGfjZrw5RIvREO+1IsmUu1niONXWgUM8KCSkTgmtU8hfH1+1t+Qtb4msWXiLnKrj
+	cMWuLucHDCMSmoKPJMTmlm7BIgmH49UOS73r8LhYCw9cBlRWwYJKNiVdus1O3JL/DiAPk5wBI8kpe
+	XhAiQ9D7jOhqmixltxiXr1qvziPK+amMPN3LXJKBZBXKFfrxQcqo6do5JmwBIyt37ngtZE4eh3RVD
+	uORX81jQE/+c5UFRSogVHQkeIJ2TwJFl/ZQGx8aYLOKvXnyDZbCDD9Bu9jyO6jhSSdJaB+WwL6IU3
+	Lq/6pF/SB3lxUkiTVtXCwggoReXRXx4mYGrw==;
+Received: from loth.rohan.me.apana.org.au ([192.168.167.2])
+	by formenos.hmeau.com with smtp (Exim 4.98.2 #2 (Debian))
+	id 1wo9JA-0000000Gz1z-1dOl;
+	Mon, 27 Jul 2026 08:35:05 +0800
+Received: by loth.rohan.me.apana.org.au (sSMTP sendmail emulation); Mon, 27 Jul 2026 10:35:04 +1000
+Date: Mon, 27 Jul 2026 10:35:04 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Pan Chuang <panchuang@vivo.com>
+Cc: Corentin Labbe <clabbe.montjoie@gmail.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Chen-Yu Tsai <wens@kernel.org>,
+	Jernej Skrabec <jernej.skrabec@gmail.com>,
+	Samuel Holland <samuel@sholland.org>,
+	Neal Liu <neal_liu@aspeedtech.com>, Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Nicolas Ferre <nicolas.ferre@microchip.com>,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	Claudiu Beznea <claudiu.beznea@tuxon.dev>,
+	Horia =?utf-8?Q?Geant=C4=83?= <horia.geanta@nxp.com>,
+	Pankaj Gupta <pankaj.gupta@nxp.com>,
+	Gaurav Jain <gaurav.jain@nxp.com>,
+	Gilad Ben-Yossef <gilad@benyossef.com>,
+	Hans Ulli Kroll <ulli.kroll@googlemail.com>,
+	Linus Walleij <linusw@kernel.org>,
+	Antoine Tenart <atenart@kernel.org>,
+	Prabhjot Khurana <prabhjot.khurana@intel.com>,
+	Declan Murphy <declan.murphy@intel.com>,
+	Srujana Challa <schalla@marvell.com>,
+	Bharat Bhushan <bbhushan2@marvell.com>, Frank Li <Frank.Li@nxp.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	Heiko Stuebner <heiko@sntech.de>,
+	Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+	Alexandre Torgue <alexandre.torgue@foss.st.com>,
+	Ovidiu Panait <ovidiu.panait.oss@gmail.com>,
+	Arnd Bergmann <arnd@arndb.de>, Eric Biggers <ebiggers@kernel.org>,
+	Myeonghun Pak <mhun512@gmail.com>, Ijae Kim <ae878000@gmail.com>,
+	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
+	Kees Cook <kees@kernel.org>,
+	Thorsten Blum <thorsten.blum@linux.dev>,
+	Colin Ian King <colin.i.king@gmail.com>,
+	Sakari Ailus <sakari.ailus@linux.intel.com>,
+	"open list:ALLWINNER CRYPTO DRIVERS" <linux-crypto@vger.kernel.org>,
+	"moderated list:ARM/Allwinner sunXi SoC support" <linux-arm-kernel@lists.infradead.org>,
+	"open list:ARM/Allwinner sunXi SoC support" <linux-sunxi@lists.linux.dev>,
+	open list <linux-kernel@vger.kernel.org>,
+	"open list:ARM/Amlogic Meson SoC Crypto Drivers" <linux-amlogic@lists.infradead.org>,
+	"moderated list:ASPEED CRYPTO DRIVER" <linux-aspeed@lists.ozlabs.org>,
+	"open list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <imx@lists.linux.dev>,
+	"open list:ARM/Rockchip SoC support" <linux-rockchip@lists.infradead.org>,
+	"moderated list:ARM/STM32 ARCHITECTURE" <linux-stm32@st-md-mailman.stormreply.com>
+Subject: Re: [PATCH 00/12] crypto: Remove redundant error messages on IRQ
+ request failure
+Message-ID: <amanuOXfLwXXDuBk@gondor.apana.org.au>
+References: <20260717080045.191538-1-panchuang@vivo.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -107,132 +107,73 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAChjZmoC/3WOwQ6CMBBEf4Xs2SVtEYye/A/jodRVq5RitxCN4
- d9t0auXSSaZmTdvYAqWGHbFGwJNlq3vk6lWBZir7i+E9pQ8KKEasRFrPAWHbN3QEd4dYyDnJ92
- hkFpU0jRaqi2k8hDobJ/L8OH49Ty2NzIxr/0SgR5jIsZvDFrNhMY7Z+OuyJyenhEzGUWDagN56
- Go5+vBaDk9y6f2+1f++TRIFtmuSRou6alS198zlY9RdhpVJ4DjP8wccL41iDAEAAA==
-X-Change-ID: 20260704-drm-simple-kms-removal-01a031c6a129
-To: Alexey Brodkin <abrodkin@synopsys.com>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Thomas Zimmermann <tzimmermann@suse.de>,
-        David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
-        Joel Stanley <joel@jms.id.au>,
-        Andrew Jeffery <andrew@codeconstruct.com.au>,
-        Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Fabio Estevam <festevam@gmail.com>, Linus Walleij <linusw@kernel.org>,
-        Hans de Goede <hansg@kernel.org>,
-        Alex Lanzano <lanzano.alex@gmail.com>,
-        Oleksandr Andrushchenko <oleksandr_andrushchenko@epam.com>,
-        Philipp Zabel <p.zabel@pengutronix.de>,
-        =?utf-8?q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
-        Marian Cichy <m.cichy@pengutronix.de>
-Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        linux-aspeed@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
-        imx@lists.linux.dev, xen-devel@lists.xenproject.org,
-        Ze Huang <ze.huang@oss.qualcomm.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1785095005; l=2679;
- i=ze.huang@oss.qualcomm.com; s=20260716; h=from:subject:message-id;
- bh=SzrRHowXSa10BAHCyJ1LhewVqZLaXZNB44vA3ptkLd8=;
- b=ygG0jOkfjjtOnpnb/85WRy8PlT/tiW1jcovVo98E9rFl6SsoVZpL7kFNMISeo+OC86QqJ04Aw
- LK0RRwuDsgNBhR/dSZRqnbW+r+gFyurTl3vHzvkgzWB3HgUd6B0UHHR
-X-Developer-Key: i=ze.huang@oss.qualcomm.com; a=ed25519;
- pk=8uGhlZHInA8NXq7G6u/g59qEcwXwuMRI7nBSnT/ijtY=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNzI2MDIwMCBTYWx0ZWRfX/KlTsXuaeFaB
- b+swPLgC1Wx/00UELwmIpHQZJ8xkMY993DfCxgCX/WOyMPOtCkoGWQiLLwfy4/xHXC/tZ0aA9PL
- ZPhyeyNwUmAu3NL1I3GEVQJmm2x/0jB4SvhLcxjv3f/3NXOVGQ7jZ0tVxiwQCNoV14lm7YIgY6/
- O9OcHPf3WHNvad8LFLrrDfENZJSbiiHWjT/fMzEZ2UEkVj0j+EWaoz18ZaW7SWu151mgkbjNyuT
- roqSsff/RjRelvDmbCXmapeA2U24M49+LehIJgUuLc1q4TjlsY1DjxgqqFpAn3mPlg9pvSI9ywz
- qRVBQ1oINzp5oRq9Xc/RPt4h1wnv7YX+waeYI3FX5VPOBOnwuvFEUqEF6hUl2dUIZenhIdODGct
- Rimwu9jHxQgOECxwp25DNsSBk6ENJPWUoGKRRW6Xa+tNwin7fLKzpHQ6GF+/jMcYwDkoezabNwg
- BeLHMIQAVmqeVyV3CPQ==
-X-Proofpoint-Spam-Info: AW1haW4tMjYwNzI2MDIwMCBTYWx0ZWRfX1CU1IpNDrHmp
- Ae46eLisp9sJoyeFa5/IogFAKTIFzixSJ7C8DEVjSuLBI038DDjZLvb6ncaMFIKOPFpW1CPwYPj
- dote1pjJSKlTxohAY2cAgC0UNKXfPfY=
-X-Proofpoint-ORIG-GUID: BjiyANOq9w7K-ScDVNlbbwphLhNe9HuU
-X-Proofpoint-GUID: BjiyANOq9w7K-ScDVNlbbwphLhNe9HuU
-X-Authority-Analysis: v=2.4 cv=KanidwYD c=1 sm=1 tr=0 ts=6a666366 cx=c_pps
- a=Oh5Dbbf/trHjhBongsHeRQ==:117 a=Uz3yg00KUFJ2y2WijEJ4bw==:17
- a=IkcTkHD0fZMA:10 a=RAioF0-LDSMA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22
- a=bC-a23v3AAAA:8 a=EUspDBNiAAAA:8 a=Aa0Oat_sKGPK8WdvVJkA:9 a=QEXdDO2ut3YA:10
- a=_Vgx9l1VpLgwpw_dHYaR:22 a=FO4_E8m0qiDe52t0p3_H:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-07-26_05,2026-07-24_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 suspectscore=0 clxscore=1015 priorityscore=1501 phishscore=0
- bulkscore=0 malwarescore=0 lowpriorityscore=0 adultscore=0 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2607260200
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260717080045.191538-1-panchuang@vivo.com>
 
-struct drm_simple_display_pipe was meant to simplify simple DRM
-drivers, but instead adds an extra wrapper around normal DRM atomic
-helper setup. As noted in Documentation/gpu/todo.rst, remaining users
-should be converted to regular atomic helpers and stop depending on the
-simple-KMS interfaces.
+On Fri, Jul 17, 2026 at 04:00:14PM +0800, Pan Chuang wrote:
+> Commit 55b48e23f5c4 ("genirq/devres: Add error handling in
+> devm_request_*_irq()") added automatic error logging to
+> devm_request_threaded_irq() and devm_request_any_context_irq()
+> via the new devm_request_result() helper, which prints device
+> name, IRQ number, handler functions, and error code on failure.
+> 
+> Since devm_request_irq() is a static inline wrapper around
+> devm_request_threaded_irq(), it also benefits from this
+> automatic logging.
+> 
+> Remove the now-redundant dev_err() and dev_err_probe() calls
+> in crypto drivers that follow these devm_request_*_irq()
+> functions, as the core now provides more detailed diagnostic
+> information on failure.
+> 
+> Pan Chuang (12):
+>   crypto: allwinner - Remove redundant dev_err()
+>   crypto: amlogic - Remove redundant dev_err()
+>   crypto: aspeed - Remove redundant dev_err()
+>   crypto: Remove redundant dev_err()/dev_err_probe()
+>   crypto: caam - Remove redundant dev_err()
+>   crypto: ccree - Remove redundant dev_err()
+>   crypto: sl3516 - Remove redundant dev_err()
+>   crypto: safexcel - Remove redundant dev_err()
+>   crypto: keembay - Remove redundant dev_err()
+>   crypto: octeontx2 - Remove redundant dev_err()
+>   crypto: rockchip - Remove redundant dev_err()
+>   crypto: stm32 - Remove redundant dev_err()
+> 
+>  drivers/crypto/allwinner/sun8i-ce/sun8i-ce-core.c   | 4 +---
+>  drivers/crypto/allwinner/sun8i-ss/sun8i-ss-core.c   | 4 +---
+>  drivers/crypto/amlogic/amlogic-gxl-core.c           | 4 +---
+>  drivers/crypto/aspeed/aspeed-acry.c                 | 4 +---
+>  drivers/crypto/aspeed/aspeed-hace.c                 | 4 +---
+>  drivers/crypto/atmel-aes.c                          | 4 +---
+>  drivers/crypto/atmel-sha.c                          | 4 +---
+>  drivers/crypto/atmel-tdes.c                         | 4 +---
+>  drivers/crypto/caam/jr.c                            | 2 --
+>  drivers/crypto/ccree/cc_driver.c                    | 4 +---
+>  drivers/crypto/gemini/sl3516-ce-core.c              | 4 +---
+>  drivers/crypto/img-hash.c                           | 4 +---
+>  drivers/crypto/inside-secure/safexcel.c             | 4 +---
+>  drivers/crypto/intel/keembay/keembay-ocs-aes-core.c | 4 +---
+>  drivers/crypto/intel/keembay/keembay-ocs-ecc.c      | 4 +---
+>  drivers/crypto/intel/keembay/keembay-ocs-hcu-core.c | 4 +---
+>  drivers/crypto/marvell/octeontx2/otx2_cptpf_main.c  | 5 +----
+>  drivers/crypto/mxs-dcp.c                            | 8 ++------
+>  drivers/crypto/omap-aes.c                           | 4 +---
+>  drivers/crypto/omap-des.c                           | 4 +---
+>  drivers/crypto/omap-sham.c                          | 5 +----
+>  drivers/crypto/rockchip/rk3288_crypto.c             | 4 +---
+>  drivers/crypto/sahara.c                             | 3 +--
+>  drivers/crypto/stm32/stm32-cryp.c                   | 4 +---
+>  drivers/crypto/stm32/stm32-hash.c                   | 4 +---
+>  25 files changed, 25 insertions(+), 78 deletions(-)
+> 
+> -- 
+> 2.34.1
 
-Each patch replaces drm_simple_display_pipe_init() with explicit
-primary plane, CRTC and encoder setup, and moves the old simple-pipe
-callbacks into regular plane and CRTC helper callbacks named according
-to local driver conventions.
-
-The conversions preserve helper behavior that used to be implicit in
-drm_simple_kms_helper.c, including plane-state validation, CRTC
-primary-plane checks, affected-plane propagation, framebuffer prepare
-handling, and existing event/vblank flow where applicable.
-
-Result is less helper indirection and more explicit driver-side atomic
-wiring, with no remaining simple-KMS dependency in these drivers.
-
-Changes are build-tested only. No hardware testing has been performed.
-
-This patch is based on drm-next-2026-06-27.
-
-AI usage disclosure:
-- AI tools were also used to review the code and suggest code changes for
-  the DRM atomic conversion.
-
-Thanks,
-Ze Huang
-
-Signed-off-by: Ze Huang <ze.huang@oss.qualcomm.com>
----
-Changes in v3:
-- Add a new preparatory patch to avoid duplicate clk_per enables in
-  imx-lcdc pipe update after CRTC enable.
-- Use commit-local atomic state in enable/update/check paths.
-- Link to v2: https://patch.msgid.link/20260716-drm-simple-kms-removal-v2-1-7e4a6b8528e6@oss.qualcomm.com/
-
-Changes in v2:
-- use 'commit' as name of struct drm_atomic_commit in atomic helpers
-- improve control flow in *_crtc_helper_atomic_check() and
-  *_plane_helper_atomic_check()
-- Moved page-flip/vblank event handling out of plane update paths and into
-  CRTC atomic_flush(), using atomic_flush and disable paths
-- decide clock disable by old crtc state
-- add calls to drm_crtc_vblank_on() and drm_crtc_vblank_off() in crtc
-  atomic_enable() and atomic_disbale()
-- test crtc_state->enable before mode size check
-- Link to v1: https://patch.msgid.link/20260705-drm-simple-kms-removal-v1-0-b4e1ca053623@oss.qualcomm.com
-
----
-Ze Huang (2):
-      drm/imx/lcdc: avoid duplicate clk_per enable
-      drm/imx: replace struct drm_simple_display_pipe with regular atomic helpers
-
- drivers/gpu/drm/imx/lcdc/imx-lcdc.c | 263 ++++++++++++++++++++++++++----------
- 1 file changed, 190 insertions(+), 73 deletions(-)
----
-base-commit: 3696d07837d1df13a5603d77f667685e7dfb3c53
-change-id: 20260704-drm-simple-kms-removal-01a031c6a129
-
-Best regards,
+All applied.  Thanks.
 -- 
-Ze Huang <ze.huang@oss.qualcomm.com>
-
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
 
