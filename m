@@ -1,99 +1,61 @@
-Return-Path: <linux-aspeed+bounces-4577-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4578-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90928C531FC
-	for <linux-aspeed@archiver.kernel.org>; Mon, 27 Jul 2026 07:30:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF435C54F4C
+	for <linux-aspeed@archiver.kernel.org>; Tue, 28 Jul 2026 14:39:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h7qxZ6zRTz2yhb;
-	Mon, 27 Jul 2026 17:30:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::329"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785137410;
-	cv=none; b=lsBA2MI7FBXoLfsovTD0gcZTrgb7xcbL4fOXEEzdh8Q7/1lxSwmt4W1zx8STpl7rROHEGZytTzP5oFHCt1wHwDZgiAK/5a5WkJloz8U5gpDlH25/xSyR+u4mz8D7aivTEStZ9uV4P32rGrmXTaAlkYjTfsA/ERZE5hN6P7Phj8DNjnSf8vJDq9LLqizZO9VvCEGZV+lhrzgw4uZc8e1BGGm52cp3jfXoMjjGc7Elc9maA8D6VWFikX4DZO4UwlG0zsLbQ3/RaPTHcGnxj5YL61DWTBxRt1bQBv3mFkzIFaBiiJmKMvmF8TWdvPmoCciiGgad5n4N1/IiSVE3W36vig==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h8dR23YWJz2xyh;
+	Wed, 29 Jul 2026 00:39:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785249598;
+	cv=none; b=Jp13fbIkH1xeH/ooR1wa+/RmYp50MWO3MiMpoXiiFv7u2kacohVQaS7iFoOHMGX5KrefBdX7RFReas4cunuZ883EleLHCy5NUFJ7A6vxC2z8XPH4GoJFs13Hb1XDbTmsFw83Ot7Mzi+zLYXzT9CuIuSH+QhJV5JkBsZWPeTpKqnvcqE1AmHNnlXvG1mfSOE2VIH0In/mHodT3S1NHIDaTR7AmclJ5TRlZiiXNO7YXA4A565X/G2zjm65Y2DkWqRFUuzwmtiqQfd642L5aqLFBvut0+Tre0vQOadbWOLl+0Bn8Ekhw69o7X5orXRa0zqKpHiZbtM6lAXvZBOlwBqaiQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785137410; c=relaxed/relaxed;
-	bh=7Ly3YHLnm48uwYiEmyCIsl4iQ3O9RMhr22ExICtid7I=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=cxNzamwam0PKuo0xj0ElFRqB7wRcQt8/XBMmlLtVzEBBLM+AsfVLf522pS7XMj6g2Mfp4FM1OvzIrXEfNxWj5x6p4f6J9ANZCfhHVqKmSz6WaaXg2v7/UDTup3fT3kTz1IG7j0YXqJIDozqDLPwiDTJuqLtIWlzzDaqiILktp/Z1yL1109KmsGlNdtAONF9DHZXmqgMemNm4Xukg17cyXYlWJLQVLnga3B5jfQhV1/uYzpAmYvXBHuYuUFsRmp1WI1KiGG3JlY+8QAPhZHImerFG2qWw4cqKne67eBLNhwNIvLx8xUiSZ4pyoL73jPE2EjP/gZfqsJdNof8879pGxw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=9elements.com; dkim=pass (2048-bit key; secure) header.d=9elements.com header.i=@9elements.com header.a=rsa-sha256 header.s=google header.b=GoDX1QvS; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::329; helo=mail-wm1-x329.google.com; envelope-from=gregoire.layet@9elements.com; receiver=lists.ozlabs.org) smtp.mailfrom=9elements.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=9elements.com
+	t=1785249598; c=relaxed/relaxed;
+	bh=6NAYFFRdO0dAvQU4kkEvVp93IHO9/hVJijDurWj3G7E=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=lPR2kem22el3ud3ZffC3jZs1rH49cSmi4se7oAhf0kSy+DO8iyzopSYW00qCvUNSBfEuaIfkq/Mufnr09e/XOJvRL4+ib+3YkBZGtBrjaSiAK/s0XivfxqZKlLwB7Z4SvMwXNYk8wGoWOKogaiRYPg1LBouA5XM7pMCEABrNUn0m83UBEPnGvG2WDzFTUW6XmxdCYxMiAbtSecYjRqAAbNQ9qeUJqFVFnRwFtLTTExMM7JXygYDlDmPCv0EvGTedZa2a/6GbMZE+ZwjPZFX0S9VK4ezmlzTGlSRRrJbdWoAuj67D6/M7E5bOweHYYPkrZtq50SKrx61/4+8A+OgVwA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FDtOR8Xg; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=9elements.com header.i=@9elements.com header.a=rsa-sha256 header.s=google header.b=GoDX1QvS;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FDtOR8Xg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=9elements.com (client-ip=2a00:1450:4864:20::329; helo=mail-wm1-x329.google.com; envelope-from=gregoire.layet@9elements.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x329.google.com (mail-wm1-x329.google.com [IPv6:2a00:1450:4864:20::329])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h7qxZ0Qt3z2yRl
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 27 Jul 2026 17:30:09 +1000 (AEST)
-Received: by mail-wm1-x329.google.com with SMTP id 5b1f17b1804b1-4955158f26aso15212415e9.3
-        for <linux-aspeed@lists.ozlabs.org>; Mon, 27 Jul 2026 00:30:09 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=9elements.com; s=google; t=1785137407; x=1785742207; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=7Ly3YHLnm48uwYiEmyCIsl4iQ3O9RMhr22ExICtid7I=;
-        b=GoDX1QvS6ahd2KG8aPNBCgj4sGj0cS1GfZ9MWzf9eNwfVqxxPRfsbPYvHb4KEsgFne
-         R6FUOvbuqufpUnNa75bp4PjgYiwA2Re/qi8LkHBnbdewN8pSRn5ZFtv7wFOksVhrw7uW
-         9fdWNMkAo7OMoLn08r71c84xWdN8DHoorIV3obmu0xvnW//DKX9Z7dYc5Zk4tNQLJcIQ
-         Z2kV+j+7S+OhYtBWsOIZRYOY+qSyBLFvBsgsyulJoChXWqGVUeU9KVImA0sLDdRdXyw1
-         sqoLxf1qxWF7bxmw53UHOiU8Q7q2BkuIRGd2b5vphfsleL/B6SLQq4iHOEXlXtzxba4n
-         ZhPA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785137407; x=1785742207;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=7Ly3YHLnm48uwYiEmyCIsl4iQ3O9RMhr22ExICtid7I=;
-        b=UOwyS+NoW+/lwmYbKBiCA7kRxs+2Dk4CmGR0xEZYgtCIUcq70YX6v17ANzLrexo5sO
-         loFxe0eFehgFf5Cn4A358DP2lv2kAwwkwIklxmDA7ndGny+Kx/rrTN74yqTonLdv7RgY
-         S41wiSpHOe7JXVg0v9pG9AaZ49NZCpZc38ixVqt/h6fDsRRSMfs1Xvx2+dDniSNNALtp
-         HmfwpGe2BSLblZjeHOE5e6cc32d73STL5OA+uhi92PmPCb+cHZKO15tvL3Yxf4EJ7+8F
-         G4A9hPsq75reNRLEaF96wc9KfThnt+rdQAHoiaNPIfq/oFbGjVb19eQuRTmzAN2HFK0T
-         EDZg==
-X-Forwarded-Encrypted: i=1; AHgh+RqRMseCMfpOJmh6Xf3mF8yYWXiwsE1plQYHXdNpgh97Eq+B504b8i7ABRkbLG4+I14hUY5/dqZt9+0EAag=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yz1U61JVGO2BDF7h0R50htSIvE/pIxHX+rgZ/ysXgj/j8ATtLRF
-	+yRE28iCCGxOG71gknp5XKhYi0hUt7lGyEm/MAB34SExdLm/ItAQQ/yg3U1xUfG3Fkk=
-X-Gm-Gg: AR+sD12YqXaYYcHgb/TvNpIquSkLx/aIRafyQZSD+if24sEM6QbrGro0XDCbyS2vVKB
-	2BOJ0ATD1i3+Q30Iy810mb6teYLkjDDJPgpOYwYsiPTVpfLf0wEUZwUmn8iGz1MLFn/bNycl/cw
-	ExSWRsAtsHbjG1paWs+xHncMsUO8JVrP9WgdUstxqKKKH+Dr7EbkMnoU4wKI//MYsHKWk08izWv
-	WQQKeVYO5A8G6IXfsx5LphWDZXQFV/nEGvpH2AENXS0zQWQSmnRhfLZrUT+rP4PxPSnmH+Foc37
-	8mSf+C+PL/R46IQuno/M2NPHSSQDRVFD0GrC3Lm0x2Dao+V4bJbJPRKeQu+MXhC2VLvat/+j/5P
-	YJW+5U+RUSe4R9Kd08t0T9mvcGWWKbkETSxolU+fBSp4YPJNy1HB+StmLnW3zD4SOcwO+BZ2bcU
-	5bUefWDeAMGMuqcLVRT+7dgYrRCurjyOWsQC5SaedTbtZH5bKzHwQZFJzmVpAu/xYDi6R1b5yPR
-	gIg3hAblOxIZHHo7Q==
-X-Received: by 2002:a05:600c:35d0:b0:493:e79e:da63 with SMTP id 5b1f17b1804b1-496b5708bacmr90013815e9.34.1785137406643;
-        Mon, 27 Jul 2026 00:30:06 -0700 (PDT)
-Received: from gregwork.sec.9e.network ([188.111.3.154])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-496b4ee4504sm201823685e9.6.2026.07.27.00.30.05
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 27 Jul 2026 00:30:06 -0700 (PDT)
-From: =?UTF-8?q?Gr=C3=A9goire=20Layet?= <gregoire.layet@9elements.com>
-To: joel@jms.id.au,
-	andrew@codeconstruct.com.au,
-	robh@kernel.org,
-	krzk+dt@kernel.org,
-	conor+dt@kernel.org,
-	corey@minyard.net,
-	devicetree@vger.kernel.org
-Cc: jammy_huang@aspeedtech.com,
-	yc_hsieh@aspeedtech.com,
-	openipmi-developer@lists.sourceforge.net,
-	linux-aspeed@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	=?UTF-8?q?Gr=C3=A9goire=20Layet?= <gregoire.layet@9elements.com>
-Subject: [PATCH v3 2/2] ARM: dts: aspeed-g6: add pcie-kcs4
-Date: Mon, 27 Jul 2026 09:27:41 +0200
-Message-ID: <1dac6b9ae1565a2265e87537141e46c988d16de3.1785135437.git.gregoire.layet@9elements.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <cover.1785135437.git.gregoire.layet@9elements.com>
-References: <cover.1785135437.git.gregoire.layet@9elements.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h8dR11kSgz2xYg;
+	Wed, 29 Jul 2026 00:39:57 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 2980D600FC;
+	Tue, 28 Jul 2026 14:39:54 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B2A461F000E9;
+	Tue, 28 Jul 2026 14:39:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785249593;
+	bh=6NAYFFRdO0dAvQU4kkEvVp93IHO9/hVJijDurWj3G7E=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=FDtOR8XgwtsvtDPgyZjoHGVrcCiPkPncghk5Cjc9D5pj9ucIjOZ4kK6fpU3iv5Mke
+	 3HVAa1da0Zi/Fqki63FpSMzCwRqwVL5sjW+yBjYlHWvWvxRRsPaGiqq1GRs86wxubb
+	 bfe3WYU+1vVS/YO82IQcS3WpK1uL+uO4VgJYq16partyMmXC8dnaSkqEqAlNNF0kX/
+	 x6lyx2p5+LuneRsJRiGRxybQgFoR/P3/L9y96D8dVLPeXrCKn+TzRJGVIF+/cpeDjl
+	 qeid7XEkdJbVR441KDQBmbPn5o/o+GpXzLLwuXhZycf5WQZPxwoHde4w4MfAUlGFjb
+	 deHwzg3KaX2FA==
+Date: Tue, 28 Jul 2026 09:39:52 -0500
+From: Rob Herring <robh@kernel.org>
+To: Jacky Huang <jackyhuang@nvidia.com>
+Cc: andrew@codeconstruct.com.au, joel@jms.id.au,
+	krzysztof.kozlowski@oss.qualcomm.com, conor+dt@kernel.org,
+	andrew@lunn.ch, devicetree@vger.kernel.org,
+	linux-aspeed@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, openbmc@lists.ozlabs.org
+Subject: Re: [PATCH v4 2/2] ARM: dts: aspeed: Add NVIDIA VR-NVL BMC
+Message-ID: <20260728143952.GA2121505-robh@kernel.org>
+References: <20260728085640.1001890-1-jackyhuang@nvidia.com>
+ <20260728085640.1001890-3-jackyhuang@nvidia.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -107,54 +69,193 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260728085640.1001890-3-jackyhuang@nvidia.com>
 
-Add pcie_kcs4 node to the LPC bus in the ast2600 g6 common dtsi.
+On Tue, Jul 28, 2026 at 05:55:10PM +0900, Jacky Huang wrote:
+> Add the device tree for the Aspeed AST2600 BMC for NVIDIA's Vera
+> Rubin NVL compute platform.
+> 
+> MAC0 uses phy-mode = "rgmii-id" because the on-board PHY supplies
+> both RGMII internal delays. The matching U-Boot device tree does not
+> enable SoC-side MAC clock delays, leaving the MAC internal delay at
+> zero so the PHY-provided delay is not doubled by the MAC controller.
+> 
+> The corresponding U-Boot change has been submitted to openbmc/u-boot:
+> Link: https://lore.kernel.org/all/20260629105202.1417679-1-jackyhuang@nvidia.com/
+> 
+> Reviewed-by: Andrew Lunn <andrew@lunn.ch>
+> Signed-off-by: Jacky Huang <jackyhuang@nvidia.com>
+> ---
+> v4: address dt-check-style findings for property and child node ordering,
+>     required blank lines, and line length. Retain 8 conventional multi-line
+>     block comments with mixed-indent and 22 meaningful unused labels for
+>     source readability and future references. They can be removed if
+>     preferred.
+> 
+>  arch/arm/boot/dts/aspeed/Makefile             |   1 +
+>  .../aspeed/aspeed-bmc-nvidia-vr-nvl-bmc.dts   | 923 ++++++++++++++++++
+>  2 files changed, 924 insertions(+)
+>  create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-vr-nvl-bmc.dts
+> 
+> diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
+> index 6b68671f9379..07e10083a8bd 100644
+> --- a/arch/arm/boot/dts/aspeed/Makefile
+> +++ b/arch/arm/boot/dts/aspeed/Makefile
+> @@ -65,6 +65,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+>  	aspeed-bmc-microsoft-olympus.dtb \
+>  	aspeed-bmc-nvidia-gb200nvl-bmc.dtb \
+>  	aspeed-bmc-nvidia-msx4-bmc.dtb \
+> +	aspeed-bmc-nvidia-vr-nvl-bmc.dtb \
+>  	aspeed-bmc-opp-lanyang.dtb \
+>  	aspeed-bmc-opp-mowgli.dtb \
+>  	aspeed-bmc-opp-nicole.dtb \
+> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-vr-nvl-bmc.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-vr-nvl-bmc.dts
+> new file mode 100644
+> index 000000000000..1c04fd3e627c
+> --- /dev/null
+> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-vr-nvl-bmc.dts
+> @@ -0,0 +1,923 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +// Copyright (c) 2026 NVIDIA Corporation
 
-The ASPEED AST2600 has a PCIe to LPC controller. It includes a KCS
-interface on channel 4. This is a fully KCS-compatible interface
-that is exposed over PCIe.
 
-This can be used by the host for IPMI when the PCIe BMC Device is
-activated.
+> +&ehci1 {
+> +	#address-cells = <1>;
+> +	#size-cells = <0>;
+> +
+> +	status = "okay";
+> +
+> +	hub@1 {
+> +		reg = <1>;
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +
+> +		hub@1 {
+> +			reg = <1>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +
+> +			hub@4 {
+> +				reg = <4>;
+> +				#address-cells = <1>;
+> +				#size-cells = <0>;
+> +
+> +				/* port 1: BlueField-4 SMA mgmt */
+> +				device@1 {
+> +					reg = <1>;
+> +					#address-cells = <2>;
+> +					#size-cells = <0>;
+> +
+> +					interface@1 {
+> +						reg = <1 1>;
+> +					};
+> +				};
+> +
+> +				cp2112g: device@2 {
 
-While the PCIe to LPC Controller provides KCS channels 1, 2,
-3 and 4 over PCI, this patch only adds channel 4.
-This needs little adjustment to the driver and provides PCIe BMC Devices,
-like the Asus IPMI Expansion Card, the IPMI over PCIe feature.
+This and other devices should have a compatible string and associated 
+schema. The hub probably should too.
 
-The pcie_kcs4 uses existing "aspeed,ast2600-kcs-bmc" compatible as it's a
-standard KCS interface.
+> +					reg = <2>;
+> +					#gpio-cells = <2>;
+> +					gpio-controller;
+> +					gpio-line-names =
+> +						"BF4_USB_MCU_RECOVERY_L",
+> +						"BF4_USB_MCU_RST_L",
+> +						"BF4_USB_FORCE_FNP_L",
+> +						"BF4_GLOBAL_WP",
+> +						"BF4_FORCE_POR_L",
+> +						"BF4_BMC_EROT_RST_L",
+> +						"BF4_BMC_EROT_RECOVERY_L",
+> +						"BF4_THERM_SHUTDOWN";
+> +					#interrupt-cells = <2>;
+> +					interrupt-controller;
+> +				};
+> +			};
+> +		};
+> +
 
-Node placed according to the ascending address ordering.
-'dt-check-style --mode strict' reports no issues on added lines, except
-'line-length' issues.
+> +&fmc {
+> +	status = "okay";
+> +
+> +	flash@0 {
 
-Signed-off-by: Grégoire Layet <gregoire.layet@9elements.com>
----
- arch/arm/boot/dts/aspeed/aspeed-g6.dtsi | 8 ++++++++
- 1 file changed, 8 insertions(+)
+Needs a compatible.
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
-index 56bb3b0444f7..c9d94c25d1ad 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
-+++ b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
-@@ -656,6 +656,14 @@ ibt: ibt@140 {
- 					clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
- 					status = "disabled";
- 				};
-+
-+				pcie_kcs4: kcs@914 {
-+					compatible = "aspeed,ast2600-kcs-bmc";
-+					reg = <0x914 0x1>, <0x918 0x1>, <0x91c 0x1>;
-+					interrupts = <GIC_SPI 177 IRQ_TYPE_LEVEL_HIGH>;
-+
-+					status = "disabled";
-+				};
- 			};
+> +		label = "bmc";
+> +
+> +		status = "okay";
 
- 			sdc: sdc@1e740000 {
---
-2.54.0
+okay is the default, so not needed.
+
+> +
+> +		partitions {
+> +			compatible = "fixed-partitions";
+> +			#address-cells = <1>;
+> +			#size-cells = <1>;
+> +
+> +			partition@0 {
+> +				reg = <0x0 0xe0000>;		/* 896 KiB */
+> +				label = "u-boot";
+> +			};
+> +
+> +			partition@100000 {
+> +				reg = <0x100000 0x900000>;	/* 9 MiB */
+> +				label = "kernel";
+> +			};
+> +
+> +			partition@a00000 {
+> +				/*
+> +				 * extends to end of 64 MiB - 4 KiB; last
+> +				 * 4 KiB reserved for EROT image
+> +				 */
+> +				reg = <0xa00000 0x35ff000>;
+> +				label = "rofs";
+> +			};
+> +		};
+> +	};
+> +};
+
+
+> +&spi2 {
+> +	pinctrl-0 = <&pinctrl_spi2_default>;
+> +	pinctrl-names = "default";
+> +
+> +	status = "okay";
+> +
+> +	flash@0 {
+> +		label = "config";
+
+Needs a compatible.
+
+> +
+> +		status = "okay";
+
+Drop
+
+> +
+> +		partitions {
+> +			compatible = "fixed-partitions";
+> +			#address-cells = <1>;
+> +			#size-cells = <1>;
+> +
+> +			partition@0 {
+> +				reg = <0x0 0x40000>;	/* 256 KiB */
+> +				label = "u-boot-env";
+> +			};
+> +
+> +			partition@40000 {
+> +				reg = <0x40000 0x1000000>;	/* 16 MiB */
+> +				label = "rwfs";
+> +			};
+> +
+> +			partition@1040000 {
+> +				reg = <0x1040000 0x2800000>;	/* 40 MiB */
+> +				label = "log";
+> +			};
+> +		};
+> +	};
+> +};
 
