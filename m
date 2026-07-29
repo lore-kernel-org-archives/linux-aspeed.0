@@ -1,95 +1,58 @@
-Return-Path: <linux-aspeed+bounces-4586-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4587-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 863A4C53200
-	for <linux-aspeed@archiver.kernel.org>; Wed, 29 Jul 2026 11:43:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C4E8C54F51
+	for <linux-aspeed@archiver.kernel.org>; Wed, 29 Jul 2026 13:17:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h99Sm6jqFz2yjp;
-	Wed, 29 Jul 2026 21:43:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785325400;
-	cv=none; b=A+WCua1pAtuUzctWi55IWLC+xkpLuPlpPdtO1+NgfMRAQJXwVCDnQeZgUCtonilcX/VkhRSGigZDyDIx6Z/wqxUwrDweBkx1/UNMSSeXlysSv/2IW7A40mbWmqMvdSoS683ESp+Saivpg0Ncz68YM4mCn/43rNOJAnBzQlMkiyAO3LPQwPC5ZMCHoAWx5Etl+twPONGKiSjvTKbcwg/ZG+k1hf8cpt41uZkjajEs+IFolmPh1OS8wYxojOJcNqMqbCmjj4kYGhdPsc68R0qrHa02HJ+ZDS2uCcMaYS/9zVlLiHFXKUzwY8ak133wi3GGBIqwCVdQmRtD6DIMGXSDhw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h9CYx6fnqz2yDr;
+	Wed, 29 Jul 2026 23:17:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785331077;
+	cv=none; b=heBCM7Bc62jIYOgyolsZMXgmKqjrk8vVsIe015RmW1i2qnTYqO7R7DLX+777AuVFyr5NJKte8UcXhVruSh3PRmfDbCdIkYh51ezPN7VAhYvJh79Md04/IP7W+rnZkIpF2A+7ucXoIfsQ8xhzMt7xRCc4d3z5MK+lfWE43tyck0rzNU/90K9lVgNmZwRMtTkwS/oy/CfSptj3PmTA87wyejYGGgYAs3rpIDCUTwSHYKNjgifawGIJPDpo4H8nZa8zqCHTQcRMcAqZlBgJSoGNqUsqUHPPWvWgryY/3WP4q+T2HMxnhceSOzi7XdQqST9rL9T6/4fkS9DmR3XXadKMeA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785325400; c=relaxed/relaxed;
-	bh=gUdqR2Hxxm0m0RqPyLuS7KiUs0HH+0wvNQWmKBLU3XU=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=mtRA+/1MjgqwkDpeQs9u1q6b6ntMcfJOV+yCxRrQya73ZNJAsaVp5yXtS7FkhrSZmAE9Zo4HhOEkFa/N5+8M8izqSf7OxJakQhTF6u6dQRKBeGu2CfQQBLmDLXFF6qpubA2VWssqSva4NSLKAkfc1yOWxzP/BptVUKO81lM1iRwWVWsfauXVxesDlLXV3XMgP/qq6NCArVOJkWtC9U9Fvt3eeHjQyMxchri6ZBgXTrRGzOOeFdDTtdHAPsMqXSEsvSHg8POu45mWOAcn/Kv0Z88aUDf1AVt6ulHf9aSXEMaG3nZnGLhbcJEY/riFJ1fX5FN+FnZ+//Zb2TskYKQVFg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=KsScEX4T; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42c; helo=mail-pf1-x42c.google.com; envelope-from=chou.cosmo@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1785331077; c=relaxed/relaxed;
+	bh=48XNN4g07zjeNMh2MkAdOMxyZFFb3QLQsG3AajgwEVQ=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=VVe+6e2gReQOcDNABSyZ6e/v0BtA3Qbi2MMrEbXBFXoJ5Opwm8f5djL/wKvk8Pz6fCKn2vs1a43/tALzbpgUcvm/k797hTssWLSWGsKbtyBnPnhV/hoYzGrZhqbAlj4ADGmhSHLOzUC/QI4J2xuQCszuf3DAu9Xzs0ozSS1BqpjR9tanpptIPD0eeuIeT1K04K3aoH/reyp9PJ3EymziXKrk2F5nA2hfNVaKL8684NCfipvBUsQN8OypP0RxWpUb+ilvc+FkMc9tkweL6uLR38f8qBZVz7ru4PkLYQjttondjJaAzkmYpfhd2xHSzNsNUQQeDcXOuOGbzIWNgITkNA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XiIVs3lj; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=KsScEX4T;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XiIVs3lj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42c; helo=mail-pf1-x42c.google.com; envelope-from=chou.cosmo@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42c.google.com (mail-pf1-x42c.google.com [IPv6:2607:f8b0:4864:20::42c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h99Sm2N5Yz2xnp
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Jul 2026 21:43:20 +1000 (AEST)
-Received: by mail-pf1-x42c.google.com with SMTP id d2e1a72fcca58-848643382fcso963692b3a.1
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Jul 2026 04:43:20 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1785325398; x=1785930198; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=gUdqR2Hxxm0m0RqPyLuS7KiUs0HH+0wvNQWmKBLU3XU=;
-        b=KsScEX4Tgy4n/4HL/AnbQIfLRPZd6ZY4SEye2h8rYW4QcSj/aVI2zJUfp/AiaxP3xV
-         rm/4ctP9Clw5SxlTMWqtBxTq0zb2r46sRyHMPpJg8vEeY1gp8vUwweg5y/jEXTUF8WBA
-         5Vr1o9WkoBCU45NuB6ycHava9DijuIaCzoE3dzr8Fm/EAY5HeRu9BkvzzaQvI8xtkgLx
-         BhNS3r96zEMKxRbaUNrYYw4ESaXYqRbqpnY/Iw8bND2OSOb++8S/3HSpNcq3omvIREmd
-         6AU4i5SnWccpSpiCggSfQV6hqOAG422iAa2M0qfqP8DJo1WMUL10LjPD5Ts5dBUuKkrz
-         M7qg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1785325398; x=1785930198;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=gUdqR2Hxxm0m0RqPyLuS7KiUs0HH+0wvNQWmKBLU3XU=;
-        b=i/KasE6KyDXV+t67LPIb/q+dshJ2/yB33u2ne/3sMblCxqQSNJqqEJmpVsdvET3qQ3
-         XKhIeT+j26DzRRLfTmVtkTKqecPhv6UmXvVp4fHhMda14S6eWa/GtkBpwZzL90IZrsz0
-         if1YejRwHXMidI5+kAN8TymgG9KDnoTTPkoV2VybrSux/VsdNvrrvlBghcUAj4+mc8eU
-         VW1SYjQo67KLQArPxEnV34ht3RJaxXRvJ7oLCQ3Asv3ySWC+dh9mUfsZwu3brTKiP2jA
-         5665iip4+nX37mTZ4+JQvdGId9cBNgZ4XfkbkSZ5JonNGzEPGhhRnXiUzwf09pdnL0R9
-         TGNw==
-X-Forwarded-Encrypted: i=1; AHgh+Rp9oTeta2KvFznvz2KYBhJ53CvZugRQfeI0ng+ISaLS8XDfSZ/mg3OQTwdSGsimtiqvPDw7tTDzkNstRyU=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwSSPKjgHJa2ocI6BGdqiqFCeqMkzDx+yEWYD9iU3KWjX+oUjyu
-	65I+TuI87PuUrZIJgCreWWHGdXKVxGzXE6KVpohgXO8I/7a9b66qIwB8
-X-Gm-Gg: AR+sD10lO5Gk8R7Dp1oa5tbfdlJ/VJlmrjX32HgMla9qibJO8ZCgNX6924G1WWGf+ww
-	Qa3uiZCV/qTInBq5hCXvE665E/1tX6fE+iJJTVXwPhNPWSSFImYIseyR3t9b/2nu8UspvctaO/h
-	Irhv6Oi3Mky6JFjWObCQDn+g4tdT0UyyZfJQfFWGcVpkbtYbUl8SMUoVhfen56bU2rgB81Lh2Wk
-	uZvFx7TUKVl9d2Hzc3VQQ7x5x4JBHWYRnlN3t4BO74Y4tBpfg1b3y0wdDggUTlKh+uwG7uK8xnT
-	9SS3If0913rY1QOIBpyXz3nwPDzuXH8vjDeiIVsyhJ6rBjhHTMspXIhzJhvQmqJpnINnkrBcjdM
-	nmP+JM+ds3bxKvORCXgoT+GBSrX1B1iloos7mWUAL3+BaKo74/d/LQeGHeVmF0IHhSZ/a03daOU
-	eXazXTreSITemixrov50o2MVgo3sgJZ30iq1Hn7MMU+t6c+ko8I8dunOYjnyexhwQFX4DROUd5J
-	bRYKab3nHtT1k7NMUQ1EpLjId12qetYzS0=
-X-Received: by 2002:a05:6a00:2e84:b0:84e:1a9d:d879 with SMTP id d2e1a72fcca58-84e93246ae3mr6928584b3a.28.1785325398098;
-        Wed, 29 Jul 2026 04:43:18 -0700 (PDT)
-Received: from cosmo-ubuntu-2404.. (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84ea03cbd1csm1263532b3a.53.2026.07.29.04.43.15
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 Jul 2026 04:43:17 -0700 (PDT)
-From: Cosmo Chou <chou.cosmo@gmail.com>
-To: robh@kernel.org,
-	krzk+dt@kernel.org,
-	conor+dt@kernel.org,
-	joel@jms.id.au,
-	andrew@codeconstruct.com.au
-Cc: devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	cosmo.chou@quantatw.com,
-	Cosmo Chou <chou.cosmo@gmail.com>
-Subject: [PATCH v2 4/4] ARM: dts: aspeed: bletchley: Add second source ISL1208 RTC
-Date: Wed, 29 Jul 2026 19:43:12 +0800
-Message-ID: <20260729114312.3947300-5-chou.cosmo@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260729114312.3947300-1-chou.cosmo@gmail.com>
-References: <20260729114312.3947300-1-chou.cosmo@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9CYx1qHQz2xwP
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Jul 2026 23:17:57 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id B0A26600AB
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Jul 2026 13:17:54 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 67BF21F00AC4
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Jul 2026 13:17:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1785331074;
+	bh=48XNN4g07zjeNMh2MkAdOMxyZFFb3QLQsG3AajgwEVQ=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc;
+	b=XiIVs3ljKBeYOc0ZMoiSxhQkAZjjVAcV9Fv/7jfb2vSpD9P7AFExLWU25uFfal5Ai
+	 hWwwIsIJeqJMO/bL/d3R7N/0jWLawV9O7UXaUp2/viGl4zbtQ2m0DAAiw5gHdQU7Fh
+	 dgj6ynWZiBMzmZC7+YM7lYWkzh6b0lXOTT/Vo3vwy2Gj48YRITx5j9uW73jVDGApyd
+	 I/wgfB2txyke83hX9zr8+WpXTHSQ3cQhMrnyMd4YCxEYjQptp68aL4/+ucQF81kfnH
+	 5TH/ndZqA6tzSH7d2pWfgiKw/ltI/NmzTPduDLhShnVHoJ3TEzVRXcONPDwYzD5UXN
+	 zlzuv26VnHYSA==
+Received: by mail-ej1-f41.google.com with SMTP id a640c23a62f3a-c197f968b3cso141266366b.2
+        for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Jul 2026 06:17:54 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RpfnDppeNjQlumxI1x5l1k0nUiHOzlIGEpTEzTMrIb0oKVoU8oK3FynOf0TZfym0IWS8jwdT4ptWH4aK1U=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yx3xoMjF0R5HSxca1E71EQl8ZWPOFuo0lQdun0KwHkSiecIKF6I
+	maxWfLAuqk3Wk5hmBJwunOCCZdmvoHuFk/Uv+anxr9RSbfZNFwqhMgjeWVYNa/ajb0kuX0VqK+T
+	NSM3qKLlAUpaOryR2nel1r64yfN+MpQ==
+X-Received: by 2002:a17:907:3f83:b0:c15:f65a:43a8 with SMTP id
+ a640c23a62f3a-c1f71e917aemr350404966b.12.1785331073073; Wed, 29 Jul 2026
+ 06:17:53 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -103,33 +66,53 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20260728085640.1001890-1-jackyhuang@nvidia.com>
+ <20260728085640.1001890-3-jackyhuang@nvidia.com> <20260728143952.GA2121505-robh@kernel.org>
+ <20260729060612.1085870-1-jackyhuang@nvidia.com>
+In-Reply-To: <20260729060612.1085870-1-jackyhuang@nvidia.com>
+From: Rob Herring <robh@kernel.org>
+Date: Wed, 29 Jul 2026 08:17:40 -0500
+X-Gmail-Original-Message-ID: <CAL_JsqKx4OEM-asdvs1wUiP3FFObzJHZtNTtqiwtcRhJ5CPRyQ@mail.gmail.com>
+X-Gm-Features: AUfX_mz9kVcB2p0XmnaO_w47PYg5nxBKrgQw2D-RxR5WDjCFz7aeXdayL1fqqeI
+Message-ID: <CAL_JsqKx4OEM-asdvs1wUiP3FFObzJHZtNTtqiwtcRhJ5CPRyQ@mail.gmail.com>
+Subject: Re: [PATCH v4 2/2] ARM: dts: aspeed: Add NVIDIA VR-NVL BMC
+To: Jacky Huang <jackyhuang@nvidia.com>
+Cc: andrew@codeconstruct.com.au, joel@jms.id.au, 
+	krzysztof.kozlowski@oss.qualcomm.com, conor+dt@kernel.org, andrew@lunn.ch, 
+	devicetree@vger.kernel.org, linux-aspeed@lists.ozlabs.org, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	openbmc@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Add alternative ISL1208 RTC at address 0x6f to support boards populated
-with the ISL1208 instead of the primary PCF85263 at 0x51.
+On Wed, Jul 29, 2026 at 1:06=E2=80=AFAM Jacky Huang <jackyhuang@nvidia.com>=
+ wrote:
+>
+> Hi Rob,
+>
+> Thank you very much for the review.
+>
+> On Tue, Jul 28, 2026 at 09:39:52AM -0500, Rob Herring wrote:
+> > > +                           cp2112g: device@2 {
+> >
+> > This and other devices should have a compatible string and associated
+> > schema. The hub probably should too.
+>
+> Will fix in v5.
+>
+> > > +   flash@0 {
+> >
+> > Needs a compatible.
+>
+> The flash@0 node augments the corresponding node defined in
+> aspeed-g6.dtsi, which already carries compatible =3D "jedec,spi-nor",
+> so the compatible is inherited. The same applies to the flash@0
+> under &spi2.
 
-Signed-off-by: Cosmo Chou <chou.cosmo@gmail.com>
----
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-bletchley.dts | 5 +++++
- 1 file changed, 5 insertions(+)
+Is the flash part of the SoC package? A board level component
+shouldn't be in the SoC .dtsi file. If there's some components that
+all/most boards happen to use, then those should be a common board
+.dtsi file.
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-bletchley.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-bletchley.dts
-index 3da1cf9bbb99..01dbbda3e4b6 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-bletchley.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-bletchley.dts
-@@ -1269,6 +1269,11 @@ eeprom@56 {
- 		compatible = "atmel,24c64";
- 		reg = <0x56>;
- 	};
-+
-+	rtc@6f {
-+		compatible = "isil,isl1208";
-+		reg = <0x6f>;
-+	};
- };
- 
- &i2c7 {
--- 
-2.43.0
-
+Rob
 
