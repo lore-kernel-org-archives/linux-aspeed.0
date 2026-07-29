@@ -1,58 +1,59 @@
-Return-Path: <linux-aspeed+bounces-4587-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4588-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C4E8C54F51
-	for <linux-aspeed@archiver.kernel.org>; Wed, 29 Jul 2026 13:17:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28142C53200
+	for <linux-aspeed@archiver.kernel.org>; Wed, 29 Jul 2026 23:36:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4h9CYx6fnqz2yDr;
-	Wed, 29 Jul 2026 23:17:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785331077;
-	cv=none; b=heBCM7Bc62jIYOgyolsZMXgmKqjrk8vVsIe015RmW1i2qnTYqO7R7DLX+777AuVFyr5NJKte8UcXhVruSh3PRmfDbCdIkYh51ezPN7VAhYvJh79Md04/IP7W+rnZkIpF2A+7ucXoIfsQ8xhzMt7xRCc4d3z5MK+lfWE43tyck0rzNU/90K9lVgNmZwRMtTkwS/oy/CfSptj3PmTA87wyejYGGgYAs3rpIDCUTwSHYKNjgifawGIJPDpo4H8nZa8zqCHTQcRMcAqZlBgJSoGNqUsqUHPPWvWgryY/3WP4q+T2HMxnhceSOzi7XdQqST9rL9T6/4fkS9DmR3XXadKMeA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h9TJ33kRVz2yFg;
+	Thu, 30 Jul 2026 09:36:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785362122;
+	cv=none; b=kUvAQgem9up78vLmDSAkyI4a7FIrgD5wRBs71wLoHSx9S7BXHOh64l7FXVkJ7IV4j25yoYaEzq9TIqTMTE5JB38s+WUjRl81uLcty09ggE8k6G+61YU8/iU6Sf4Vhs58sqyFlP4IKAEVq4qljlD6Nf2T1Y/lxMfXp8RlhMoKGcsqWswD7aafSZIK8zkmEXOsxCO6HFPzbzymLTJDgINfzBoxrqv0sd+zUQyRJBhY0QG6a5dal3ijqo8/hx7jRmypJnmIDsAgRkRDEuvzDFR/HsICGhpyikX6ON+3uQgxLujLiGVnlRVl53dtdpaRfRZMSJLoqMbi1wfsoxShC6KpSg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785331077; c=relaxed/relaxed;
-	bh=48XNN4g07zjeNMh2MkAdOMxyZFFb3QLQsG3AajgwEVQ=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=VVe+6e2gReQOcDNABSyZ6e/v0BtA3Qbi2MMrEbXBFXoJ5Opwm8f5djL/wKvk8Pz6fCKn2vs1a43/tALzbpgUcvm/k797hTssWLSWGsKbtyBnPnhV/hoYzGrZhqbAlj4ADGmhSHLOzUC/QI4J2xuQCszuf3DAu9Xzs0ozSS1BqpjR9tanpptIPD0eeuIeT1K04K3aoH/reyp9PJ3EymziXKrk2F5nA2hfNVaKL8684NCfipvBUsQN8OypP0RxWpUb+ilvc+FkMc9tkweL6uLR38f8qBZVz7ru4PkLYQjttondjJaAzkmYpfhd2xHSzNsNUQQeDcXOuOGbzIWNgITkNA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XiIVs3lj; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1785362122; c=relaxed/relaxed;
+	bh=XHNnNP0x2wCRJyrSJgej4CyXt6QqDHcD5MVMn0YR8+4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=DVt7iGArNAOXBYUw3LwFo17IJlLqqc/UPXhOr5KmK0WNzW9+jF3N1qgU5dxx1p9afRstg4q3E47s7ZD0XfGnRcAQFCb/OGWzEYrgZOIUEcU0hNj01xyq0DFAE5ldUSym/aabdS32Ln6q7A1dfh1aOvOlK4yz0RgH3pU3Sa3THkO4XIQd+q1nKlZ+itX6WUjYFUuRkqSrC87LrDzLqHVgG0UXkL2G95ZyIioWbY706ezbvy+2w46a7bHwA5z0rZfSQ7xO8Ohf3n6dO7mO7i+dXC9HtJ0fmMAfW3AXl8KxZqt6BIBP9x7EgMcOONbbB1tFKmRMz82vW2cQbaeSD/+wrw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=b6DbNnm4; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=laszlo.ersek@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XiIVs3lj;
+	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=b6DbNnm4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4h9CYx1qHQz2xwP
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Jul 2026 23:17:57 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id B0A26600AB
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Jul 2026 13:17:54 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 67BF21F00AC4
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Jul 2026 13:17:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1785331074;
-	bh=48XNN4g07zjeNMh2MkAdOMxyZFFb3QLQsG3AajgwEVQ=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=XiIVs3ljKBeYOc0ZMoiSxhQkAZjjVAcV9Fv/7jfb2vSpD9P7AFExLWU25uFfal5Ai
-	 hWwwIsIJeqJMO/bL/d3R7N/0jWLawV9O7UXaUp2/viGl4zbtQ2m0DAAiw5gHdQU7Fh
-	 dgj6ynWZiBMzmZC7+YM7lYWkzh6b0lXOTT/Vo3vwy2Gj48YRITx5j9uW73jVDGApyd
-	 I/wgfB2txyke83hX9zr8+WpXTHSQ3cQhMrnyMd4YCxEYjQptp68aL4/+ucQF81kfnH
-	 5TH/ndZqA6tzSH7d2pWfgiKw/ltI/NmzTPduDLhShnVHoJ3TEzVRXcONPDwYzD5UXN
-	 zlzuv26VnHYSA==
-Received: by mail-ej1-f41.google.com with SMTP id a640c23a62f3a-c197f968b3cso141266366b.2
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Jul 2026 06:17:54 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RpfnDppeNjQlumxI1x5l1k0nUiHOzlIGEpTEzTMrIb0oKVoU8oK3FynOf0TZfym0IWS8jwdT4ptWH4aK1U=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx3xoMjF0R5HSxca1E71EQl8ZWPOFuo0lQdun0KwHkSiecIKF6I
-	maxWfLAuqk3Wk5hmBJwunOCCZdmvoHuFk/Uv+anxr9RSbfZNFwqhMgjeWVYNa/ajb0kuX0VqK+T
-	NSM3qKLlAUpaOryR2nel1r64yfN+MpQ==
-X-Received: by 2002:a17:907:3f83:b0:c15:f65a:43a8 with SMTP id
- a640c23a62f3a-c1f71e917aemr350404966b.12.1785331073073; Wed, 29 Jul 2026
- 06:17:53 -0700 (PDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=laszlo.ersek@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4h9R2v70dwz2xwP
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 30 Jul 2026 07:55:17 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 418BA1684;
+	Wed, 29 Jul 2026 14:54:40 -0700 (PDT)
+Received: from e131404.arm.com (unknown [10.57.43.134])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 1F2863F763;
+	Wed, 29 Jul 2026 14:54:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1785362084; bh=XHNnNP0x2wCRJyrSJgej4CyXt6QqDHcD5MVMn0YR8+4=;
+	h=From:To:Cc:Subject:Date:From;
+	b=b6DbNnm46lfNZ8vZS9R63cbt98b/2emk8OCLXhdWtRnRmgjlwE0rS0EFE9j/4DmZL
+	 5J4z5tK+XQ5hVGSkXZlON0Rq+YZLHpUdxq9H5WUtCzZZ/0oO1jUgW4LD7rCKHVuVXU
+	 eCQa41StmChzeHX+mVYck4V4FhZDZmgBWPW+WJ6o=
+From: Laszlo Ersek <laszlo.ersek@arm.com>
+To: laszlo.ersek@arm.com
+Cc: Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Cristian Marussi <cristian.marussi@arm.com>,
+	Guenter Roeck <linux@roeck-us.net>,
+	Heiko Stuebner <heiko@sntech.de>,
+	Joel Stanley <joel@jms.id.au>,
+	Sudeep Holla <sudeep.holla@kernel.org>,
+	arm-scmi@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-hwmon@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [RFC PATCH] hwmon: remove tautological dependency expressions from Kconfig
+Date: Wed, 29 Jul 2026 23:54:27 +0200
+Message-ID: <20260729215436.2103380-1-laszlo.ersek@arm.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -66,53 +67,92 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260728085640.1001890-1-jackyhuang@nvidia.com>
- <20260728085640.1001890-3-jackyhuang@nvidia.com> <20260728143952.GA2121505-robh@kernel.org>
- <20260729060612.1085870-1-jackyhuang@nvidia.com>
-In-Reply-To: <20260729060612.1085870-1-jackyhuang@nvidia.com>
-From: Rob Herring <robh@kernel.org>
-Date: Wed, 29 Jul 2026 08:17:40 -0500
-X-Gmail-Original-Message-ID: <CAL_JsqKx4OEM-asdvs1wUiP3FFObzJHZtNTtqiwtcRhJ5CPRyQ@mail.gmail.com>
-X-Gm-Features: AUfX_mz9kVcB2p0XmnaO_w47PYg5nxBKrgQw2D-RxR5WDjCFz7aeXdayL1fqqeI
-Message-ID: <CAL_JsqKx4OEM-asdvs1wUiP3FFObzJHZtNTtqiwtcRhJ5CPRyQ@mail.gmail.com>
-Subject: Re: [PATCH v4 2/2] ARM: dts: aspeed: Add NVIDIA VR-NVL BMC
-To: Jacky Huang <jackyhuang@nvidia.com>
-Cc: andrew@codeconstruct.com.au, joel@jms.id.au, 
-	krzysztof.kozlowski@oss.qualcomm.com, conor+dt@kernel.org, andrew@lunn.ch, 
-	devicetree@vger.kernel.org, linux-aspeed@lists.ozlabs.org, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	openbmc@lists.ozlabs.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: base64
 
-On Wed, Jul 29, 2026 at 1:06=E2=80=AFAM Jacky Huang <jackyhuang@nvidia.com>=
- wrote:
->
-> Hi Rob,
->
-> Thank you very much for the review.
->
-> On Tue, Jul 28, 2026 at 09:39:52AM -0500, Rob Herring wrote:
-> > > +                           cp2112g: device@2 {
-> >
-> > This and other devices should have a compatible string and associated
-> > schema. The hub probably should too.
->
-> Will fix in v5.
->
-> > > +   flash@0 {
-> >
-> > Needs a compatible.
->
-> The flash@0 node augments the corresponding node defined in
-> aspeed-g6.dtsi, which already carries compatible =3D "jedec,spi-nor",
-> so the compatible is inherited. The same applies to the flash@0
-> under &spi2.
-
-Is the flash part of the SoC package? A board level component
-shouldn't be in the SoC .dtsi file. If there's some components that
-all/most boards happen to use, then those should be a common board
-.dtsi file.
-
-Rob
+Q29tbWl0IDU1NGIzNTI5ZmUwMSAoInRoZXJtYWwvZHJpdmVycy9jb3JlOiBSZW1vdmUgdGhlIG1v
+ZHVsZSBLY29uZmlnJ3MKb3B0aW9uIikgWzFdIG9idmlhdGVkIHNvbWUgb2YgdGhlICJPcHRpb25h
+bCBkZXBlbmRlbmNpZXMiIChhcyBkZXNjcmliZWQgaW4KIkRvY3VtZW50YXRpb24va2J1aWxkL2tj
+b25maWctbGFuZ3VhZ2UucnN0IikgaW4gImRyaXZlcnMvaHdtb24vS2NvbmZpZyIuCgpOYW1lbHks
+IHNhaWQgY29tbWl0IHJlc3RyaWN0ZWQgdGhlIHZhbGlkL3Bvc3NpYmxlIHN1YnNldCBvZiB0aGUg
+ZnVsbApDYXJ0ZXNpYW4gcHJvZHVjdCAiQ09ORklHX1RIRVJNQUwgeCBDT05GSUdfVEhFUk1BTF9P
+RiIgdG8KCiAgeyAobiwgbiksICh5LCBuKSwgKHksIHkpIH0KCnRocm91Z2ggImRyaXZlcnMvdGhl
+cm1hbC9LY29uZmlnIi4gTnVtZXJpY2FsbHkgKHVzaW5nIHRyaXN0YXRlIHZhbHVlcyksCnRoaXMg
+c2V0IGNhbiBiZSBleHByZXNzZWQgYXM6CgogIHsgKDAsIDApLCAoMiwgMCksICgyLCAyKSB9CgpP
+dmVyIHRoaXMgc2V0LCB0aGUgImRyaXZlcnMvaHdtb24vS2NvbmZpZyIgdHJpc3RhdGUgZXhwcmVz
+c2lvbgoKICBUSEVSTUFMIHx8ICFUSEVSTUFMX09GCgpvciBlcXVpdmFsZW50bHksCgogIG1heChU
+SEVSTUFMLCAyLVRIRVJNQUxfT0YpCgppbnZhcmlhYmx5IGV2YWx1YXRlcyB0byAieSIgKDIpLgoK
+U2ltaWxhcmx5LCB3aXRoIFRIRVJNQUwgaGF2aW5nIGJlZW4gcmVzdHJpY3RlZCB0bwoKICB7IG4s
+IHkgfQoKb3IgbnVtZXJpY2FsbHksCgogIHsgMCwgMiB9Cgp0aGUgImRyaXZlcnMvaHdtb24vS2Nv
+bmZpZyIgdHJpc3RhdGUgZXhwcmVzc2lvbgoKICBUSEVSTUFMIHx8IFRIRVJNQUw9bgoKb3IgZXF1
+aXZhbGVudGx5LAoKICBtYXgoVEhFUk1BTCwgVEhFUk1BTD0wKQoKaW52YXJpYWJseSBldmFsdWF0
+ZXMgdG8gInkiICgyKS4gKE5vdGUgdGhhdCAiVEhFUk1BTD0wIiByZXR1cm5zIGVpdGhlciAieSIK
+KDIpIG9yICJuIiAoMCkuKQoKQ29tbWl0IGYzNzM1MzMyMGVlOSAoImh3bW9uL2RyaXZlcnMvY29y
+ZTogU2ltcGxpZnkgY29tcGxleCBkZXBlbmRlbmN5IikKWzJdLCB3aGljaCBpcyB0aGUgZmluYWwg
+Y29tbWl0IG9mIHRoZSBzZXJpZXMgdGhhdCBbMV0gaXMgdGhlIGJlZ2lubmluZyBvZiwKY2xlYW5l
+ZCB1cCB0aGUgaHdtb24gQyBzb3VyY2UgY29kZSBpbiBmYWN0OyBob3dldmVyLCBpdCBtaXNzZWQg
+dGhlCm5vdy1jb2xsYXBzZWQgZGVwZW5kZW5jaWVzIGluIEtjb25maWcuIEF0IHRoZSB0aW1lIG9m
+IFsyXSwgc2l4IG9mIHRvZGF5J3MKc3VjaCBkZXBlbmRlbmNpZXMgd2VyZSBwcmVzZW50IGluIEtj
+b25maWcuIFNpbmNlIHRoZW4sIHR3byBtb3JlIGhhdmUgYmVlbgphZGRlZCAoc3VjaCB0aGF0IHRo
+ZXkgcGVyc2lzdCwgYW55d2F5KTogb25lIGJ5IGNvbW1pdCA0ZjhkMzc0Yjc3MGEKKCJod21vbjog
+KG1heDY2NTApIGFkZCB0aGVybWFsIGNvb2xpbmcgZGV2aWNlIGNhcGFiaWxpdHkiKSwgd2hpY2gg
+d2FzCmluZGVwZW5kZW50IG9mIHRoZSBhYm92ZS1ub3RlZCBzZXJpZXMsIGFuZCBhbm90aGVyIGJ5
+IGNvbW1pdCA5ODU1Y2FmNWQ0ZWIKKCJod21vbjogYWRkIGRyaXZlciBmb3IgdGhlIGh3bW9uIHBh
+cnRzIG9mIHFuYXAtbWN1IGRldmljZXMiKSwgd2hpY2ggd2FzIGEKZGVzY2VuZGFudCBvZiB0aGUg
+c2VyaWVzLgoKUmVtb3ZlIHRoZXNlIGFsd2F5cy0ieSIgZGVwZW5kZW5jaWVzLgoKQ2M6IEFuZHJl
+dyBKZWZmZXJ5IDxhbmRyZXdAY29kZWNvbnN0cnVjdC5jb20uYXU+CkNjOiBDcmlzdGlhbiBNYXJ1
+c3NpIDxjcmlzdGlhbi5tYXJ1c3NpQGFybS5jb20+CkNjOiBHdWVudGVyIFJvZWNrIDxsaW51eEBy
+b2Vjay11cy5uZXQ+CkNjOiBIZWlrbyBTdHVlYm5lciA8aGVpa29Ac250ZWNoLmRlPgpDYzogSm9l
+bCBTdGFubGV5IDxqb2VsQGptcy5pZC5hdT4KQ2M6IFN1ZGVlcCBIb2xsYSA8c3VkZWVwLmhvbGxh
+QGtlcm5lbC5vcmc+CkNjOiBhcm0tc2NtaUB2Z2VyLmtlcm5lbC5vcmcKQ2M6IGxpbnV4LWFybS1r
+ZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpDYzogbGludXgtYXNwZWVkQGxpc3RzLm96bGFicy5v
+cmcKQ2M6IGxpbnV4LWh3bW9uQHZnZXIua2VybmVsLm9yZwpDYzogbGludXgta2VybmVsQHZnZXIu
+a2VybmVsLm9yZwpTaWduZWQtb2ZmLWJ5OiBMYXN6bG8gRXJzZWsgPGxhc3psby5lcnNla0Bhcm0u
+Y29tPgotLS0KCk5vdGVzOgogICAgVW50ZXN0ZWQgKGhlbmNlIFJGQykgLS0gSSBkb24ndCBrbm93
+IGhvdyB0byByZWdyZXNzaW9uLXRlc3QgdGhpcyBwYXRjaAogICAgY29tcHJlaGVuc2l2ZWx5IHll
+dCBtaW5pbWFsbHkuCgogZHJpdmVycy9od21vbi9LY29uZmlnIHwgOCAtLS0tLS0tLQogMSBmaWxl
+IGNoYW5nZWQsIDggZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9od21vbi9LY29u
+ZmlnIGIvZHJpdmVycy9od21vbi9LY29uZmlnCmluZGV4IDJiZmJjYzAzM2Q1OS4uZDNhOWM4YTNh
+NzljIDEwMDY0NAotLS0gYS9kcml2ZXJzL2h3bW9uL0tjb25maWcKKysrIGIvZHJpdmVycy9od21v
+bi9LY29uZmlnCkBAIC00MDMsNyArNDAzLDYgQEAgY29uZmlnIFNFTlNPUlNfQVJDVElDX0ZBTl9D
+T05UUk9MTEVSCiBjb25maWcgU0VOU09SU19BUk1fU0NNSQogCXRyaXN0YXRlICJBUk0gU0NNSSBT
+ZW5zb3JzIgogCWRlcGVuZHMgb24gQVJNX1NDTUlfUFJPVE9DT0wKLQlkZXBlbmRzIG9uIFRIRVJN
+QUwgfHwgIVRIRVJNQUxfT0YKIAloZWxwCiAJICBUaGlzIGRyaXZlciBwcm92aWRlcyBzdXBwb3J0
+IGZvciB0ZW1wZXJhdHVyZSwgdm9sdGFnZSwgY3VycmVudAogCSAgYW5kIHBvd2VyIHNlbnNvcnMg
+YXZhaWxhYmxlIG9uIFNDTUkgYmFzZWQgcGxhdGZvcm1zLiBUaGUgYWN0dWFsCkBAIC00MTUsNyAr
+NDE0LDYgQEAgY29uZmlnIFNFTlNPUlNfQVJNX1NDTUkKIGNvbmZpZyBTRU5TT1JTX0FSTV9TQ1BJ
+CiAJdHJpc3RhdGUgIkFSTSBTQ1BJIFNlbnNvcnMiCiAJZGVwZW5kcyBvbiBBUk1fU0NQSV9QUk9U
+T0NPTAotCWRlcGVuZHMgb24gVEhFUk1BTCB8fCAhVEhFUk1BTF9PRgogCWhlbHAKIAkgIFRoaXMg
+ZHJpdmVyIHByb3ZpZGVzIHN1cHBvcnQgZm9yIHRlbXBlcmF0dXJlLCB2b2x0YWdlLCBjdXJyZW50
+CiAJICBhbmQgcG93ZXIgc2Vuc29ycyBhdmFpbGFibGUgb24gQVJNIEx0ZCdzIFNDUCBiYXNlZCBw
+bGF0Zm9ybXMuIFRoZQpAQCAtNDM1LDcgKzQzMyw2IEBAIGNvbmZpZyBTRU5TT1JTX0FTQjEwMAog
+Y29uZmlnIFNFTlNPUlNfQVNQRUVECiAJdHJpc3RhdGUgIkFTUEVFRCBBU1QyNDAwL0FTVDI1MDAg
+UFdNIGFuZCBGYW4gdGFjaCBkcml2ZXIiCiAJZGVwZW5kcyBvbiBBUkNIX0FTUEVFRCB8fCBDT01Q
+SUxFX1RFU1QKLQlkZXBlbmRzIG9uIFRIRVJNQUwgfHwgVEhFUk1BTD1uCiAJc2VsZWN0IFJFR01B
+UAogCWhlbHAKIAkgIFRoaXMgZHJpdmVyIHByb3ZpZGVzIHN1cHBvcnQgZm9yIEFTUEVFRCBBU1Qy
+NDAwL0FTVDI1MDAgUFdNCkBAIC03ODgsNyArNzg1LDYgQEAgY29uZmlnIFNFTlNPUlNfRzc2Mgog
+Y29uZmlnIFNFTlNPUlNfR1BJT19GQU4KIAl0cmlzdGF0ZSAiR1BJTyBmYW4iCiAJZGVwZW5kcyBv
+biBHUElPTElCIHx8IENPTVBJTEVfVEVTVAotCWRlcGVuZHMgb24gVEhFUk1BTCB8fCBUSEVSTUFM
+PW4KIAloZWxwCiAJICBJZiB5b3Ugc2F5IHllcyBoZXJlIHlvdSBnZXQgc3VwcG9ydCBmb3IgZmFu
+cyBjb25uZWN0ZWQgdG8gR1BJTyBsaW5lcy4KIApAQCAtMTM1Nyw3ICsxMzUzLDYgQEAgY29uZmln
+IFNFTlNPUlNfTUFYNjYzOQogY29uZmlnIFNFTlNPUlNfTUFYNjY1MAogCXRyaXN0YXRlICJNYXhp
+bSBNQVg2NjUwIHNlbnNvciBjaGlwIgogCWRlcGVuZHMgb24gSTJDCi0JZGVwZW5kcyBvbiBUSEVS
+TUFMIHx8IFRIRVJNQUw9bgogCWhlbHAKIAkgIElmIHlvdSBzYXkgeWVzIGhlcmUgeW91IGdldCBz
+dXBwb3J0IGZvciB0aGUgTUFYNjY1MCAvIE1BWDY2NTEKIAkgIHNlbnNvciBjaGlwcy4KQEAgLTE3
+MzIsNyArMTcyNyw2IEBAIGNvbmZpZyBTRU5TT1JTX1BDODc0MjcKIGNvbmZpZyBTRU5TT1JTX05U
+Q19USEVSTUlTVE9SCiAJdHJpc3RhdGUgIk5UQyB0aGVybWlzdG9yIHN1cHBvcnQiCiAJZGVwZW5k
+cyBvbiBJSU8KLQlkZXBlbmRzIG9uIFRIRVJNQUwgfHwgIVRIRVJNQUxfT0YKIAloZWxwCiAJICBU
+aGlzIGRyaXZlciBzdXBwb3J0cyBOVEMgdGhlcm1pc3RvcnMgc2Vuc29yIHJlYWRpbmcgYW5kIGl0
+cwogCSAgaW50ZXJwcmV0YXRpb24uIFRoZSBkcml2ZXIgY2FuIGFsc28gbW9uaXRvciB0aGUgdGVt
+cGVyYXR1cmUgYW5kCkBAIC0xOTMzLDcgKzE5MjcsNiBAQCBjb25maWcgU0VOU09SU19QVDUxNjFM
+CiBjb25maWcgU0VOU09SU19QV01fRkFOCiAJdHJpc3RhdGUgIlBXTSBmYW4iCiAJZGVwZW5kcyBv
+biBQV00gfHwgQ09NUElMRV9URVNUCi0JZGVwZW5kcyBvbiBUSEVSTUFMIHx8IFRIRVJNQUw9bgog
+CWhlbHAKIAkgIElmIHlvdSBzYXkgeWVzIGhlcmUgeW91IGdldCBzdXBwb3J0IGZvciBmYW5zIGNv
+bm5lY3RlZCB0byBQV00gbGluZXMuCiAJICBUaGUgZHJpdmVyIHVzZXMgdGhlIGdlbmVyaWMgUFdN
+IGludGVyZmFjZSwgdGh1cyBpdCB3aWxsIHdvcmsgb24gYQpAQCAtMTk0NSw3ICsxOTM4LDYgQEAg
+Y29uZmlnIFNFTlNPUlNfUFdNX0ZBTgogY29uZmlnIFNFTlNPUlNfUU5BUF9NQ1VfSFdNT04KIAl0
+cmlzdGF0ZSAiUU5BUCBNQ1UgaGFyZHdhcmUgbW9uaXRvcmluZyIKIAlkZXBlbmRzIG9uIE1GRF9R
+TkFQX01DVQotCWRlcGVuZHMgb24gVEhFUk1BTCB8fCBUSEVSTUFMPW4KIAloZWxwCiAJICBTYXkg
+eWVzIGhlcmUgdG8gZW5hYmxlIHN1cHBvcnQgZm9yIGZhbiBhbmQgdGVtcGVyYXR1cmUgc2Vuc29y
+CiAJICBjb25uZWN0ZWQgdG8gYSBRTkFQIE1DVSwgYXMgZm91bmQgaW4gYSBudW1iZXIgb2YgUU5B
+UCBuZXR3b3JrCg==
 
