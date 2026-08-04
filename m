@@ -1,82 +1,88 @@
-Return-Path: <linux-aspeed+bounces-4609-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4610-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F28D2C55184
-	for <linux-aspeed@archiver.kernel.org>; Tue,  4 Aug 2026 23:53:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B4BEC55838
+	for <linux-aspeed@archiver.kernel.org>; Tue,  4 Aug 2026 23:53:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hF9NF2km1z306S;
-	Wed, 05 Aug 2026 09:53:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c105::5" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785870920;
-	cv=pass; b=n6OEfCtEoh0GqYvbQvD8dLnlixKaLYuHp4yM0evPSREu9jo6tQm9g8Y2BUg95m8tMgmvr/lxO5bu/eoOwHUAonxhjS5fXqQy4KxbEnjAoe3FvYJMQWIEtHr24XO9KUpY8BNzny1djD/f1xACo8Z2aZ/xF70ODUNWiXkxUKFBzUlk3zsn1GTsHKtlZ61i5nawj6mCRsKStoq9KlKN8gE2ihCKuWJY0kk4H+lfIcOXOJdvE7Ob8lE3m6r5Fz+ip5fPcfbI7kyw5BjS9McM0xkys5JX2268Q0grRcMwpL8nsgkCEcHLSYGBeY1skkk3r0c0JC2lJu1kkRcn1fFeWBB9UA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hF9NX4Wdsz309L;
+	Wed, 05 Aug 2026 09:53:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c112::7" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785844523;
+	cv=pass; b=K+ZkT/zwkdR13USEcp0v3atVFhjR8BxfMs5DOJIVwgf2RXT6dUBeAVC1jWd7tdDhZF/M52RYreeAxMQSlwKwD2pLg0wYL41NzgjtS6MnZnktvUe+ROm6g69Cnoi7zb8yJ0XQwR3B+wM+MbfbjDGrxC4GLnXIoFpnD3DmBpBvPnqGyCjTPTHchlpW8hFk9C5YyFYuxeh9SvVajwRfZ+DpXT/IQenennjmwY40z3dVJNUfQGq0gMQLbmPX0DwqnSZWURVf5Jes2Gs3qjzRIGlE20BU++S7ncTlXVceXenYoEv35NS9l/aM15ZtwKOei9qn5Dj2FCOOuD39lpv0o/S5fw==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785870920; c=relaxed/relaxed;
-	bh=SNG/qHHNXBybqCDJOOLyLMXa/bDr7j4IDU/VxU6Tnao=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=moMs/M4zMgl/4x3PJjD803fKl/BLDAUuRHktW0zgEGK2cLiDuqCbodRQBYIgT8MoXHtEUES8JxFS4KtFoJbjevCAEwuZnwop+67uESJoyL7lB08KVP8YEVs3N9pvaK8doqyVoOiRh2jD90xVSWoBzQroz3FD6GOCAhR7Gc/zmmSKBreJjNfeU+BFHfYA8SaqQugks/kopPk9uFg3qo8x4GUJmxLzNEB+rz7zvhzbNCkHLgQpHeHnGiJCa8XAaDrlBaUO+uYYtI7ppk9US3hLn1SUUlIUNsgWIlopChSVvjTzm5QiYWhIU/V2TiSmv4VIASW0RPc+VYFP1YS4739z5g==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=STdfDB9X; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c105::5; helo=ch5pr02cu005.outbound.protection.outlook.com; envelope-from=krishnamoorthi.m@amd.com; receiver=lists.ozlabs.org) smtp.mailfrom=amd.com
+	t=1785844523; c=relaxed/relaxed;
+	bh=cRdNmUhV3F1lfZU93i9g6Rv6PAZM3X4Uowb5y27aiec=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=GQf7WqkjVaG/lo1q95zQpOtKJk2VcccvNfx1zrUd+nARlB0WSBLqvDihpLn2MRUNU1j0W0DKF9CHVrFIXRfe2FOZJM22ds7cYGW1xPPyW2Ij15Y0bZrJHpR7wYVsUVQlIBNWtpY1U4rG1gimsPhS9Kwx5i4pmu9ZBvViBcB2xT2sMiGNobVFxTf2whlaDsYODXKgYRbeZx+6q2YHelim5bv/7kdwIIVydXcL/y/DkBxU7lkn7T+CVGthoF0gMFjhHrJbbn3J2nbsn5d3ETaia0NQ/3fzXwBo91SlXiXB81wRVSKDRSFs5OD+Xx5eYsr3yHgkryNw6H/uBPmxEz+MYA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=FtucDkNg; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c112::7; helo=cy3pr05cu001.outbound.protection.outlook.com; envelope-from=krishnamoorthi.m@amd.com; receiver=lists.ozlabs.org) smtp.mailfrom=amd.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=STdfDB9X;
+	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=FtucDkNg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f403:c105::5; helo=ch5pr02cu005.outbound.protection.outlook.com; envelope-from=krishnamoorthi.m@amd.com; receiver=lists.ozlabs.org)
-Received: from CH5PR02CU005.outbound.protection.outlook.com (mail-northcentralusazlp170120005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c105::5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f403:c112::7; helo=cy3pr05cu001.outbound.protection.outlook.com; envelope-from=krishnamoorthi.m@amd.com; receiver=lists.ozlabs.org)
+Received: from CY3PR05CU001.outbound.protection.outlook.com (mail-westcentralusazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c112::7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hF3CT5mlnz2xqM;
-	Wed, 05 Aug 2026 05:15:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDsRt2tW4z2y1Y;
+	Tue, 04 Aug 2026 21:55:21 +1000 (AEST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=MHcUE6TUIj80URS/ympiz/iEfbLb8+eiuGcbqrnw0g9SjGC3g/u1YkzLYjNVvgT2eTFp5HLUWKTJpOdxXOkZ9nBc8eA2xp8cQmeCT1KWuPI6NUmgU6BlNaZ3hBH0ZwjV/PMZW3XvLuFsl+HiP3pCe4qIz3TNeLY5bOoSgU1fMqj7VPLJ305ZWgMPMJzuGW6zUNIAdoJA+qoR3D9y6b+TwLKnV+IMOOGHUt2lKrg4yucH7KkNEvLKHBANFB2E11pwWOUqTL3357CGvQ9PhIOT8tmOlOZ/2ARd9fghLCG3NVZAdAT9jdYmknQQbSTYLJxcyGOuGWpI7e6nd2nJeGtkPA==
+ b=H6E+ecjpGEJ3tKYyHGZTWHs5wnsmrfD0ifXYz4FUcT43XZ57qteQNs7DpGdMZTTVlUCLRwMGjBq3+9UF7pL12GzMliFdhEFoRApkcN9QHSqmxeNyY8xYHAgrJUZkeeWybeLDo6q3LtuVHhY7DH/VYoArmSeHS1l3kCOYcDNRaMg+s35WCr4Zxgj2vtmGgXNoIThpBoqzZG4BhVllwNFXdSldA52f/PhLnN3QaU+RLWTmT3vltb2iOW89gpizkxfBVUKDgaPtCGg34yYZjMIZV1k8bQ3oBuAnq+4bgk7TLI/Pqyy5zGZjjbnYa1kkDFNKw41bL2YV6pTzGoNGzxbCSw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=SNG/qHHNXBybqCDJOOLyLMXa/bDr7j4IDU/VxU6Tnao=;
- b=f5kxRylhEmxeHbXiwVPQGs0jSLAKSMxiXVxBMwqQmYutAlvQ92kpVoNJx1K0scmPs5GuYi3xVzldIcmAdOmNXWDyykTQzCuhUwwKQxo/pQKZU6veLSp8VaYR2aS38ArBI8pLIlH16gxTU4WgVHz6Q+c87w6nHWqUa1gpn0jBUhAL23a8Pj1lYFbRGXt5cpSQp6Hac3gv6Ln/gNsdGUI3tMbNYlmWKjc0+9xuLjKGEsn/wf5byTS8SrlxreAMKpgsN89WNPbM5yy/LAb/RNp1NK94EJbJTAnljp4iHVNIYRy0vH9P3/CPNhXfPSr42WVZHs9NisHfTfExUNY7nil3ow==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
+ bh=cRdNmUhV3F1lfZU93i9g6Rv6PAZM3X4Uowb5y27aiec=;
+ b=JBN/Ky+2e9yCFmQAeNnH6slcKT7Ap03nKgoEmz8tQbujQkSV2vomea0hWhWGvLFiau3ca9yDVMeFulxft/slQY5eSON3Uyc13eTk2LieUAl+saxbYCyz1rY1rGND4UCvC7tUti6nom84PRxg6mMwGZM4xaFmkJp81HleSjV8C7TJuhSrKeOAEfkYjvUrZzHDIBHHmSL6h/EKncTuJnJM1ZuJmntRW7ECxMLaa7dpllCmF91w0uwZIhwVU5LnU+m0V4UkUTGAa/p1jCZTSH7w1c0mQDgKDQLiB+ynxBtuHwQ3FMx01WFWZ2MSSZMMRkOlLFO36IrwAYKFJ+GssA0XzA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=vger.kernel.org smtp.mailfrom=amd.com;
+ dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
+ header.from=amd.com; dkim=none (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=SNG/qHHNXBybqCDJOOLyLMXa/bDr7j4IDU/VxU6Tnao=;
- b=STdfDB9XXUa8ROJyU0HPDjM8hfhb1darSQG2rsX4lrJJ1bGK7o/5qu1Q/MmPZC+1ZnKv/Yzz/lsQMazmtMLOiIQ7csL4CJBZRUxKWBU2MqHWSN+WAX6RtheMr14qmmdHvdsnP/XLGDQntZfe8lv7DFD9186FcRBiW3Tn18kKWhA=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from DM4PR12MB9733.namprd12.prod.outlook.com (2603:10b6:8:225::13)
- by DS0PR12MB7653.namprd12.prod.outlook.com (2603:10b6:8:13e::21) with
+ bh=cRdNmUhV3F1lfZU93i9g6Rv6PAZM3X4Uowb5y27aiec=;
+ b=FtucDkNguPqPJ/mKkSbhCye/VayV4BBDkYI4SjzixSFSxZOOcOABcuM8Bb4ElW5uqK8+pFh95U1m2dAFqIBR7F+7lAKSq0lNU7b4Te1lPLpjy5cgcmk9xDJDeA11uH0/R02LAnKHnzficWbieKh9llincJlUKxT2yaVJdhDteZY=
+Received: from CH2PR04CA0009.namprd04.prod.outlook.com (2603:10b6:610:52::19)
+ by IA0PPF1D04084C7.namprd12.prod.outlook.com (2603:10b6:20f:fc04::bca) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.270.18; Tue, 4 Aug
- 2026 19:14:49 +0000
-Received: from DM4PR12MB9733.namprd12.prod.outlook.com
- ([fe80::aeaa:23b5:1d59:602c]) by DM4PR12MB9733.namprd12.prod.outlook.com
- ([fe80::aeaa:23b5:1d59:602c%3]) with mapi id 15.21.0270.017; Tue, 4 Aug 2026
- 19:14:48 +0000
-Message-ID: <4c9230c1-b92d-4824-8f96-f6c6a4114e62@amd.com>
-Date: Wed, 5 Aug 2026 00:44:39 +0530
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH 3/4] Documentation: espi: add subsystem overview and
- MAINTAINERS entry
-To: Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org
-Cc: gregkh@linuxfoundation.org, broonie@kernel.org,
- linux-spi@vger.kernel.org, akshata.mukundshetty@amd.com,
- bleung@chromium.org, groeck@chromium.org, chrome-platform@lists.linux.dev,
- corbet@lwn.net, linux-doc@vger.kernel.org, skhan@linuxfoundation.org,
- andrew@codeconstruct.com.au, linux-aspeed@lists.ozlabs.org,
- openbmc@lists.ozlabs.org
+ 2026 11:54:55 +0000
+Received: from CH3PEPF0000000E.namprd04.prod.outlook.com
+ (2603:10b6:610:52:cafe::2c) by CH2PR04CA0009.outlook.office365.com
+ (2603:10b6:610:52::19) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.270.18 via Frontend Transport; Tue, 4
+ Aug 2026 11:54:55 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
+Received: from satlexmb07.amd.com (165.204.84.17) by
+ CH3PEPF0000000E.mail.protection.outlook.com (10.167.244.42) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.292.8 via Frontend Transport; Tue, 4 Aug 2026 11:54:55 +0000
+Received: from airavat.amd.com (10.180.168.240) by satlexmb07.amd.com
+ (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.41; Tue, 4 Aug
+ 2026 06:54:51 -0500
+From: Krishnamoorthi M <krishnamoorthi.m@amd.com>
+To: <linux-kernel@vger.kernel.org>
+CC: <gregkh@linuxfoundation.org>, <broonie@kernel.org>,
+	<linux-spi@vger.kernel.org>, <akshata.mukundshetty@amd.com>,
+	<bleung@chromium.org>, <groeck@chromium.org>,
+	<chrome-platform@lists.linux.dev>, <corbet@lwn.net>,
+	<linux-doc@vger.kernel.org>, <skhan@linuxfoundation.org>,
+	<andrew@codeconstruct.com.au>, <linux-aspeed@lists.ozlabs.org>,
+	<openbmc@lists.ozlabs.org>, Krishnamoorthi M <krishnamoorthi.m@amd.com>
+Subject: [RFC PATCH 4/4] espi: amd: add AMD eSPI controller driver
+Date: Tue, 4 Aug 2026 17:22:59 +0530
+Message-ID: <20260804115259.4065638-5-krishnamoorthi.m@amd.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20260804115259.4065638-1-krishnamoorthi.m@amd.com>
 References: <20260804115259.4065638-1-krishnamoorthi.m@amd.com>
- <20260804115259.4065638-4-krishnamoorthi.m@amd.com>
- <cba4de8f-0c4c-4c53-82c4-f6972cb4f4d6@infradead.org>
-Content-Language: en-US
-From: "M, Krishnamoorthi" <krishnamoorthi.m@amd.com>
-In-Reply-To: <cba4de8f-0c4c-4c53-82c4-f6972cb4f4d6@infradead.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: MA5P287CA0036.INDP287.PROD.OUTLOOK.COM
- (2603:1096:a01:17a::7) To DM4PR12MB9733.namprd12.prod.outlook.com
- (2603:10b6:8:225::13)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -90,345 +96,692 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.180.168.240]
+X-ClientProxiedBy: satlexmb07.amd.com (10.181.42.216) To satlexmb07.amd.com
+ (10.181.42.216)
+X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DM4PR12MB9733:EE_|DS0PR12MB7653:EE_
-X-MS-Office365-Filtering-Correlation-Id: 2c53ffd0-7af9-4787-5386-08def25ca6f8
+X-MS-TrafficTypeDiagnostic: CH3PEPF0000000E:EE_|IA0PPF1D04084C7:EE_
+X-MS-Office365-Filtering-Correlation-Id: f4645671-a316-40c5-2f65-08def21f3373
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|1800799024|7416014|376014|23010399003|6133799003|22082099003|18002099003|3023799007|11063799006|4143699003|56012099006|10067099003;
+	BCL:0;ARA:13230040|82310400026|1800799024|7416014|36860700016|376014|23010399003|22082099003|18002099003|56012099006|11063799006|3023799007|6133799003|10067099003;
 X-Microsoft-Antispam-Message-Info:
-	n1zZ2xYxmSczmz9kg70OTRNVwERTxe5RA7n3NGBowUIJ/ehHYTKIKWB4DrzgYxixKNhzOUnqGk5dRBLe5Ru44+LzMWkIrakSL9pFaIfTPV1Lg+m3Gq02BExDD0+Jszk2J3USJKGahW4Uc7aJ73rntVvB3WeMKFOZJ8bNXvJbq8rBhhf3UyhI7RTggJrbT6UqLu5dEQK9DKxLUK9uQvtK1sCOpxgIpuSy9ebavxSn1p5Z4qM0cgwF6urgJ22w9xftsALLasuHSts7k+2WiyJWibZTI3J974OEEm5FE9DjY/GBq7Nhq9epzQ/00rSxYQze8rxN81vOCyWhweL0HAwzjTaOEQ4Qu0JBujUOM/Rg5jtHo1jNwVh+sSJBqoV2Q96rRUNzhdJ4Ee2fs60s9ibun1C2ysaOfmxVO74giFLU1id7u4RFuos58EPc8YJ2rX/i9L0gxI5NJWzrDx5U3LX10hBh/PExtJaS9LAyw1JhLdr0BVKg+skTmKicyDvxlWf/SA/9sXaxWDJ/Gna5eDJbFf62Lugocn19+1+LM4HiVM2WTgjn2c38UBrKSSKamKqqiJ5oeSg5zEQrq4NxUgJvHByrgvX7Hze+4xD24TX4eR4m+gwZgEJ3WZaWZZExzYuAw1I6YQf8G06ux0b8J1ExM3hfqyo+mIT4v4PihGrfUbk=
+	odWNKktP6g9s3vzsavGtJyKZR45frg3CWIZzn85rnyR2T6bFd66lE1IyXnmntcIVVHLyDLLJCHvjck9rVjs9j2vIbPpixIlQpow2obNo3wtDZXuaETOqdjWduEBC/ylIT7/c4LuddK8gnxwb8+N6dw76vZZKisKS5pOI7/EbPCVwRpE1kJim9QtrKacy/wNnPuFxuquUnQ7HgY3tYA0A94un8gJrDLUvNAgdj8NhKOzu2sgjeeBKCoujLAhuTyMU1lovibsUBULttVclF8WDpj0LFFSiRReFcxD6pW8pDlt+UdilZUvQbu+4yQyDA9QA/8COicp3WhcqWVKpJea1xczVEv+PvOL3+ADA0+37L4XS/OrWl7goMRsNN6o5Y9L9MkX1AS64ckd/iHBTI6u57zDgbZ+3xVmXwMVvsgnJmzDJTnekDCf6axyr2jSLiHZp/QLMqEIX55rt4b1s55ZLx85SBE65EZe7yN+DP7M7W6OVS6fbwaP8rKtGlfwREsJsUk723pEBllVDqDsUcPfYU8rBXAsAkQvTZy+wYXIw/BUEZoaGgMlXVqWUzFfS5JeuOEA96Njsuc1YZZ2sL2Frpfs4DWWPpI23GgCbf97S327T4VU4YX+TCa8+q6watyAiLcbE/ZvlL2G/VHaLR6eyZtIeB1IRZGD56XQfmCPN1o72AR85ZRrsT3GVrAkdJj89V4+46s4L2algNG7nOFhYIg==
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM4PR12MB9733.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(7416014)(376014)(23010399003)(6133799003)(22082099003)(18002099003)(3023799007)(11063799006)(4143699003)(56012099006)(10067099003);DIR:OUT;SFP:1101;
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(82310400026)(1800799024)(7416014)(36860700016)(376014)(23010399003)(22082099003)(18002099003)(56012099006)(11063799006)(3023799007)(6133799003)(10067099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?RU8vdVJMRUNxRTZncEZnTy9MSC91WW1tT25SZkJZa3NPRFpYQW55T01lVHAx?=
- =?utf-8?B?UXhETjhlT2xENjFldmhJOWd3YWwyU2ZuaVhsMGVwZTRuTExSbEFFQ2xHdGhr?=
- =?utf-8?B?ZzU4SnpaMVFyUmswL2hXYTJWakF2ak13cGc2WGdOelpQbDhlOXFIN1VEYzdS?=
- =?utf-8?B?eUZPWllPa05Ka2Y0S05oajNQK0lDY2VsUkZGNU5qN2M5WXBSenhvblE4TGd1?=
- =?utf-8?B?RXZXRUNtbEFTS1VsSkRFdlM5bVhocXdwZ3NrUXRyTmJ3WlFkK0cwV095a1Y1?=
- =?utf-8?B?QTJRNjl2ZFh3REgvT2VSaUpObkdqaUhQaTRZWDFBN0ExRU90SXFsSmlEL2dS?=
- =?utf-8?B?Y0NVL1RTM1VOUWcrOHVKbnRMamhEVEdiNm5KTUpBbDdzV1RIVXBrNjBVZ2pZ?=
- =?utf-8?B?TjhXSTNsOS94Q2tBV21XN2xPbXdXdDJwZTFCRlBSd09BWU11QWMveXh6ODhX?=
- =?utf-8?B?anBqYXFIdy9reVF4Wm5mdEhNZVpIZ3laVFYxRWZrbnF0akEzdUcxL0FqTFlV?=
- =?utf-8?B?VGhybVdET2NEa1ZiMStXOENZZk5qYjM3b1hHd01GWXZhaTNpcEt3YU5zQmZV?=
- =?utf-8?B?Qm0xZStsMnc0TDh4QnVWODZGOXVlYlFZa1ovK0JxZnlVWkp3YnI0bGxWY0FK?=
- =?utf-8?B?Mi9Fek9YK0ozdklUUUxMd1VSNTlVUm5UM2VmRjZLaU5oZGJrNUF5YnorYVRY?=
- =?utf-8?B?TXdFRzZXM1EvdUZobVREZXo1eGVZZ1NaQk9QZ3JsYXBYNjRSSTB4TE5XdDBN?=
- =?utf-8?B?bkYrUDRodkxmMkFXWUFka3VDZHBVb1cyMnBqblJuN1JLTjlJSlR4cE1NeW5E?=
- =?utf-8?B?eG91YmZaa0JtSjJENDJjNXdlQjE1Rk1OS0puZlFXbnN3RmNHTSsrNjl2a1hR?=
- =?utf-8?B?Wk0zQ25TTUJRZDFrUkhNa3NjdmMzdlcraytLMzA5djFpejNycnMxcDFJanFt?=
- =?utf-8?B?dkhKVUladEtnQWs1VnY0Q3hTSGc2Zk1HVWMwNTljZmM0aU5qVEVHZGhEQjVl?=
- =?utf-8?B?WFNTQXU4N29XdVdNUEtVN3BVdDludUdiNEdMYVg0SWJrdU1JSk5uZ1lhRFMy?=
- =?utf-8?B?WnhHU3ZhRk4rd3N2ZmRCaU55WmI0V0orZHBRTE5HQzVFa3llWTYxa0w1M0tD?=
- =?utf-8?B?T01oQ2c3VGo5MVVURUZrRlo4eWRSOXJEYWFXNjZ6OHc0TkpTZEd6ekc1VjVM?=
- =?utf-8?B?WllyZnJkaklzYmN4Vk5SNDJ6ZG5mQzFGQVhMcWsreEJyQ04zSUJUbUVkanlx?=
- =?utf-8?B?ajRTN0ZTb0ZHalB6UEhJdWg1MExOVDhGbFliYktQZzZYYmpuR2lNdEl0bjhw?=
- =?utf-8?B?OUNtVGo0d2lzcGp1R0VKUjNKcDRoQVE3TVVqWGlFR3VzTi9CWjhzQ3VBV2t6?=
- =?utf-8?B?emZrRkRjTGhlSjBqaFJlWGxkV21PdXRoK0lLTWFPcUp2V0pqOEpLRzdUakR3?=
- =?utf-8?B?cnRYUEdUb3krbGJBVkpkQndTeG80RHRzeG4wNEdmUHc2NGg5UTdxNmFUN3Fm?=
- =?utf-8?B?MWFNWGlqYjZqUHdmYXVWZWE1UDVmOGo0RWJDRVEvWmltNjJmN1ptanE4TUM1?=
- =?utf-8?B?Zi9jM3l3aW9VVUdCQlpSeUM1Ylp5R0E3TEdrdng3c09ZVytvcms2S04vV2Fi?=
- =?utf-8?B?ZTNtdUNsWUFOTFB4RVFZaC9EMnhzamJrUFk2dWFNc1ErSk1kZUVRaXBQQjZX?=
- =?utf-8?B?T3BNemZxVE1EL1NaNVRBaVh2eUYzMUlLQ0xqZUZadkgrWEtwQm5Lc1paaDFW?=
- =?utf-8?B?bHdrNjByOWpQRG9UbVdYVXFEQzVyUUdOaXFIaFB1dXdJMEhpSEd2WkJJMVgw?=
- =?utf-8?B?MHp6Uy83TGkwb1FLUDF1ZzFmUGhxM3l0eWNTdTVtRlk0M1J6T3JrWGFPdEdV?=
- =?utf-8?B?VlExcVdEckRMQVkxTUFET3c2bFpmQWtKZHpaWEp4L3pyMnlCZ3ZWRGZOemg1?=
- =?utf-8?B?bE9YeCt5ajdZczFvSlpkWkRydnQ4aHRlWXBlV3h5UHBHb0ZQeE0yN3ZvNUR1?=
- =?utf-8?B?dHhRaUc4SG5JMFQrRnZUWVNDZzVuVHRjQkZFc2RyMTA1ajJGcFdOUEU0aWVV?=
- =?utf-8?B?aldhdEFGS3FNRkhWVXRRZGJnMWdSWXNhUmxtMlJRTEJ1Rmw2YWwwYzNjRGhy?=
- =?utf-8?B?OW96V3pFTi93dVhTcXFRMXA4N3dNZWlmSkt0UXZtNFJucDdjVGo4K3JiZDI3?=
- =?utf-8?B?bmNHRzJpdVNSUEt2M0ZBN1VFVkkxWWpqdzAzTnc0dEt6aHN4RnY5YkNXQXV3?=
- =?utf-8?B?QnA4ZlRPV3M1cTBZR280ZTFqcVU5bHRieGNGb0FYRVpGNlNLZGlKeE8vNTR1?=
- =?utf-8?B?Y0U3VkdVaTZTL281WTlSQTQ3QnpXNjBmSlp3ZkhwUEVzTHFHL3FaZz09?=
+	3EcbE/2Hff//GWsrRsdG5ZICD6dJhl/Y/dLz/yZHRbOexm3qgopKGqwkuKS97tYgol1vaqJiTBd+Ew9C1UAdcGTxTixe0rfsAGOFgL4bjO2d8dM07xNQC/rIlJ7yh52GLUBmUvMbpP6ib0juKeZJmmyz84QAqIjXQm54ZKI/tveogEgmglg04uY2IDuXcHe+bRrndbSRAL4ZmjpTfmU8BFeiUiLy9YpbtjGJKboLkyy89tyP099A8/zW9EihepUTs4OjRfhd0+Itwo152zB/5xOQX5AjABYOG6pjwFJjjenK3EgT5cGZoHvvhOVYpsYr+zjH9xCNP3BBFuBJorIphJ1Y6YJ80m/7zcNtH3qQ0HbGCJWxJwDxBRIci6MilTk9wymj2lVc5/OHoULme0gvGmYd25BZWHH/QwT42Vwia+9DSfEfftLHWvGID3TP2eiT
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 2c53ffd0-7af9-4787-5386-08def25ca6f8
-X-MS-Exchange-CrossTenant-AuthSource: DM4PR12MB9733.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 04 Aug 2026 19:14:48.9138
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 04 Aug 2026 11:54:55.3653
  (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Network-Message-Id: f4645671-a316-40c5-2f65-08def21f3373
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: V+Ar4S6QGjmhemlS5df+DTak05HkHCI2UvgK69qp0qRb8WegW1ZGMakItV6i4M8xv5+azYfzvRmeJQDMA4F+Qw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR12MB7653
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	CH3PEPF0000000E.namprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PPF1D04084C7
 
+Add a controller driver for the AMD eSPI controller (ACPI HID AMDI0070).
 
+This initial implementation supports the channel-independent link
+management commands: GET_CONFIGURATION, SET_CONFIGURATION and In-Band
+Reset. Command completion and errors are reported via the controller
+interrupt-status register, which is polled.
 
-On 8/4/2026 10:09 PM, Randy Dunlap wrote:
-> 
-> 
-> On 8/4/26 4:52 AM, Krishnamoorthi M wrote:
->> Add a driver-api overview of the eSPI subsystem and a MAINTAINERS entry
->> covering the subsystem files.
->>
->> The document describes the architecture, how to write a controller driver
->> and a slave driver, the per-channel APIs (Peripheral, Virtual Wire, OOB,
->> Flash), the alert mechanism flow, and the event notification model. An
->> API Reference section renders kernel-doc from the exported symbols.
->>
->> Signed-off-by: Krishnamoorthi M <krishnamoorthi.m@amd.com>
->> ---
->>   Documentation/driver-api/espi.rst  | 213 +++++++++++++++++++++++++++++
->>   Documentation/driver-api/index.rst |   1 +
->>   MAINTAINERS                        |   8 ++
->>   3 files changed, 222 insertions(+)
->>   create mode 100644 Documentation/driver-api/espi.rst
->>
->> diff --git a/Documentation/driver-api/espi.rst b/Documentation/driver-api/espi.rst
->> new file mode 100644
->> index 000000000000..60a3187edb05
->> --- /dev/null
->> +++ b/Documentation/driver-api/espi.rst
->> @@ -0,0 +1,213 @@
->> +.. SPDX-License-Identifier: GPL-2.0-or-later
->> +
->> +===========================================
->> +eSPI (Enhanced Serial Peripheral Interface)
->> +===========================================
->> +
->> +Introduction
->> +============
->> +
->> +eSPI is a bus defined by Intel that replaces the legacy LPC bus. Unlike
->> +SPI it is a structured, capability-negotiated, message-oriented protocol
->> +with four logically independent channels (Peripheral, Virtual Wire, OOB,
->> +Flash) over a shared physical link, and asynchronous target-to-controller
->> +events, so it is modelled as its own bus type rather than an extension of
->> +the SPI subsystem.
->> +
->> +Architecture
->> +============
->> +
->> +* ``struct espi_controller`` - host controller, created with
->> +  espi_controller_alloc() and registered with espi_controller_register().
->> +  It is not itself a device on espi_bus_type.
->> +* ``struct espi_device`` - a target on the bus, matched to a
->> +  ``struct espi_driver`` via its modalias.
->> +* ``struct espi_controller_ops`` - the optional hardware-op table; the
->> +  channel API returns -EOPNOTSUPP for ops a controller does not provide.
->> +
->> +Writing a controller driver
->> +===========================
->> +
->> +A controller driver allocates and registers a controller from its
->> +``probe()`` function::
->> +
->> +    ctrl = espi_controller_alloc(&pdev->dev, sizeof(*priv));
->> +    if (IS_ERR(ctrl))
->> +        return PTR_ERR(ctrl);
->> +
->> +    priv = espi_controller_get_devdata(ctrl);
->> +    ctrl->ops = &my_espi_ops;
->> +    ctrl->max_targets = 1;
->> +
->> +    /* populate ctrl->caps from hardware capability registers */
->> +    ctrl->caps.supported_channels = ESPI_CHANNEL_ALL;
->> +    ctrl->caps.max_freq_mhz       = 33;
->> +    ctrl->caps.io_mode            = ESPI_IO_MODE_SINGLE;
->> +
->> +    ret = espi_controller_register(ctrl);
->> +    if (ret)
->> +        goto err_put;
->> +
->> +After registration the controller calls espi_new_device() for each
->> +target enumerated from firmware (ACPI or device tree)::
->> +
->> +    struct espi_board_info info = {
->> +        .type = "my-ec",
->> +        .cs   = 0,
->> +    };
->> +    edev = espi_new_device(ctrl, &info);
->> +
->> +On removal::
->> +
->> +    espi_remove_device(edev);
->> +    espi_controller_unregister(ctrl);
->> +    espi_controller_put(ctrl);
->> +
->> +Writing a slave driver
->> +======================
->> +
->> +A slave driver declares a device ID table and a ``struct espi_driver``::
->> +
->> +    static const struct espi_device_id my_ec_ids[] = {
->> +        { "my-ec", 0 },
->> +        { }
->> +    };
->> +    MODULE_DEVICE_TABLE(espi, my_ec_ids);
->> +
->> +    static int my_ec_probe(struct espi_device *edev)
->> +    {
->> +        /* register for hardware events */
->> +        nb->notifier_call = my_ec_event;
->> +        espi_register_notifier(edev->ctrl, nb);
->> +        return 0;
->> +    }
->> +
->> +    static void my_ec_remove(struct espi_device *edev)
->> +    {
->> +        espi_unregister_notifier(edev->ctrl, nb);
->> +    }
->> +
->> +    static struct espi_driver my_ec_driver = {
->> +        .driver   = { .name = "my-ec" },
->> +        .id_table = my_ec_ids,
->> +        .probe    = my_ec_probe,
->> +        .remove   = my_ec_remove,
->> +    };
->> +    module_espi_driver(my_ec_driver);
->> +
->> +Channel-independent commands
->> +============================
->> +
->> +espi_get_configuration(), espi_set_configuration(), espi_inband_reset()
->> +and espi_get_status(). GET_STATUS is optional: controllers whose hardware
->> +does not implement the wire command leave .get_status unset.
->> +
->> +Capability negotiation and channel management
->> +=============================================
->> +
->> +At boot the controller driver reads the target's capability registers via
->> +espi_get_configuration(), negotiates link parameters (I/O mode, clock
->> +frequency, CRC) via espi_set_configuration(), then enables each channel
->> +with espi_enable_channel(). espi_channel_is_enabled() may be called at
->> +any time to query the current state. Channels may be disabled individually
->> +with espi_disable_channel(), for example before an in-band reset.
->> +
->> +Channel APIs
->> +============
->> +
->> +Peripheral channel
->> +------------------
->> +
->> +Carries I/O and memory cycles between the host and target endpoints.
->> +
->> +* espi_periph_io_read() / espi_periph_io_write() — 16-bit I/O port
->> +  access; ``width`` is the access size in bytes (1, 2, or 4).
->> +* espi_periph_mem_read() / espi_periph_mem_write() — 32-bit memory
->> +  mapped access.
->> +
->> +Virtual Wire channel
->> +--------------------
->> +
->> +Carries logical signal state (power sequencing, SMI#, SCI#, IRQs) as
->> +indexed wire groups. Each group carries up to four wire values with
->> +individual valid bits.
->> +
->> +* espi_vwire_get() — read a wire group from the target.
->> +* espi_vwire_put() — send a PUT_VIRTUAL_WIRE command to the target.
->> +  Named after the eSPI PUT_VW wire command, not a reference-count
->> +  release.
->> +
->> +Wire changes from the target generate an ``ESPI_EVENT_VWIRE_CHANGED``
->> +event delivered through the notifier chain.
->> +
->> +OOB channel
->> +-----------
->> +
->> +Tunnels SMBus/I2C messages between the host and target out-of-band
->> +processor (BMC, EC). Messages are exchanged as opaque byte buffers with
->> +a tag field for matching requests to responses.
->> +
->> +* espi_oob_send() / espi_oob_recv()
->> +
->> +Incoming OOB messages generate an ``ESPI_EVENT_OOB_RECEIVED`` event.
->> +
->> +Flash Access channel
->> +--------------------
->> +
->> +Provides access to a SPI flash device attached to the target. The target
->> +acts as a proxy for flash read, write, and erase operations.
->> +
->> +* espi_flash_read() / espi_flash_write() / espi_flash_erase()
->> +
->> +Alert mechanism
->> +===============
->> +
->> +When the target has upstream data pending it asserts ``ALERT#``. The
->> +controller's hard-IRQ handler acknowledges the interrupt and defers
->> +processing to a threaded IRQ or workqueue. From that process context the
->> +controller driver calls espi_handle_alert(), which acquires the
->> +controller lock and dispatches to ``ops->handle_alert``. The hardware
->> +callback reads the target's status register (GET_STATUS), identifies the
->> +pending channel, and calls espi_notify_event() to deliver the appropriate
->> +``ESPI_EVENT_*`` to all registered slave driver notifiers::
->> +
->> +    ALERT# asserted by target
->> +          |
->> +          v
->> +    hard-IRQ handler (controller driver)
->> +          |
->> +          v
->> +    threaded IRQ / workqueue
->> +          |
->> +          v
->> +    espi_handle_alert(ctrl)          [espi-core.c]
->> +          |
->> +          v
->> +    ops->handle_alert(ctrl)          [controller driver]
->> +          | reads GET_STATUS, decodes channel
->> +          v
->> +    espi_notify_event(ctrl, &event)  [espi-slave.c]
->> +          |
->> +          v
->> +    slave driver notifier callback
->> +
->> +espi_handle_alert() must always be called from process context; it must
->> +never be called from a hard-IRQ handler.
->> +
->> +Events and concurrency
->> +======================
->> +
->> +Hardware events (Virtual Wire changes, OOB messages, Peripheral channel
->> +completions, channel state changes) are delivered through a per-controller
->> +blocking notifier chain (espi_register_notifier()/espi_notify_event()).
->> +Callbacks run in process context; controllers deliver events from a
->> +threaded IRQ or workqueue, never from hardirq and never while holding the
->> +controller lock.
->> +
->> +API Reference
->> +=============
->> +
->> +.. kernel-doc:: include/linux/espi/espi.h
->> +
-> 
-> Describe each of these:
-> 
-> WARNING: ../include/linux/espi/espi.h:176 struct member 'setup' not described in 'espi_controller_ops'
-> WARNING: ../include/linux/espi/espi.h:176 struct member 'cleanup' not described in 'espi_controller_ops'
-> WARNING: ../include/linux/espi/espi.h:176 struct member 'get_configuration' not described in 'espi_controller_ops'
-> WARNING: ../include/linux/espi/espi.h:176 struct member 'set_configuration' not described in 'espi_controller_ops'
-> WARNING: ../include/linux/espi/espi.h:176 struct member 'inband_reset' not described in 'espi_controller_ops'
-> WARNING: ../include/linux/espi/espi.h:176 struct member 'get_status' not described in 'espi_controller_ops'
-> WARNING: ../include/linux/espi/espi.h:176 struct member 'enable_channel' not described in 'espi_controller_ops'
-> WARNING: ../include/linux/espi/espi.h:176 struct member 'disable_channel' not described in 'espi_controller_ops'
-> WARNING: ../include/linux/espi/espi.h:176 struct member 'periph_io_read' not described in 'espi_controller_ops'
-> WARNING: ../include/linux/espi/espi.h:176 struct member 'periph_io_write' not described in 'espi_controller_ops'
-> WARNING: ../include/linux/espi/espi.h:176 struct member 'periph_mem_read' not described in 'espi_controller_ops'
-> WARNING: ../include/linux/espi/espi.h:176 struct member 'periph_mem_write' not described in 'espi_controller_ops'
-> WARNING: ../include/linux/espi/espi.h:176 struct member 'vwire_get' not described in 'espi_controller_ops'
-> WARNING: ../include/linux/espi/espi.h:176 struct member 'vwire_put' not described in 'espi_controller_ops'
-> WARNING: ../include/linux/espi/espi.h:176 struct member 'oob_send' not described in 'espi_controller_ops'
-> WARNING: ../include/linux/espi/espi.h:176 struct member 'oob_recv' not described in 'espi_controller_ops'
-> WARNING: ../include/linux/espi/espi.h:176 struct member 'flash_read' not described in 'espi_controller_ops'
-> WARNING: ../include/linux/espi/espi.h:176 struct member 'flash_write' not described in 'espi_controller_ops'
-> WARNING: ../include/linux/espi/espi.h:176 struct member 'flash_erase' not described in 'espi_controller_ops'
-> WARNING: ../include/linux/espi/espi.h:176 struct member 'handle_alert' not described in 'espi_controller_ops'
-> 
-> 
-> or don't use "/**" for that struct's comment header.
+When the link parameters are renegotiated via SET_CONFIGURATION, the
+host-side register is updated to match so both ends agree on clock and
+I/O mode. In-Band Reset is handled safely by lowering the bus clock
+before issuing the reset and restoring the host configuration afterwards.
 
-Noted. Will add descriptions for all struct espi_controller_ops members 
-in v2.
+Channel ops (Peripheral, Virtual Wire, OOB, Flash) and alert handling
+are deferred to follow-on patches.
 
-Thanks,
-Krishna
-> 
->> +.. kernel-doc:: drivers/espi/espi-slave.c
->> +   :export:
-> 
-> 
+Co-developed-by: Akshata MukundShetty <akshata.mukundshetty@amd.com>
+Signed-off-by: Akshata MukundShetty <akshata.mukundshetty@amd.com>
+Signed-off-by: Krishnamoorthi M <krishnamoorthi.m@amd.com>
+---
+ drivers/espi/Kconfig    |  19 ++
+ drivers/espi/Makefile   |   1 +
+ drivers/espi/espi-amd.c | 453 ++++++++++++++++++++++++++++++++++++++++
+ drivers/espi/espi-amd.h | 126 +++++++++++
+ 4 files changed, 599 insertions(+)
+ create mode 100644 drivers/espi/espi-amd.c
+ create mode 100644 drivers/espi/espi-amd.h
+
+diff --git a/drivers/espi/Kconfig b/drivers/espi/Kconfig
+index 7e609004967e..a6f104003799 100644
+--- a/drivers/espi/Kconfig
++++ b/drivers/espi/Kconfig
+@@ -20,3 +20,22 @@ menuconfig ESPI
+ 	  chain for delivering hardware events to slave drivers.
+ 
+ 	  If unsure, say N.
++
++if ESPI
++comment "eSPI Controller Drivers"
++
++config ESPI_AMD
++	tristate "AMD eSPI Controller"
++	depends on X86 || COMPILE_TEST
++	help
++	  Enable support for the AMD eSPI controller found on AMD SoCs and
++	  APUs (ACPI HID: AMDI0070). This controller drives the Enhanced
++	  Serial Peripheral Interface link to an eSPI target such as a BMC
++	  and implements the channel-independent configuration commands
++	  (GET_CONFIGURATION, SET_CONFIGURATION and In-Band Reset) used to
++	  bring up and negotiate the link's I/O mode, clock and CRC.
++
++	  To compile this driver as a module, choose M here: the module
++	  will be called espi-amd. If unsure, say N.
++
++endif # ESPI
+diff --git a/drivers/espi/Makefile b/drivers/espi/Makefile
+index 48c2a591132f..2f0a5cae2cb9 100644
+--- a/drivers/espi/Makefile
++++ b/drivers/espi/Makefile
+@@ -1,2 +1,3 @@
+ # SPDX-License-Identifier: GPL-2.0-or-later
+ obj-$(CONFIG_ESPI)		+= espi-core.o espi-slave.o
++obj-$(CONFIG_ESPI_AMD)		+= espi-amd.o
+diff --git a/drivers/espi/espi-amd.c b/drivers/espi/espi-amd.c
+new file mode 100644
+index 000000000000..36e3c5bc937f
+--- /dev/null
++++ b/drivers/espi/espi-amd.c
+@@ -0,0 +1,453 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/*
++ * AMD eSPI Controller Driver
++ * Copyright (c) 2026, Advanced Micro Devices, Inc.
++ */
++
++#include <linux/acpi.h>
++#include <linux/bitfield.h>
++#include <linux/err.h>
++#include <linux/io.h>
++#include <linux/iopoll.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/property.h>
++#include <linux/espi/espi.h>
++
++#include "espi-amd.h"
++
++static void amd_espi_clear_status(struct amd_espi_data *priv)
++{
++	u32 status = readl(priv->base + AMD_ESPI_SLAVE0_INT_STS_REG);
++
++	if (status)
++		writel(status, priv->base + AMD_ESPI_SLAVE0_INT_STS_REG);
++}
++
++static int amd_espi_check_status(struct amd_espi_data *priv, u32 status)
++{
++	if (!(status & AMD_ESPI_DNCMD_INT)) {
++		dev_err(priv->dev, "downstream command did not complete\n");
++		return -EIO;
++	}
++	if (!(status & AMD_ESPI_ERR_INT_MASK))
++		return 0;
++
++	if (status & AMD_ESPI_WAIT_TIMEOUT_INT) {
++		dev_err(priv->dev, "wait-state timer timeout\n");
++		return -ETIMEDOUT;
++	}
++	if (status & AMD_ESPI_NO_RESP_INT) {
++		dev_err(priv->dev, "no response from target\n");
++		return -ENODEV;
++	}
++	if (status & AMD_ESPI_CRC_ERR_INT) {
++		dev_err(priv->dev, "CRC error\n");
++		return -EBADMSG;
++	}
++	dev_err(priv->dev, "command error, status=0x%08x\n", status);
++	return -EIO;
++}
++
++static int amd_espi_send_cmd(struct amd_espi_data *priv,
++			     u32 hdr0, u32 hdr1, u32 hdr2)
++{
++	u32 status;
++	int ret;
++
++	ret = readl_poll_timeout(priv->base + AMD_ESPI_DN_TXHDR_REG0, status,
++				 !(status & AMD_ESPI_TXHDR0_CMD_STATUS),
++				 AMD_ESPI_MSG_DELAY_MIN_US,
++				 AMD_ESPI_RESP_MAX_TIMEOUT_US);
++	if (ret) {
++		dev_err(priv->dev, "controller not ready to accept command\n");
++		return -EBUSY;
++	}
++
++	amd_espi_clear_status(priv);
++
++	writel(hdr1, priv->base + AMD_ESPI_DN_TXHDR_REG1);
++	writel(hdr2, priv->base + AMD_ESPI_DN_TXHDR_REG2);
++	/*
++	 * Data port must be written before triggering to frame the packet.
++	 * Channel-independent commands carry no data payload, so zero suffices.
++	 */
++	writel(0, priv->base + AMD_ESPI_DN_TXDATA_REG0);
++
++	dev_dbg(priv->dev,
++		"TX before trigger: hdr0=0x%08x hdr1=0x%08x hdr2=0x%08x data=0x%08x\n",
++		hdr0, hdr1, hdr2, 0);
++
++	writel(hdr0, priv->base + AMD_ESPI_DN_TXHDR_REG0);
++
++	ret = readl_poll_timeout(priv->base + AMD_ESPI_DN_TXHDR_REG0, status,
++				 !(status & AMD_ESPI_TXHDR0_CMD_STATUS),
++				 AMD_ESPI_MSG_DELAY_MIN_US,
++				 AMD_ESPI_RESP_MAX_TIMEOUT_US);
++	if (ret) {
++		dev_err(priv->dev, "timed out sending command\n");
++		return -ETIMEDOUT;
++	}
++
++	ret = readl_poll_timeout(priv->base + AMD_ESPI_SLAVE0_INT_STS_REG,
++				 status,
++				 status & (AMD_ESPI_DNCMD_INT | AMD_ESPI_ERR_INT_MASK),
++				 AMD_ESPI_MSG_DELAY_MIN_US,
++				 AMD_ESPI_RESP_MAX_TIMEOUT_US);
++	if (ret) {
++		dev_err(priv->dev, "timed out waiting for completion\n");
++		return -ETIMEDOUT;
++	}
++
++	ret = amd_espi_check_status(priv, status);
++	writel(AMD_ESPI_DNCMD_INT, priv->base + AMD_ESPI_SLAVE0_INT_STS_REG);
++	return ret;
++}
++
++static u32 amd_espi_cfg_hdr0(enum espi_cmd_type type, u32 addr)
++{
++	return FIELD_PREP(AMD_ESPI_TXHDR0_CMD_TYPE, type) |
++	       AMD_ESPI_TXHDR0_CMD_STATUS |
++	       FIELD_PREP(AMD_ESPI_TXHDR0_HDATA0, (addr >> 8) & 0xff) |
++	       FIELD_PREP(AMD_ESPI_TXHDR0_HDATA1, addr & 0xff);
++}
++
++static int amd_espi_get_configuration(struct espi_controller *ctrl,
++				      u32 slave_reg_addr, u32 *config)
++{
++	struct amd_espi_data *priv = espi_controller_get_devdata(ctrl);
++	u32 hdr0 = amd_espi_cfg_hdr0(ESPI_CMD_GET_CONFIGURATION, slave_reg_addr);
++	int ret;
++
++	ret = amd_espi_send_cmd(priv, hdr0, 0, 0);
++	if (ret)
++		return ret;
++
++	*config = readl(priv->base + AMD_ESPI_DN_TXHDR_REG1);
++	dev_dbg(priv->dev, "GET_CONFIGURATION addr=0x%04x config=0x%08x\n",
++		slave_reg_addr, *config);
++	return 0;
++}
++
++/* Translate: target and host use different bit positions and clock encoding. */
++static void amd_espi_sync_config(struct amd_espi_data *priv, u32 slave_cfg)
++{
++	u32 io_mode = FIELD_GET(ESPI_GENCFG_IO_MODE, slave_cfg);
++	u32 host_freq;
++	u32 reg;
++
++	switch (FIELD_GET(ESPI_GENCFG_OP_FREQ, slave_cfg)) {
++	case ESPI_GENCFG_FREQ_66MHZ:
++		host_freq = AMD_ESPI_SLAVE0_CLK_FREQ_66MHZ;
++		break;
++	case ESPI_GENCFG_FREQ_33MHZ:
++		host_freq = AMD_ESPI_SLAVE0_CLK_FREQ_33MHZ;
++		break;
++	default:
++		host_freq = AMD_ESPI_SLAVE0_CLK_FREQ_16MHZ;
++		break;
++	}
++
++	reg = readl(priv->base + AMD_ESPI_SLAVE0_CONFIG_REG);
++	reg &= ~(AMD_ESPI_SLAVE0_CFG_CLK_FREQ | AMD_ESPI_SLAVE0_CFG_IO_MODE |
++		 AMD_ESPI_SLAVE0_CFG_ALERT_MODE | AMD_ESPI_SLAVE0_CFG_CRC_EN);
++	reg |= FIELD_PREP(AMD_ESPI_SLAVE0_CFG_CLK_FREQ, host_freq);
++	reg |= FIELD_PREP(AMD_ESPI_SLAVE0_CFG_IO_MODE, io_mode);
++	if (slave_cfg & ESPI_GENCFG_ALERT_MODE)
++		reg |= AMD_ESPI_SLAVE0_CFG_ALERT_MODE;
++	if (slave_cfg & ESPI_GENCFG_CRC_EN)
++		reg |= AMD_ESPI_SLAVE0_CFG_CRC_EN;
++	writel(reg, priv->base + AMD_ESPI_SLAVE0_CONFIG_REG);
++
++	dev_dbg(priv->dev,
++		"host SLAVE0_CONFIG updated to 0x%08x (io=%u host_freq=%u)\n",
++		readl(priv->base + AMD_ESPI_SLAVE0_CONFIG_REG), io_mode, host_freq);
++}
++
++static int amd_espi_set_configuration(struct espi_controller *ctrl,
++				      u32 slave_reg_addr, u32 config)
++{
++	struct amd_espi_data *priv = espi_controller_get_devdata(ctrl);
++	u32 hdr0 = amd_espi_cfg_hdr0(ESPI_CMD_SET_CONFIGURATION, slave_reg_addr);
++	int ret;
++
++	dev_dbg(priv->dev, "SET_CONFIGURATION addr=0x%04x config=0x%08x\n",
++		slave_reg_addr, config);
++	ret = amd_espi_send_cmd(priv, hdr0, config, 0);
++	if (ret)
++		return ret;
++
++	/* Sync host link parameters after a General Configuration change. */
++	if (slave_reg_addr == ESPI_SLAVE_REG_GENERAL_CFG)
++		amd_espi_sync_config(priv, config);
++
++	return 0;
++}
++
++/* Lower clock to 16.7 MHz for In-Band Reset; preserve I/O mode. */
++static void amd_espi_lower_clk(struct amd_espi_data *priv)
++{
++	u32 reg = readl(priv->base + AMD_ESPI_SLAVE0_CONFIG_REG);
++
++	reg &= ~AMD_ESPI_SLAVE0_CFG_CLK_FREQ;
++	reg |= FIELD_PREP(AMD_ESPI_SLAVE0_CFG_CLK_FREQ,
++			  AMD_ESPI_SLAVE0_CLK_FREQ_16MHZ);
++	writel(reg, priv->base + AMD_ESPI_SLAVE0_CONFIG_REG);
++}
++
++static const char *amd_espi_io_mode_str(u32 io_mode)
++{
++	switch (io_mode) {
++	case AMD_ESPI_SLAVE0_IO_MODE_SINGLE:
++		return "single";
++	case AMD_ESPI_SLAVE0_IO_MODE_DUAL:
++		return "dual";
++	case AMD_ESPI_SLAVE0_IO_MODE_QUAD:
++		return "quad";
++	default:
++		return "reserved";
++	}
++}
++
++static const char *amd_espi_clk_freq_str(u32 clk_freq)
++{
++	switch (clk_freq) {
++	case AMD_ESPI_SLAVE0_CLK_FREQ_16MHZ:
++		return "16 MHz";
++	case AMD_ESPI_SLAVE0_CLK_FREQ_33MHZ:
++		return "33 MHz";
++	case AMD_ESPI_SLAVE0_CLK_FREQ_66MHZ:
++		return "66 MHz";
++	default:
++		return "reserved";
++	}
++}
++
++static void amd_espi_log_link(struct amd_espi_data *priv, const char *when)
++{
++	u32 reg = readl(priv->base + AMD_ESPI_SLAVE0_CONFIG_REG);
++
++	dev_dbg(priv->dev,
++		"%s: I/O mode=%s frequency=%s (SLAVE0_CONFIG=0x%08x)\n", when,
++		amd_espi_io_mode_str(FIELD_GET(AMD_ESPI_SLAVE0_CFG_IO_MODE, reg)),
++		amd_espi_clk_freq_str(FIELD_GET(AMD_ESPI_SLAVE0_CFG_CLK_FREQ, reg)),
++		reg);
++}
++
++static int amd_espi_inband_reset(struct espi_controller *ctrl)
++{
++	struct amd_espi_data *priv = espi_controller_get_devdata(ctrl);
++	u32 hdr0 = FIELD_PREP(AMD_ESPI_TXHDR0_CMD_TYPE, ESPI_CMD_IN_BAND_RESET) |
++		   AMD_ESPI_TXHDR0_CMD_STATUS;
++	u32 cfg_before;
++	u32 reg;
++	int ret;
++
++	cfg_before = readl(priv->base + AMD_ESPI_SLAVE0_CONFIG_REG);
++	dev_dbg(priv->dev, "IN_BAND_RESET: SLAVE0_CONFIG before = 0x%08x\n",
++		cfg_before);
++
++	amd_espi_lower_clk(priv);
++
++	ret = amd_espi_send_cmd(priv, hdr0, 0, 0);
++	if (ret)
++		return ret;
++
++	/*
++	 * Restore CRC and Alert-mode bits after reset: the controller clears
++	 * SLAVE0_CONFIG but the target retains these across an In-Band Reset.
++	 */
++	reg = readl(priv->base + AMD_ESPI_SLAVE0_CONFIG_REG);
++	if (ctrl->caps.alert_mode)
++		reg |= AMD_ESPI_SLAVE0_CFG_ALERT_MODE;
++	if (ctrl->caps.crc_supported)
++		reg |= AMD_ESPI_SLAVE0_CFG_CRC_EN;
++	writel(reg, priv->base + AMD_ESPI_SLAVE0_CONFIG_REG);
++
++	dev_dbg(priv->dev,
++		"IN_BAND_RESET: SLAVE0_CONFIG after = 0x%08x (was 0x%08x)\n",
++		readl(priv->base + AMD_ESPI_SLAVE0_CONFIG_REG), cfg_before);
++
++	amd_espi_log_link(priv, "after in-band reset");
++	return 0;
++}
++
++static int amd_espi_setup(struct espi_controller *ctrl)
++{
++	struct amd_espi_data *priv = espi_controller_get_devdata(ctrl);
++	u32 reg;
++
++	amd_espi_log_link(priv, "firmware default");
++
++	writel(AMD_ESPI_INTR_MASK, priv->base + AMD_ESPI_SLAVE0_INT_STS_REG);
++
++	/* Controller-wide bring-up: must run before the first downstream command. */
++	reg = readl(priv->base + AMD_ESPI_SLAVE0_RX_VW_REG);
++	writel(reg | AMD_ESPI_SLAVE0_RX_VW_INIT_MASK,
++	       priv->base + AMD_ESPI_SLAVE0_RX_VW_REG);
++
++	reg = readl(priv->base + AMD_ESPI_GLOBAL_CNTRL_REG0);
++	reg |= AMD_ESPI_GLOBAL0_WDG_EN | AMD_ESPI_GLOBAL0_WAIT_CHK_EN;
++	reg &= ~AMD_ESPI_GLOBAL0_WAIT_STATE;
++	reg |= FIELD_PREP(AMD_ESPI_GLOBAL0_WAIT_STATE, AMD_ESPI_WAIT_STATE_CNT);
++	writel(reg, priv->base + AMD_ESPI_GLOBAL_CNTRL_REG0);
++
++	reg = readl(priv->base + AMD_ESPI_SLAVE0_INT_EN_REG);
++	writel(reg | AMD_ESPI_ALL_ERR_INT | AMD_ESPI_REG_CMD_INT,
++	       priv->base + AMD_ESPI_SLAVE0_INT_EN_REG);
++
++	reg = readl(priv->base + AMD_ESPI_GLOBAL_CNTRL_REG1);
++	reg &= ~(AMD_ESPI_ERR_INT_MAP | AMD_ESPI_RGCMD_INT_MAP);
++	reg |= FIELD_PREP(AMD_ESPI_ERR_INT_MAP, AMD_ESPI_INT_MAP_SMI);
++	reg |= FIELD_PREP(AMD_ESPI_RGCMD_INT_MAP, AMD_ESPI_INT_MAP_SMI);
++	reg |= AMD_ESPI_BUS_MASTER_EN | AMD_ESPI_VW_REQ_EN;
++	writel(reg, priv->base + AMD_ESPI_GLOBAL_CNTRL_REG1);
++
++	/*
++	 * Unmask the VW IRQ index window. Do not touch SLAVE0_CONFIG clock or
++	 * I/O mode: preserve the operating point firmware already negotiated.
++	 */
++	reg = readl(priv->base + AMD_ESPI_SLAVE0_VW_MISC_CNTRL_REG);
++	reg &= ~GENMASK(31, 8);
++	writel(reg | GENMASK(3, 0),
++	       priv->base + AMD_ESPI_SLAVE0_VW_MISC_CNTRL_REG);
++
++	writel(AMD_ESPI_INTR_MASK, priv->base + AMD_ESPI_SLAVE0_INT_STS_REG);
++
++	amd_espi_log_link(priv, "after probe setup");
++	return 0;
++}
++
++/* .get_status omitted: AMD HW has no GET_STATUS wire command. */
++static const struct espi_controller_ops amd_espi_ops = {
++	.setup			= amd_espi_setup,
++	.get_configuration	= amd_espi_get_configuration,
++	.set_configuration	= amd_espi_set_configuration,
++	.inband_reset		= amd_espi_inband_reset,
++};
++
++static u32 amd_espi_read_caps(struct amd_espi_data *priv,
++			      struct espi_capabilities *caps)
++{
++	u32 cap = readl(priv->base + AMD_ESPI_MASTER_CAP_REG);
++
++	dev_dbg(priv->dev, "MASTER_CAP=0x%08x\n", cap);
++
++	caps->supported_channels = 0;
++	if (cap & AMD_ESPI_CAP_PR_SUPPORT)
++		caps->supported_channels |= ESPI_CHANNEL_PERIPH_SUPP;
++	if (cap & AMD_ESPI_CAP_VW_SUPPORT)
++		caps->supported_channels |= ESPI_CHANNEL_VWIRE_SUPP;
++	if (cap & AMD_ESPI_CAP_OOB_SUPPORT)
++		caps->supported_channels |= ESPI_CHANNEL_OOB_SUPP;
++	if (cap & AMD_ESPI_CAP_FLASH_SUPPORT)
++		caps->supported_channels |= ESPI_CHANNEL_FLASH_SUPP;
++
++	switch (FIELD_GET(AMD_ESPI_CAP_CLK_FREQ, cap)) {
++	case 0x3:
++		caps->max_freq_mhz = ESPI_FREQ_66MHZ;
++		break;
++	case 0x1:
++		caps->max_freq_mhz = ESPI_FREQ_33MHZ;
++		break;
++	default:
++		caps->max_freq_mhz = ESPI_FREQ_16MHZ;
++		break;
++	}
++	switch (FIELD_GET(AMD_ESPI_CAP_IO_MODE, cap)) {
++	case 0x2:
++		caps->io_mode = ESPI_IO_MODE_QUAD;
++		break;
++	case 0x1:
++		caps->io_mode = ESPI_IO_MODE_DUAL;
++		break;
++	default:
++		caps->io_mode = ESPI_IO_MODE_SINGLE;
++		break;
++	}
++
++	caps->alert_mode = !!(cap & AMD_ESPI_CAP_ALERT_MODE);
++	caps->crc_supported = !!(cap & AMD_ESPI_CAP_CRC_CHECK);
++	caps->periph_max_payload = FIELD_GET(AMD_ESPI_CAP_PR_MAX_SIZE, cap);
++	caps->vwire_max_count = FIELD_GET(AMD_ESPI_CAP_VW_MAX_SIZE, cap);
++	caps->oob_max_payload = FIELD_GET(AMD_ESPI_CAP_OOB_MAX_SIZE, cap);
++	caps->flash_max_payload = FIELD_GET(AMD_ESPI_CAP_FLASH_MAX_SIZE, cap);
++
++	return cap;
++}
++
++static u8 amd_espi_num_targets(u32 cap)
++{
++	/* CAP_SLAVE_NUM is 0-based: 0 means 1 target, 1 means 2, etc. */
++	return (u8)(FIELD_GET(AMD_ESPI_CAP_SLAVE_NUM, cap) + 1);
++}
++
++static int amd_espi_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct espi_controller *ctrl;
++	struct amd_espi_data *priv;
++	int ret;
++	u32 cap;
++
++	ctrl = espi_controller_alloc(dev, sizeof(*priv));
++	if (IS_ERR(ctrl))
++		return dev_err_probe(dev, PTR_ERR(ctrl),
++				     "failed to allocate eSPI controller\n");
++
++	priv = espi_controller_get_devdata(ctrl);
++	priv->dev = dev;
++	priv->version = (enum amd_espi_versions)(uintptr_t)
++			device_get_match_data(dev);
++
++	priv->base = devm_platform_ioremap_resource(pdev, 0);
++	if (IS_ERR(priv->base)) {
++		ret = dev_err_probe(dev, PTR_ERR(priv->base),
++				    "failed to map registers\n");
++		goto err_put;
++	}
++
++	cap = amd_espi_read_caps(priv, &ctrl->caps);
++	ctrl->ops = &amd_espi_ops;
++	ctrl->max_targets = amd_espi_num_targets(cap);
++
++	ret = espi_controller_register(ctrl);
++	if (ret) {
++		ret = dev_err_probe(dev, ret,
++				    "failed to register eSPI controller\n");
++		goto err_put;
++	}
++
++	platform_set_drvdata(pdev, ctrl);
++	return 0;
++
++err_put:
++	espi_controller_put(ctrl);
++	return ret;
++}
++
++static void amd_espi_remove(struct platform_device *pdev)
++{
++	espi_controller_unregister(platform_get_drvdata(pdev));
++}
++
++static const struct acpi_device_id amd_espi_acpi_match[] = {
++	{ "AMDI0070", AMD_ESPI_V1 },
++	{ }
++};
++MODULE_DEVICE_TABLE(acpi, amd_espi_acpi_match);
++
++static struct platform_driver amd_espi_driver = {
++	.driver = {
++		.name			= "amd-espi",
++		.acpi_match_table	= amd_espi_acpi_match,
++	},
++	.probe	= amd_espi_probe,
++	.remove	= amd_espi_remove,
++};
++module_platform_driver(amd_espi_driver);
++
++MODULE_AUTHOR("Krishnamoorthi M <krishnamoorthi.m@amd.com>");
++MODULE_AUTHOR("Akshata MukundShetty <akshata.mukundshetty@amd.com>");
++MODULE_DESCRIPTION("AMD eSPI Controller Driver");
++MODULE_LICENSE("GPL");
+diff --git a/drivers/espi/espi-amd.h b/drivers/espi/espi-amd.h
+new file mode 100644
+index 000000000000..3c514e005aa2
+--- /dev/null
++++ b/drivers/espi/espi-amd.h
+@@ -0,0 +1,126 @@
++/* SPDX-License-Identifier: GPL-2.0-or-later */
++/*
++ * AMD eSPI Controller Driver - internal definitions
++ * Copyright (c) 2026, Advanced Micro Devices, Inc.
++ */
++#ifndef _ESPI_AMD_H_
++#define _ESPI_AMD_H_
++
++#include <linux/bits.h>
++#include <linux/types.h>
++
++#define AMD_ESPI_DN_TXHDR_REG0			0x00
++#define AMD_ESPI_DN_TXHDR_REG1			0x04
++#define AMD_ESPI_DN_TXHDR_REG2			0x08
++#define AMD_ESPI_DN_TXDATA_REG0			0x0C
++#define AMD_ESPI_MASTER_CAP_REG			0x2C
++#define AMD_ESPI_GLOBAL_CNTRL_REG0		0x30
++#define AMD_ESPI_GLOBAL_CNTRL_REG1		0x34
++#define AMD_ESPI_SLAVE0_CONFIG_REG		0x68
++#define AMD_ESPI_SLAVE0_INT_EN_REG		0x6C
++#define AMD_ESPI_SLAVE0_INT_STS_REG		0x70
++#define AMD_ESPI_SLAVE0_RX_VW_REG		0x9C
++#define AMD_ESPI_SLAVE0_VW_MISC_CNTRL_REG	0xA8
++
++/*
++ * SLAVE0_CONFIG (0x68) host-side link fields. The negotiated bus clock and
++ * I/O mode use AMD's own encoding (clock 000=16.6/001=33/010=66 MHz).
++ */
++#define AMD_ESPI_SLAVE0_CFG_CLK_FREQ		GENMASK(27, 25)
++#define AMD_ESPI_SLAVE0_CFG_IO_MODE		GENMASK(29, 28)
++#define AMD_ESPI_SLAVE0_CFG_ALERT_MODE		BIT(30)
++#define AMD_ESPI_SLAVE0_CFG_CRC_EN		BIT(31)
++#define AMD_ESPI_SLAVE0_CLK_FREQ_16MHZ		0x0
++#define AMD_ESPI_SLAVE0_CLK_FREQ_33MHZ		0x1
++#define AMD_ESPI_SLAVE0_CLK_FREQ_66MHZ		0x2
++#define AMD_ESPI_SLAVE0_IO_MODE_SINGLE		0x0
++#define AMD_ESPI_SLAVE0_IO_MODE_DUAL		0x1
++#define AMD_ESPI_SLAVE0_IO_MODE_QUAD		0x2
++
++/* GLOBAL_CNTRL_REG0 (0x30) */
++#define AMD_ESPI_GLOBAL0_WDG_EN			BIT(0)
++#define AMD_ESPI_GLOBAL0_WAIT_CHK_EN		BIT(1)
++#define AMD_ESPI_GLOBAL0_WAIT_STATE		GENMASK(29, 23)
++#define AMD_ESPI_WAIT_STATE_CNT			0x3f
++
++/* GLOBAL_CNTRL_REG1 (0x34) */
++#define AMD_ESPI_ERR_INT_MAP			GENMASK(12, 8)
++#define AMD_ESPI_RGCMD_INT_MAP			GENMASK(17, 13)
++#define AMD_ESPI_INT_MAP_SMI			0x1f
++#define AMD_ESPI_BUS_MASTER_EN			BIT(1)
++#define AMD_ESPI_VW_REQ_EN			BIT(21)
++
++/* SLAVE0_INT_EN (0x6C): error [19:0] and register-command [31:24] enables */
++#define AMD_ESPI_ALL_ERR_INT			GENMASK(19, 0)
++#define AMD_ESPI_REG_CMD_INT			GENMASK(31, 24)
++
++/* SLAVE0_RX_VW_REG (0x9C): clears stale VW status [31:8], preserves IRQ [7:0]. */
++#define AMD_ESPI_SLAVE0_RX_VW_INIT_MASK		0xffff6f00
++
++/*
++ * DN_TXHDR_REG0 fields. The 16-bit target register address occupies
++ * [23:8]; the eSPI wire order places the address MSB first, so the high
++ * byte goes in HDATA0 [15:8] and the low byte in HDATA1 [23:16].
++ */
++#define AMD_ESPI_TXHDR0_CMD_TYPE		GENMASK(2, 0)
++#define AMD_ESPI_TXHDR0_CMD_STATUS		BIT(3)
++#define AMD_ESPI_TXHDR0_HDATA0			GENMASK(15, 8)
++#define AMD_ESPI_TXHDR0_HDATA1			GENMASK(23, 16)
++
++/* SLAVE0_INT_STS (0x70) status and interrupt bits */
++#define AMD_ESPI_BUS_ERR_INT			BIT(0)
++#define AMD_ESPI_WAIT_TIMEOUT_INT		BIT(1)
++#define AMD_ESPI_CRC_ERR_INT			BIT(2)
++#define AMD_ESPI_NO_RESP_INT			BIT(4)
++#define AMD_ESPI_FATAL_ERR_INT			BIT(5)
++#define AMD_ESPI_NON_FATAL_ERR_INT		BIT(6)
++#define AMD_ESPI_INVALID_RESP_CODE_INT		BIT(7)
++#define AMD_ESPI_INVALID_CYCLE_TYPE_INT		BIT(8)
++#define AMD_ESPI_UNSUCCESS_CPL_RECV_INT		BIT(9)
++#define AMD_ESPI_ILLEGAL_RESP_TAG_INT		BIT(10)
++#define AMD_ESPI_ILLEGAL_RESP_LEN_INT		BIT(11)
++#define AMD_ESPI_RX_OOB_OVERFLOW_INT		BIT(12)
++#define AMD_ESPI_RX_PC_MSG_OVERFLOW_INT		BIT(13)
++#define AMD_ESPI_RX_FLASH_MSG_OVERFLOW_INT	BIT(14)
++#define AMD_ESPI_PROTOCOL_ERR_INT		BIT(15)
++#define AMD_ESPI_DNCMD_INT			BIT(28)
++#define AMD_ESPI_INTR_MASK			GENMASK(31, 0)
++
++#define AMD_ESPI_ERR_INT_MASK	\
++	(AMD_ESPI_BUS_ERR_INT | AMD_ESPI_WAIT_TIMEOUT_INT | \
++	 AMD_ESPI_CRC_ERR_INT | AMD_ESPI_NO_RESP_INT | \
++	 AMD_ESPI_FATAL_ERR_INT | AMD_ESPI_NON_FATAL_ERR_INT | \
++	 AMD_ESPI_INVALID_RESP_CODE_INT | AMD_ESPI_INVALID_CYCLE_TYPE_INT | \
++	 AMD_ESPI_UNSUCCESS_CPL_RECV_INT | AMD_ESPI_ILLEGAL_RESP_TAG_INT | \
++	 AMD_ESPI_ILLEGAL_RESP_LEN_INT | AMD_ESPI_RX_OOB_OVERFLOW_INT | \
++	 AMD_ESPI_RX_PC_MSG_OVERFLOW_INT | AMD_ESPI_RX_FLASH_MSG_OVERFLOW_INT | \
++	 AMD_ESPI_PROTOCOL_ERR_INT)
++
++#define AMD_ESPI_MSG_DELAY_MIN_US		50
++#define AMD_ESPI_RESP_MAX_TIMEOUT_US		200000	/* 200 ms */
++
++#define AMD_ESPI_CAP_FLASH_SUPPORT		BIT(0)
++#define AMD_ESPI_CAP_OOB_SUPPORT		BIT(1)
++#define AMD_ESPI_CAP_VW_SUPPORT			BIT(2)
++#define AMD_ESPI_CAP_PR_SUPPORT			BIT(3)
++#define AMD_ESPI_CAP_FLASH_MAX_SIZE		GENMASK(9, 7)
++#define AMD_ESPI_CAP_OOB_MAX_SIZE		GENMASK(12, 10)
++#define AMD_ESPI_CAP_VW_MAX_SIZE		GENMASK(18, 13)
++#define AMD_ESPI_CAP_PR_MAX_SIZE		GENMASK(21, 19)
++#define AMD_ESPI_CAP_SLAVE_NUM			GENMASK(24, 22)
++#define AMD_ESPI_CAP_CLK_FREQ			GENMASK(27, 25)
++#define AMD_ESPI_CAP_IO_MODE			GENMASK(29, 28)
++#define AMD_ESPI_CAP_ALERT_MODE			BIT(30)
++#define AMD_ESPI_CAP_CRC_CHECK			BIT(31)
++
++enum amd_espi_versions {
++	AMD_ESPI_V1 = 1,
++};
++
++struct amd_espi_data {
++	void __iomem *base;
++	struct device *dev;
++	enum amd_espi_versions version;
++};
++
++#endif /* _ESPI_AMD_H_ */
+-- 
+2.34.1
 
 
