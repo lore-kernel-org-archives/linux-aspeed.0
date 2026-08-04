@@ -1,53 +1,53 @@
-Return-Path: <linux-aspeed+bounces-4601-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4602-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 825E5C55822
-	for <linux-aspeed@archiver.kernel.org>; Tue,  4 Aug 2026 05:36:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7F6FC55172
+	for <linux-aspeed@archiver.kernel.org>; Tue,  4 Aug 2026 06:16:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hDj2H66Gzz2y1Y;
-	Tue, 04 Aug 2026 15:36:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hDjwY0r91z2yMl;
+	Tue, 04 Aug 2026 16:16:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785821767;
-	cv=none; b=ljaByJDzq/QpevpGX6PhJvQhw8nXmErCQ3Qkc849R0U0mzs3DpIWg76HWVNpalO3cn24MNRb+WWOPmPretdI1pqAHzw5HUT7Y/k4pfECEXS6Vz8JDITGwESLORI1NdWxMhX9BtU9XbkEDdX22bYwF2APWo1qErt7auk5hs18nO22zWm+kJ/F5JJe0MG/v0EKIiCDWNIx1w6J2RqrCp9XoM1C/b7hqIn65vH9hH8XyrqaDa398gbK32oPSLt4BhaBQ49y8QEU4EKPsyJXsr4wYdiXIWpOABoqA69X+fyzzOO3wcZEKlUB5fevmOJN6X1goag7+YroJvHJY3k0hmj/HA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785824173;
+	cv=none; b=Mak/7JHnQGeaFZlM2ShQWYBSkneHeorp/GWE/Q8BVEQ3dohCbLnYR0Q9b38XbvjaSRPyfrzk96KRKHlmYfI/QRw95t6AxfvjHCLXRdZLCVoUSFV9d5ejJ2Kl2tjEp06+/R8i0QuLKS56gQNyNOMEpDR+oYRy2nSzOIa1Wmz87vOgv0Lmi7gvx0azPj1iNZsyi442HIV8jEi1OzuRk5CF8Rp/T4f7X/+P9rZx4uf7acIY97/qoEqEq9IUqjCxNX+4jshWbOaxzN6sDCzgSdtxMDlb/7kq1sfaHN68TTnKEpjAgaUWNYNLjP4Gg7q1oUm5Shf650pidDz9sbWCvcN9lg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785821767; c=relaxed/relaxed;
-	bh=HUzmDv8dlY9hJpk3TBvoU3edR9tSDvSdfT2jQQqZ4hc=;
-	h=Message-ID:Subject:From:To:Cc:Date:Content-Type:MIME-Version; b=gx3SRXYDpvetOO4zrlL43i054fYf692mQD38st/eb2RC/2CtIABz1IEno//5Ephpx/2O7hbYUTipPvkZvj+TxYzF+FZL9rR1dzc4KF0etEBJcCsWbOKExygkOLyhsjJ024eeVjwRwopG2C0qtl7poUGgVM6r7uPVN1s1P00LXx1cdlcuFuWMvuaQQ7AWKHUQXpt06T1rasH6J20ZtVEWQWp9BUPSdvChVGBWgdB+UKDj/m9vu2ysbY4vhRoQuDRyj5gIBhjqrxh5tK52YFj8yCDie4boKmFrLufJsEJSx40TQvoM+LUYHoyXQnsZeA0ilc0PO2yAAoystoKDKsdm9w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=m1MRgEct; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	t=1785824173; c=relaxed/relaxed;
+	bh=cGFVWEk/L87zAQqYZdNMd8YoKosd5LHXs3b+GVvAT0k=;
+	h=Message-ID:Subject:From:To:Cc:Date:Content-Type:MIME-Version; b=PSUapbAWBZe1YzmSUCrfO0klK7QHjNCnQJwWMmmvMES5nwgpdCl/s/MMLU9Csk7n+W5WIRkc77ViU1qnf3wbHfFnHIEl+RjxXnB/53JDQb8ci4h0S79GhIrd9qD8JOLXJ6IYtFruLH48CwAJejfKtQBM4UAvdz9f//uHX5HOy0VEXXPjJ/1oDqSGRzL59eiGU3az1RbffuAEdXP0MCG24QncNHmrXKwXzGY9/d0UbRzV25+A+8JS1KHqY3Kn5elmQlsxD1mhKWo3UTOHp0yGAXNZJX/+gRvCdDerx2ryCpZikLgfj9NnjOsO3chBBvjL43IQNgbrgV2Hiy2xG1euuQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=eusIPTTu; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=m1MRgEct;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=eusIPTTu;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDj2H0gxdz2xpn
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 04 Aug 2026 15:36:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hDjwX0cTsz2y1Y
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 04 Aug 2026 16:16:11 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1785821766;
-	bh=HUzmDv8dlY9hJpk3TBvoU3edR9tSDvSdfT2jQQqZ4hc=;
+	d=codeconstruct.com.au; s=2022a; t=1785824170;
+	bh=cGFVWEk/L87zAQqYZdNMd8YoKosd5LHXs3b+GVvAT0k=;
 	h=Subject:From:To:Cc:Date;
-	b=m1MRgEctHCoSjVbYDOJlLmw7m2Jk/8V65lDiaGymSNOhsntYXlV0556jD84kH0vI+
-	 nDobRlI3Z+59Fxuqs+HeJJnm6HeUxMxFBV8nPzkkQsx/gW08QEPlIWatXlQD8DYQy+
-	 7/vRK2OzKVISRSUF9DUdJxVGI9pXHqDjofP4soFT7UF3Y5hOCTBRyj6l/tFxn2DiFN
-	 /BYhfryqxSvgVzIyBct1XXxWe24fTK097U4w0kU2sAZKIgA2h6AhcbbCz4JxBJvwAD
-	 29mDGdK4zB6mGIWp5BZQ3pXtQKadJT2f5Ry7/BIaXFqQZLrSjybKpZtMR6zQN8kgQQ
-	 oZKZYlCVhnUeA==
-Received: from [192.168.68.117] (unknown [180.150.113.112])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 3FDF8655A9;
-	Tue,  4 Aug 2026 13:36:06 +0800 (AWST)
-Message-ID: <a0dbb1b1642b5d30f01adb5f48c51e426414dc90.camel@codeconstruct.com.au>
-Subject: [GIT PULL] aspeed: First batch of ARM devicetree changes for 7.3
+	b=eusIPTTuYbmRVVvOhrqMqqRgdx7nr8X+xGcc+Lb5c03llC7uSJ1VRV1Gq+zjBt4a9
+	 jnII96cWyimPkHJKRjtcTIoEUUaLjsQggOKNyPcWA4/2VLqGLhZdF528vIM/SqHK4k
+	 fFgj0XJvxwZn10h0uA3QwNZdIS4SISqwHQHKMjfEZqqjYAoPns3GfrTwNXLDB2zvkY
+	 8bGTVTtO+oZk+A4+63X0XPkvtdFl0zn8Uox8A/Y998qL6LFrTpaTWv4mpXR7Wyzoiy
+	 nHqYHX4o5fooh9nd36GSs4tVEHlvrej5DveWgF14izzCNlu/7X+QCI8n3V56+8BcGN
+	 EcHnt2wayulCQ==
+Received: from [IPv6:2405:6e00:242d:870e:1a3e:8259:e4fe:6a28] (unknown [120.20.146.186])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id C43ED655A9;
+	Tue,  4 Aug 2026 14:16:08 +0800 (AWST)
+Message-ID: <7028fd175c1cab44bc7696b5cb92282180e1f0dc.camel@codeconstruct.com.au>
+Subject: [GIT PULL] aspeed: First batch of driver changes for 7.3
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
 To: soc <soc@lists.linux.dev>
 Cc: linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
 	linux-kernel@vger.kernel.org, Joel Stanley <joel@jms.id.au>
-Date: Tue, 04 Aug 2026 15:06:05 +0930
+Date: Tue, 04 Aug 2026 15:46:05 +0930
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.56.2-0+deb13u1 
@@ -74,36 +74,24 @@ The following changes since commit dc59e4fea9d83f03bad6bddf3fa2e52491777482=
 
 are available in the Git repository at:
 
-  https://git.kernel.org/pub/scm/linux/kernel/git/bmc/linux.git aspeed-arm-=
-7.3-devicetree-0
+  https://git.kernel.org/pub/scm/linux/kernel/git/bmc/linux.git tags/aspeed=
+-7.3-drivers-0
 
-for you to fetch changes up to 749c34389679f8d56cb200a69b62f9a64670034f:
+for you to fetch changes up to 244b7f86d60544c99f6e3774fbf0e1aafd3a30f4:
 
-  ARM: dts: aspeed: Correct indentation (2026-07-23 00:52:02 +0930)
-
-----------------------------------------------------------------
-aspeed: First batch of ARM devicetree changes for 7.3
-
-No significant changes this time around. Instead, several cleanups
-for Meta's San Miguel platform, along with some changes enabling
-dt-check-style.
+  soc: aspeed: add missing MODULE_DEVICE_TABLE() (2026-08-04 13:46:20 +0930=
+)
 
 ----------------------------------------------------------------
-Krzysztof Kozlowski (1):
-      ARM: dts: aspeed: Correct indentation
+aspeed: First batch of driver changes for 7.3
 
-Mike Hsieh (1):
-      ARM: dts: aspeed: sanmiguel: fix PDB HSC shunt resistor
+Just the one patch adding MODULE_DEVICE_TABLE() where it was previously mis=
+sing.
 
-Potin Lai (2):
-      ARM: dts: aspeed: sanmiguel: Fix FIO IOEXP interrupt pin
-      ARM: dts: aspeed: sanmiguel: Fix PWRGD_RMC_N active-low hog configura=
-tion
+----------------------------------------------------------------
+Pengpeng Hou (1):
+      soc: aspeed: add missing MODULE_DEVICE_TABLE()
 
- .../dts/aspeed/aspeed-bmc-facebook-sanmiguel.dts   |  14 +-
- .../aspeed/aspeed-bmc-inventec-transformers.dts    | 432 ++++++++++-------=
-----
- arch/arm/boot/dts/aspeed/aspeed-bmc-opp-vesnin.dts |   2 +-
- arch/arm/boot/dts/aspeed/aspeed-g6.dtsi            |   2 +-
- 4 files changed, 225 insertions(+), 225 deletions(-)
+ drivers/soc/aspeed/aspeed-uart-routing.c | 1 +
+ 1 file changed, 1 insertion(+)
 
