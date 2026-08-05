@@ -1,56 +1,56 @@
-Return-Path: <linux-aspeed+bounces-4638-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4639-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87344C55ABF
-	for <linux-aspeed@archiver.kernel.org>; Wed,  5 Aug 2026 23:59:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E27FBC55ABF
+	for <linux-aspeed@archiver.kernel.org>; Wed,  5 Aug 2026 23:59:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hFnSs0RC1z2ypY;
-	Thu, 06 Aug 2026 09:59:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hFnSx3DM9z2yrQ;
+	Thu, 06 Aug 2026 09:59:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785934992;
-	cv=none; b=GGwi0D3lI8HDSrjYTT4V38MHJNWqhhxm7wkx7ijxEjKH3CM65g271GndbXo5Ms03gtYQtpr9DkfjxBGRj5KZ/YHqBgVuQrvYO6qIQsk/2vNFVVefonK1LVuekvIsTxlxzhcDAdmm7Hf3IVwZeTDv3t3r6ZIJopuO2n8a+wNgrzGN3BZstF8S2PyDFSiMIa1jSWdiFpWRB8YkiUtr684jr43rhGAQxESWD06E1FbMxy1QJUuZRy+BbHDRNHxfqo7PgRe7yKoraWa7TNreOocNYEHcGjkOiPUAe4cw+9P2QFp7vffjkO+3Y3oXnUDi/zdgRSMlUH/BGgW31KCcA+roEA==
+	cv=none; b=TZkETx1lgAym3hbz0J5b2KDtrSy9pUWDJDH8YWj4g1ylFMWa8gRhe4h8Fzli90LU/i3SA1ichJU137Q6PtZczGdE33zY1qSQ9RdsJEwEKVbE1zwuGCO2ycwfjpA4S8j+6/0J7fXKBHLxTXcDeROUuufjVWLkH4WApIJMK+Qfxgar0aEJ65Lbhbgfa+KYyROShGWbO8sH4IN46ctDcghlMICSO30UQw6H3tVBaGmpc0HJlz9AHKh4ziwKUz1d3WyPXC2BM0Ryn5gIkw/v+0n3pVkQ8zALSCLFUmRZlBMdHKYK1L+fka28PlSnY6WniUo4pJb8MMVf4U8SAAdGJN2V0Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1785934992; c=relaxed/relaxed;
-	bh=QmfuEU8TO3B7eYHBe0DVITl++ofHfc+/cJ8uUn1Mn1A=;
+	bh=6WBdBakXihmY/GJUxoEkzfwKpzjkYRjehER8DzO1pXk=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=fX7y0gpK9TFh81xV86jVeAUWtFqYAVkpiOMRwL5cmRlENZHinFkXDbXLNHhqWm2I+k1eqvXG1FGmNAU2ej9ilXFad8iuh64XT0HngtBSJ6jySlYQgHr9LXpTXo0iwEM6tCSE2tk4v23cwvQSlZsynCmhgcy1z9YUuwMo8f1oOAhEL/b/6pgJtRCpcCseHSLQC1QSUjH+y79vPczrFRAPu8MGUot5jeGYbSo1DSiCB0qaQ1M6XDZEGpP34B8Px3ULJTU6dfLokvjlkeMLBX9uWamgmx6ScE52tOjczj8j+7qGKHtdBftAq5K0z+TVNLNO7Ul4aQIrn/DWY1P8XDwPuQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=abyV2tzp; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+u8813345.gmail.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=JHVaWazuRqsGaFrsSUTg0fnesDM/YVHCRdUMqhzDSBpOmROmr+kSqMe36630UZeF0rdVUpHYsp/46HAi8ZUO3K9U41ubP5jqLnTwL891k5Ga4vVIOEhY/yoTO99AdbYKtMN4/dExnhFhZmmkERrl+D6uicoVpqhkRKvhV2SicOgCDWlZUndnqvBB1kt/B5fkiaYFDJmo/6FDvLF2g568Dn9Fuzx1A11d3e3A+jSv6Xq6HGw0oCLyIsbvv0xkp5r1CNbWhptMydNwbYkivNBS2chUJ+nsFOOlc61xpfYyrbDxlggM4R22hFke8/JbffnR789Qt7LsT6Yfl96JH2c8gw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=miBc+Sae; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+u8813345.gmail.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=abyV2tzp;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=miBc+Sae;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+u8813345.gmail.com@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFVvg1FYfz2yft
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFVvg1mvSz2ygL
 	for <linux-aspeed@lists.ozlabs.org>; Wed, 05 Aug 2026 23:03:11 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 26C7743854;
+	by sea.source.kernel.org (Postfix) with ESMTP id 2EC1E43992;
 	Wed,  5 Aug 2026 13:03:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id F05EDC2BCFD;
-	Wed,  5 Aug 2026 13:03:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 0F3D8C2BD01;
+	Wed,  5 Aug 2026 13:03:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1785934989;
-	bh=KXlTSNgL7obcfAAu2qQszrvsiNWFTE6hySuQAhmN6t4=;
+	bh=llREHz/Ut+hQdQkpSFZF+fPnWztP0SkUaAfxensGHXU=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=abyV2tzpmA6MvTIbiHS1CriNpn4Nr0nZeh5r+KfkJKTx7GXLemxlIcy8yQitFU7eZ
-	 R9JHh9/ywIo9WgIkfqYBQrncrIt7PrcHJCJIoCACDl+d5ZZnvujiImzCPZVWxe+LBB
-	 xYls0hz9aYcme6BqopC+TQLkjyhjahRYCidgBT55DfB6PcD3Yl66Rdjl6yWxGIef3m
-	 VicKfURlckeZDD9wz+TuO7DOgpCNSJxOpJR7SChokYFQQWG3B285VcXXM9vbGv1n7A
-	 QzHCq+/0ajnra33WeB+sWEjebE/oO3M0LKTPQCkydp6uRt7n94ehlMQvoIxJHKBBHH
-	 /yjQjWiUSSuBA==
+	b=miBc+Saepbe6qGyU8T8nU5YPt6p+ISccJuig6pr85TJ71k1bykXAI6CD9DNQquB/8
+	 4e9kKnc1KgZhCQ/VUE654yuKGmvTtuxAKdRL89kPNZ8FDfvPTsLLJZyh++aCDYaNwB
+	 1uFC59N+cwO0yOUZ08ErA70wtCRPMq84BpAuuaoCvJ/cuu2AgNOQdfF37NqmwSyK6O
+	 AtCdDIje8xK1+b3VKrTI5NNutPNkch+RJSr9UMdkr8web35/z6rWEiYb8+1ZthrzHM
+	 7nlDfPrqP/oya0sUeW5o7MWk+P6FiWxOl51qJSDbBS4YzRAVw1DevaZv4lbSF5c5sG
+	 Z9bpxDtJNforw==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA4E5C56203;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB77FC56208;
 	Wed,  5 Aug 2026 13:03:08 +0000 (UTC)
 From: Colin Huang via B4 Relay <devnull+u8813345.gmail.com@kernel.org>
-Date: Wed, 05 Aug 2026 21:02:31 +0800
-Subject: [PATCH v4 03/12] ARM: dts: aspeed: anacapa: Add EVT2 devicetree
- inheriting EVT1
+Date: Wed, 05 Aug 2026 21:02:32 +0800
+Subject: [PATCH v4 04/12] ARM: dts: aspeed: anacapa: Add DVT devicetree
+ inheriting EVT2
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -66,7 +66,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260805-anacapa-devlop-phase-devicetree-v4-3-5d67e0efa6c5@gmail.com>
+Message-Id: <20260805-anacapa-devlop-phase-devicetree-v4-4-5d67e0efa6c5@gmail.com>
 References: <20260805-anacapa-devlop-phase-devicetree-v4-0-5d67e0efa6c5@gmail.com>
 In-Reply-To: <20260805-anacapa-devlop-phase-devicetree-v4-0-5d67e0efa6c5@gmail.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -76,11 +76,11 @@ Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
  colin.huang2@amd.com, Colin Huang <u8813345@gmail.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1785934963; l=5864;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1785934963; l=6004;
  i=u8813345@gmail.com; s=20260202; h=from:subject:message-id;
- bh=uFd3k24VxEypaHLespXpLRjwFFWss5Y43arELHuz9Hk=;
- b=SkdKTGEvk8jsigqVuJdydvi2X5wzytOn8bfUsuO/KVZ8Suew7vZUenAHTbzIIeqol+cNp0DZJ
- ZvHJ0qhKqdKBcv8cBhvqrxcFXXh/fZLBHx9/1FF6zGmxOq9m22qnQkf
+ bh=4qBFnetVkREYSIu12suaMhNwE7VlH8Jb8tWdL8ayTVM=;
+ b=CsvGZouG0veW9AjXNp25g/DLxigjoarl+AE4K2swICo18N+hCn5C7qNi/e0616cYYOD6aW/XW
+ Ttm1YfLiO6HCXgbZMGtRLlogj1N9Byh5gVTrOZodXKaQ1lHDtYoLcKS
 X-Developer-Key: i=u8813345@gmail.com; a=ed25519;
  pk=Zlg0WqpCw4qbswOqamTBTXIchwR/3SnYZpy7rjaGMdQ=
 X-Endpoint-Received: by B4 Relay for u8813345@gmail.com/20260202 with
@@ -90,30 +90,30 @@ Reply-To: u8813345@gmail.com
 
 From: Colin Huang <u8813345@gmail.com>
 
-Add a development-phase devicetree for the Facebook Anacapa BMC EVT2
+Add a development-phase devicetree for the Facebook Anacapa BMC DVT
 hardware revision and update the Anacapa wrapper DTS to reference
 it.
 
 Signed-off-by: Colin Huang <u8813345@gmail.com>
 ---
- .../aspeed/aspeed-bmc-facebook-anacapa-evt2.dts    | 178 +++++++++++++++++++++
+ .../dts/aspeed/aspeed-bmc-facebook-anacapa-dvt.dts | 178 +++++++++++++++++++++
  .../dts/aspeed/aspeed-bmc-facebook-anacapa.dts     |   2 +-
  2 files changed, 179 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt2.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt2.dts
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-dvt.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-dvt.dts
 new file mode 100644
-index 000000000000..4a6ae7c6cbf8
+index 000000000000..0eb547ad0ec1
 --- /dev/null
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt2.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-dvt.dts
 @@ -0,0 +1,178 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +
 +/dts-v1/;
-+#include "aspeed-bmc-facebook-anacapa-evt1.dts"
++#include "aspeed-bmc-facebook-anacapa-evt2.dts"
 +
 +/ {
 +	model = "Facebook Anacapa BMC";
-+	compatible = "facebook,anacapa-bmc-evt2", "aspeed,ast2600";
++	compatible = "facebook,anacapa-bmc-dvt", "aspeed,ast2600";
 +};
 +
 +&sgpiom0 {
@@ -146,10 +146,10 @@ index 000000000000..4a6ae7c6cbf8
 +	"LEAK_DETECT_RMC_N", "RTM_MUX_R",
 +	"HDR_P0_NMI_BTN_BUF_R_N", "FPGA_JTAG_SCM_DBREQ_N",
 +	"Channel6_leakage_present_CPU_DIMM", "whdt_sel",
-+	"", "JTAG_CPLD_TRST_R_N",
-+	"", "",
-+	"", "",
-+	"", "",
++	"R_EAM0_NIC_CBL_PRSNT_L", "JTAG_CPLD_TRST_R_N",
++	"R_EAM1_NIC_CBL_PRSNT_L", "",
++	"L_EAM0_NIC_CBL_PRSNT_L", "",
++	"L_EAM1_NIC_CBL_PRSNT_L", "",
 +
 +	/* D0-D7 line 48-63 */
 +	"Channel0_leakage_present_EAM3", "",
@@ -188,7 +188,7 @@ index 000000000000..4a6ae7c6cbf8
 +	"R_PRSNT_EDSFF3_N", "",
 +	"HPM_EDSFF_PG", "",
 +	"", "",
-+	"", "FM_BMC_READY_PLD",
++	"P12V_PWR_CABLE_PRSNT_L_R", "FM_BMC_READY_PLD",
 +	"PRSNT_NFC_BOARD_R", "",
 +
 +	/* H0-H7 line 112-127 */
@@ -198,8 +198,8 @@ index 000000000000..4a6ae7c6cbf8
 +	"R_BNIC2_FLT", "",
 +	"R_BNIC3_FLT", "",
 +	"R_RTM_SW_FLT", "",
-+	"", "",
-+	"", "",
++	"RBB_Cable_Present", "",
++	"LBB_Cable_Present", "",
 +
 +	/* I0-I7 line 128-143 */
 +	"EAM0_BRD_PRSNT_R_L", "",
@@ -285,14 +285,14 @@ index 000000000000..4a6ae7c6cbf8
 +};
 +
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
-index 209eef65cedb..1848ca347621 100644
+index 1848ca347621..c74b211c42e6 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
 @@ -1,4 +1,4 @@
  // SPDX-License-Identifier: GPL-2.0-or-later
  
--#include "aspeed-bmc-facebook-anacapa-evt1.dts"
-+#include "aspeed-bmc-facebook-anacapa-evt2.dts"
+-#include "aspeed-bmc-facebook-anacapa-evt2.dts"
++#include "aspeed-bmc-facebook-anacapa-dvt.dts"
  
 
 -- 
