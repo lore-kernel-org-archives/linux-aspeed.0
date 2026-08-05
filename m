@@ -1,56 +1,56 @@
-Return-Path: <linux-aspeed+bounces-4630-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4629-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5FF5FC56205
-	for <linux-aspeed@archiver.kernel.org>; Wed,  5 Aug 2026 23:58:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0B32C56203
+	for <linux-aspeed@archiver.kernel.org>; Wed,  5 Aug 2026 23:58:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hFnS03KQNz3046;
-	Thu, 06 Aug 2026 09:58:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785934995;
-	cv=none; b=dKIlzDQdkjxlimOyXJPRKR1Aw1O/z8Ypf3nu25OtMFODoIw1qi1ONbaS1Iq0vrb1GzVZU9uxMlSsblSKaXbZvvTsIuNEytJwWpc/0mrMaUliGFtVTAp6hySuNPDu/MMhG3cY/Pg+ul57QwVVfnd6YAU1suPPu99MBzyAgzcdLGOR9rZtCiu1UNzqz9oRhgUVO9XXjxY/QiwFznrtaTB94qyeaTjgvON7VJfjIhPAxsjNze/ot0+5JpWNjtU6NmdyputgEeerrix5BUNiAoBnFaovv3LoEZW2TaJ/rCalq5j/ZJb51BoCEcLMaGxbqD11C1gr1nWfhqr9yZ0i1CFgEg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hFnRw4sWvz2yrQ;
+	Thu, 06 Aug 2026 09:58:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785934994;
+	cv=none; b=Ns4eNuOu60KiJRgX3Way7xjT1BHFb6sdoMA3f0LBpyekjJJlWYbd1xCzu3EpAX6e2WMywP2ehbWdWkgqKSDs26pCjIQ7UMi2Fk1+WVLWjuqWWtGJ2+NbqYJA8vasMaRcr9d/LqEu11YOxqW/KQT7g0JQ4I6CDTxbqP4vR/0eTJgZv0ERRhb+IjoxOEJaRhQY547ScIwOqe22Exa8hj617s7B4+CC1/rX2Jk9Ulm8a6qXtI0tPnnvjHNTzE3NHM237xgUP2eVKnyccSjEKXtnDr3bYzMq4BRsTUpyi8MAHeAC0Nwc5DoMGY+8KGGcmVgZZA9OZuEnPD7EiTELQA+jaA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785934995; c=relaxed/relaxed;
-	bh=d0tywJCfbOhm61+aKB7StJw/Wnlb1AmUDCDWwg2YRD0=;
+	t=1785934994; c=relaxed/relaxed;
+	bh=f9a20wqiX5jfXMCYHkvvGz0w/Eo1PPQ8K/qd7EvdOyM=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=YAqep+3+bnkIjxAu1Lfz+xFK6wKra681nk0cb8YytDE3k5XDP4/JhyY/x0Fp0a6mSFf8jeCsAe29PwAUqvm5OHPi4TNVfvAZwclH2xk/+dHWouP3uBsjrYvqAwA9x0p1PLvMhFenW81TkkK3EX1YNfNBR7IX8fGVpSZrTM/OwSj0APwG+8/qRYxgCYgUIFsIY+Ifv3eHsRccfJW4sogce77A5Z0mk9U4AUhyNcF2eAr3okRvejArqPAiGISdoUa/0hJ2Cv8sVRiSD4FgXR8GQArVZCY5up/LCGcjvaiHkxHrB0RgY1XdEG0TwehMxd6DmF6z4Yl9YdqitjxuoBxA4A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eWqxjPCj; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=devnull+u8813345.gmail.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=Fpz8DkNeMKaPt3LvfZnQDIoG4rdfGFKxDwnNgHz6omNdwXCz+1L9nOuTgX/VclwZRAVPRHcTt5fGWYc6DxCIUdHmrSTWvytpjivGWrjsyy7B8tZsmR8XmpYrhUdqV6FyUWwLBnPoNmMsgbVKxahjFVQzUeoKifrc/XXi4jioNc7wSZREYxrdkOVNcwY21X+P22Uonr3RTSFOReowkS4A3ffoX1tVTVnxaOx2v/dn5RMC2Bn41hFHwnFbbg9uEqJcl8FMXLgLTZ7hs8sbXNw2d3WRfzbx1u9+1FOrulzXmjt0MdBZ5bq36Lwrdm5dkOFm37+5noFLgZ4R7GqoQLNJgA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Q7yZ8h2P; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+u8813345.gmail.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eWqxjPCj;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Q7yZ8h2P;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=devnull+u8813345.gmail.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+u8813345.gmail.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFVvk6PH4z30B0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFVvk1W17z30B9
 	for <linux-aspeed@lists.ozlabs.org>; Wed, 05 Aug 2026 23:03:14 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 41D3243A6A;
+	by sea.source.kernel.org (Postfix) with ESMTP id 8A48A43B71;
 	Wed,  5 Aug 2026 13:03:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 1E649C2BD04;
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 6DA45C2BCFF;
 	Wed,  5 Aug 2026 13:03:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1785934989;
-	bh=LdloDJM8DI8AB4ZLQsP/+vZzjiWKgFCiLWLBMA7iRMU=;
+	bh=TvfqYkcyVz8NemCQfEvCt2KSWTiyYhcCTYK5XdDbYxQ=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=eWqxjPCjwCfgR/epli6oVNNb/qBgurRKnG61rPed6+cNt7L/dr9Z8+pnPQD5UJL6E
-	 01SNxuHOmj5fxEGa9Ip2EVYLTUvCvBSCit4R4tJKXKRyex+1Un7VH2P1HdD/T/FfU/
-	 h2V5/hP3C/CkCm61TvoAJa1rUllapXYRKgtHGUzlTVm4avFViBo9KbdshM8WwKk3PR
-	 pT49Xa6XkhP8984wDU8lWYaqCPKFiLBXPLRaRfrH1fU5Bek/Puy/BNanNC4ujzj6gc
-	 jwoRF1BDuWCGs6R8c/6WEdZ6hlz+xNt/DUF9LLUuVbPQw2k7Qn6HfrlGoq8WqzaE6F
-	 dggNI0Ky+oATQ==
+	b=Q7yZ8h2P2ITxKAoa24C4wI5SGaKb4L1kncD6PiP9xZc9Fs88nwZw7ISE0a8dGKcYd
+	 esusn6l2cF3tCWXwumVt6vjJAEgXKT0AvfXm0uzakjkRpRc9DFl4QCfZofKcGtI7iJ
+	 u2cYFhhyEmnSw3hVeQB/aJTKZ7FbJBZX/DhCRQ59+BrlJ8xCBJX1I+ZwdTulZWhjU+
+	 lnX8SbVvNkfxWStm3g+QlRf/H8FN/VVGobQuwu+bsZIQjyF3Iot5oUcxbfa+Sns9ki
+	 A0A7TrYYeSPJTTfnEnVOVX0U/TOjV8AqlbEqWdR3i03hwOb1XI9UKvDHl8WWOICCFh
+	 gTvmzNqz9gNyA==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 09059C56207;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59786C56203;
 	Wed,  5 Aug 2026 13:03:09 +0000 (UTC)
 From: Colin Huang via B4 Relay <devnull+u8813345.gmail.com@kernel.org>
-Date: Wed, 05 Aug 2026 21:02:33 +0800
-Subject: [PATCH v4 05/12] ARM: dts: aspeed: anacapa: Add additional EEPROM
- node for SCM
+Date: Wed, 05 Aug 2026 21:02:37 +0800
+Subject: [PATCH v4 09/12] ARM: dts: aspeed: anacapa: evt2: Add shunt
+ resistor values for HSC monitors
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -66,7 +66,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260805-anacapa-devlop-phase-devicetree-v4-5-5d67e0efa6c5@gmail.com>
+Message-Id: <20260805-anacapa-devlop-phase-devicetree-v4-9-5d67e0efa6c5@gmail.com>
 References: <20260805-anacapa-devlop-phase-devicetree-v4-0-5d67e0efa6c5@gmail.com>
 In-Reply-To: <20260805-anacapa-devlop-phase-devicetree-v4-0-5d67e0efa6c5@gmail.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -74,13 +74,14 @@ To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
  Andrew Jeffery <andrew@codeconstruct.com.au>
 Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
  linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- colin.huang2@amd.com, Colin Huang <u8813345@gmail.com>
+ colin.huang2@amd.com, Colin Huang <u8813345@gmail.com>, 
+ Peter Shen <peter.shen@amd.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1785934963; l=1250;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1785934963; l=2147;
  i=u8813345@gmail.com; s=20260202; h=from:subject:message-id;
- bh=NAF+xcmhfBdWvCk+Ea9KmPCdarcFxDgMq2cQBYIvfaY=;
- b=wpqf0DC+1LYoo74qwFuJLHClCkzNFOqzu9etJpRAXMv19z6UtEFsANYU7piTdC53+d2rvOpU9
- ELG5mCU+j7QAQmdgL6n//ZCOtfQ4pb/yTyh9KNGmWK8vfT0Xu05wZ9k
+ bh=WNTfq2afBfA8+J3QozrER71+gm8MPJIV48F5xeH186s=;
+ b=QLogMmJXmliinv4lrYX+5lFkN2Uhf9TjbCvPpr8Q7cqQCrkftYtW5bdPILzTkrAsJ4GjoaIkv
+ 9EkQqG8ds2UCEX8WWM0UoFv4B0a6wR90PQE4Vzz7YLzQkqQ7s47RCWx
 X-Developer-Key: i=u8813345@gmail.com; a=ed25519;
  pk=Zlg0WqpCw4qbswOqamTBTXIchwR/3SnYZpy7rjaGMdQ=
 X-Endpoint-Received: by B4 Relay for u8813345@gmail.com/20260202 with
@@ -90,43 +91,74 @@ Reply-To: u8813345@gmail.com
 
 From: Colin Huang <u8813345@gmail.com>
 
-The SCM FRU EEPROM I2C address differs between SCM revisions:
-- Rev B uses address 0x50
-- Rev C/D/E/F and later use address 0x51
+Add shunt resistor configuration for LTC4287 hot-swap controllers on
+Anacapa EVT2 platform.
 
-Add an additional AT24C128 EEPROM node at 0x51 on i2c9 so the same
-device tree can support multiple SCM revisions.
+The resistor values are required for accurate current and power
+measurement by the driver. These settings reflect the actual BOM used
+on EVT2, where different sense resistor values (150 uOhm and 250 uOhm)
+are populated across rails.
 
-Signed-off-by: Colin Huang <u8813345@gmail.com>
+Without this configuration, the reported readings would be incorrect.
+
+Signed-off-by: Peter Shen <peter.shen@amd.com>
 ---
- .../boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt2.dts   | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ .../aspeed/aspeed-bmc-facebook-anacapa-evt2.dts    | 35 ++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt2.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt2.dts
-index 4a6ae7c6cbf8..1901a325c72c 100644
+index 703284721224..f913fa3f622d 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt2.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt2.dts
-@@ -8,6 +8,20 @@ / {
- 	compatible = "facebook,anacapa-bmc-evt2", "aspeed,ast2600";
- };
- 
-+// SCM
-+&i2c9 {
-+
-+	// SCM FRU
-+	// | DC-SCM Rev        | Slave address of eeprom  |
-+	// |-------------------|--------------------------|
-+	// | Rev B             | 0x50                     |
-+	// | Rev C/D/E/F/above | 0x51                     |
-+	eeprom@51 {
-+		compatible = "atmel,24c128";
-+		reg = <0x51>;
-+	};
-+};
-+
- &sgpiom0 {
- 	ngpios = <128>;
- 	bus-frequency = <2000000>;
+@@ -31,6 +31,26 @@ / {
+ &i2c8 {
+ 	i2c-mux@72 {
+ 		i2c8mux0ch0: i2c@0 {
++			power-monitor@42 {
++				compatible = "lltc,ltc4287";
++				reg = <0x42>;
++				shunt-resistor-micro-ohms = <150>;
++			};
++			power-monitor@43 {
++				compatible = "lltc,ltc4287";
++				reg = <0x43>;
++				shunt-resistor-micro-ohms = <150>;
++			};
++			power-monitor@44 {
++				compatible = "lltc,ltc4287";
++				reg = <0x44>;
++				shunt-resistor-micro-ohms = <250>;
++			};
++			power-monitor@45 {
++				compatible = "lltc,ltc4287";
++				reg = <0x45>;
++				shunt-resistor-micro-ohms = <250>;
++			};
+ 			gpio@24 {
+ 				gpio-line-names =
+ 					"RPDB_EAM2_PRSNT_MOS_N_R", "RPDB_EAM3_PRSNT_MOS_N_R",
+@@ -45,6 +65,21 @@ gpio@24 {
+ 			};
+ 		};
+ 		i2c8mux0ch1: i2c@1 {
++			power-monitor@40 {
++				compatible = "lltc,ltc4287";
++				reg = <0x40>;
++				shunt-resistor-micro-ohms = <150>;
++			};
++			power-monitor@41 {
++				compatible = "lltc,ltc4287";
++				reg = <0x41>;
++				shunt-resistor-micro-ohms = <150>;
++			};
++			power-monitor@45 {
++				compatible = "lltc,ltc4287";
++				reg = <0x45>;
++				shunt-resistor-micro-ohms = <250>;
++			};
+ 			gpio@24 {
+ 				gpio-line-names =
+ 					"LPDB_P50V_FAN0_R2_PG","LPDB_P50V_FAN1_R2_PG",
 
 -- 
 2.34.1
