@@ -1,64 +1,95 @@
-Return-Path: <linux-aspeed+bounces-4615-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4616-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6447EC55184
-	for <linux-aspeed@archiver.kernel.org>; Wed,  5 Aug 2026 00:42:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4898EC56201
+	for <linux-aspeed@archiver.kernel.org>; Wed,  5 Aug 2026 08:19:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hFBTF6pSxz2xnp;
-	Wed, 05 Aug 2026 10:42:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785890561;
-	cv=none; b=aSQ92pn1f2g0IwC664fuIhoqYMP644EwLMXDFLHWIEMCXglMIlnxFhhLlmSkt5VlvkiIAtcKLn7ynK1cUcEWt37lCjFhDLn2Mmr6gaZ04wHHsHJ2ynsgFn/ZF0AVS1syHipWjjwTiHQbJb4mi21SJ0eIArlAnBxjKCgXuQbV3w3zoQ9fensGHKLONuhqSfcePkAR3O3G7OEajSOWX+q45UY81gdKTJDC2jfmU2PAbO2pdK8mfQI36qhfGLu7V8wtJQfkbzSg3jL8/iE8AzqaOI+gp7kPloQwRhCHC2wFDxg/3BWvlbCcsKpOQImk82hEfWU6fx4ZNL4UP2QVCD1wbQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hFNc86XpPz2xqM;
+	Wed, 05 Aug 2026 18:19:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::334"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1785917960;
+	cv=none; b=HNPHcxCm6ahODX9265VpPD6XMUAT4chD9diN0dkdAdEyUgs/BxU5AdQycNv3cBD0u/4bgGEUXJpkrtJucq32GAJvBIpSlvNjh/ygaC5le7mIp/EtmTMojPSEG4uDnfX4wqMxqpER2Kmbu/AT3/2aFrsiNvUh+zlycXXbKUUHai6W1NlF2N2mD4/9Yh67cUTC2P8GnBUlT/5eRLwX+mubyDfvowRLxWAcfVoJOPeBMkKHNkdhY3e4NaQl/8dh2tjFVAfyeLOFe0psQK231RVP5KcrezyYgL2Dao1153zyht8nghX0TWvA11kIwGHU1in55yEDPsqAwySqKuddR6vfLQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1785890561; c=relaxed/relaxed;
-	bh=oF+pMqKRVfoHbj0aKmhSJyXoon4yiMyJ+CZtPLw2efU=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=c9R3efs5w+fqCHYNCuJ08NfZgwYkiYLdPJhxxPoSGS6MEqRLbKyZoiMTZ7acWQoGmQExEWv1/2CtMlxQ+OkBpeSSO8u76t21yduiXC9DJz+s0bqe0OlYWTls/6rKU8tPbysK4mzWnqVLSe2FiSN3T4q0RwIURGz0DJsAWW/S+Kwp/XMplOqNe5kqDl3MOzQvT2y6UKL4J6Ap7sBEaEfK/AEGBarEXH/Uc8UZSriOVJ8C3LOTCNShwHWAW7nvG+SLQXdk63oZeAY4vSI9/by6AgVD8/CvZhOtlQS2A+eiRCWRkS2J9eNCK1Ewccu8euaietncSUDgn8shMlyGrJ14DA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=c51MoOa0; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
+	t=1785917960; c=relaxed/relaxed;
+	bh=PAmFeRSZbFo4XUxpmLajRJiEjxvL2omNRIxy6wYxlZk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=QZJi4PgEZ13RjZWWnW2Beu/rmVMpeNxYzlJ7GIWUAyPFeUVmJgvrVWpjhH2NTf8wxx+S2uZVaftMcNb0mywRMxsJyTvqI4pF/6u237AlDunCw+9qlB7MSLsblOaZkZ40fF8oUafxbKdQtv0mMpTpw7zxjoJAi8VfpwnBin142/4D3je3Zoh9ccam+JKBq7V4719uXsRhPJ3wkLWE84v3q8BSnQouCAHX0PuD1usLso/wU2A1uoP5G+T/uSJfzKpB6oW4eGlEaKMLhdhoRmEHJ/b/TQ1jYtc5YwIaRhHmo6cniF7MZnsrYHIo4Qv02f1pXUpzIIFdLxSOca3jH9kwDg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=9elements.com; dkim=pass (2048-bit key; secure) header.d=9elements.com header.i=@9elements.com header.a=rsa-sha256 header.s=google header.b=WPeUluH+; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::334; helo=mail-wm1-x334.google.com; envelope-from=gregoire.layet@9elements.com; receiver=lists.ozlabs.org) smtp.mailfrom=9elements.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=9elements.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=c51MoOa0;
+	dkim=pass (2048-bit key; secure) header.d=9elements.com header.i=@9elements.com header.a=rsa-sha256 header.s=google header.b=WPeUluH+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
-Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=9elements.com (client-ip=2a00:1450:4864:20::334; helo=mail-wm1-x334.google.com; envelope-from=gregoire.layet@9elements.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFBTC6Rbpz2xYg;
-	Wed, 05 Aug 2026 10:42:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hFNc60KBsz2xl5
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 05 Aug 2026 18:19:16 +1000 (AEST)
+Received: by mail-wm1-x334.google.com with SMTP id 5b1f17b1804b1-49548e01d02so3615865e9.0
+        for <linux-aspeed@lists.ozlabs.org>; Wed, 05 Aug 2026 01:19:16 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1785890557;
-	bh=oF+pMqKRVfoHbj0aKmhSJyXoon4yiMyJ+CZtPLw2efU=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=c51MoOa0qnaW3TduSdx06EE6rJuShhuxXVETYm2f1U2ukoI0+XhZOrLuGUJ8nphU3
-	 97nskKjuXTQHfWVza+H5DxU68zAYrb+h5sRgO5vYvhIfDCguZV3bM3EDAnsa7AmzZw
-	 mck/Me0g6012NuTdXFokiaJWE/3vwGMLaMRuODe9MNIJisqZzoxFCGd9Q32IYr7vJy
-	 jzjBHZq5lZyRyKTJFNFemv2H1nopyQjavdGlsiKfXOVbB7GKx6eRt4d80VeUn+HxuM
-	 7QRJQ1NvLnsm24lO1B71uU+7UXX/a8EOJ+qTUVWqEr6Gvgcz0B/+N5csdmLqtIjU2a
-	 l6lhOZ6hkoLLg==
-Received: from [192.168.68.117] (unknown [180.150.113.112])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id DAD4166B55;
-	Wed,  5 Aug 2026 08:42:35 +0800 (AWST)
-Message-ID: <83210c6e2a7b203bd5913b455ea45cfddf3d29ec.camel@codeconstruct.com.au>
-Subject: Re: [RFC PATCH 0/4] espi: introduce eSPI bus framework
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Greg KH <gregkh@linuxfoundation.org>, Krishnamoorthi M
-	 <krishnamoorthi.m@amd.com>, aspeedyh <yh_chung@aspeedtech.com>
-Cc: linux-kernel@vger.kernel.org, broonie@kernel.org,
- linux-spi@vger.kernel.org, 	akshata.mukundshetty@amd.com,
- bleung@chromium.org, groeck@chromium.org, 	chrome-platform@lists.linux.dev,
- corbet@lwn.net, linux-doc@vger.kernel.org, 	skhan@linuxfoundation.org,
- linux-aspeed@lists.ozlabs.org, 	openbmc@lists.ozlabs.org
-Date: Wed, 05 Aug 2026 10:12:34 +0930
-In-Reply-To: <2026080416-lagoon-delirium-8e84@gregkh>
-References: <20260804115259.4065638-1-krishnamoorthi.m@amd.com>
-	 <2026080416-lagoon-delirium-8e84@gregkh>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.2-0+deb13u1 
+        d=9elements.com; s=google; t=1785917953; x=1786522753; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:mime-version:message-id:date
+         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=PAmFeRSZbFo4XUxpmLajRJiEjxvL2omNRIxy6wYxlZk=;
+        b=WPeUluH+4o2cb/5USWQXZJ5Wqd8FuF7Xba8EMmInBz+VRQPjFbOjBsz/6hhiiMkHPi
+         qKykGIZsmXtCgZME7WrzLPs4aYNBHNFiZR/MJCjsSgIAfGoqBPZBAIhWVVU6h+IdxWGF
+         hTQmQBrY3Ie4ygo6BQw7X0dleeFMVuQPJJD0KHlJ+85MhiPDpF7hWBo88gZFdd35lUK9
+         34CWcHEp9CszpBzluIatdLRtioLtOOjvHDpt7UsQPlz8YV9vPJPIEIaKVfychRdihid4
+         YF3hvlw8Tu4KCZnkWqmk0mYXuLiA5VNJV+fkLZ8a6eQUc+ua446XpJMk36kzyU2QpXOm
+         3ZHA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1785917953; x=1786522753;
+        h=content-transfer-encoding:content-type:mime-version:message-id:date
+         :subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=PAmFeRSZbFo4XUxpmLajRJiEjxvL2omNRIxy6wYxlZk=;
+        b=TvM7Wyi2RUzMIFK5j1xk839JRiQUgN4zjf7CVgED565bkB3L+7ILJrAwnpPKKDSaXO
+         ZobM47aLFFaApREIzj3OFzIm8J+Uc6DHioCfDhN0mGPvsRWII58FFuupJOqesbd6DVWq
+         xTijir7O6Oj6KsT/djTxUEFlOtxXRiuUbr8P744AIu41wr6jqlGbZdIozjpHSdpGQMqZ
+         myGScxVZCIq5F4D2YLbqMGTsEnB8JJlGFr8odO47m6BEPhU82Cx3kiTUVoNW82m36tf7
+         JqBqF55ju9CikDYzblVG8XQE2E+tuV3WUMqXW9uKxL4IXLb0T8sD4AQFD/rl5HK0UV/n
+         bEMQ==
+X-Forwarded-Encrypted: i=1; AHgh+RoOtNtQQxHYy+uYZr9VEI/pT0bZ7YKac+xOvNZ0awBpAOP1wZFyBh8fdHW3gj763y0xL62KxnjzEwiEX5g=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yz1MOMyuhttk8kC6kzQmKeLlhxIraeLzrGqlNNnZG3ow556r4b2
+	U15C682142IgbyG9fnAwERKSHrYYcfFkPQr6b0KsYt0vNGQgg24gFT5h09Rek4Z8oIg=
+X-Gm-Gg: AR+sD12R/DhOxGNgLiAXofuXNGtr8PLkqnIBxgdyGhJWKpdd63+V5vu2JcsfmdF0ajs
+	LjRS9C83IyKi0RegxjJ48KN6JwWbtWpXPnblS4+ulQVDyvI6OSjlIVO33MXHO6qZ2db5wmhztG9
+	PlCiSbC298aTi+e92HLm0Bty0uipDWN7EKTmPk7SiJD0kd1qZbVpGkbFwzE+24Z8UIbwrg/Hr0X
+	rWs2S6sdGmWiC2xXu3VZkJXRFO7QD9EN4u/cwWQDwpBkMMHjP9Qsw7fezq5rLMqBJ/yuP+3mgzK
+	SkZI/j+5cJIRU1Gg78tFGKWbNDPzTmcCogHoEP27QWn70iZUIAtEB/sK6XnYcPY9AejEuLdIQkd
+	MVYkfF9q7GfeO1EIoronpKNKYeO10szYEWxvAWzUOlJcrgrYhlruAg/d4X1lOx5agnzNYQhebdc
+	jCWyzNGfkhbW8rNugFD2TPe0h1QjT/o17jVg0dlySFgrXs3YHbnz7lbcRy2PJ5/IX3Fn+Zex83T
+	9rFhTZ/ffEgFS2XL5Y7wARmwT3EjJxP0FOc4gl6hpgF9BC6zVldnYdR70hJPHVvUEILZSZzp+nl
+X-Received: by 2002:a05:600c:474a:b0:495:7888:281c with SMTP id 5b1f17b1804b1-4994e6d4a13mr49305745e9.0.1785917952680;
+        Wed, 05 Aug 2026 01:19:12 -0700 (PDT)
+Received: from gregwork.sec.9e.network ([188.111.3.154])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4994e0356d4sm74745695e9.10.2026.08.05.01.19.11
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 05 Aug 2026 01:19:12 -0700 (PDT)
+From: =?UTF-8?q?Gr=C3=A9goire=20Layet?= <gregoire.layet@9elements.com>
+To: joel@jms.id.au,
+	andrew@codeconstruct.com.au,
+	robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	corey@minyard.net,
+	devicetree@vger.kernel.org
+Cc: jammy_huang@aspeedtech.com,
+	yc_hsieh@aspeedtech.com,
+	openipmi-developer@lists.sourceforge.net,
+	linux-aspeed@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	=?UTF-8?q?Gr=C3=A9goire=20Layet?= <gregoire.layet@9elements.com>
+Subject: [PATCH v3 0/2 RESEND] soc: aspeed: ipmi: add KCS Channel 4 over PCIe
+Date: Wed,  5 Aug 2026 10:18:59 +0200
+Message-ID: <cover.1785135437.git.gregoire.layet@9elements.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -72,59 +103,87 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Message-ID: <20260805081859.BMonsZNvpVpzv-lER5z3KXf-oQNpGJ8o5a-wTWoT4JQ@z>
 
-Hi Greg, Krishnamoorthi,
+The ASPEED AST2600 has a PCIe to LPC controller. It includes a KCS
+interface on channel 4. This is a fully KCS-compatible interface
+that is exposed over PCIe.
 
-YH Chung has been working on eSPI support for ASPEED's BMC SoCs, so
-I've included them in the To line.
+Add pcie_kcs4 to existing LPC bus in aspeed-g6.dtsi.
+Modify kcs_bmc_aspeed driver to detect the PCIe over LPC channel.
 
-On Tue, 2026-08-04 at 14:18 +0200, Greg KH wrote:
-> On Tue, Aug 04, 2026 at 05:22:55PM +0530, Krishnamoorthi M wrote:
-> > Feedback Requested
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> >=20
-> > =C2=A0 1. We chose a dedicated bus_type for the reasons described above
-> > =C2=A0=C2=A0=C2=A0=C2=A0 (capability negotiation, four independent chan=
-nels, asynchronous
-> > =C2=A0=C2=A0=C2=A0=C2=A0 ALERT#). Does the community agree this is the =
-right direction, or
-> > =C2=A0=C2=A0=C2=A0=C2=A0 is there a strong preference to extend the SPI=
- subsystem instead?
->=20
-> That's up to the SPI maintainers and developers...
+In the driver, this PCIe over LPC channel will be detected as Channel 5.
+In the datasheet this is defined as Channel 4 over PCIe.
 
-There's concurrent discussion from YH regarding device-side eSPI
-support in the thread ending here:
+The Channel 4 name is still referenced in the offsets macros.
 
-https://lore.kernel.org/all/KL1PR0601MB4276FA2C6347192CC45826E490ED2@KL1PR0=
-601MB4276.apcprd06.prod.outlook.com/
+The host need a driver to activate the MSI interrupts with the PCIe BMC
+Device.
 
-So far it's arrived at a matching proposal for drivers/espi.
+Tests:
+With the patch [1] adding PCIe BMC device for Virtual UART, the MSI
+interrupts are correctly setups. The Host driver is build and side
+loaded on the host. The ipmi_si driver on the host is loaded manually
+with the KCS address given by hand. 'ipmitool mc info' is run to confirm
+it's working.
 
->=20
-> > =C2=A0 3. Any concerns with the ops table design or the -EOPNOTSUPP fal=
-lback?
-> > =C2=A0 4. Naming and structure of the public API in include/linux/espi/=
-espi.h.
->=20
-> What specifically are you asking for for this?=C2=A0 Do you have userspac=
-e
-> code you want to integrate, if so, does it work with this?=C2=A0 And wher=
-e
-> does it live?
+Tested on : Asus IPMI Expansion Card, AST2600.
+```
+$ insmod aspeed-host-bmc-dev.ko
+$ lspci -vvv -d 1a03:2402
+02:01.0 Unassigned class [ff00]: ASPEED Technology, Inc. Device 2402
+	Subsystem: ASPEED Technology, Inc. Device 2402
+	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 0
+	Interrupt: pin A routed to IRQ 154
+	IOMMU group: 12
+	Region 0: Memory at 82080000 (32-bit, non-prefetchable) [size=4K]
+	Region 1: Memory at 82040000 (32-bit, non-prefetchable) [size=256K]
+	Capabilities: [40] Power Management version 3
+		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=375mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+		Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
+	Capabilities: [50] MSI: Enable+ Count=32/32 Maskable- 64bit+
+		Address: 00000000fee00818  Data: 0000
+	Kernel driver in use: aspeed-host-bmc-dev
 
-I've seen your follow-up realisation Greg, however, regarding
-userspace, the thread above suggests that we should be able to back
-existing subsystems (GPIO for VW, MCTP for OOB, MTD for some flash
-functionality) onto eSPI to minimise eSPI-specific interfaces:
+$ modprobe ipmi_si type=kcs addrs=0x82040E88 regspacings=4 regsizes=1 regshifts=0
 
-https://lore.kernel.org/all/KL1PR0601MB4276B5BE3B96C18E3A66AD709049A@KL1PR0=
-601MB4276.apcprd06.prod.outlook.com/
+$ ipmitool mc info
+Device ID                 : 32
+Device Revision           : 1
+Firmware Revision         : 26.04
+IPMI Version              : 2.0
+Manufacturer ID           : 2623
+Manufacturer Name         : ASUSTek Computer Inc.
+...
+```
 
-That doesn't cover the peripheral channel, as that's dealt with in
-hardware on the device side, but for the purpose of the controller the
-devices on the peripheral channel should all be driven by the kernel
-anyway.
+Changes since v2 [2]:
+ - Put pcie_kcs4 node in ascending address order.
+ - Add missing "case PCIE_LPC_ODR4" in aspeed_kcs_outb.
 
-Andrew
+An RFC [3] is in discussion for implementing multiple LPC controller support
+in kcs_bmc_aspeed. This would change the implementation of the pcie_lpc.
+This series adds the pcie_kcs4 to have devices like the Asus IPMI Expansion Card
+use it, before waiting to have full PCIe LPC support.
+
+[1] https://lore.kernel.org/linux-aspeed/51e455417bdcfe608270c6cb2806b1fd971fb998.1783524645.git.gregoire.layet@9elements.com/
+[2] https://lore.kernel.org/linux-aspeed/cover.1784732161.git.gregoire.layet@9elements.com/
+[3] https://lkml.org/lkml/2026/7/23/429
+
+Grégoire Layet (2):
+  ipmi: kcs_bmc_aspeed: g6: Add KCS Channel 4 over PCIe
+  ARM: dts: aspeed-g6: add pcie-kcs4
+
+ arch/arm/boot/dts/aspeed/aspeed-g6.dtsi |  8 +++++
+ drivers/char/ipmi/kcs_bmc_aspeed.c      | 41 +++++++++++++++++++++++--
+ 2 files changed, 47 insertions(+), 2 deletions(-)
+
+
+base-commit: 03f906d8f5541e8bb741035981304feceed5993d
+--
+2.54.0
 
