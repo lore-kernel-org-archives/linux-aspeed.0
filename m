@@ -1,93 +1,78 @@
-Return-Path: <linux-aspeed+bounces-4650-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4651-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A153C5AC82
-	for <linux-aspeed@archiver.kernel.org>; Fri,  7 Aug 2026 08:32:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9622AC5AC7C
+	for <linux-aspeed@archiver.kernel.org>; Fri,  7 Aug 2026 08:37:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hGcp41f6bz3c1Q;
-	Fri, 07 Aug 2026 18:32:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::433"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786091532;
-	cv=none; b=BKQ47TjXKyYx5NM8xWxfmhJqX3yrZIIW6d171Gyz9zKoLR6bfBULzjvtx4cBrw5+EzpLrSzoV+c8p2IXxgACDoxqd9mvygKBHMtYlFUNqNypv+M9F34exXwHJa1+FJd2Yeejqyhs8SLHV2hQmGxSjRlExglltjq38t0BDyo/GPm6XDwXhLo2OrMF+kQkYHkKY/uabxWhoBIrRhKlug15i0vjuGduepX4IiybxI/0sZQOhGDsnvBFC/7Nhg2Zwbdi9q8Z4LgJnIfGqX1gHvMjyKrf5rCUP3hmgZ5p+TlUL+RjuL0sHsk5cgGJ7t67VtJWH726DKQjPNAUczrFbu1c2g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hGcw16dQcz3c1g;
+	Fri, 07 Aug 2026 18:37:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::329"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786091841;
+	cv=none; b=gq4mWDUE2SqIQflI4JymPLJV8GSMyGEbecAWieusylhmt08qjPklEWkPPuy/mn2k2N5mJZp+pLS5Zuep5Rv+YX2p+Znxl0yVu7zY094ANoMUp9+TOgp6jbbh1+lnKODlxdVQ2KF0kDIyUyT4DDh7dzKxXsGqGM+OZJ+p0DncftchjGaPTz5CKiVb0+SbWLSSK4S3qTAYFZQNdPnUC6W1MH2/wodOA1+CRrUUQQApcjGYgAmZ9TZSNy1NSEENCgrEWoW/jCihj5DFx66xRG0vtIpiseJhvqHdSGDNnh3+GK8JvdsxoXse+mV0sbH17bE7M7N9xtwIuGR0arKobvwSJw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786091532; c=relaxed/relaxed;
-	bh=3MesJTCCNQlP4+x64Hx4yUyNd9X6ssapmn5zWFOTB7M=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=KSnWT7/Vov5YeDbWnkTNfsQegasE2ECb2Yuqbx15e7W8mMU3Y9j1qfulSNGxDrxZkVFyTk+rd1A/iUnzFsxnL9iMrzCCNst1hora/uWhqYSnpT9NS8A4UUBVzaesg6TX+kCq76WQQqiT0Jh0sww2A1QKuIHj0s1nkzE3M/5v+KI8BUEulaj/AaXokRFgL6MFoLg0iEeEXDlnS21FT1MfQ0eRSOIdp91F5uTRlr4FCHcZ1wz9pMOJCHSpcJ8sslCBOcu56ua3hbznl8U3QGnHqg3YbAtmLD3PJLN9Z6zYJQE3tFi6XFUp7Vc3k/TxkB90eoHua8u0oe0XHEX/t3Cf1g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=mPwftwzi; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::433; helo=mail-pf1-x433.google.com; envelope-from=fredchen.openbmc@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1786091841; c=relaxed/relaxed;
+	bh=7xmdghfSgadBkY6GVQoxPAoUuT5sReEQgJK7Tv/QlXE=;
+	h=MIME-Version:Content-Type:Subject:From:To:Cc:In-Reply-To:
+	 References:Date:Message-Id; b=O8Ku/IltqI0EAbHecbVoetFM2GtNddxCy4nuMPHjfOSbZ4j0JoskOWOhrNlo1L4IMxXfv5HseuWbTrbOP/19KMvfuYEtcQCxUAnOucdGWl4DLajY0lMrrE6tZrhOI1RIS9SBDKm714eHDk4loFi1EQHOQU6Xh/F/QIImBqWVxWrzgJtu3Nm7FQe1lYwlGuT4K1j72CmCXh6vfVuOY/HoLFPWINEo3o6Kdq7pejou5dVzjOM7tQSkIS0tDboeG1PRGxhMOSR6u72l8QSmrN11BZQzSz42lisHx5fxqOg1SBM8cJyHXd7LWEXGwb7HGGKmTmzPZWTFo6uaqYNBoS344g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=9elements.com; dkim=pass (2048-bit key; secure) header.d=9elements.com header.i=@9elements.com header.a=rsa-sha256 header.s=google header.b=euGbADoD; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::329; helo=mail-wm1-x329.google.com; envelope-from=tan.siewert@9elements.com; receiver=lists.ozlabs.org) smtp.mailfrom=9elements.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=9elements.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=mPwftwzi;
+	dkim=pass (2048-bit key; secure) header.d=9elements.com header.i=@9elements.com header.a=rsa-sha256 header.s=google header.b=euGbADoD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::433; helo=mail-pf1-x433.google.com; envelope-from=fredchen.openbmc@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x433.google.com (mail-pf1-x433.google.com [IPv6:2607:f8b0:4864:20::433])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=9elements.com (client-ip=2a00:1450:4864:20::329; helo=mail-wm1-x329.google.com; envelope-from=tan.siewert@9elements.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x329.google.com (mail-wm1-x329.google.com [IPv6:2a00:1450:4864:20::329])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGcp3440gz3c1D
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 07 Aug 2026 18:32:11 +1000 (AEST)
-Received: by mail-pf1-x433.google.com with SMTP id d2e1a72fcca58-84536ecfc5bso3883639b3a.2
-        for <linux-aspeed@lists.ozlabs.org>; Fri, 07 Aug 2026 01:32:11 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGcw02F0hz3c1S
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 07 Aug 2026 18:37:20 +1000 (AEST)
+Received: by mail-wm1-x329.google.com with SMTP id 5b1f17b1804b1-4994c49f588so17722875e9.0
+        for <linux-aspeed@lists.ozlabs.org>; Fri, 07 Aug 2026 01:37:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786091529; x=1786696329; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:to:from:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=3MesJTCCNQlP4+x64Hx4yUyNd9X6ssapmn5zWFOTB7M=;
-        b=mPwftwzioNI3RmuBjBbdQYPU0C5nzZCnPDZlmzTaXozohArUvbg+jJhF75ctAxTusC
-         2SlQB0R4jRjHQ52COHaqEtztnpcZ6cD9jgnMctexSeilzk5KCRE2mW0Vfy/H0+1cFP8l
-         YxjnB02Nrs36B5jzkyo44RQ9v+eaX7OVoE7h6DwsRVJvv3L2ZlOTTeo7dx4QmG0DMnL+
-         gILHtacl819XUbYUJ9XlKB5K/M9qfjbfpO232sD3oBmKn0WMDtuVwyan5W7CPkwe6im4
-         XOWZQTHKFS1mehuO+3LnD0Xg7wU5Gs7/CCA8+MWisIV69mfA2+5o0hCeptKaeyPRhvX9
-         7EXQ==
+        d=9elements.com; s=google; t=1786091837; x=1786696637; darn=lists.ozlabs.org;
+        h=message-id:date:references:in-reply-to:cc:to:from:subject
+         :content-transfer-encoding:content-type:mime-version:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=7xmdghfSgadBkY6GVQoxPAoUuT5sReEQgJK7Tv/QlXE=;
+        b=euGbADoDUBdixf8ucY1+8PXg/M/ZZUXrnEc0T+DBw7Cv10L0IPJMo9hhHH9ts2+OQs
+         j0K9v7jyxr3WroGkAFCnN1V66e3LGW+LC1M/ooNAJacbG7B4LsSZJP8iG2jgDakzHjqv
+         Xq7LDdZIJsvpqeutWqhQUNG8NUhQ++VzocAIfo1kkxSQ0mj03mbyAYelOzXbscVAOmwE
+         5kgMePfPPT0x0K3UfdhyEbYmD8qHQEdCkjONZhcjH+tpfzWwBqhmi+87kqlWS0z9BSZu
+         BOs3i7cEKLJIhLeQVNyEf1nkDGXJ8Mjz4Dm7yscrrVP6sVHVOuQ+gwBeiO6b+y0QOskM
+         ktUg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786091529; x=1786696329;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:to:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=3MesJTCCNQlP4+x64Hx4yUyNd9X6ssapmn5zWFOTB7M=;
-        b=o7UpooFWxSqm7uhuzwQmm9n1Nb29YlpoQ3p4ro0SoVbt06hYGe8A/qw+Z4U3KIGVPB
-         ubN2qjoWr+0RBUFenP9KIorfTEhfx9B0RtIgH4lRIY5GxqY8YHYdVeGHBNyFcF8f/5Xk
-         PfRWML17xelbSdyEJ8GnREZGo7godh1e6KU7NSCxfZ7vVtt2NYEMIED5oaug3UFVO3Gw
-         GQBYK7xciBF/6w/tN61cWhkQWYfpp1sFcrgtDiFHWCRue9tw8vd9V7DjPH0mJahOFg5U
-         T1ihXExsYqC4PLpNbzY2t3QgUCF8UZVtKGDBjTP7PqmsHG7EZRxWSJ74ilrelbqWSV5M
-         d9OQ==
-X-Forwarded-Encrypted: i=1; AHgh+RrXrKFkqeVrqlZRLPoSU19Iqandtk0bOC5AQ1vitcClvyQpadu4IAYY2yrYq36N9gnUGNIdUSEv2A808eA=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyvZfk1jFlB3ksHGImNJc4z/WVevTFmsSQet9J3TibmPG/K2A+F
-	9ZoH1j8WqVlTJCNgiEtO8yzVJLfGm+EPJTaPEqvyKTYR3JVA5ortqcEp
-X-Gm-Gg: AR+sD11z+kL8sVBqx+oC5EfRh3IaJAdGZ6q63jaEVOSfwTaNKJQK/PlMvkjxu6mHLlr
-	DEXKxXNqJR23qQGCv34NyFPGe1ju2qYzGMrs3nforaZNXStILBrPTSWq7KFb9AaW0tJ+0SmYklI
-	BkIOMkFwD62+sZBYsugmXg/GmToWDcy3jGqNsyCC0+OpAm31Z/keTANLOvajRHLtj3nbsD33ilb
-	UMKaI6cwxTsg3nfWZWy2U75Ahvnj6yBuD+NdxKJA/w8I8WoHyPh7hug8GXC9c+8J8h8qLBkReo4
-	zU1m/QHpAzXireLIBL4lJtWkdrP4WH1PEXzoyDiYM4bnBi4vCzge+t/tpk7xwhFoGGYNqxuM/sS
-	q3syHrnr/1QP4iSBBDcNP3lH/9uO9S09v2iYrgBar52NTTppyvBtIL57e8qfOmG+KJ63u8JSC3L
-	lKPC1ER2QysebSQGvajG0oAZBfawh0xEt9JfHzz6r0Vgy2cVq19rdWKdW5L/YJCu5m/CltCxWbN
-	d7BtEdkwh6Px0sZopNSdPj/dJPxw+kaFJ9mPHX9D0jk7i1ZVw==
-X-Received: by 2002:a05:6a00:3d54:b0:847:8b1d:230d with SMTP id d2e1a72fcca58-84f2e014151mr23029742b3a.3.1786091529420;
-        Fri, 07 Aug 2026 01:32:09 -0700 (PDT)
-Received: from fred-System-Product-Name (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84f5a553071sm627409b3a.43.2026.08.07.01.32.07
+        d=1e100.net; s=20251104; t=1786091837; x=1786696637;
+        h=message-id:date:references:in-reply-to:cc:to:from:subject
+         :content-transfer-encoding:content-type:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=7xmdghfSgadBkY6GVQoxPAoUuT5sReEQgJK7Tv/QlXE=;
+        b=hKhkRLwF/QtO3wi7DEvFbcU/AZAc4kvR8tjCX3gU3aVtSHGBc7DB+fZRG5g9z1MVIm
+         fMfdP3vmry4Y/8x639TkcVG+kshToUHkcT/XitjXLi29O5diAljBhheaJlnQvZFKAO31
+         jjTnXw36gV3xsdtlg6oVhk/lqfB29Y5zje6AsN3/zXk2aza9nF2yGguiwHq6Azao+sx5
+         hqPLRMbWTr2Ypz4EzNDJRDidwXT40LfoHm6F0A6wwwwUm6i5Oue8ynBUt49PslZNL1/h
+         GmTd3XxCBh8XhySrWSflxLmTuG9WYo01qNBUyxbbgQ6CbRqiW5JJGi1aJKzabFLNkM5T
+         JqGA==
+X-Forwarded-Encrypted: i=1; AHgh+RoBXUlX6HVRJ0XBEfpezkJgBSz+7faXRyh2I54vAzZ/WmaMoVpbeIhhrHWYGe5StpKUGj0HbCXDbrYtTP8=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyvpY+K9UddEtfqIWpIGg+J13CVyMW/SJuLjVkrjKzCze8hOzqo
+	6DEI51cp2IMChV5nMjsHv6+rDp9uvrlD4HUaddghTVHm+nMcEsQEmBsUh7SbQMPgj44=
+X-Gm-Gg: AR+sD109QndscUZc0IrahMg8L7TdjqDUFnLWx8T7Izu7ZDsxqy9ZqEllVcmEYiGjaw3
+	al94v+cXE4wJh1lNZHnxXI8rCz2Pd1URzMconsNw6ZSwVy1xuaymkKQ5lUw5eDaIiDfAVlR3gqY
+	v+F8xjMKpnk/R1/pRD42TukOWbG6QLUzu3dk01OR53bC9BE27LYvd1VxOukWTI3n6seizb7I1Vl
+	+/SzILeVPy0K9RR+Y9XgUEwJ4+LQRVB89SYx4FcLAmJImlfx5apPICJKiggh4EFBJp9DrAny/DO
+	2nKDdeZGVAmQpuVdTWLQ+Lt+MWG0R2clgB4L627f3Kk6wk8bTmRwZDZdKiNGbIOhx0WvhOYIKyW
+	pyHOmYolyJSxtNe5TDRf+ZBWwzIyFl4CHRX+t+e9UatVfRftu90RsO5n/naayyql3+uDUia4tJO
+	fucHz373eOl4DOJ3JDY7kevwVj9iw6xqZUPmeVP3Kqgb9BotjnIBt56nZ00lIbWZxv4GvwBX4tr
+	Z49WOd45w==
+X-Received: by 2002:a05:600c:42d4:b0:499:59fd:dbfc with SMTP id 5b1f17b1804b1-49959fddc5emr56438565e9.1.1786091836967;
+        Fri, 07 Aug 2026 01:37:16 -0700 (PDT)
+Received: from [172.20.10.3] ([2a01:599:843:2744:7f5d:3df0:76c1:3705])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4995e9e7171sm17795195e9.1.2026.08.07.01.37.15
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 07 Aug 2026 01:32:09 -0700 (PDT)
-From: Fred Chen <fredchen.openbmc@gmail.com>
-To: Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v3 5/5] ARM: dts: aspeed: santabarbara: Add leak cable present IO expander
-Date: Fri,  7 Aug 2026 16:34:08 +0800
-Message-ID: <20260807083415.672008-6-fredchen.openbmc@gmail.com>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260807083415.672008-1-fredchen.openbmc@gmail.com>
-References: <20260807083415.672008-1-fredchen.openbmc@gmail.com>
+        Fri, 07 Aug 2026 01:37:16 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -101,107 +86,199 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
+Subject: Re: [PATCH v5 4/6] soc: mfd: add ASPEED AST2600 PCIe BMC device
+ driver
+From: Tan Siewert <tan.siewert@9elements.com>
+To: =?utf-8?q?Gr=C3=A9goire_Layet?= <gregoire.layet@9elements.com>
+Cc: joel@jms.id.au, andrew@codeconstruct.com.au, lkundrak@v3.sk, 
+ devicetree@vger.kernel.org, gregkh@linuxfoundation.org, 
+ jirislaby@kernel.org, robh@kernel.org, krzk+dt@kernel.org, 
+ conor+dt@kernel.org, lee@kernel.org, 
+ =?utf-8?q?Gr=C3=A9goire_Layet?= <git@gregoirelayet.com>, 
+ Tan Siewert <tan.siewert@9elements.com>, andrew@lunn.ch, 
+ jacky_chou@aspeedtech.com, yh_chung@aspeedtech.com, ninad@linux.ibm.com, 
+ anirudhsriniv@gmail.com, linux-serial@vger.kernel.org, mfd@lists.linux.dev, 
+ linux-aspeed@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
+ linux-kernel@vger.kernel.org
+In-Reply-To: <51db5e5bb5bf44dd5ab893b8d547291f04e1d3c7.1785932211.git.gregoire.layet@9elements.com>
+References: <cover.1785932211.git.gregoire.layet@9elements.com>
+ <51db5e5bb5bf44dd5ab893b8d547291f04e1d3c7.1785932211.git.gregoire.layet@9elements.com>
+Date: Fri, 07 Aug 2026 10:37:09 +0200
+Message-Id: <178609182923.193353.7287772568467157519.b4-review@b4>
+X-Mailer: b4 0.17-dev
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1786091831; l=5887;
+ i=tan.siewert@9elements.com; s=20260527; h=from:subject:message-id;
+ bh=5Wtm4+fC2TDCkZjPl5iY3esbeKwy0U6HWjzwFQYdxgM=;
+ b=BYG8RuH2of4Gbb/wv8dafAtCnP3l9bAcx9jDlUpTUBOYFB1rnN5jJmZOKiXGTGs9fny/HkoHX
+ tn9LiVn8tDnCAFLsuoN9DwifuoFqneYc0Efq2nsAEZ61Cjw8cXEYapH
+X-Developer-Key: i=tan.siewert@9elements.com; a=ed25519;
+ pk=ORQd/zQf+LsAvJGXP1CjQwVO6t6iEOGq/eGUsmRVTG4=
 
-Add a pca9555 GPIO expander (0x22) on i2c6/i2c8/i2c10/i2c13, one per
-module board, to expose the PRSNT_MODULE[0-3]_LEAK_CABLE_R_N line used
-to detect whether the module's leak-detection cable is plugged
-in.
+> Add support for UART over PCIe between ASPEED
+> AST2600 BMC and host.
+> This is the host-side driver.
+> 
+> Based on ASPEED 6.18 Kernel SDK and trimmed down
+> and changed to MFD driver.
 
-Signed-off-by: Fred Chen <fredchen.openbmc@gmail.com>
----
- .../aspeed-bmc-facebook-santabarbara.dts      | 56 ++++++++++++++++++-
- 1 file changed, 54 insertions(+), 2 deletions(-)
+This doesn't seem to be aligned (72/75 chars per line).
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dts
-index 3d35a5a74104..ca5bd805d975 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dts
-@@ -641,6 +641,19 @@ gpio@74 {
- &i2c6 {
- 	status = "okay";
- 
-+	gpio@22 {
-+		compatible = "nxp,pca9555";
-+		reg = <0x22>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+		interrupt-parent = <&sgpiom0>;
-+		interrupts = <150 IRQ_TYPE_LEVEL_LOW>;
-+		gpio-line-names =
-+			"PRSNT_MODULE0_LEAK_CABLE_R_N","",
-+			"","","","","","",
-+			"","","","","","","","";
-+	};
-+
- 	// Rainbow0 FRU
- 	eeprom@52 {
- 		compatible = "atmel,24c256";
-@@ -866,6 +879,19 @@ ipmb@10 {
- &i2c8 {
- 	status = "okay";
- 
-+	gpio@22 {
-+		compatible = "nxp,pca9555";
-+		reg = <0x22>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+		interrupt-parent = <&sgpiom0>;
-+		interrupts = <154 IRQ_TYPE_LEVEL_LOW>;
-+		gpio-line-names =
-+			"PRSNT_MODULE2_LEAK_CABLE_R_N","",
-+			"","","","","","",
-+			"","","","","","","","";
-+	};
-+
- 	// Rainbow2 FRU
- 	eeprom@52 {
- 		compatible = "atmel,24c256";
-@@ -1106,7 +1132,20 @@ eeprom@56 {
- &i2c10 {
- 	status = "okay";
- 
--	// Rainbow3 FRU
-+	gpio@22 {
-+		compatible = "nxp,pca9555";
-+		reg = <0x22>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+		interrupt-parent = <&sgpiom0>;
-+		interrupts = <158 IRQ_TYPE_LEVEL_LOW>;
-+		gpio-line-names =
-+			"PRSNT_MODULE1_LEAK_CABLE_R_N","",
-+			"","","","","","",
-+			"","","","","","","","";
-+	};
-+
-+	// Rainbow1 FRU
- 	eeprom@52 {
- 		compatible = "atmel,24c256";
- 		reg = <0x52>;
-@@ -1588,7 +1627,20 @@ i2c12mux0ch7: i2c@7 {
- &i2c13 {
- 	status = "okay";
- 
--	// Rainbow1 FRU
-+	gpio@22 {
-+		compatible = "nxp,pca9555";
-+		reg = <0x22>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+		interrupt-parent = <&sgpiom0>;
-+		interrupts = <162 IRQ_TYPE_LEVEL_LOW>;
-+		gpio-line-names =
-+			"PRSNT_MODULE3_LEAK_CABLE_R_N","",
-+			"","","","","","",
-+			"","","","","","","","";
-+	};
-+
-+	// Rainbow3 FRU
- 	eeprom@52 {
- 		compatible = "atmel,24c256";
- 		reg = <0x52>;
+> 
+> The AST2600 has two 8250-compatible register set usable over PCIe.
+> These act as two UARTs. As there is only a FIFO internally between both
+> ends, they are called Virtual UARTs. This patch adds both VUARTs as
+> plat_serial8250_port. This is the core driver in charge of setting up
+> MSI interrupts. It doesn't bind the whole PCIe resource to allow each
+> sub-driver to bind the needed addresses.
+> 
+> This is not added as a PCI 8250 UART device, but as a MFD driver, as this
+> host driver can be expanded upon for IPMI over KCS. It can also be used
+> in the future for custom BMC<->host communication with shared memory and
+> doorbell.
+> 
+> This host module should be the entry point for setting up all features
+> related to an AST2600 present on the PCI bus.
+> 
+> Notes on the implementation:
+> The host can't detect the VUART addresses, so they are forced to
+> 0x3f8 and 0x2f8, as in the initial ASPEED driver.
+> 
+> The MSI vector index of VUART2 has been changed from 15 to 17.
+> The index 15 used in the initial driver was not working.
+> 
+> Tested:
+> Data path in both direction is tested on both VUARTs.
+> 
+> Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
+> Signed-off-by: aspeedyh <yh_chung@aspeedtech.com>
+> Signed-off-by: Grégoire Layet <gregoire.layet@9elements.com>
+>
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 15011f5752a9..33a0351819e6 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -4011,6 +4011,12 @@ S:	Maintained
+>  F:	Documentation/devicetree/bindings/crypto/aspeed,*
+>  F:	drivers/crypto/aspeed/
+>  
+> +ASPEED PCI BMC DEVICE DRIVER
+> +M:	Grégoire Layet <git@gregoirelayet.com>
+> +M:	Tan Siewert <tan.siewert@9elements.com>
+> +S:	Maintained
+> +F:	drivers/mfd/aspeed-pci-core.c
+> +
+>  ASPEED PECI CONTROLLER
+>  M:	Iwona Winiarska <iwona.winiarska@intel.com>
+>  L:	linux-aspeed@lists.ozlabs.org (moderated for non-subscribers)
+> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+> index 763ce6a34782..dd780f72d169 100644
+> --- a/drivers/mfd/Kconfig
+> +++ b/drivers/mfd/Kconfig
+> @@ -2573,5 +2573,17 @@ config MFD_MAX7360
+>  	  additional drivers must be enabled in order to use the functionality
+>  	  of the device.
+>  
+> +config MFD_ASPEED_PCI_BMC_DEVICE
+> +	tristate "ASPEED BMC PCIe device"
+> +	depends on PCI
+> +	select MFD_CORE
+> +	help
+> +	  Host-side driver for the ASPEED AST2600 BMC PCIe device found on
+> +	  BMC expansion cards. Exposes two 8250-compatible VUART
+> +	  ports.
+> +
+> +	  If unsure, say N. Choose M here if this machine has an
+> +	  AST2600-based BMC expansion card on its PCIe bus.
+> +
+>  endmenu
+>  endif
+> diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+> index dd4bb7e77c33..a364b1b5936b 100644
+> --- a/drivers/mfd/Makefile
+> +++ b/drivers/mfd/Makefile
+> @@ -303,3 +303,5 @@ obj-$(CONFIG_MFD_RSMU_SPI)	+= rsmu_spi.o rsmu_core.o
+>  obj-$(CONFIG_MFD_UPBOARD_FPGA)	+= upboard-fpga.o
+>  
+>  obj-$(CONFIG_MFD_LOONGSON_SE)	+= loongson-se.o
+> +
+> +obj-$(CONFIG_MFD_ASPEED_PCI_BMC_DEVICE)	+= aspeed-pci-core.o
+> diff --git a/drivers/mfd/aspeed-pci-core.c b/drivers/mfd/aspeed-pci-core.c
+> new file mode 100644
+> index 000000000000..ad6732133ec5
+> --- /dev/null
+> +++ b/drivers/mfd/aspeed-pci-core.c
+> @@ -0,0 +1,120 @@
+> +// SPDX-License-Identifier: GPL-2.0-or-later
+> +// Copyright (C) ASPEED Technology Inc.
+> +
+> +#include <linux/init.h>
+> +#include <linux/module.h>
+> +#include <linux/kernel.h>
+> +#include <linux/errno.h>
+> +#include <linux/pci.h>
+> +#include <linux/serial_8250.h>
+> +#include <linux/mfd/core.h>
+> +
+> +#define ASPEED_BMC_MULTI_MSI		32
+> +#define ASPEED_BMC_PCI_DEVICE_ID	0x2402
+> +#define ASPEED_BMC_REVISION_AST2700	0x27
+> +#define ASPEED_BMC_VUART		2
+> +
+> +#define DRIVER_NAME "ast2600-pci-core"
+> +
+> +static const unsigned int vuart_msi_index[ASPEED_BMC_VUART] = { 16, 17 };
+> +static const u16 vuart_port_addr[ASPEED_BMC_VUART] = { 0x3f8, 0x2f8 };
+> +
+> +struct aspeed_pci_bmc_dev {
+> +	struct plat_serial8250_port uart[ASPEED_BMC_VUART + 1];
+> +	struct mfd_cell cell;
+> +};
+> +
+> +static int aspeed_pci_bmc_device_setup_vuart(struct pci_dev *pdev,
+> +					     struct aspeed_pci_bmc_dev *pci_bmc_dev)
+> +{
+> +	resource_size_t bar = pci_resource_start(pdev, 1);
+> +	struct plat_serial8250_port *port;
+> +	u16 vuart_ioport;
+> +	unsigned int i;
+> +
+> +	for (i = 0; i < ASPEED_BMC_VUART; i++) {
+> +		port = &pci_bmc_dev->uart[i];
+> +
+> +		/* ASPEED BMC device shift addresses by 2 to the left */
+> +		vuart_ioport = vuart_port_addr[i] << 2;
+> +
+> +		port->mapbase = bar + vuart_ioport;
+> +		port->uartclk = 115200 * 16;
+> +		port->irq = pci_irq_vector(pdev, vuart_msi_index[i]);
+> +		port->iotype = UPIO_MEM32;
+> +		port->type = PORT_16550A;
+> +		port->flags |= (UPF_IOREMAP | UPF_FIXED_PORT | UPF_FIXED_TYPE);
+> +		port->regshift = 2;
+> +	}
+> +
+> +	pci_bmc_dev->cell = (struct mfd_cell) {
+> +		.name		= "serial8250",
+> +		.platform_data	= pci_bmc_dev->uart,
+> +		.pdata_size	= sizeof(pci_bmc_dev->uart),
+> +	};
+
+In the commit message you're describing that the MFD driver will be used for
+setting up MSI interrupts:
+> It doesn't bind the whole PCIe resource to allow each sub-driver to bind the
+> needed addresses.
+
+But you're adding the UART devices here which now means that the core driver is
+doing more than MSI interrupt init.
+
+Suggestion from my side would be to have an array of `mfd_cell` where you define
+which devices are part of the MFD, and your VUART lives in another driver.
+See `ls2k-bmc-core` for example.
+
+Tan
+
 -- 
-2.52.0
-
+Tan Siewert <tan.siewert@9elements.com>
 
