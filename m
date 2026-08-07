@@ -1,77 +1,77 @@
-Return-Path: <linux-aspeed+bounces-4649-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4650-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C97A3C5AC9E
-	for <linux-aspeed@archiver.kernel.org>; Fri,  7 Aug 2026 08:32:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A153C5AC82
+	for <linux-aspeed@archiver.kernel.org>; Fri,  7 Aug 2026 08:32:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hGcp03YsBz3c1B;
-	Fri, 07 Aug 2026 18:32:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786091528;
-	cv=none; b=av6Q5NrzkaGaKtj6lru3t5M4uXanY/2vYAHIB/KEa9SsCryvRBGhH+I44xsst6vYBytwvkDSq/NISM0p1X7vUCztF1A8Tqk+iMKKarPNIImgznRxE3uuFUUArC4pp5IXGbkOkktp/0Yv018z47s2PzhG7GBv3piTVkr7m+ya25CpMGt8QLdfV8T0y4EtI2XI/zFFfN2n5/9PHiGqK8xq6MT920lLxoI8NIdQb+Bqc/7j48QRCapQZb+fwvPTI4vZbFE8h31MGtIRuoTt0UHjNY8teE6H7/WuvOPvtzgCL56WL6Db91OWRFkWwa0BkzjgT8UAGJH0fON0Ci3NdDux7w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hGcp41f6bz3c1Q;
+	Fri, 07 Aug 2026 18:32:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::433"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786091532;
+	cv=none; b=BKQ47TjXKyYx5NM8xWxfmhJqX3yrZIIW6d171Gyz9zKoLR6bfBULzjvtx4cBrw5+EzpLrSzoV+c8p2IXxgACDoxqd9mvygKBHMtYlFUNqNypv+M9F34exXwHJa1+FJd2Yeejqyhs8SLHV2hQmGxSjRlExglltjq38t0BDyo/GPm6XDwXhLo2OrMF+kQkYHkKY/uabxWhoBIrRhKlug15i0vjuGduepX4IiybxI/0sZQOhGDsnvBFC/7Nhg2Zwbdi9q8Z4LgJnIfGqX1gHvMjyKrf5rCUP3hmgZ5p+TlUL+RjuL0sHsk5cgGJ7t67VtJWH726DKQjPNAUczrFbu1c2g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786091528; c=relaxed/relaxed;
-	bh=ixpqFwpYyvhO6JYNSRkqWZf82rMGmiosNWxtjl84Sb8=;
+	t=1786091532; c=relaxed/relaxed;
+	bh=3MesJTCCNQlP4+x64Hx4yUyNd9X6ssapmn5zWFOTB7M=;
 	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=mnMpoYQewX3XP2r39CW6NKT+adyzcq4sAMv0pWrBXzhTtSmDwl2H0Y95cFtupMRYRyfp/6xKI8nw5+jb3z9Z1N2RMGI7g3k6a43GNbxuVXOdaNyp59p5g8dOx5fwiHU97k2++49K9l6L+9RftMiyn4agB83FnFdFJtLGnFnSOjjNsVtOo3A0KdjNYswr5OmzFSD+s1A/4FrJHt+IT9JOLQierazfCMw5wh6pTpXrpldP2kqmA280JDdzqonJj9mIAbDjq3kOWIVmu1zTfdo3l/BWn/AtJ+Uyd3kyd9yEhyJEPA8PboHfIPyDcpPFMOBQZ/5GANylmyutOOfNkzitQg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=RSyXRyJU; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42c; helo=mail-pf1-x42c.google.com; envelope-from=fredchen.openbmc@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=KSnWT7/Vov5YeDbWnkTNfsQegasE2ECb2Yuqbx15e7W8mMU3Y9j1qfulSNGxDrxZkVFyTk+rd1A/iUnzFsxnL9iMrzCCNst1hora/uWhqYSnpT9NS8A4UUBVzaesg6TX+kCq76WQQqiT0Jh0sww2A1QKuIHj0s1nkzE3M/5v+KI8BUEulaj/AaXokRFgL6MFoLg0iEeEXDlnS21FT1MfQ0eRSOIdp91F5uTRlr4FCHcZ1wz9pMOJCHSpcJ8sslCBOcu56ua3hbznl8U3QGnHqg3YbAtmLD3PJLN9Z6zYJQE3tFi6XFUp7Vc3k/TxkB90eoHua8u0oe0XHEX/t3Cf1g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=mPwftwzi; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::433; helo=mail-pf1-x433.google.com; envelope-from=fredchen.openbmc@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=RSyXRyJU;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=mPwftwzi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42c; helo=mail-pf1-x42c.google.com; envelope-from=fredchen.openbmc@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42c.google.com (mail-pf1-x42c.google.com [IPv6:2607:f8b0:4864:20::42c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::433; helo=mail-pf1-x433.google.com; envelope-from=fredchen.openbmc@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x433.google.com (mail-pf1-x433.google.com [IPv6:2607:f8b0:4864:20::433])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGcnz61VCz3c01
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 07 Aug 2026 18:32:07 +1000 (AEST)
-Received: by mail-pf1-x42c.google.com with SMTP id d2e1a72fcca58-8453427d3f4so3651056b3a.3
-        for <linux-aspeed@lists.ozlabs.org>; Fri, 07 Aug 2026 01:32:07 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGcp3440gz3c1D
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 07 Aug 2026 18:32:11 +1000 (AEST)
+Received: by mail-pf1-x433.google.com with SMTP id d2e1a72fcca58-84536ecfc5bso3883639b3a.2
+        for <linux-aspeed@lists.ozlabs.org>; Fri, 07 Aug 2026 01:32:11 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786091526; x=1786696326; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1786091529; x=1786696329; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:to:from:from:to:cc:subject:date:message-id
          :reply-to:content-type;
-        bh=ixpqFwpYyvhO6JYNSRkqWZf82rMGmiosNWxtjl84Sb8=;
-        b=RSyXRyJUZYvCNSfzBnSOXErsrLV/8edU8oG0z1Z/f/RxMZG1uKQRW1w+cQpkio3T4d
-         sff9o2lmR5LgdxGeiRrcROQaUuHcLgj8AZVdz0mMmZEc12W+bkPaeI34gDViALt4orCL
-         o09XaOe1l0uRvb+ZbjTXbs89ZphKBpp3m1pbsVVgpDih+g1FcB3YqCCDZqJ+oMUV/qkZ
-         j8sWlk6fI584o0FRkdccV/RpFpzgwWrOUlhcYnBvXhvDG88aBvQEmLEVjXemKKsC85+5
-         5AWtC3uA5RBBN3QaM/IBddtJHuC+kZcDl2k/ate7yWwAwBbxPxGEjnezr/hMSg9hmfXx
-         bn4Q==
+        bh=3MesJTCCNQlP4+x64Hx4yUyNd9X6ssapmn5zWFOTB7M=;
+        b=mPwftwzioNI3RmuBjBbdQYPU0C5nzZCnPDZlmzTaXozohArUvbg+jJhF75ctAxTusC
+         2SlQB0R4jRjHQ52COHaqEtztnpcZ6cD9jgnMctexSeilzk5KCRE2mW0Vfy/H0+1cFP8l
+         YxjnB02Nrs36B5jzkyo44RQ9v+eaX7OVoE7h6DwsRVJvv3L2ZlOTTeo7dx4QmG0DMnL+
+         gILHtacl819XUbYUJ9XlKB5K/M9qfjbfpO232sD3oBmKn0WMDtuVwyan5W7CPkwe6im4
+         XOWZQTHKFS1mehuO+3LnD0Xg7wU5Gs7/CCA8+MWisIV69mfA2+5o0hCeptKaeyPRhvX9
+         7EXQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786091526; x=1786696326;
+        d=1e100.net; s=20251104; t=1786091529; x=1786696329;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:to:from:x-gm-gg:x-gm-message-state:from:to
          :cc:subject:date:message-id:reply-to:content-type;
-        bh=ixpqFwpYyvhO6JYNSRkqWZf82rMGmiosNWxtjl84Sb8=;
-        b=D76uuBA9wJ82cVCUmS94fcPOkcEgCwOf61gfXVuCrlImkjDjZuVk1DOLuN/ishRPsM
-         mz8p5SQ9wS55m4ljkOJWsIUue7zaOLwt9YFAhJVrYY8k12l2dBxwzgu2oainCqlpCao3
-         IVn/PnMJUR/fK5ayCFt2+QRG8Xvd6kgQTMnoree/9gmSXY4mhUTQJugPt812MJS/Oi5I
-         nQKsrRmJ4B4rc+m2CzsPSGNPoOrOcymun0sQotfBQ6+0y/tKhHclYyml1QTGJVTUZJA8
-         pboe1nWSbwF0aIYUAcjIpBWMwKKco0m2hiYadPf8qxrmPnybw78IChS6RI1f4UTy1l8u
-         GOdQ==
-X-Forwarded-Encrypted: i=1; AHgh+RrNuWmERw4/YERE/69GYrwg2J38e2+WuoPfOPVnC6C3kX5/w+oT48X6Mqa5OHLMCHLecPbvwSp6wfh8fR4=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx2LFOhqgb57ThcX26Tkr3HInYXmHwY0V4GhUP6+ltx7Z1K/+/K
-	8najLkiycprNHYG1Bias3L1rbyvfs7mURNO8S4KdOqPBy3KL9umHsTci
-X-Gm-Gg: AR+sD110sAnAPRS1oFrwgSNWHKAIS5+Uoi3Hpdsu+P/1D0bE1L5UZ5F6CMk2v/tqxCU
-	kjvZmbZCHlZwB5l+9bmMCt//CzQa/7Ns8EacKrn7WdHxqRwJmjAPyfnuKNPdqXBOR4spZjzieqJ
-	uS3iqTVMZD/4N2Fr6YPcYsRQuuPxzzsG+Pb11aNf8IjJtwca3rFSPrBKCoZ8unwyS8eHBxp45FH
-	iCXi3mO3JNIob5rhwM95G+cstAKgDLHlxsEl9MLkTaI6pnhLXUUOSWKYx3rsab37yCV21AN07Y3
-	1IpFNDxJBskuLuCf1TWJPj3o2OHw7PHcpFnacQGcumc1bOCk1IRNEBHQWPEC3t9PueddwEVTMqV
-	PNdvpY2XWAxMLBPdEyP4TW+Cb1NmJvsKu652mF9ZHju4auhccnn2OlYTGnqmn5IUT3/7VVMx6Ni
-	oKuz6MzsEk8KPSXTHy7LVgjE4z+j2bWBB/Xf9iXT2wJ3YnesKSwLhefJwmb8aPiRBHTBUg98vL3
-	BXm8FtcLfRp7tA4ZKiUYsSeAoHsexpu3JeDN8bLQMkLBH9r1Q==
-X-Received: by 2002:a05:6a00:c93:b0:84a:29a7:f650 with SMTP id d2e1a72fcca58-84f2de6ab12mr22053575b3a.0.1786091525621;
-        Fri, 07 Aug 2026 01:32:05 -0700 (PDT)
+        bh=3MesJTCCNQlP4+x64Hx4yUyNd9X6ssapmn5zWFOTB7M=;
+        b=o7UpooFWxSqm7uhuzwQmm9n1Nb29YlpoQ3p4ro0SoVbt06hYGe8A/qw+Z4U3KIGVPB
+         ubN2qjoWr+0RBUFenP9KIorfTEhfx9B0RtIgH4lRIY5GxqY8YHYdVeGHBNyFcF8f/5Xk
+         PfRWML17xelbSdyEJ8GnREZGo7godh1e6KU7NSCxfZ7vVtt2NYEMIED5oaug3UFVO3Gw
+         GQBYK7xciBF/6w/tN61cWhkQWYfpp1sFcrgtDiFHWCRue9tw8vd9V7DjPH0mJahOFg5U
+         T1ihXExsYqC4PLpNbzY2t3QgUCF8UZVtKGDBjTP7PqmsHG7EZRxWSJ74ilrelbqWSV5M
+         d9OQ==
+X-Forwarded-Encrypted: i=1; AHgh+RrXrKFkqeVrqlZRLPoSU19Iqandtk0bOC5AQ1vitcClvyQpadu4IAYY2yrYq36N9gnUGNIdUSEv2A808eA=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyvZfk1jFlB3ksHGImNJc4z/WVevTFmsSQet9J3TibmPG/K2A+F
+	9ZoH1j8WqVlTJCNgiEtO8yzVJLfGm+EPJTaPEqvyKTYR3JVA5ortqcEp
+X-Gm-Gg: AR+sD11z+kL8sVBqx+oC5EfRh3IaJAdGZ6q63jaEVOSfwTaNKJQK/PlMvkjxu6mHLlr
+	DEXKxXNqJR23qQGCv34NyFPGe1ju2qYzGMrs3nforaZNXStILBrPTSWq7KFb9AaW0tJ+0SmYklI
+	BkIOMkFwD62+sZBYsugmXg/GmToWDcy3jGqNsyCC0+OpAm31Z/keTANLOvajRHLtj3nbsD33ilb
+	UMKaI6cwxTsg3nfWZWy2U75Ahvnj6yBuD+NdxKJA/w8I8WoHyPh7hug8GXC9c+8J8h8qLBkReo4
+	zU1m/QHpAzXireLIBL4lJtWkdrP4WH1PEXzoyDiYM4bnBi4vCzge+t/tpk7xwhFoGGYNqxuM/sS
+	q3syHrnr/1QP4iSBBDcNP3lH/9uO9S09v2iYrgBar52NTTppyvBtIL57e8qfOmG+KJ63u8JSC3L
+	lKPC1ER2QysebSQGvajG0oAZBfawh0xEt9JfHzz6r0Vgy2cVq19rdWKdW5L/YJCu5m/CltCxWbN
+	d7BtEdkwh6Px0sZopNSdPj/dJPxw+kaFJ9mPHX9D0jk7i1ZVw==
+X-Received: by 2002:a05:6a00:3d54:b0:847:8b1d:230d with SMTP id d2e1a72fcca58-84f2e014151mr23029742b3a.3.1786091529420;
+        Fri, 07 Aug 2026 01:32:09 -0700 (PDT)
 Received: from fred-System-Product-Name (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84f5a553071sm627409b3a.43.2026.08.07.01.32.03
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-84f5a553071sm627409b3a.43.2026.08.07.01.32.07
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 07 Aug 2026 01:32:05 -0700 (PDT)
+        Fri, 07 Aug 2026 01:32:09 -0700 (PDT)
 From: Fred Chen <fredchen.openbmc@gmail.com>
 To: Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -82,9 +82,9 @@ To: Rob Herring <robh@kernel.org>,
 	linux-arm-kernel@lists.infradead.org,
 	linux-aspeed@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v3 4/5] ARM: dts: aspeed: santabarbara: Add SGPIO line names
-Date: Fri,  7 Aug 2026 16:34:07 +0800
-Message-ID: <20260807083415.672008-5-fredchen.openbmc@gmail.com>
+Subject: [PATCH v3 5/5] ARM: dts: aspeed: santabarbara: Add leak cable present IO expander
+Date: Fri,  7 Aug 2026 16:34:08 +0800
+Message-ID: <20260807083415.672008-6-fredchen.openbmc@gmail.com>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <20260807083415.672008-1-fredchen.openbmc@gmail.com>
 References: <20260807083415.672008-1-fredchen.openbmc@gmail.com>
@@ -103,43 +103,104 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Label two groups of SGPIO lines.
-
-- FM_MCIO_[1-4]_THERMTRIP_N: thermal trip signals carried over the
-  MCIO cables, indicating overheat on each of the four asic modules.
-- UFM_READ_CMPLT: asserted by the BMC after it finishes reading UFM
-  data, to notify the CPLD that the data can be cleared.
+Add a pca9555 GPIO expander (0x22) on i2c6/i2c8/i2c10/i2c13, one per
+module board, to expose the PRSNT_MODULE[0-3]_LEAK_CABLE_R_N line used
+to detect whether the module's leak-detection cable is plugged
+in.
 
 Signed-off-by: Fred Chen <fredchen.openbmc@gmail.com>
 ---
- .../boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dts   | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ .../aspeed-bmc-facebook-santabarbara.dts      | 56 ++++++++++++++++++-
+ 1 file changed, 54 insertions(+), 2 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dts
-index 9d334a01d407..3d35a5a74104 100644
+index 3d35a5a74104..ca5bd805d975 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dts
-@@ -1907,7 +1907,7 @@ &sgpiom0 {
- 	"MB_SKU_ID_3","",
- 	"SYS_PWR_FAULT_ALERT","BIOS_DEBUG_MODE",
- 	/*H0-H3 line 112-119*/
--	"FM_IOEXP_U538_INT_N","",
-+	"FM_IOEXP_U538_INT_N","UFM_READ_CMPLT",
- 	"FM_IOEXP_U539_INT_N","FM_MODULE_PWR_EN_N_1B",
- 	"FM_IOEXP_U540_INT_N","FM_MODULE_PWR_EN_N_2B",
- 	"FM_IOEXP_U541_INT_N","FM_MODULE_PWR_EN_N_3B",
-@@ -1941,7 +1941,10 @@ &sgpiom0 {
- 	"I3C_MCIO_4B_ALERT_ISO_R_N","",
- 	"","",
- 	/*K4-K7 line 168-175*/
--	"","","","","","","","",
-+	"FM_MCIO_1_THERMTRIP_N","",
-+	"FM_MCIO_2_THERMTRIP_N","",
-+	"FM_MCIO_3_THERMTRIP_N","",
-+	"FM_MCIO_4_THERMTRIP_N","",
- 	/*L0-L3 line 176-183*/
- 	"FM_CPU0_THERMTRIP_N","",
- 	"FM_CPU0_PROCHOT_N","",
+@@ -641,6 +641,19 @@ gpio@74 {
+ &i2c6 {
+ 	status = "okay";
+ 
++	gpio@22 {
++		compatible = "nxp,pca9555";
++		reg = <0x22>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <150 IRQ_TYPE_LEVEL_LOW>;
++		gpio-line-names =
++			"PRSNT_MODULE0_LEAK_CABLE_R_N","",
++			"","","","","","",
++			"","","","","","","","";
++	};
++
+ 	// Rainbow0 FRU
+ 	eeprom@52 {
+ 		compatible = "atmel,24c256";
+@@ -866,6 +879,19 @@ ipmb@10 {
+ &i2c8 {
+ 	status = "okay";
+ 
++	gpio@22 {
++		compatible = "nxp,pca9555";
++		reg = <0x22>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <154 IRQ_TYPE_LEVEL_LOW>;
++		gpio-line-names =
++			"PRSNT_MODULE2_LEAK_CABLE_R_N","",
++			"","","","","","",
++			"","","","","","","","";
++	};
++
+ 	// Rainbow2 FRU
+ 	eeprom@52 {
+ 		compatible = "atmel,24c256";
+@@ -1106,7 +1132,20 @@ eeprom@56 {
+ &i2c10 {
+ 	status = "okay";
+ 
+-	// Rainbow3 FRU
++	gpio@22 {
++		compatible = "nxp,pca9555";
++		reg = <0x22>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <158 IRQ_TYPE_LEVEL_LOW>;
++		gpio-line-names =
++			"PRSNT_MODULE1_LEAK_CABLE_R_N","",
++			"","","","","","",
++			"","","","","","","","";
++	};
++
++	// Rainbow1 FRU
+ 	eeprom@52 {
+ 		compatible = "atmel,24c256";
+ 		reg = <0x52>;
+@@ -1588,7 +1627,20 @@ i2c12mux0ch7: i2c@7 {
+ &i2c13 {
+ 	status = "okay";
+ 
+-	// Rainbow1 FRU
++	gpio@22 {
++		compatible = "nxp,pca9555";
++		reg = <0x22>;
++		gpio-controller;
++		#gpio-cells = <2>;
++		interrupt-parent = <&sgpiom0>;
++		interrupts = <162 IRQ_TYPE_LEVEL_LOW>;
++		gpio-line-names =
++			"PRSNT_MODULE3_LEAK_CABLE_R_N","",
++			"","","","","","",
++			"","","","","","","","";
++	};
++
++	// Rainbow3 FRU
+ 	eeprom@52 {
+ 		compatible = "atmel,24c256";
+ 		reg = <0x52>;
 -- 
 2.52.0
 
