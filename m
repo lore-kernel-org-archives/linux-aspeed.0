@@ -1,95 +1,97 @@
-Return-Path: <linux-aspeed+bounces-4660-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4661-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29530C5AD2C
-	for <linux-aspeed@archiver.kernel.org>; Sun,  9 Aug 2026 02:50:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 475F4C5AC67
+	for <linux-aspeed@archiver.kernel.org>; Sun,  9 Aug 2026 03:00:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hHj6f1YG8z2xd2;
-	Sun, 09 Aug 2026 12:50:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::42e" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786179617;
-	cv=pass; b=Pu+bh6vGO6BDTQ4OZSYFrjQyRHgsmb6dXfow3cl2Y3DG907btMREfFt9MbZI2ZLS6HintDpbLz6LBvcYv5wOUNQJ12949GnTYLhLknOIXmkcBQVVo7aqaeOzJHRJusmWM3wLPPRcNgr2CdieH1MIUsOWhUfpRW3xw8DDQtm2fM7iJog67B5u6qB1ofB74I4qWRAp6LplAx17yKES5zF2vOvkWizOM9yI1/XD/FjM0UfTKIZhGc4kvihRBfD03PsXIj1sBKJxO88ZtkA/6pQMSfFXJryeSUyDXPjY+4pDGxFzWJyFp3HC98lMnhBBrWuEZB0MbClQ+GJegEEGMRwZ+A==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786179617; c=relaxed/relaxed;
-	bh=Ttb+o5p7BZaAI5tLlxIO8Vba8Yks4awltsT919HRAqY=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=c9nCVlA3G332HEN6fSL+bryDC+feKVRqiaCPthuIqXcZPtk0yHfgwQ+Gau3zVTFGBQqdG2MXQsfORRiUpiJV2QjFBD8ALIO1H6aG9i0UL1R8sli9V+5rDJQr9MKkl9B5kIZniHxpvKSxN77FzYnjGGmh78ygOBz+1j3ZPtksAl7XaAHhIGf9zyOv4eMrAnDoVIRgp9iphBimBGRgwwBmN5C8bYFDzaEcja4SWWVgm6cBpGZdkyJawmgWSykMw1bXR8VNsiJryJKwyEBkn5eTepNjzWE2h/uQJa4KDWdVA+/nB1F0eBLENKtUVOkn3UoMi5mHuCIC5sjHp8GdZ9fG8Q==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=FWYHlWGK; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42e; helo=mail-pf1-x42e.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hHjLs3Whhz2y1Y;
+	Sun, 09 Aug 2026 13:00:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786090644;
+	cv=none; b=HLdBJcv8NOmUw+iQIUw4yrEjuXCSDfpJfpJyAbo+Y0yKMbgMtXfpouDpbpnuYGst6MHYL/pKhACWfXqP99/BSxCg+H1utwnxLsyEAlGW1dbopj6qt4NIpEAc5BJKVs+avdSkZJsY2hy0ddHWB+jZ+4fjoo7xUlDa6XkCR1zYWPDhL6heIO7cS6toxmmM8RykE5a3jW7oVC/MgAnVbmfWWotPgftF0T4/+6TFnbFOV2g+nA0bAmBW+uQh24p35ty+82MI7I88R1WAuOEtfPRlhziKbWnHhF/u0YTa4RlPET64OiDzEdDRIhTXbotV/gdiGI79ole0rABejMGQf1Tzew==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1786090644; c=relaxed/relaxed;
+	bh=xhHhQhUh884edb2pkrtgwkkFMcH6OBy0eevlqyMXflE=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=VEpGXAkxAz+SMU+4OV94xmdYhUYT/+17rWFJs0CvAnNZGFVHepw+xhI13rbvf5vbTkJckk3q6qCMfgjUXwJqdIvjykJiwn7q8JyLQ+fvISciN9ELcY14G5hYmYiemzhJ0K/UnLblQ5BwrkarLJoSg2iFmiSMg5ZvRy51Gf+xCBCEnFW+6PtcTgjkVIwj8U7OOUtNWYDeJ9G9ksEmMIAujEf1baXiOUOP8vvqWgLNbJLrmG8wy9nNP0JD23gMQmT4h5A1nAroXI82myBvNxIdb58tpPWETdBtGn9BlgwKqhtXfBE5wD5ZWD+oDqxQOBoam7F2IfVYYFyYuX4v+bRXXA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=pmi4vMjQ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102e; helo=mail-pj1-x102e.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=FWYHlWGK;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=pmi4vMjQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42e; helo=mail-pf1-x42e.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42e.google.com (mail-pf1-x42e.google.com [IPv6:2607:f8b0:4864:20::42e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102e; helo=mail-pj1-x102e.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com [IPv6:2607:f8b0:4864:20::102e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hHFMy6W3Yz2xjN
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 08 Aug 2026 19:00:13 +1000 (AEST)
-Received: by mail-pf1-x42e.google.com with SMTP id d2e1a72fcca58-84a2c90e383so2197660b3a.0
-        for <linux-aspeed@lists.ozlabs.org>; Sat, 08 Aug 2026 02:00:13 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1786179610; cv=none;
-        d=google.com; s=arc-20260327;
-        b=FXFsOSFhovOB+dpHc8havQXen4hqONp5SqnoYsyekyEvHaCMannR2H3dCJ3EQH4ZvY
-         cL1sSx4UFc/EpwCapvkUuqJmmXcF08qvKK7hLm6q/8zuNuCjKPE80dHA2BQeHR23f8dN
-         bknNFbW+HEcvPU4ALwmJ6y+jKY+DYzC8eimXi1IgtpPxnuhlojA0BDBDvXebom3Ebaf4
-         UDhDudtiimrSM8iKlbWl+Oq3OgRaBym29KTjAy+3TeS1J5bX7jQErR+WXr3iU6ljDV8F
-         cD96XdACyftQE0i7Hn1qSyBNMXMdhKE5+/jldwiMMABistMx5VNybJbOSw3RNpWcWhCb
-         DDVA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=Ttb+o5p7BZaAI5tLlxIO8Vba8Yks4awltsT919HRAqY=;
-        fh=8cYrDvYC3IpFTE7VElQxUfNO1SFBJXAhEqEg5FluJ38=;
-        b=aUOZm2NlwGRz7WWCXNvG6K//sIGDCSrVQEVZeRQmE5jpKKZKHi+rnKO9nt/oK6d9RW
-         MaWkqEwyDg15ojyRsJwz3wqk4wjFrlY9+Jyu9svjW6HelxE6K5m93+iqf5eyFWcD08qj
-         mMJfS4ZXW2b0bgeXqy3ix5QnWlVuaGaGfHvFw744p4PMuLHrXqB9SpKjxYAQIbOhrdWa
-         1MlKcPTDuR8P+4twzvsuQ3ZDzeR9+LE99VoWZNtNBJ6+cLPARZtp1tTytxXwdqHDt2Ek
-         BVBhkDk27Hn8s95AoWsTeRF1FhJOfegl4NzezpC5TuyW9M0Hg74bZahIhh8dN5JmgKF/
-         Xq8A==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hGcT0202vz3bps
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 07 Aug 2026 18:17:24 +1000 (AEST)
+Received: by mail-pj1-x102e.google.com with SMTP id 98e67ed59e1d1-38d489b6b71so3041943a91.0
+        for <linux-aspeed@lists.ozlabs.org>; Fri, 07 Aug 2026 01:17:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786179610; x=1786784410; darn=lists.ozlabs.org;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=Ttb+o5p7BZaAI5tLlxIO8Vba8Yks4awltsT919HRAqY=;
-        b=FWYHlWGK45dIqPoEeQ16hdmN2hkvVPOZXXe7DQKV0arkSC6pVFPtojGMIyL1j/24B2
-         0jWsLy08J4vBupMj2C3Klbr1Iw9aYIZD9Br0kdVeEsWaVVnQHy/CEKAwM2vw2eX3YXv4
-         Vdywp6KkiaV7lTZxVONKDSiVtauX5TT2LqChDCgr3K8XV2YdFong4BH7m+VaWUaFWZkG
-         5wbAP8SQrkKuKpFuA+A66vTETgjLIAYn0s4480/x0zYlAkC9CsbXkThLviY3Tw3eJJFK
-         UoUKCBg2eY2NmjYnyoRmwFkOGEUliZFvf3J9jnvnfbRoJcBPwrr/YUPKM/r8VXXqGeCT
-         YUYQ==
+        d=gmail.com; s=20251104; t=1786090642; x=1786695442; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=xhHhQhUh884edb2pkrtgwkkFMcH6OBy0eevlqyMXflE=;
+        b=pmi4vMjQ67FXMqSiCHeUm7rbi61CFsrWk0A9p8Tnr/VhypVYWd64yNP8N9lqhONFSg
+         FGg0TXcdaMkyCvpi7WB15N/Kvk2vzN6jKZMCqpK0fL6jJsfZJ/3ZOj+HZPGC7NQVCFZ2
+         ZRxd/WZju7RXJnMacSzHCKi+FnHUMehs7u+0I0BZcZP9NyYoG58u7zBOuSc/+XTMwdor
+         hpG4nm1dllOA+3KhN8rHpdSk1dV7JHrbKBjhEqXzFgmlchNMEjg2HcC+hhH6lm/QeJ5V
+         tmL1i6N6MTGm/4e7LbG2dsXm6fbVUd6OklguBFWPhYHkJRSfD8K6SdBEsPKlHbb75XAr
+         sELQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786179610; x=1786784410;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=Ttb+o5p7BZaAI5tLlxIO8Vba8Yks4awltsT919HRAqY=;
-        b=Vd/dTfXCbQtPbuU4u88Dq2t1F2vSVc5PifW9qweP3reTW28AOJ2BuFB0dm+6adL4BH
-         AP/KH1hD6mAKuekEsd8y1Uv5ddytpGSVIt4cvXgvpkY72b2jsO2O/x5BxNA5W/axKlT/
-         4JFuUkt4Ed5nDS0Rd3LZIo/WJ/+xUKGgUjWlO46qNME961gapyCILVsIYbGoorgORS9Q
-         b6uUTH2uj2a6sSmxep/2NH0DcQfdeBt/BYgUHq4GhaJK9SDt64+Gh/sLOhmXnjcYFwvU
-         IFmw3c9cOl7IDKtm6SrNt4vf1iX9uE5c0uF5wmL6Gp4LwiJd4KkwaiAOzS+g7+MHo/+J
-         6N1w==
-X-Forwarded-Encrypted: i=1; AHgh+RrEHARrcSkIkTtuYuIwb/8kxbStKkSxyu5TnCq4QNaHi0/NKer47ey67sNc7EIHD25bOGszOkH+li9RqSk=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxbL/Vll/Gawq0sJiN96HDmkAl+bRY3McAadwcrVdJEs/93C3RJ
-	52nhjfJ9Hm8uZSykb8MFIFZoaC7zr+uGzaK+qV1kzBMa6Xv1kN6v1JlBV0J0MK1p5/diodTiZ1U
-	AIbgWxZzC046euAc5J3JFqARNBl+n5kw=
-X-Gm-Gg: AR+sD11RZibEYhwKtP+KqX24jR05jMtzAjhSSMQy9oJ0MGKrvVmk21r1Qo9jS5+R+/O
-	/VdxsUlWtIVPKLMIshHzTA/suqQumB+5nVhaWdyPHHAXItpqzuOs00q4dffUeuCTPuP72V9u1yl
-	pVMCXVJwWjaO4mcmVSQXWC55UJ2/tImL6h7vAwfnQm6LieUCSWKiFpYjXqWsD/3XV91yGbAiCoV
-	jYdVJxtYOBuBWTLJw3OtE41ndz/yIC+m6RY+bZ0XuEUpp6nCphJnB4FCYLRb39f813feZTiNp6X
-	ey/Kqih23D+To4Dm7s73iSufMprqxy09UmP01pFQg+It2WS07v5Je3yo3CsfElMtus7MbBanqCF
-	cxgieqmZi6VwF9WYYOteacOrSL6Zf8jEqQMYzIWIxjnPVvksq+YDozZXb8EepPpn85F8RALuYQv
-	fy4QyLGKSKi1vchog=
-X-Received: by 2002:a05:6a00:4c98:b0:847:e2e4:a36b with SMTP id
- d2e1a72fcca58-84f6b879bdcmr4679831b3a.19.1786179609674; Sat, 08 Aug 2026
- 02:00:09 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1786090642; x=1786695442;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=xhHhQhUh884edb2pkrtgwkkFMcH6OBy0eevlqyMXflE=;
+        b=qNOLzSF+2kRaz/9Jqi6jIPG5qhQZ+dv7NQurttwKSzgAErKjI5ajwJ098MModFv/lX
+         O+klcawy/6Y0/p4FbGhQBJJODYxLcUr7Cxyvk1WLfZNV/afCvhj0LBjDr/gSVAtvxGjH
+         t2wpWfgGuj756nNXIGH8taZ4O27whaYOMo9prJoCc02+fH8NC0OFypXVa/7Y5r+BQ6tI
+         6PQGV1VGaKTo/bE66t54gtSXO3eDMn1gd5qntgn4LMMuJT91Dy1ALdccjAoQBYFrH8my
+         T4xyGm+fRTYvbsvVHMF9ltSnh8eVi9IzUVZFHY3t6BW2qXU/4jQoNYeBYlFgv3YSeU41
+         ML6Q==
+X-Forwarded-Encrypted: i=1; AHgh+RoMhIus1aUKn78fwpow6D/77FMVudEdAp2jNs5D8ubuT5UqJtyERGFFJAXA9jQA7EsOJJ06WyVDEHf2kWA=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YycVjMTg8p05bRfNu5UKoWIqsDkQQkqHcX/C9oC22ZBkWlV3uDf
+	0goV6dVaYBuDl69uCnPfX8jZLTOQrz6T6OB0wPsxQ6eDZ5hOse6iWZFu
+X-Gm-Gg: AR+sD13JLND2YLmcbcMR/tVM388W/b2L6EfDdZmHDhC+MKc0XgsTnUH4dYO7LZhpKh2
+	hUCVCHtrDY3J4SFuL4GXnNch147v53UmDrdk0HeFeO3+ntgEPMfrz1Cx1FMXiAMhF3LFfN3RPix
+	UCwzTLb/yBRuiOoyXir0qZgfgD+S4gWX84L7hrTV0ZqRARCdSnawdJiR4A+vR2dXrZlQ5N80pWm
+	Q85TgSHPQIT8Ep/BmPvqLsFsyP0u2QQIIE+5BGnuAgFkoeqhXaMX3+cyrg0tXc/EC2ACKrs9cG2
+	9+zWa1peVqP0zDgh/ktzp2RztXSPm8Uzn5Y9qW3RTGoQucJG+mjAkkyRTiJwROAGxZLI1krtV18
+	362czZnHX5OZSU5Mv/YsXnQZTzCKOC/c81itsy4rHZzMRrUf46ze1V8QruGvZmgQGWmvWOSLAeJ
+	UcIWICxejQWFyKv/xWE2izlBEzVBjw7bF6xoo8hSe42h8fK0PUxDqu3z0XVpYQQSM/qa+R9ElGP
+	FZJLBI+ttiZgtf+E/HzeZgwdVOvYE+f48f1RXer94YwuYzEfQfCfNIHx4hhoLh3k2WDeVXouiu5
+	nYv1
+X-Received: by 2002:a17:90b:4e8d:b0:38d:ec31:4840 with SMTP id 98e67ed59e1d1-3903c5932femr22557442a91.13.1786090642107;
+        Fri, 07 Aug 2026 01:17:22 -0700 (PDT)
+Received: from phuc-desktop.. ([183.91.15.56])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-39085de8ddcsm3913377a91.6.2026.08.07.01.17.18
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 07 Aug 2026 01:17:21 -0700 (PDT)
+From: phucduc.bui@gmail.com
+To: Wim Van Sebroeck <wim@linux-watchdog.org>,
+	Guenter Roeck <linux@roeck-us.net>,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Cc: linux-arm-msm@vger.kernel.org,
+	linux-mediatek@lists.infradead.org,
+	linux-watchdog@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	bui duc phuc <phucduc.bui@gmail.com>
+Subject: [PATCH 4/4] watchdog: aspeed: Propagate errors from optional IRQ lookup
+Date: Fri,  7 Aug 2026 15:16:52 +0700
+Message-ID: <20260807081652.38692-4-phucduc.bui@gmail.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260807081652.38692-1-phucduc.bui@gmail.com>
+References: <20260807081652.38692-1-phucduc.bui@gmail.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -103,45 +105,36 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260807081652.38692-1-phucduc.bui@gmail.com> <2eb8b31e-a3c6-4310-b9cc-7acd135b6c99@roeck-us.net>
-In-Reply-To: <2eb8b31e-a3c6-4310-b9cc-7acd135b6c99@roeck-us.net>
-From: Bui Duc Phuc <phucduc.bui@gmail.com>
-Date: Sat, 8 Aug 2026 15:59:55 +0700
-X-Gm-Features: AUfX_myHjaHhMRuATtXSNJb3hMWPktXUxThFKw4KnDmx30oADvzEsWx9LpvQM5w
-Message-ID: <CAABR9nHqKKbxkzBNkENadhFJgC_HuetV+ab7SVsGH+cwbF+OFw@mail.gmail.com>
-Subject: Re: [PATCH 1/4] watchdog: qcom: Propagate errors from optional IRQ lookup
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: Wim Van Sebroeck <wim@linux-watchdog.org>, Joel Stanley <joel@jms.id.au>, 
-	Andrew Jeffery <andrew@codeconstruct.com.au>, 
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, linux-arm-msm@vger.kernel.org, 
-	linux-mediatek@lists.infradead.org, linux-watchdog@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-aspeed@lists.ozlabs.org, 
-	linux-arm-kernel@lists.infradead.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 
-Hi Guenter,
+From: bui duc phuc <phucduc.bui@gmail.com>
 
-Thanks for the review.
+platform_get_irq_optional() returns a positive IRQ number on success or
+a negative error code on failure. For an optional IRQ, -ENXIO indicates
+that no IRQ is available, while other errors should be propagated.
 
->
-> This is wrong. Check the if() path - the code ends up here if pretimeout == 0,
-> even if irq > 0.
->
+Propagate errors such as -EPROBE_DEFER and -EINVAL instead of continuing
+probe without the IRQ.
 
-You're right. I misunderstood the condition in the if() path.
-I'll rewrite it as follows:
+Signed-off-by: bui duc phuc <phucduc.bui@gmail.com>
+---
+ drivers/watchdog/aspeed_wdt.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
- irq = platform_get_irq_optional(pdev, 0);
-+if (irq < 0 && irq != -ENXIO)
-+        return irq;
-if (data->pretimeout && irq > 0) {
-.....
- } else {
-- if (irq == -EPROBE_DEFER)
--       return -EPROBE_DEFER;
-  wdt->wdd.info = &qcom_wdt_info;
- }
+diff --git a/drivers/watchdog/aspeed_wdt.c b/drivers/watchdog/aspeed_wdt.c
+index c9e79851504c..48454ac86074 100644
+--- a/drivers/watchdog/aspeed_wdt.c
++++ b/drivers/watchdog/aspeed_wdt.c
+@@ -429,6 +429,8 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
+ 	if (wdt->cfg->irq_mask) {
+ 		int irq = platform_get_irq_optional(pdev, 0);
+ 
++		if (irq < 0 && irq != -ENXIO)
++			return irq;
+ 		if (irq > 0) {
+ 			ret = devm_request_irq(dev, irq, aspeed_wdt_irq,
+ 					       IRQF_SHARED, dev_name(dev),
+-- 
+2.43.0
 
-Best regards,
-Phuc
 
