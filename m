@@ -1,136 +1,95 @@
-Return-Path: <linux-aspeed+bounces-4674-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4675-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A275C5AC82
-	for <linux-aspeed@archiver.kernel.org>; Mon, 10 Aug 2026 06:24:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4782C5AC82
+	for <linux-aspeed@archiver.kernel.org>; Mon, 10 Aug 2026 10:37:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hJPqS4znCz3048;
-	Mon, 10 Aug 2026 16:24:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c405::7" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786343076;
-	cv=pass; b=jgH4owmJz3s1ZovWosol4I8zwREo5jUQ+779R2j5CHpNa8QzDpXOxAse67B6Ste0R0cUY1aTTABmZAyS0mzI3BZ5sFzXq35rKF+pMJQTQ6dwkqT7J6Y8Mg2d3ue6D3uhpLqetNCIvjXs+eyMPTF6KbaUa294GI5oFU4v4f9A3Bub8wcPGAm3AVuU4f+6jXuiC0CBUhKQznLcJgMdHEbnmSsKsNEt1Blrg5p5zhY3JvtrjVW6aVKq2w5nVj5C9jpxvfgfyUW1mQAZWZBusqsOKpzawy/HibppRH4zGC48F3qWxcIIIRTnwW1/edrmvRb6wahTR3wklBl1Swle14bTCw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hJWQh6fvCz2yrS;
+	Mon, 10 Aug 2026 20:37:00 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::432" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786358220;
+	cv=pass; b=iAM78xJUHsPBf2Cky8m8Kfm66lBNYyYcGQXhW1WWuJ0gWCMFPZdpG8FX9I0jrbB2TYcx2NlxeRQNQrHyDXTI5FWX8VURLI6uZ8KUOlXMrXuwbXmkEbtAfxP7aoRUnCs6UIgkWM5ytuAA0uO1I9TZtdJ0xtVx7ONrny0aFYCNxHWjZiOSzJ2NbPrsCTunUQrEtpY81QMEMjfeI3QGw8yhDjLzKxY2a5Rls76jlfydBOdcWydgey5n4aR+M5yXGG9oJsePOF5syoa/Jh3nrUF0BTvIBorAguO8tQcOdt/LsT17F+1ColblVVqj7AV/56hkuKzq1puifA5wFZXExL1FHQ==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786343076; c=relaxed/relaxed;
-	bh=ybLbPPF3QfwXuKFhDDSQEGJ1Mv/q7ZvZDiz8u1e3sBs=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=AR2thtaMftdB8N9It9uGLdhdaFUauPI3yEDuPRZYmrv5hAV62RTF0bTqtWxvBcwFSE+7sjOyCp2oUWR4XSKGIqCFFQWUQsygGBvMxXKf7AQgZdvkr5YVLW3V+2WpBGsADjN3f8/PFVlhUo2rOOTPAUgdThz34JDoE1zwGJ4hi55NgAC4t9tIUeUPnHm8/nyryIbsrs7dGcobfHiAmnp3s3vS3fjeruJnqfwTOOYsnm/Trjb/u5rQUOLnKZv0hrMIuzUxYDDTp4tfB8PIXzr87Gk9ZvG750L7mnHvjahDem0/oOQMnnr2nisJjfXMTP/gv/O/YhAKq8MUQXIr5vJZlw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=RlG5M1J5; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c405::7; helo=tydpr03cu002.outbound.protection.outlook.com; envelope-from=yc_hsieh@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+	t=1786358220; c=relaxed/relaxed;
+	bh=JZiFErJumO4f6l/jB3Vv8dc/wBPU8PfaQ8eqWXYPx/g=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=gdYjigViXL8/xsBdansr71f6RIuHOnKmkvzMODSoDgrmXyw6Qxa7qfqw8SBgJ23g8pp0C6TJY9S8p/+Q8DuiNniF1TbZNOky3tpAi56qEI5/wUG+ztqm+xy7pNPYKKPf+hF7dtgyzlB+IAyKMIJMd4WD2oiX480uqsGExfTo7sKuji7lele3JTbnd3WpLFks+ITENLvV62LRHO9NZosStFOvw5j07Fld645PsnO16VLpWo4ltjYquGQRzdlLz2jqmJWImfeSoC4jWwqOLgD6yA5d/nuRuC65c5Uca6Bw8htfLSWBkJ+WRCg53FtaZOZnHBiOT7OtSW8p0+u9XNtmFg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=9elements.com; dkim=pass (2048-bit key; secure) header.d=9elements.com header.i=@9elements.com header.a=rsa-sha256 header.s=google header.b=Xe6L+eeN; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::432; helo=mail-wr1-x432.google.com; envelope-from=gregoire.layet@9elements.com; receiver=lists.ozlabs.org) smtp.mailfrom=9elements.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=9elements.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=RlG5M1J5;
+	dkim=pass (2048-bit key; secure) header.d=9elements.com header.i=@9elements.com header.a=rsa-sha256 header.s=google header.b=Xe6L+eeN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:c405::7; helo=tydpr03cu002.outbound.protection.outlook.com; envelope-from=yc_hsieh@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from TYDPR03CU002.outbound.protection.outlook.com (mail-japaneastazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c405::7])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=9elements.com (client-ip=2a00:1450:4864:20::432; helo=mail-wr1-x432.google.com; envelope-from=gregoire.layet@9elements.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com [IPv6:2a00:1450:4864:20::432])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hJPqR3sg0z2yYq
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 10 Aug 2026 16:24:35 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=g4NPLqaf7CX59gVv2LxvWlAmreKzyCYKM/zCgmLqs4jz2UyN88wvT2xYQKga0p8LMoOBtMG4QBWDHmYmZtADSLfOV1bSHnAZFwjaRibCDOPHTA5Wzw5x2h6ER+ockF4myJgDn46R9EE5lRY7NS6ALprfhPGmf3vfUrK+PR6KJOtVolsI6nZfoIoouoZpJSAaIrmvrkel5CMtjdH+FihoudPpvyYqjKC30jwAdsSZvLnlIFPR0fo32rtjueBskZYUD2ExJaRlyFEwxCSuCLH2dZaw/4KDovXy8y8u4nKCpqlbyP+HgwjTeerpH+jLew9iM0k1im2ixhPyKqTaG3amQw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=ybLbPPF3QfwXuKFhDDSQEGJ1Mv/q7ZvZDiz8u1e3sBs=;
- b=WW2xLJUrepwc7/9kKYx1wXr/TdBklonM9XKDmh2XA9DfFx1QpJ9haGSQMw1Z+2fw1b7wGQ3RqYlRBhS4IYq0hyIiVXhscyvhN4BZgK8r8eZqvaevmhpqAFdta5aMIl1QCQhOTFCWdAGqrJxwDURY1HwQf4cfKUxzLci1mpKll5zjKUD2/y32aMmGbzEF8SGOCbGtDJjDpv0ElGYwUcNNv70LcCpBm06GBewbkzptncVHZROlwb2/2Og6B0g3r3yc260hzYWpgCWkxid5bF1q5g93V84HcCxq7n09w9gh1a033RlZBV/NwmOuAZ+ZlRHzeRP/no2LTfFWUfQ80Bg8sg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
- header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=ybLbPPF3QfwXuKFhDDSQEGJ1Mv/q7ZvZDiz8u1e3sBs=;
- b=RlG5M1J5BU990ntHcSFp83d7LLj1lR0UCEHwSlHC58siYhs3DrrdqhNOvxEC1F6mTNh7JGFbw2keKXHdwS0z50+0/rPjYyC9BIJD+k2qhDLEmHHGCc5gRTkkrLUa3f4MP97yVAbSxnZxjtujR29fdcUpGlRQxQquXaCAs+lm1eUetkXLO1AFESUhpYvDv3FmcrWNLsjigm8MLB6tbIMgZ5SoCsFeNoLh2Veu62Ilias90zmncLHf350oFaEA4JmC0/v4EiogOzxz65x888iCZ2rayBCZ8HUOYV3HVUxzft3leXpFpHzhG6EQYuTr4TBk78X7LXaQs6+/DiNqGWW/hA==
-Received: from TY0PR06MB6855.apcprd06.prod.outlook.com (2603:1096:405:13::10)
- by SE3PR06MB8408.apcprd06.prod.outlook.com (2603:1096:101:32c::17) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.292.25; Mon, 10 Aug
- 2026 06:24:11 +0000
-Received: from TY0PR06MB6855.apcprd06.prod.outlook.com
- ([fe80::9405:99c0:aadd:7e05]) by TY0PR06MB6855.apcprd06.prod.outlook.com
- ([fe80::9405:99c0:aadd:7e05%5]) with mapi id 15.21.0292.024; Mon, 10 Aug 2026
- 06:24:11 +0000
-From: YC Hsieh <yc_hsieh@aspeedtech.com>
-To: Lee Jones <lee@kernel.org>
-CC: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, Andrew
- Jeffery <andrew@codeconstruct.com.au>, ChiaWei Wang
-	<chiawei_wang@aspeedtech.com>, Corey Minyard <corey@minyard.net>, Andrew
- Jeffery <andrew@aj.id.au>, "devicetree@vger.kernel.org"
-	<devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
-	<linux-aspeed@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, "openipmi-developer@lists.sourceforge.net"
-	<openipmi-developer@lists.sourceforge.net>
-Subject: Re: [PATCH RFC 1/2] dt-bindings: mfd: aspeed-lpc: Document lpcN alias
- for multi-instance SoCs
-Thread-Topic: [PATCH RFC 1/2] dt-bindings: mfd: aspeed-lpc: Document lpcN
- alias for multi-instance SoCs
-Thread-Index: AQHdGmSNPNVIJAn/I0uFrmGW71QRFLaRGueAgAXPdmk=
-Date: Mon, 10 Aug 2026 06:24:10 +0000
-Message-ID:
- <TY0PR06MB6855FDB0FC2A4353DC96C00D93DE2@TY0PR06MB6855.apcprd06.prod.outlook.com>
-References:
- <20260723-upstream_kcs_multiple_lpc-v1-0-d918b5270b86@aspeedtech.com>
- <20260723-upstream_kcs_multiple_lpc-v1-1-d918b5270b86@aspeedtech.com>
- <20260806133111.GF2869284@google.com>
-In-Reply-To: <20260806133111.GF2869284@google.com>
-Accept-Language: zh-TW, en-US
-Content-Language: zh-TW
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-msip_labels:
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=aspeedtech.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: TY0PR06MB6855:EE_|SE3PR06MB8408:EE_
-x-ms-office365-filtering-correlation-id: a8c9bf6c-cd75-4da3-3a64-08def6a7fdb1
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|366016|1800799024|7416014|23010399003|376014|22082099003|18002099003|56012099006|38070700021|6133799003|10067099003|4143699003;
-x-microsoft-antispam-message-info:
- buXNcVuxOD+/44YUk9Zm0t5bP/8/iNpoSIjhEi3XOB4zyyCzymzz0/Rxzb2cZC8en+2HSExad9YjFBc80DFuTfD8S8NdwikPoowkmKVKOSKy3x5TBItSAOX7GSh72k0vnruXVld93I6GmQiQ21Zk7SFo3mG0YJ5A3zvygCsxWeIFP1GuOu7NwOK7BlOtFBMNv2lE6nsHxYLsXB3vwYNnnehrSx/eQ1rVyqvMhXpJgOmM+faij95uisQF9lRAbZxxf14SdKG7Ly/MTuP1hEmiT3jAS7yrWt5c+JDyAGYJ4KiuHsBXRC1BQceiWaxnTOsq+86DS1CCglvOpdBE5mDh7LBVYUdpYEtRCuS500hKhCQLCPadM9lYDbW/RureJ1BoUEdoN/9nl6KZbEAdvmPCQYNqCgx9v0us9+DvGjjiMMfdP3/EBjTKur6obt4+DIWB0H3+spmLVetidczsXN7G4CpiaWpiZkkm4lAriaKtZLfHb+zinJ/wONiQ8LohWvFAvBW50DLjUkFNfNlCfMQDNzaSMweU7rfON7CSl/X0h/z19gamiWgPkO+vDGQhRjTtgNcaKX8b3m/SAXM0M0bbCfnBkJ7Cz+HRehS76P/MDuKZFBiQlKGM4jhf7VulDtdEWrnC8YU9Oc8+oRM5P90nqvd7u5iPeHHiSNLbKV2wOvzdYiIzPiRBhIV5A847MnKJGIVyCsxtlyQ86Q8UsteBFty5P1dlXs1wwXCNMIGgZtI=
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:zh-tw;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TY0PR06MB6855.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(7416014)(23010399003)(376014)(22082099003)(18002099003)(56012099006)(38070700021)(6133799003)(10067099003)(4143699003);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?iso-8859-1?Q?dNAgwsCPMBfbZOj2UdtEniW9RdBGZo+dVy7m0gvRoTr2amSVFJKTkkbEU3?=
- =?iso-8859-1?Q?eHaUwMvxVf63NpT3YJulZZwL0nE0GN6OgQmlnURgg8hVBv8mJwPKmzxWuv?=
- =?iso-8859-1?Q?d1PuVBWfQWP3hs329VjZEaUnZv+lfdGeYryszkrZg2yag0bjky8KFjdX+j?=
- =?iso-8859-1?Q?v5zjD1ukG8CAxFIxblLFaTKe4TIa9Od5Wfg6Xp+rlt2KYuGoynE/osxSDc?=
- =?iso-8859-1?Q?J3AchzyWOW6JwArkDLAF1AZbvv+LGfY5an1siI2xKk27ce1AwpeCe3R8O5?=
- =?iso-8859-1?Q?OW109qgnnx8vp5xpbIqz3pUHB9sjjMrGLUoj403QOJAo0MLNfvuZK5uV7F?=
- =?iso-8859-1?Q?9ePY15ketw4OgAMFJtJwg76h9cYDlv29jGPY0pFwS553MPQtxA3ULEHj5a?=
- =?iso-8859-1?Q?o7gAuRlvckREsunPDkAwhwbtdS6b5/ShS44d5xFZmqoWzfzMj1iJFfipsR?=
- =?iso-8859-1?Q?AZ3vnywPTyLDbZDklA1GHIiWNOkvZhBZU2McGqSooHFEKBX3/Pjp+14Et+?=
- =?iso-8859-1?Q?pipIRdc4KBwhCC1FaZu1uAgyE5jniyLHx9aKrCFQhrfsdZHNI974tc/Tdr?=
- =?iso-8859-1?Q?FWuqRGKMYAvuPrLlwjA/dV5ysgQFkco6iVqIdIPDiubdZQgFvzXIYxP4iy?=
- =?iso-8859-1?Q?zpn7envAuxekp6ljdAb7ngJuTKe+//RxGXZOBSSDZkx3HgrXyYxX0skZ3y?=
- =?iso-8859-1?Q?LeHto0wCHDrth7Dn7g1PeJTng8kGhJLte2zNrdpo++VdKiSPYt6D4DOcSa?=
- =?iso-8859-1?Q?XxvsdX3Md7A3w8q467vzGWzP/X3P3SqkFWzcO9OBGmYC/ihrA+H2MaR1NW?=
- =?iso-8859-1?Q?bJdoiZt2U5jqbr5bllC/MLOnF+OACQr5bOAZixg07MJ8wSFGnxiVT0qpGv?=
- =?iso-8859-1?Q?AMX+ek1J+oXl/lKhGQwJy8wtiqWablFXIezLH13d8YDGBpC5CVnh7diAvt?=
- =?iso-8859-1?Q?TaCVX+uh4MVrBs3xVyHIC2tIkT5XoIv+Em9kMm7t/rN9vHmGmAlxdob7lz?=
- =?iso-8859-1?Q?V67X/SVUfoDy2dkoJthJpQMpnpXb53kH0UrgU1pL9m+mi/pikkx8Ix4X0l?=
- =?iso-8859-1?Q?sKujC8hCNgz+GQKRFpRLQoLGWb1UJPPqpNZSujySdeKQkPs+qQCvrX4yhG?=
- =?iso-8859-1?Q?ot0JAraWfBJY4yxnVv2JyTnsTWdfVP6P1HeZw5+50EkC52jjx6F+CnIoWl?=
- =?iso-8859-1?Q?Lsvr2gAV1xZZNV7MdYZcjLVGvXCUm2IZSeNtB/3AfBZjh77Y6lK0dCvWwn?=
- =?iso-8859-1?Q?skfIgfjQx5/T8oY8ypmmCtOqFXQiA6CyEyGWB/d+AxqtOU5jDXWjSd1KlL?=
- =?iso-8859-1?Q?hAmUTwF/Z3nyQQSKABvQpahO2c/APmLms+5/oPfzapax2ZT6c+IgqdeveI?=
- =?iso-8859-1?Q?RuAGQL1b/7NExdNhPSG5CoKsE7QJupOzDIpwOpGCiS0sjsod4wQCjdq0Jh?=
- =?iso-8859-1?Q?YjcrOe/xwIwC4L/pziR0Hg4WTKf607Jbzy/8O8dtXky0HQT8iAiZyaq8ZR?=
- =?iso-8859-1?Q?PCRZq6gKjDnB0kJG3lX3h5LCjyWApfmdr3PUiDmji9rpVgoG2Z+gPQHXqO?=
- =?iso-8859-1?Q?nNUVG1rv8knbVfN30z+wmgtbux4pTy9qwqdQMyPDzPs78o3VaWw6WTYGFA?=
- =?iso-8859-1?Q?h16Jyo0zz3SutwCMOffRkPqXxgdRIEfQZ9RIBDaxtravBZf4NdfBRK3nxC?=
- =?iso-8859-1?Q?z2qvwKBgdlnqQ4D0Xe6endj5DdnTVrmnAl4qjvdMPKDZVhoVgFMKR6PeIB?=
- =?iso-8859-1?Q?4QJdZtMwqZDcUg5PyfCtbRWCDF1tKJsgDpnSGraFrc9JJxc7dHeiHpr5ZV?=
- =?iso-8859-1?Q?LzmQ4Of/bw=3D=3D?=
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hJWQd4pzqz2yrL
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 10 Aug 2026 20:36:56 +1000 (AEST)
+Received: by mail-wr1-x432.google.com with SMTP id ffacd0b85a97d-480033bdcf4so921538f8f.2
+        for <linux-aspeed@lists.ozlabs.org>; Mon, 10 Aug 2026 03:36:55 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1786358212; cv=none;
+        d=google.com; s=arc-20260327;
+        b=LXnwzcoLjxM6MGCgXxN68DM50Uv+h4VTbUajv6yPQY2VcsgU2/kOQDy7rkFxN1+Gb+
+         FNQ/GJ2MfHbCweiI+1cw4AK2k/Xn3fvL+qnaTyXZ2n6fZ+5SZRKmRxafDI81IjUEikw4
+         V/LHw0FJZFe+v+d6B8vC3Catlztc6m/ACfJq2PEXs6NnBuIfnl+DK1Rnz1ZFN+WxJ6WH
+         wHVANPjbYnLZ6zukROUHgD7OJ7f1BW6S0XcWsiOzrUTsB04rI/UmPwY7L6otDjleIrQK
+         1mM3zdGLAdQjqqXqDCMDxFHVgjh0LrgoJ5ZskfW9tcCXstCkYPQcPqhq8lkjsY/9FH0H
+         YXiA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=JZiFErJumO4f6l/jB3Vv8dc/wBPU8PfaQ8eqWXYPx/g=;
+        fh=9Ul170QuMsvavraEYL8EpMirNe39eNz4a2Ybt4z9suY=;
+        b=ix0JSCMJ5OhigCJOATehlpjhHib47i7y/fth+rGtW4ycgrNZFpqee75BXRRVvI87ey
+         2yWiMXQmT74sCYcacM+ob5TdXwzCncFt58zXSQAhBB50UUJwJwHbJPMNRJnYqT8QbBo4
+         r1Zx7Qh80EVXCFq/LGaABtOyr3tuS7rUr1FW5JxojIwGEslf3o48op+mX3H88ZhI3kej
+         I8KpeHQsfC4BdgX5rgg4G2TUMMy5M6uVSPho0VCa74WgNi4V0uhNL7YYCq/tEYOhpidn
+         bqnPkPZO5PYP7ZKfgbZRHcQbGnYhiK9HfrIXw5rwVEBtVVfAfHl+ieZA5M2QD13OjUIT
+         MV8g==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=9elements.com; s=google; t=1786358212; x=1786963012; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=JZiFErJumO4f6l/jB3Vv8dc/wBPU8PfaQ8eqWXYPx/g=;
+        b=Xe6L+eeNVjH+uZtKG+Kup+bZbaDspO1f63VCP1hWOerW/ZwGWBZZckfKpit9vUIlCb
+         dEwPlItltY+IkZ0/VjNZfgMAlnWY1LSoM4HgwpUe0xoQOBwLqPQJdm8C3aiX7zowNtu2
+         UI/6okNWXauTzHWgpKTy44DOTlaMkCGwDHERCif7R5EfmMI+f2U0utrlhwOiibpdUiAK
+         P/Cz58daeMmSvM/yS/heQsNzutaqA85lsDpAJ2o8pihbh8J51GCeo1uQPUiqv5Ca65WO
+         EClpLeYSGJOvBzHfgjVJp7NqgwRqLlN/vghozErV7+qv8iEXQ1Q3MBQo1rJxw+j0KBmJ
+         jGgA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1786358212; x=1786963012;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=JZiFErJumO4f6l/jB3Vv8dc/wBPU8PfaQ8eqWXYPx/g=;
+        b=OgCVDAPlY2x2cTBT9JhbDgzVSoDUytWHoJTYJOU2PpX9+hIy+TPFGUspS2RI3CVsQP
+         c1GQt0mF2zV+1QyUylPOFHNCKm6DjtVD6RcBUAM8po8y4NN+kCimpVmay2nLB98kL9DU
+         zJW4QeKROwr8s10PUrujhq0bDbAb62+TV8qvkIG5CCG0HYv9BvdDobc/GgDwfm4fAOHw
+         FZWA1+NR4z3lie1D3GJ9y4bwcw/9PitD1SPXmS+VzCSeF50vmMp2FdGghNO8yZH+TR9S
+         WdTLcVoyh0lfrFEhkWkti54IDodrVTecCUyLGFLbdB7bRG3yrPx0tTBx4o8H9yHde0Sh
+         rH7g==
+X-Forwarded-Encrypted: i=1; AHgh+RrW4Ft9xCe4jQT/5cLCAVvX1852q54aZHph0GxHh6HyBAEmp9qjLdF5rz7PqUBQDer8lIevzmgIs7IoOtM=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yw5SAOU241He4kMXoukaBRE0RfJLGMSO/wQfwlnO+HRA5eA5fj7
+	85+17dVobxXirEiFXDLvcC7sDSuhsGni/rHdeNQFFfdsf/QwSm2XfW/Rg54nUNcMpnFwF9JB8iP
+	Vix//58ObKpek8e1pUc/ST+0WV/70A6+rGQVsp1o0cA==
+X-Gm-Gg: AR+sD12WLlOJyjQuyEc9Q8WCxwr8ciWj/UYYlQaxXNINsdl/dctnUJnVH7z+j/WgSJA
+	i0N/SdZuX538TiQ2BkFa7fdHsZksXtAb7i8Gk213ddNlmtF9kD0gdc6zVlEJC1X8vR+uB41sKqT
+	CYviBlE4o8dSV168ihkB5CCcoQ+3f3uG/fhOQRdbf6+EDxxIxxYccm8Es2niZS7llfT/DtPEOdr
+	e0tJla7v9+jy17iC28a1i2yicW5afM4A+V8TA94xYos5wmGkaMdFao4MdW0sAQnKbHzxoOrXquT
+	41bCY4XFOZ4Gg8caXCJ6l66lsc6m8vrJjWS090gWF1IzBM50zfufgUC8EoSXM6v6ZYSOdMLCTFB
+	Ru8f/QpK0RBMvEUPkJxnZIRYOAxjjfA==
+X-Received: by 2002:adf:e012:0:20b0:47f:959f:f69c with SMTP id
+ ffacd0b85a97d-481455ce280mr1198921f8f.7.1786358211845; Mon, 10 Aug 2026
+ 03:36:51 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -144,77 +103,97 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-OriginatorOrg: aspeedtech.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: TY0PR06MB6855.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: a8c9bf6c-cd75-4da3-3a64-08def6a7fdb1
-X-MS-Exchange-CrossTenant-originalarrivaltime: 10 Aug 2026 06:24:10.8787
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: ZWYBxJh+9KCPLNYxclwbtiLFXi+diNOftUtemk2tIsHBU54XMkUPlbx2PnHaWWisCLsR1rSMFlRie1OFXfhI1A==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SE3PR06MB8408
+References: <cover.1785932211.git.gregoire.layet@9elements.com>
+ <51db5e5bb5bf44dd5ab893b8d547291f04e1d3c7.1785932211.git.gregoire.layet@9elements.com>
+ <178609182923.193353.7287772568467157519.b4-review@b4>
+In-Reply-To: <178609182923.193353.7287772568467157519.b4-review@b4>
+From: =?UTF-8?Q?Gr=C3=A9goire_Layet?= <gregoire.layet@9elements.com>
+Date: Mon, 10 Aug 2026 12:36:39 +0200
+X-Gm-Features: AUfX_mzXwFrJ-NjND3MQzEP6QwRNrCstHPVctQ1cLuVCmYnxx742CiD2MW3y8Ss
+Message-ID: <CAFi2wKZdJ3LxJVDqC2K79T0JhoOOWSj=ZmL9pB+Lka_aXDXatQ@mail.gmail.com>
+Subject: Re: [PATCH v5 4/6] soc: mfd: add ASPEED AST2600 PCIe BMC device driver
+To: Tan Siewert <tan.siewert@9elements.com>
+Cc: joel@jms.id.au, andrew@codeconstruct.com.au, lkundrak@v3.sk, 
+	devicetree@vger.kernel.org, gregkh@linuxfoundation.org, jirislaby@kernel.org, 
+	robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, lee@kernel.org, 
+	=?UTF-8?Q?Gr=C3=A9goire_Layet?= <git@gregoirelayet.com>, andrew@lunn.ch, 
+	jacky_chou@aspeedtech.com, yh_chung@aspeedtech.com, ninad@linux.ibm.com, 
+	anirudhsriniv@gmail.com, linux-serial@vger.kernel.org, mfd@lists.linux.dev, 
+	linux-aspeed@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, 23 Jul 2026, Yu-Che Hsieh wrote:=0A=
-=0A=
->> Some SoCs (e.g. AST2700) expose more than one physical LPC controller=0A=
->> instance. Downstream devices such as KCS channels need a stable,=0A=
->> globally-unique index derived from which LPC controller instance they=0A=
->> belong to, so document the "lpcN" alias convention on the LPC=0A=
->> controller node that lets DT authors assign a fixed index per=0A=
->> instance, mirroring the existing alias-based numbering convention used=
-=0A=
->> by mmc/i2c/spi/serial.=0A=
->>=0A=
->> Signed-off-by: Yu-Che Hsieh <yc_hsieh@aspeedtech.com>=0A=
-=0A=
-> Why is this RFC?=A0 What's stopping me from applying this now?=0A=
-=0A=
-Thanks, there is no blocker. =0A=
-=0A=
-I marked it as RFC to gather feedback on the alias-based =0A=
-numbering convention for LPC controllers before submitting =0A=
-it as a regular patch.=0A=
-=0A=
-If the approach looks acceptable, I'm happy to resend it =0A=
-without the RFC tag.=0A=
-=0A=
->> ---=0A=
->>=A0 Documentation/devicetree/bindings/mfd/aspeed-lpc.yaml | 7 +++++++=0A=
->>=A0 1 file changed, 7 insertions(+)=0A=
->>=0A=
->> diff --git a/Documentation/devicetree/bindings/mfd/aspeed-lpc.yaml b/Doc=
-umentation/devicetree/bindings/mfd/aspeed-lpc.yaml=0A=
->> index cbc3a2485a2f..81c12e0fb312 100644=0A=
->> --- a/Documentation/devicetree/bindings/mfd/aspeed-lpc.yaml=0A=
->> +++ b/Documentation/devicetree/bindings/mfd/aspeed-lpc.yaml=0A=
->> @@ -35,6 +35,13 @@ description:=0A=
->>=A0=A0=A0 configuration, therefore the host portion of the controller is =
-exposed as a=0A=
->>=A0=A0=A0 syscon as a means to arbitrate access.=0A=
->>=A0=0A=
->> +=A0 On SoCs that expose more than one LPC controller instance, it is po=
-ssible to=0A=
->> +=A0 assign a fixed index to a given instance (and thus to downstream de=
-vices=0A=
->> +=A0 such as KCS channels that must be uniquely identified system-wide) =
-by=0A=
->> +=A0 defining an "lpcN" alias for it in the /aliases device tree node. I=
-f no such=0A=
-> +=A0 alias is present, the SoC is treated as having a single LPC controll=
-er=0A=
->> +=A0 instance.=0A=
->> +=0A=
->>=A0 properties:=0A=
->>=A0=A0=A0 compatible:=0A=
->>=A0=A0=A0=A0=A0 items:=0A=
->>=0A=
->> --=0A=
->> 2.34.1=0A=
->>=0A=
---=0A=
-=0A=
-Yu-Che=0A=
-=0A=
+> > +
+> > +static int aspeed_pci_bmc_device_setup_vuart(struct pci_dev *pdev,
+> > +                                          struct aspeed_pci_bmc_dev *p=
+ci_bmc_dev)
+> > +{
+> > +     resource_size_t bar =3D pci_resource_start(pdev, 1);
+> > +     struct plat_serial8250_port *port;
+> > +     u16 vuart_ioport;
+> > +     unsigned int i;
+> > +
+> > +     for (i =3D 0; i < ASPEED_BMC_VUART; i++) {
+> > +             port =3D &pci_bmc_dev->uart[i];
+> > +
+> > +             /* ASPEED BMC device shift addresses by 2 to the left */
+> > +             vuart_ioport =3D vuart_port_addr[i] << 2;
+> > +
+> > +             port->mapbase =3D bar + vuart_ioport;
+> > +             port->uartclk =3D 115200 * 16;
+> > +             port->irq =3D pci_irq_vector(pdev, vuart_msi_index[i]);
+> > +             port->iotype =3D UPIO_MEM32;
+> > +             port->type =3D PORT_16550A;
+> > +             port->flags |=3D (UPF_IOREMAP | UPF_FIXED_PORT | UPF_FIXE=
+D_TYPE);
+> > +             port->regshift =3D 2;
+> > +     }
+> > +
+> > +     pci_bmc_dev->cell =3D (struct mfd_cell) {
+> > +             .name           =3D "serial8250",
+> > +             .platform_data  =3D pci_bmc_dev->uart,
+> > +             .pdata_size     =3D sizeof(pci_bmc_dev->uart),
+> > +     };
+>
+> In the commit message you're describing that the MFD driver will be used =
+for
+> setting up MSI interrupts:
+> > It doesn't bind the whole PCIe resource to allow each sub-driver to bin=
+d the
+> > needed addresses.
+>
+> But you're adding the UART devices here which now means that the core dri=
+ver is
+> doing more than MSI interrupt init.
+
+I might have misunderstood but this is creating the UART device by
+using the 'serial8250' driver.
+
+> the core driver is doing more than MSI interrupt init.
+
+Yes, as the core driver should add the devices with the right drivers.
+I will add this in the commit message.
+
+> Suggestion from my side would be to have an array of `mfd_cell` where you=
+ define
+> which devices are part of the MFD,
+
+There is already such an array, it is a one element array as only the
+VUART is done.
+'struct mfd_cell cell; ' will become an real array when KCS will be
+added afterwards.
+
+This is not an 2 cell array for the 2 VUART as the 'serial8250'
+manages the two VUART on its own.
+From what I have researched, this was the way to add UART devices from
+an MFD driver.
+
+> and your VUART lives in another driver.
+> See `ls2k-bmc-core` for example.
+
+The UART already lives in another driver: the 'serial8250' driver.
+
+Regards,
+Gr=C3=A9goire
 
