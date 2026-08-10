@@ -1,95 +1,82 @@
-Return-Path: <linux-aspeed+bounces-4670-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4671-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E1C7C5AD5A
-	for <linux-aspeed@archiver.kernel.org>; Sun,  9 Aug 2026 23:36:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38416C5AD55
+	for <linux-aspeed@archiver.kernel.org>; Mon, 10 Aug 2026 03:58:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hJDmc0YvYz2yVd;
-	Mon, 10 Aug 2026 09:36:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::635" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786269729;
-	cv=pass; b=SdVl0ukxiE8LsZUTOuoK6gVob8HLqxY0o6NF5AZ5OCMkrzc/tuG09ezFrFROhgiUVr2l3IVx2KbOIJolirU45POVDEeMjLc2+ThJz/hSgIvYOUJWPOvtw8gS9T/uZoHiIHAR1iR3QiefnR78eeiSJS62aWozGNc1c2LZ4mxjfxMLjDSnkMv8JF+q1TsL7AtP3IoT6OZyn+zju2s01w6gRpATgxKSLr7MyESguoiD/J0i62zYufXaa/jwfuhk9XTNbJD9y+kJX7jq4OTsL2KuchzxwVL7hAcL+F18/+ljKVYMlLJpEyNGlGujqrT1aQaaX1y5Vp5+N8P34pwx3iwBzQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786269729; c=relaxed/relaxed;
-	bh=OHSD7QJMUDNSHM5CDmApr0cnz6TMTD5FOelv/tOIfYk=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=d5DRRDasx3q4hED+VP9CRLX1HZW2CODqITQXV1RJskKujbr646vAh0TWac6NErEE0CH3/Nipq3b3OQwNCQ0TQiVmOgJctA9rRO5OOlx92NWiZwbjjjx9+yv1CxHgH6I+eDOKwTu12l6bOWtnRgxyB+CgURkVlxEWhrr+nHvgpdZ9NbHYNO7+dYd4Ofcb67JTWyw9YM+fnb5qGSdhmPh9CIusP3v7c+rHmLzFpgVvCqLNUMx5wzYBW8oVjcZ0Hdg5Go/CryPHzulD4oDmKUUr/KyVqmCyM5a+zn9AwXIJcsdppkyBbZHXgLLUymEcR7hPPDjgq4CEknUhpfQ5CnztAw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=sNVXLlRp; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::635; helo=mail-pl1-x635.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hJLb65sDsz2yqT;
+	Mon, 10 Aug 2026 13:58:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1036"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786334322;
+	cv=none; b=YTP6HIqhRFKz69qB5j3dLies8i28juHOKRLX4QEsjHwoMc8wIU7LNngfxe7OgQ9PsXLv//SddBc8QQ3BpI9KiirV9tZJ/oCAuf/sJbjAWM/nV1dfjrl+IBJlALbaJhzgtmRsYb9Dz3WG3m67dmVj9b1vMzUbIekAWminKBIVOzpQwoFTT2zdZQUpMiJdHDKQNEdoYY1ZU0Xbb24HrnCTsoqIbTX5ajV49S6e8obCIDwerVZKUYRTiq9H7ntex1Rnvl9id66ylLtMctTnyi8paP2FVWqLtHEUODmf5/B70FSNIx8xyXPYS3Agm+D2Fj34TI79haB22ZWJpEMXihqkbQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1786334322; c=relaxed/relaxed;
+	bh=QEU+pp4CCJstwvmXVbRVK0utyTpf3g/1fbsNABHVlac=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ILzfzZUkXcI0XTX4+p09yOQjbE6Q3XOb4JAJ/9r6LtQxactAbhlFAG5WkxtSWGRUr+37Yk2CUldK/82Nhkk0PNmaBJ+vdiGct6hUZcybPxEkCBugojEi5e8quFTi8kkqL8WRN0Z9xRdyBvfkXWZz7uGiLnZbT4HCmMVJ8LUYaFwBO3arV9ksMv5c671S2O2eWBBGkq5zmVSSZSQE4p9KKRST+7LT3dmtsT1b6sGJUVTojMPLuJwTzhFkAs0/yPCqDYX8/pW2I/HxlSdsGQWcfBdJFfkYDtx8e2vfuZt8s0rWtrH/1RMPuit3j98JxYHdAdtSJ6MFXAY3FwHgq0WnoQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=AnQOKpNj; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1036; helo=mail-pj1-x1036.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=sNVXLlRp;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=AnQOKpNj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::635; helo=mail-pl1-x635.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x635.google.com (mail-pl1-x635.google.com [IPv6:2607:f8b0:4864:20::635])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1036; helo=mail-pj1-x1036.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1036.google.com (mail-pj1-x1036.google.com [IPv6:2607:f8b0:4864:20::1036])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hHthv1DsGz2xLq
-	for <linux-aspeed@lists.ozlabs.org>; Sun, 09 Aug 2026 20:02:05 +1000 (AEST)
-Received: by mail-pl1-x635.google.com with SMTP id d9443c01a7336-2cacf197759so16765145ad.2
-        for <linux-aspeed@lists.ozlabs.org>; Sun, 09 Aug 2026 03:02:05 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1786269718; cv=none;
-        d=google.com; s=arc-20260327;
-        b=Orq107/DXSOYGGrwIgTxSDj/ewlR/QhjzBOGw0+iYwEAuYE9dkjrk4uLtoza2/OeJt
-         MVMCmZ/Pt9EKXtvOBOlZ/zVRGXCRDtTjDJ4vGurbR85yl6n0RRSKIyZuUyZVcNKsiNin
-         byiZW/JWZiwOTBD3kG1gkbtGsZhZQs2HPTStW57vmYgimF6AA642rwYsYbP9wlKoW2uv
-         hG5evajtgOf47swYzx1FV2yt1bq/lMJdaC4c5B/3fPEAQqRgMFZBcqnqZqFMNdKF47SB
-         8IZrcOql2IHTMFuRXeh1rZSStMdw5M5UYs/ca22IZNPVuExh/Ic7av0j+uhdKOu9Foen
-         0kvA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=OHSD7QJMUDNSHM5CDmApr0cnz6TMTD5FOelv/tOIfYk=;
-        fh=6kxTr05ZUcRoXwYVtriD6j+7Glzgj9Nx7nh1/CGo0Yk=;
-        b=QzJ06sTssaM4e1jGjsk9UiyYMFg29riHg2fWHSriDxIFEHetVhh0+cGKDGdJ8xj6a4
-         Qg7EkO0WPZCrQAGM964S3/K89QnUtzbdkvp4rlb/H6g5S1HYcbDdabFCaMz8MyRhnsla
-         E6bCTIg/p3oON6MvznwQvEgUhl99t8y7VnEN60Nt6bcfCXthIDoj5QoaDwdUJwkwBN0G
-         ZvjTdm8VcsCw9ndgnxCWobmgPHAUzKuWZcpBqL2wh3hlB9ggPQTbzBmqvU85fd0cBQ8/
-         njRN13TojB/cCpptwM8Q7EudoVFdKt5zcSw6EtuhmQ01MpoElyCGcs9+tdTvf+NwN/o9
-         CDww==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hJLb43Xrsz2yqL
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 10 Aug 2026 13:58:39 +1000 (AEST)
+Received: by mail-pj1-x1036.google.com with SMTP id 98e67ed59e1d1-38d489b6b71so1186528a91.0
+        for <linux-aspeed@lists.ozlabs.org>; Sun, 09 Aug 2026 20:58:39 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1786269718; x=1786874518; darn=lists.ozlabs.org;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
+        d=gmail.com; s=20251104; t=1786334316; x=1786939116; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:sender:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=OHSD7QJMUDNSHM5CDmApr0cnz6TMTD5FOelv/tOIfYk=;
-        b=sNVXLlRpM0BkjkHBXSLh1DrSqIHQWy6NBUk4eChxhX39SEadWR78bdC1tuxExNhlxR
-         DyvhsRE1FY+JH3jwzsm4QYPdtg0VFiyKpOm8/QQNcb+GWXIHBywsgyplCOen7vry8rCZ
-         oTfih3mPduJnYWwnikpEOmshF+0YOkjK24RAOiAUySzJCahbH7Y5zwcRNq6Zd8aBRmBx
-         x7lzfPFnuK7IcOaZl7VcP5aqfeFwAqNnEvuOUVrHKmkzt7361UWLGSsh9DoalMHClzo3
-         ORPh+mkyDOhwoErpsG7sexLVolovZKsVSS6UzTqu2f6r/0mOfNpGDGSMk0hX4JlSptzK
-         kUpQ==
+        bh=QEU+pp4CCJstwvmXVbRVK0utyTpf3g/1fbsNABHVlac=;
+        b=AnQOKpNjmoErd5X5938qS7hhHJCIel4dOmjPsHmj/MFNIBqwxv9JnYJ59p1ipgnddY
+         iy3Wei3Q1vlE3BGjGDUbNeKTkq9NcOyUP0HW8fygpZMWOJ/fb3K0zenIOpBaK4B0P9B5
+         ngxa+KPSwI6Q+Y0c6sjjH9jPseA1R+jxwclb+IpXta48Vufsws4P5gxL2DteX5G/tCaf
+         b+/F7QVkNxtSrqzURltwhAj5fVzfchoj9HLtaNizQU7g9GLxs8TGKsO/XwyEcIUfFceM
+         SBjA4GQuI8uvpdNyrPcucU1SLWFD+SivzhPPcEdMaULgxjjWfyvHSeaDqRc4+E66VXHn
+         xFmg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1786269718; x=1786874518;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+        d=1e100.net; s=20251104; t=1786334316; x=1786939116;
+        h=content-transfer-encoding:content-type:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:sender:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to:content-type;
-        bh=OHSD7QJMUDNSHM5CDmApr0cnz6TMTD5FOelv/tOIfYk=;
-        b=Bmpn5GJk2Zc/pFHCbOvLklVrtO/39zeutdHKIA01RZGQsMigg9dST9MnXIOKz+7ZY7
-         TOYK0DDtFxUK+b21EPtHtJDIvGmyuM5q8P7DbZE3z+UcCHdPMx/dNND0ISOe4kryb8N4
-         wCXNxdzZMuaYSLN9FmPweaoTNhwlfDotZYgz4y85KoNmFyuq2wdBnSc5SXQmh70QH5YB
-         vdaD+ME7P7poKzIPkEwKYaTjs/3+GLZgxqW1mm1Tb4lhB4X2QNhzsGLsoitJ1Zg/UByQ
-         BRanL1bJlhmQJ76kBtp+AQCDutZE0I+k/xo41j8Kjp53reJgZ+Z7hLWcISlrYMVjUYZJ
-         Fo9Q==
-X-Forwarded-Encrypted: i=1; AHgh+Rq4Uxz8HHX4cuFzzPAfyuWlYXXTvtNez2YDIYvFfu51PyT8Aui4dXfhYe70doC8Qga9f1d5374lRyP0DUk=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyKLI/4uBh0AAwOa0Twjx0t/4TmqJ8EzAZqqahfGBoOnRPcuBFv
-	VGRRuysEEeq/Jong6A/AGAV3yDjAk/+1ppgwzf02BGq6PSc0VuEtTFSI9WssHKMF2Nkv2d4GhCc
-	suoX0IJKPQwL7J6rRQvypLmFGdLdKAiE=
-X-Gm-Gg: AR+sD11ffDViQrrMPLVWya0i44xCL3jbnFX17Ni1PT3pxSui6iCwiQFI6XTfNqQRK+6
-	lgvTwkpCX7jcFWFsCg3FZLEMxiyGTv8E35f1pjgzAhVClB1enhUVvVzJW2nQaR7UWGjUWpSsu5f
-	ef+teiix5AgfxQkRcEkpiXvhF2exsf7ODsRvG1Kdu1Dmmxgbxgw3SuFvHwWKazdbHqqfZ6FCzPa
-	o0YLRIAlCQHgGQkN4dnM6uwurBl4/TThntKWVcfkJMBbZskQMA3Jp3JlE4njeGuuXUmIWSiZ/1J
-	S0DQ8Nqp0GSxbVZ9b64tlkPn48bigKYjEVomEDZvu8xny/J0g+mmc+dpbT57IAXrOhMHvjRRlCE
-	vgMFMNIzBleahFgl0elyz/qrujoWdLaxCGRFaC/kiuyKbd+vYkhA7HXYGioLze4bc4otu0kKi17
-	zY/YyO4shOdxYT+hMB
-X-Received: by 2002:a17:903:388d:b0:2cf:84bb:1ebc with SMTP id
- d9443c01a7336-2d294c223bdmr207346785ad.15.1786269718053; Sun, 09 Aug 2026
- 03:01:58 -0700 (PDT)
+        bh=QEU+pp4CCJstwvmXVbRVK0utyTpf3g/1fbsNABHVlac=;
+        b=cz+bTjsKKifV695S28Gd2c5dpUvfq1GM+zp1S7vNJUz+3aTdwY7MoJjOOgp1HjKmqM
+         s6bbLsIfBOFWELzpfAhvLbHkdS9aMV5520y0FoYTxBi76ivnkh1FtwHcNGycCnhOpikO
+         Tn6e0n4dSghdT8EWkE+aWFDDzQb2max2HhDh7n6T5dzSiOP3BBbqoV5qKJEeyuIoJSF6
+         BPOXMldv0kGTgSa/Jil28L2aE6CqVwVThZFiPYRUdG4HS07UetCf+UWXkswKBfzOnQbF
+         ganKqWD7vPfw6ESE96GCHFUGqwTNOPeU4NyCX8MOkvZSkYp9PMVfDYcIxl7v5xs5nqSQ
+         r6KA==
+X-Forwarded-Encrypted: i=1; AHgh+RpgxSGXTz1cHlCQXZKRqXCgx0Xw97tlRTL7ICuWHU55hjnQVzq8h+hlzG9iNFpTqn/BXHlgzu06phz3grg=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyvYBc/TXWWiBa8/FaFyGCIylaRoxu6ynC9c1Hca4lQsMvhQv+o
+	MaTQqdMa1vwquFjs6611u6gjjeAB4/vRkUExS+Q8+lu081NYHGUmAfVj
+X-Gm-Gg: AR+sD10C8f0nvkoaFW64AjVA3+dIGRgBEjfa77cReY2Y9XH/OVCAiZxtS9E/VTyujd+
+	AMUBJuT2Q1saT1EGnRnVBI6Mr/7InjJgKNscSIlsbUe0fXpsP3z/b1ChlsJg3r/sx6W07lP+17V
+	yTlJMppN7PXb4M3wzniXkD9ME+H3io8Zql7VQj/aogH5jm+zNLWzeeclCJvYJS0tejlYtg2Neyo
+	lBDt9pgl3wLnL3uiK1yds2VNcIG6f+6WWXTGzm6ylPM78xJm5uo+7ckdFZfKJf+7p9gfZYFrYES
+	PrUqirwbFbcq5rcARvzruP43ED+8iWgsLwub4hI+ma7hh/B7wGq/GYNXswNTY1ZlUYwjurN+BIU
+	bWHykUzWSkuFXFBGIGHrOjpaoRgnvbszckAtNFLcyIp9nPEE/hWeHLOK4wcOe9bIuzfi/G1PWju
+	x+NT3i1cSLj97BvYZxwEb83zB3tL/R8vdiD9QFA3LUcCmy55pxH3IolcwddZMvsM3CMbLwk3kz2
+	3qnTy42kN3eNV7l1ePqQ7zWg3CxY9oEnS633FIvanz97tPY0Q==
+X-Received: by 2002:a17:90b:5244:b0:38e:9eb2:9d43 with SMTP id 98e67ed59e1d1-3903c5b685bmr38481045a91.16.1786334316290;
+        Sun, 09 Aug 2026 20:58:36 -0700 (PDT)
+Received: from ?IPV6:2600:1700:e321:62f0:da43:aeff:fecc:bfd5? ([2600:1700:e321:62f0:da43:aeff:fecc:bfd5])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-315bebde353sm41638500eec.23.2026.08.09.20.58.34
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 09 Aug 2026 20:58:35 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Message-ID: <3a9b7b85-e6f8-429a-91df-f674479dee58@roeck-us.net>
+Date: Sun, 9 Aug 2026 20:58:33 -0700
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -103,102 +90,88 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260807081652.38692-1-phucduc.bui@gmail.com> <2eb8b31e-a3c6-4310-b9cc-7acd135b6c99@roeck-us.net>
- <CAABR9nHqKKbxkzBNkENadhFJgC_HuetV+ab7SVsGH+cwbF+OFw@mail.gmail.com> <9971b3aa-cb1f-44a9-9d58-4f75f0c6ccea@roeck-us.net>
-In-Reply-To: <9971b3aa-cb1f-44a9-9d58-4f75f0c6ccea@roeck-us.net>
-From: Bui Duc Phuc <phucduc.bui@gmail.com>
-Date: Sun, 9 Aug 2026 17:01:46 +0700
-X-Gm-Features: AUfX_mw1KVezTWqN2z4u9TeLCw86vjeGY2Ka_ePvHYwoFPbvJwdHv2HuwDWFspk
-Message-ID: <CAABR9nHu4pt-Rg8Aq0B6KfKFHX+C1xQmMk6=j8jq1Zn-MQ0p6Q@mail.gmail.com>
-Subject: Re: [PATCH 1/4] watchdog: qcom: Propagate errors from optional IRQ lookup
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: Wim Van Sebroeck <wim@linux-watchdog.org>, Joel Stanley <joel@jms.id.au>, 
-	Andrew Jeffery <andrew@codeconstruct.com.au>, 
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, linux-arm-msm@vger.kernel.org, 
-	linux-mediatek@lists.infradead.org, linux-watchdog@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-aspeed@lists.ozlabs.org, 
-	linux-arm-kernel@lists.infradead.org
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 4/4] watchdog: aspeed: Propagate errors from optional IRQ
+ lookup
+To: Bui Duc Phuc <phucduc.bui@gmail.com>
+Cc: Wim Van Sebroeck <wim@linux-watchdog.org>, Joel Stanley <joel@jms.id.au>,
+ Andrew Jeffery <andrew@codeconstruct.com.au>,
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+ linux-arm-msm@vger.kernel.org, linux-mediatek@lists.infradead.org,
+ linux-watchdog@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-aspeed@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+References: <20260807081652.38692-1-phucduc.bui@gmail.com>
+ <20260807081652.38692-4-phucduc.bui@gmail.com>
+ <1f26fc28-da13-4ca3-990f-676b53d23630@roeck-us.net>
+ <CAABR9nFy=GD4afdDxzsbp31Sq=smGVFf+HvqsrJKh_FjqdUrJA@mail.gmail.com>
+Content-Language: en-US
+From: Guenter Roeck <linux@roeck-us.net>
+Autocrypt: addr=linux@roeck-us.net; keydata=
+ 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
+ np3900V20aS7eD9K8GTU0TGC1pyz6IVJwIE=
+In-Reply-To: <CAABR9nFy=GD4afdDxzsbp31Sq=smGVFf+HvqsrJKh_FjqdUrJA@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Hi Guenter
+On 8/9/26 19:38, Bui Duc Phuc wrote:
+> Hi Guenter,
+> 
+> Thank you for your review.
+> 
+>>> +             if (irq < 0 && irq != -ENXIO)
+>>> +                     return irq;
+>>>                if (irq > 0) {
+>>
+>> This if () is no longer needed.
+>>
+> 
+> If we remove the if (irq > 0) check, irq can be -ENXIO and would be
+> passed to devm_request_irq().
+> I see that the irq argument of devm_request_irq() is an unsigned int.
+> Would it be safe to pass -ENXIO to it in this case?
+> 
+No, sorry, I was wrong.
 
-Thank you for your review .
+Guenter
 
-> >   irq = platform_get_irq_optional(pdev, 0);
-> > +if (irq < 0 && irq != -ENXIO)
-> > +        return irq;
->
-> This is still wrong. If there is no pretimeout, it does not matter if there is an error.
->
-
-If checking data->pretimeout is required here, I'd propose one of the
-following approaches
-let me know which one you'd prefer:
-
-Option A (minimal diff, keep existing structure):
----------------
-irq = platform_get_irq_optional(pdev, 0);
-if (data->pretimeout && irq > 0) {
-        ret = devm_request_irq(dev, irq, qcom_wdt_isr, 0,
-                                               "wdt_bark", &wdt->wdd);
-        if (ret)
-                return ret;
-
-        wdt->wdd.info = &qcom_wdt_pt_info;
-        wdt->wdd.pretimeout = 1;
-} else {
-        if (data->pretimeout && irq < 0 && irq != -ENXIO)
-                return irq;
-
-        wdt->wdd.info = &qcom_wdt_info;
-}
-------------------
-
-Option B (check moved out, before the if/else):
-
-------------------
-irq = platform_get_irq_optional(pdev, 0);
-if (data->pretimeout && irq < 0 && irq != -ENXIO)
-        return irq;
-
-if (data->pretimeout && irq > 0) {
-        ret = devm_request_irq(dev, irq, qcom_wdt_isr, 0,
-                                               "wdt_bark", &wdt->wdd);
-        if (ret)
-                return ret;
-
-        wdt->wdd.info = &qcom_wdt_pt_info;
-        wdt->wdd.pretimeout = 1;
-} else {
-        wdt->wdd.info = &qcom_wdt_info;
-}
-----------------------
-
-Option C (default-then-override, only look up the IRQ when pretimeout
-is supported):
-
-----------------------
-wdt->wdd.info = &qcom_wdt_info;
-
-if (data->pretimeout) {
-        irq = platform_get_irq_optional(pdev, 0);
-        if(irq < 0 && irq != -ENXIO)
-                return irq;
-
-        if (irq > 0){
-                ret = devm_request_irq(dev, irq, qcom_wdt_isr, 0,
-                                                       "wdt_bark", &wdt->wdd);
-                if(ret)
-                        return ret;
-
-                wdt->wdd.info= &qcom_wdt_pt_info;
-                wdt->wdd.pretimeout = 1;
-        }
-}
------------------------
-
-Let me know which one you think fits best, or if you'd prefer something else.
-
-Best regards,
-Phuc
 
