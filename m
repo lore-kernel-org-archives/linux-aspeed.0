@@ -1,88 +1,94 @@
-Return-Path: <linux-aspeed+bounces-4678-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4679-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4AC1C5B56D
-	for <linux-aspeed@archiver.kernel.org>; Tue, 11 Aug 2026 00:14:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0516C5B570
+	for <linux-aspeed@archiver.kernel.org>; Tue, 11 Aug 2026 00:14:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hJsYs6xWwz2ynW;
-	Tue, 11 Aug 2026 10:14:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786354245;
-	cv=none; b=Rw5kG2hDQOVSPUiwVw133oFlFU0AplT7Q5rxvlzBhjNDRHv5ScLaL3rMpK+6MqLjH224105+cZ8TcvUU5tpv2zt3ckKt9oUuvocLHGuH3c+1BS43xnGXULwEZNeuLIRkZoGTPd1gl5PMg/7+xU50U2RKlRbYNy/1orCAp+oRj/FZxPAepERwMKqRbCjrdjZLwTffCqzT8DB7mJM9ruuf1FxqTvol8GEE0Jnx0o2b4TQy8P69S0rmr3bEaXo6n2jp8WA5Z0zLIpNwyYfyjRyWFwH4VWYHriku8Q78plhGGzOiuHv7RXe+fAoffkpyfZi24NEdBp6jI1zquNSg4Gvbow==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786354245; c=relaxed/relaxed;
-	bh=rFuj09l13bDJWP8ROOQNO6DWGBJe5ddETVvR3frCMgU=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:content-type; b=iOFmq0+EnAEMRSGzwQjjSic8RRuK4obeLO5LFLNNkvgJUaTITvD2HCRI70WvczAzLajYYM0H2eK1Gc9tWn5YURVXGZuiZylvagfFYrAgZ42hSr5p24lIscdBm4qw8oQjeIGpZUpF96smkIRbH+S1atgsmH2ap8Lsu3QcFuj7MAqvVV0b2FrMalV3ywz+re4DpTtXlxCuKcnDXu/yFsI1N2p6RkDI/xGupqUkPvsVuM+nLfgIyymJATumEbikw9XgXlDdURXuEiH5rm3t/gX2qo45MZVDrB/Wr1KfvkRQA4A3lo+/D2I0lkYN+Ep8lnvskswOdlO1pIYb8nt+ZS0Dcg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=DQm2P49T; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=aCWeCV1l; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=thuth@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hJsYt0skPz2yyx;
+	Tue, 11 Aug 2026 10:14:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::436" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786329743;
+	cv=pass; b=DbvMPJ7gJ7Mts52CHVDT0Sit0G0ymYD6K128W+4W5PRC9gW564jYz3OW5ceRPezPmh5OLeKzKTGs1TSO7gMBWw4QsBrjoMhAns9a42gVJVHF7Yexltg/Tj6WJ8O6Jnn8VB8kLWdwyuv16IFaFpkGCk7M5XOEMEtuG8pYi0pGvtUzShIGCVhA8J67JslpfXoTdz7Bh65x8Vx9xZKsIo4pPiDIEeKMt6BbIA1MHrOA00nX5qtIwGh9cs0QNqhAYOtW+Zy9/Bir+F761YBAY04VHtqfBNtoPD0wKUL2+GHLpPXkf4VuZpfYJvIGFs/h0od2tXtL4gLD/jCUUXLLfXOIEA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1786329743; c=relaxed/relaxed;
+	bh=ujyD7jgd2uYoNISfol1DV4SvsMNF2Ff35/OcJJPtWQ4=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=O4HMp2ffXJOdmqOjHtwA0reuHPlOm56dPnYZbkOXe/3//KG12KNxr2f2lAU49LJKWu76BpUlbvs1Nd1ysUVk/kY81CVTx8LGWnmpFL2nmLdS9lVCcU+Fof7OoddR4674t3jS+w6CJKTPNLeGPmnwZGAp9yLmqMNjcx1QrYDoZo38mkTD67zHd+zvZL5PZXOK85E6IplwSb3Q1nG5rUkGYI2T5AUq/HE7OOeuL4g+fUGmAY6thSYZjIy7xHDIaN784fOxmWf524ywPqPSniGZoc9p6ud2bgrDR77VBa7VPO0AaeC9Nxawk/3QEq3Qss/JEiyVrY+D/QyVqSForYlgqw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=fi4wkdMM; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::436; helo=mail-pf1-x436.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=DQm2P49T;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=aCWeCV1l;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=fi4wkdMM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=thuth@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::436; helo=mail-pf1-x436.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com [IPv6:2607:f8b0:4864:20::436])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hJTyC0TNcz300V
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 10 Aug 2026 19:30:40 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1786354231;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=rFuj09l13bDJWP8ROOQNO6DWGBJe5ddETVvR3frCMgU=;
-	b=DQm2P49T0aiCuCyLIOKfFqraZoPE9uWJMHnSq40koGEkuMgjxR5L6JGjcQyM3Ibh9sKirT
-	fDDzT33BKjUBeZ4eESl5cqvOvt6Lj74+SHLnVc779MmBTM0vB9VIHelkub0y6aJeu2fRDK
-	ZCDdB+ZppDFoarBEO+oar0Kn3KiT2WY=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1786354232;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=rFuj09l13bDJWP8ROOQNO6DWGBJe5ddETVvR3frCMgU=;
-	b=aCWeCV1l/FBUWmXaVOha2C5cpiidj5/RL3LbBAAu493GK8qQtrOjvU+8WgAEIpv1yehVdV
-	V26vtxWZ6wyAb/KjQasmhRRUA02m4lNsFE0DWxX88B0KvN7BFGRuhkADxMh7EfqnBW7kYy
-	hJRITiUu81MtVZe89HYRNxyy/O9GX1A=
-Received: from mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-136-U7rsMKF7Nkq7P_7Ivsxu4g-1; Mon,
- 10 Aug 2026 05:30:25 -0400
-X-MC-Unique: U7rsMKF7Nkq7P_7Ivsxu4g-1
-X-Mimecast-MFC-AGG-ID: U7rsMKF7Nkq7P_7Ivsxu4g_1786354224
-Received: from mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.4])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 324011800846;
-	Mon, 10 Aug 2026 09:30:23 +0000 (UTC)
-Received: from thuth-p1g4.redhat.corp (headnet05.pony-001.prod.iad2.dc.redhat.com [10.2.32.117])
-	by mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id 0BF853001D38;
-	Mon, 10 Aug 2026 09:30:17 +0000 (UTC)
-From: Thomas Huth <thuth@redhat.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>,
-	"David S. Miller" <davem@davemloft.net>,
-	Neal Liu <neal_liu@aspeedtech.com>,
-	Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: linux-crypto@vger.kernel.org,
-	Eric Biggers <ebiggers@kernel.org>,
-	linux-kernel@vger.kernel.org,
-	Antoine Tenart <atenart@kernel.org>,
-	linux-aspeed@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v5 02/10] crypto: aspeed - clear the crypto_aes_ctx when done
-Date: Mon, 10 Aug 2026 11:29:57 +0200
-Message-ID: <20260810093009.608090-3-thuth@redhat.com>
-In-Reply-To: <20260810093009.608090-1-thuth@redhat.com>
-References: <20260810093009.608090-1-thuth@redhat.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hJJv16T8rz2yqP
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 10 Aug 2026 12:42:21 +1000 (AEST)
+Received: by mail-pf1-x436.google.com with SMTP id d2e1a72fcca58-84536ecfc5bso1348450b3a.2
+        for <linux-aspeed@lists.ozlabs.org>; Sun, 09 Aug 2026 19:42:21 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1786329739; cv=none;
+        d=google.com; s=arc-20260327;
+        b=iMgoY1lY8zoNceDXOsHSqzP2q0b9g24w0aQow8cDREsKR7yG7gOQV+D46kGP5MBf4c
+         V4Ca1MKPnwCCp9F2XV8+jfHwAxpg1IUNily0+tryClWfNHzt7sw1Q1e3vdfsuW86i2hH
+         UIngTJCSwPIdYVzKLE+E/wn9Dxewqq0xcMEWHJ21LPKCky62ZlcQlNvhn7wmVnuqFFv1
+         dQDuffio13Wdg0wGFPXpeLUtzPZSMeJrI7bDwCvmoLoo/VKHPPFXcsq9lfxzZjVhq4Y5
+         SYG7imnysozQJY7uHStobFZJunaxo6m2gG3EddzfVTb3RxIM9gn2Ei7F402LOpImtkkb
+         oHCg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=ujyD7jgd2uYoNISfol1DV4SvsMNF2Ff35/OcJJPtWQ4=;
+        fh=oMAfUEcQw0DibRDFO+aTtd+Q99wskU+ID1q/AsLV4Ck=;
+        b=HhsWK7GB2UMDejF6m/4PDb7E5fSSysdHYSO28D0mfDVJkh7zHViDIH38FI2JpLSvFq
+         gERgonNl0QVB4hX/ob9aOXBmwcibNIwCfXCGswrEYku6fZl57YY38W6/+mK7FGBXKj23
+         AVSVw0ArObnFViMV/Ctf79DcXCrGGcoLBPEsfBCiSxj1U4VJjPfxJUdmIiW7N/HLPQ6d
+         0Tusoli/bGIan7SPQg+xZHSH6mqD+8F+BRgPoZlTBeEIiun5HTt4unX4BkvcmnM/b643
+         IIlB3b57lVXljDyEZBArjj41T6Y2p5+HVmQ6OjP8VKAIUR4nYH+pZIgBr6NFepRfRTBF
+         iweQ==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1786329739; x=1786934539; darn=lists.ozlabs.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=ujyD7jgd2uYoNISfol1DV4SvsMNF2Ff35/OcJJPtWQ4=;
+        b=fi4wkdMMFdyIq2nBx/5WhzRJBTrRvaSBHkfDLlT3QvYV0s64NVrMZnfJUas+Q+8Nvy
+         3staiigKUMPtdn5LBnmKtU+tYJ+54maLA+niJ2kM/N0PthD+DuX3EbYpFDIrSYlwP2g2
+         ydylOkcX0mp//HufClA7PWpt2QSB3BqaqfZpbVDi0/9mT2rbRvmQxy7uujD90xtsePKW
+         lCheGw9AXeVIPzVPlPpodFzcZEDKMFRhryz58kXeB/OoCtNof76Y1OVKgC+Q0YGo7fWL
+         J7pCUEoQPHJDBQB2ckKBil3f+GxWzj/sOwh7+5zHL3T34pNXEAFeli1ETq9UYmZIbBfa
+         o/PQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1786329739; x=1786934539;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=ujyD7jgd2uYoNISfol1DV4SvsMNF2Ff35/OcJJPtWQ4=;
+        b=i58XsNVak/+ISQdVPgYbINtjNcaPAG80k4wJRRYzn9CFwzq36ddkMsQV0lOE4DNZB+
+         DCW6K0EJ9YZozILfNNGH1ZdSEeUkiNPP2hLuPP31nA+9vOxVzUNGMWVyu60CP/q+gXWo
+         dl0KUREBZJr3dHNFbHHTTn6k6bhZOH+Fgh8ga/vaGoeT34rBmx2WGH6wZ7g0FyGGqXkE
+         afPMcT9LPll1Qf9ExNAqgpfl/91RGaLRCKBZD/aNsWBx17T5fMUsl3958AIc6Pu5CQ8d
+         ipiR1E6bhmsb3DOCH2NGFOVEWpf9R5LBTp2iX3YBo1jaNuiGK1ConX9Z7nBtOuGqzMYw
+         ZWrw==
+X-Forwarded-Encrypted: i=1; AHgh+RpRauMOx+N/OzAUp+nHb+rhl1EODMxoeB9rm4Juyx9e7leCH/1zrtoz4mh+VZcomBftgEDYx2/Kfm6LZEc=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yx0j2vQUIs8koN2uXcpELDwWjifVpOMv1Y75k3eGap/oPsCf4l/
+	c2IVSkjCucR2gUZh2Fuo99RGwJViO9fxbRTYG/HCK8zgcI/ZEcUyHArXFqHjXEmseLYPcDMTFZG
+	e6efK/od90rqBD7fwC4F4/d2lgokw9fc=
+X-Gm-Gg: AR+sD11mUq46nGFBCUpcilUinGCYwoD/IOt3XVaH8yTXRp4iLwQeUEC68spnSyNBrDL
+	nIOH2j5kFFlPPNIUlqPNHFnghLCcd52q1gJLHwrb/9/I1W88wbrx6KgUY1gmH955iDi/QXO/See
+	2xAxQbi0/8u9SJRbUpzsOn75OI5n22IqKtaZhkhV7TGszuIJxXNG9VEKhrkk+4KakcMN+1POwSo
+	Y3ZEI7zo4o5ucwJfbkXI3IV8cNX1hUHGTiHXFQMTE45OLBeyV/sxZGmmzPNVrLkFNc9qrbFsvqI
+	LCV+gT05zRAEVpNwdp2yWZHtD9pdoEdumN2ubVoS3zT71bJdhWcwu7lZovY2vNsbnV7gyJ534N4
+	dah879aAAI7hBMGPl6oOMu/yY4cR303RlXBDKCjgSO770d6j9JBUPluNs
+X-Received: by 2002:a05:6a00:1d9d:b0:848:469b:3d19 with SMTP id
+ d2e1a72fcca58-84f69700138mr18901107b3a.29.1786329739493; Sun, 09 Aug 2026
+ 19:42:19 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -96,48 +102,53 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.4
-X-Mimecast-MFC-PROC-ID: GIuYe5S7n5EnbKKHelqs2rufb-6BZdT5W4pS0Z0gkxk_1786354224
-X-Mimecast-Originator: redhat.com
-Content-Transfer-Encoding: 8bit
-content-type: text/plain; charset="US-ASCII"; x-default=true
+References: <20260807081652.38692-1-phucduc.bui@gmail.com> <2eb8b31e-a3c6-4310-b9cc-7acd135b6c99@roeck-us.net>
+ <CAABR9nHqKKbxkzBNkENadhFJgC_HuetV+ab7SVsGH+cwbF+OFw@mail.gmail.com>
+ <9971b3aa-cb1f-44a9-9d58-4f75f0c6ccea@roeck-us.net> <CAABR9nHu4pt-Rg8Aq0B6KfKFHX+C1xQmMk6=j8jq1Zn-MQ0p6Q@mail.gmail.com>
+ <ccd8fd7d-4555-4ac5-ae73-c16e98b8edc8@roeck-us.net>
+In-Reply-To: <ccd8fd7d-4555-4ac5-ae73-c16e98b8edc8@roeck-us.net>
+From: Bui Duc Phuc <phucduc.bui@gmail.com>
+Date: Mon, 10 Aug 2026 09:42:08 +0700
+X-Gm-Features: AUfX_my6zYcbzcH2Wjjxkf8uek_ej0039cVqQTNpkObFSyVFxGT4TjQ-70scvlg
+Message-ID: <CAABR9nEGsisuuQhLwxdcB9i2sEuH=AQb3yaPHPNecya8G_5ieg@mail.gmail.com>
+Subject: Re: [PATCH 1/4] watchdog: qcom: Propagate errors from optional IRQ lookup
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: Wim Van Sebroeck <wim@linux-watchdog.org>, Joel Stanley <joel@jms.id.au>, 
+	Andrew Jeffery <andrew@codeconstruct.com.au>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, linux-arm-msm@vger.kernel.org, 
+	linux-mediatek@lists.infradead.org, linux-watchdog@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-aspeed@lists.ozlabs.org, 
+	linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
 
-From: Thomas Huth <thuth@redhat.com>
+Hi Guenter,
 
-Declare the gen_aes_key with __cleanup(aes_zeroize_ctx) to avoid that
-its contents could be leaking via the stack when the function returns.
-And since it is only required in one branch of the if-statement there,
-move it to that block, too.
+Thank you for your feedback.
 
-Signed-off-by: Thomas Huth <thuth@redhat.com>
----
- drivers/crypto/aspeed/aspeed-hace-crypto.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+>
+> I wpuld probably implement something like
+>
+>         if (data->pretimeout) {
+>                 irq = platform_get_irq_optional(pdev, 0);
+>                 if (irq < 0 && irq != -ENXIO)
+>                         return irq;
+>                 ret = devm_request_irq(dev, irq, qcom_wdt_isr, 0,
+>                                        "wdt_bark", &wdt->wdd);
+>                 if (ret)
+>                         return ret;
+>
+>                 wdt->wdd.info = &qcom_wdt_pt_info;
+>                 wdt->wdd.pretimeout = 1;
+>         } else {
+>                 wdt->wdd.info = &qcom_wdt_info;
+>         }
+>
+> (which I think would be a combination of B and C) but ultimately it is
+> POV and doesn't really matter.
+>
 
-diff --git a/drivers/crypto/aspeed/aspeed-hace-crypto.c b/drivers/crypto/aspeed/aspeed-hace-crypto.c
-index fa201dae1f81b..e7d3f611df05c 100644
---- a/drivers/crypto/aspeed/aspeed-hace-crypto.c
-+++ b/drivers/crypto/aspeed/aspeed-hace-crypto.c
-@@ -576,7 +576,6 @@ static int aspeed_aes_setkey(struct crypto_skcipher *cipher, const u8 *key,
- {
- 	struct aspeed_cipher_ctx *ctx = crypto_skcipher_ctx(cipher);
- 	struct aspeed_hace_dev *hace_dev = ctx->hace_dev;
--	struct crypto_aes_ctx gen_aes_key;
- 
- 	CIPHER_DBG(hace_dev, "keylen: %d bits\n", (keylen * 8));
- 
-@@ -585,9 +584,9 @@ static int aspeed_aes_setkey(struct crypto_skcipher *cipher, const u8 *key,
- 		return -EINVAL;
- 
- 	if (ctx->hace_dev->version == AST2500_VERSION) {
-+		struct crypto_aes_ctx gen_aes_key __cleanup(aes_zeroize_ctx);
- 		aes_expandkey(&gen_aes_key, key, keylen);
- 		memcpy(ctx->key, gen_aes_key.key_enc, AES_MAX_KEYLENGTH);
--
- 	} else {
- 		memcpy(ctx->key, key, keylen);
- 	}
--- 
-2.55.0
+I'll go with your suggested approach.
 
+Best regards,
+Phuc
 
