@@ -1,40 +1,78 @@
-Return-Path: <linux-aspeed+bounces-4689-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4690-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C735AC5B56A
-	for <linux-aspeed@archiver.kernel.org>; Wed, 12 Aug 2026 05:49:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2648C5AD5A
+	for <linux-aspeed@archiver.kernel.org>; Wed, 12 Aug 2026 20:28:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hKcxQ2hPTz3brl;
-	Wed, 12 Aug 2026 15:48:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786513738;
-	cv=none; b=MWy1p+YLNmjoIFutr92lvCzQ1mJsuM5UPGiVh5ZY3kUKipS0JQFlj6XlFQdzr66rAceKv8ST1InAIP/WnzZKi/Wz9cd0fNaCG0z92yCTjp7sGZa31LukWfTSc5fM2DLopgy3PNdwEdxYQNAPcmqcCLfzSmwzFH7EjWwTck2DxHSuSUw0hZ+mpROXYmDnQKG3nv7hXKJRXg2YCJe2Y6Y25N8xt5sLeYiJp9r9fJt+ADbLXuDEtRbVOCd7QoZXU15yFKOaHJIzmyAuNOg4HDOgTmRw0xhSKSkiOG9UWuyQ7PG5iaOmztwLvhgGZ6nB1trIEUFjphwjD8CyJaXYw7t4GA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786513738; c=relaxed/relaxed;
-	bh=TSQ/9D4pI1+65ceKMvziJfdR0mGwqDwnD0D7aTvn1r4=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
-	 In-Reply-To:To:CC; b=Adizd4qrZpfFtFuA2S52ycqQ28jwdAzQljMgZzKqxKuJZGyDHorlR10E6ETJjWmZhdCqLnPzBsU7ByCxI/gVi+C/978NOkahXt7MprEfQ6gt25rImHuz4+D5JccFJ+L0CrU6WgpydsI+4N7k8+cuYAmeKfjkDP9H0h9LJdCcNMAKnteuR9DSwtXWUgTHalsvzce4nOniyujqF6L37+PwF6rERYFkctJkOp6MsdiCXwo2FGB49pB/iSeHio63An0dt5AFDEFUXJ2iSFvzbODgZFoY1Dmzvoxr2sdVKe4WAYAtbkLe7w0kCAiH4gV91sn8Gr8Owa3qC5RXXdG/P8bGiw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeedtech.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeedtech.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from twmbx01.aspeedtech.com (mail.aspeedtech.com [211.20.114.72])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hL0Sn0dzbz304r;
+	Thu, 13 Aug 2026 06:28:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c20b::1" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786566537;
+	cv=pass; b=MfrRgoqX9nv9u0mumJRvWdx9vgZu0oXHaluSDfG1xmtxzlTb5DABHT+7JgXk9NQateyfnEfYYfE5xIZrylG4V6cyjKCl1fGrUep8hrta/zspi3LxXVdjnIKq7DhvIFwyQhNqGRseeRTg+wne5RHdNb5JcL9fFjtEOQZAJ/uVKOLfkRe8XmZpUhZf7TSGhXV5UxLy51xlI329x0/Nn2JMMAxDKOVr0DdWHCrFdmY8TO/uEqOgje8jc4+ccz3Xd9jNijNK65zYoyn5G1o/HVugYBQrRF95skFdmEe9+DDkG73Oq8T+Tkaq5bxR0xZcdYn/0ngddS6/xje8onJE31LOLA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1786566537; c=relaxed/relaxed;
+	bh=AjpFkMsKmW6u4G9qYTxDb/1ny+R2gqVI/GEnKwza6RI=;
+	h=From:Subject:Date:Message-Id:Content-Type:To:Cc:MIME-Version; b=VwRk0vZ31lOshLm8jJq/IaFaUmgmVzP6BdIrG6qKBAjaOdNjxbktXJUPKEjdT2OmEWbUfCbwo/Dz8Tsulk8W9A43h8h2lw2OOZVrGjRjAmg6MeOvBBrJ0KaM3GCJh2MawvrLaUZMAigDvzT3NM45KOMS23FMtzVD491naQuOHgSvxGhs82TBUApgMJuYfg6rZFl5sxnxnnoMWabkT455+U7nQ42kr5b1RWHC1qE2Dth/sIEmSMv1I9L44Nq/6VOiyr13ixmlRwetx5zyLC1ysRIw7hs6JxCS1lg/urSg/x5EOaoCF6cTf340M/RutabnbOQ7j0wc226xhFikS5CFaw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=siewert.io; spf=pass (client-ip=2a01:111:f403:c20b::1; helo=beup281cu002.outbound.protection.outlook.com; envelope-from=tan@siewert.io; receiver=lists.ozlabs.org) smtp.mailfrom=siewert.io
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=siewert.io
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=siewert.io (client-ip=2a01:111:f403:c20b::1; helo=beup281cu002.outbound.protection.outlook.com; envelope-from=tan@siewert.io; receiver=lists.ozlabs.org)
+Received: from BEUP281CU002.outbound.protection.outlook.com (mail-germanynorthazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20b::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hKcxP0jCsz3brL
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 12 Aug 2026 15:48:57 +1000 (AEST)
-Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Wed, 12 Aug
- 2026 13:48:27 +0800
-Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
- Transport; Wed, 12 Aug 2026 13:48:27 +0800
-From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Wed, 12 Aug 2026 13:48:31 +0800
-Subject: [PATCH 7/7] EDAC/aspeed: Add AST2700 support
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hL0Sl6r5Bz302l
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 13 Aug 2026 06:28:55 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=sHHJTZYelOscfyjrnZZZd9YgZlURe6ybIsbWerG/2B1q6U6gijQ8ImouW80JTen9+WBsSrXGC5xb24Ccbqb6tVLXfNKNR2feO7ikINddt/T9UI17DxcsBC4hwqcaRZQylPEHZmPAu4h4Qbg1xXTaYuPrBPTJfjMj6kiysWip5N1tDsFzNtDEfe8XgeH4jzQI+VwM11YITs38byvEjuW+ExPPb06OBqC+CxQSLE7m99LrGkm+7qcSqI5LRghG4pFuM+cdfvdgq6vYsV3s49iWePjlWOTP0Ob+Kk+oNGRkqIZA6Nb3408xCgIU1ool/+BagpMjv+aq5fP8euvK2kk+uQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=AjpFkMsKmW6u4G9qYTxDb/1ny+R2gqVI/GEnKwza6RI=;
+ b=r7pGAVpyjeYdtC++dltHLSB6+zNig3syP7T9UC8CWfnkk1omEy6K80KJyknOrGXgFzEj9f7wzMIyEyFc7PQCE2WH/GCrxasLvXzZwKDmfMkpGzvD9j2Qe76JVaiSLCuXh0ZuKvurs6w1LQ4WCXeoeEb2ciXnG+EB1JQ9lhu9FKANuvPo8XnQe8Oj9GJhahuwfkEwCst8N9dlyAFxZqVY5IAzhq93lmXKv3xbHR8rycjOlEA3tt3K+n0vcYFjaDcwyZkKPSxVxTGU0jfQb9SWx1E26nndT0w2UPRqRYvSPJ81UhBRF18hsIuIboIUUxNNrZULax1n6nIk9e1ll1IQbQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=siewert.io; dmarc=pass action=none header.from=siewert.io;
+ dkim=pass header.d=siewert.io; arc=none
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=siewert.io;
+Received: from FR3PPFB3D0CF1D2.DEUP281.PROD.OUTLOOK.COM (2603:10a6:d18:2::182)
+ by BEUP281MB3788.DEUP281.PROD.OUTLOOK.COM (2603:10a6:b10:a2::11) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.315.14; Wed, 12 Aug
+ 2026 20:28:29 +0000
+Received: from FR3PPFB3D0CF1D2.DEUP281.PROD.OUTLOOK.COM
+ ([fe80::aa8e:db31:b886:2365]) by FR3PPFB3D0CF1D2.DEUP281.PROD.OUTLOOK.COM
+ ([fe80::aa8e:db31:b886:2365%7]) with mapi id 15.21.0315.014; Wed, 12 Aug 2026
+ 20:28:29 +0000
+From: Tan Siewert <tan@siewert.io>
+Subject: [PATCH v3 0/2] ARM: dts: aspeed: ASRock Rack X470D4U BMC support
+Date: Wed, 12 Aug 2026 22:28:25 +0200
+Message-Id: <20260812-ts-x470d4u-v3-0-c8e266f1663b@siewert.io>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAGnXfGoC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyjHUUlJIzE
+ vPSU3UzU4B8JSMDI1NDA0Nz3ZJi3QoTc4MUk1JdU5Mky1RLi1QTY2NjJaCGgqLUtMwKsGHRsRB
+ +UWphKdDMEqhgbS0AmL38vnEAAAA=
+X-Change-ID: 20251017-ts-x470d4u-54b9e98e4333
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
+ Andrew Jeffery <andrew@codeconstruct.com.au>
+Cc: Tan Siewert <tan@siewert.io>, Zev Weiss <zev@bewilderbeest.net>, 
+ devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
+X-Mailer: b4 0.17-dev
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1786566507; l=2337;
+ i=tan@siewert.io; s=20260731; h=from:subject:message-id;
+ bh=bZ7/A9xzSjKm2HtVrjt3b8g+WbNKe3NcCLeojeIiTKs=;
+ b=BlvS5JwAn/HlbAce94h0vpjmGbpHs9rg4KpJ/3ThZlyeSvFqUMFVqZPdJCgKNhu75ILyXU14C
+ oWEI4aKCAH8DgRE9R7KR1Qvk3u7TB6W/c4/QcSi/0sZt8dethyUAIYA
+X-Developer-Key: i=tan@siewert.io; a=ed25519;
+ pk=TXy9xEw3OCAd0QBR/ZZowx3QJfMcoe0ROFfoghqLnU4=
+X-ClientProxiedBy: FR4P281CA0080.DEUP281.PROD.OUTLOOK.COM
+ (2603:10a6:d10:cd::15) To FR3PPFB3D0CF1D2.DEUP281.PROD.OUTLOOK.COM
+ (2603:10a6:d18:2::182)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -48,335 +86,131 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-ID: <20260812-edac-v1-7-03992edea297@aspeedtech.com>
-References: <20260812-edac-v1-0-03992edea297@aspeedtech.com>
-In-Reply-To: <20260812-edac-v1-0-03992edea297@aspeedtech.com>
-To: Stefan Schaeckeler <sschaeck@cisco.com>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
-	Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Borislav Petkov <bp@alien8.de>, Tony Luck <tony.luck@intel.com>, "Sebastian
- Andrzej Siewior" <bigeasy@linutronix.de>, Clark Williams
-	<clrkwllms@kernel.org>, Steven Rostedt <rostedt@goodmis.org>
-CC: <devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-aspeed@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
-	<linux-edac@vger.kernel.org>, Borislav Petkov <bp@suse.de>,
-	<linux-rt-devel@lists.linux.dev>, Ryan Chen <ryan_chen@aspeedtech.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1786513706; l=10873;
- i=ryan_chen@aspeedtech.com; s=20251126; h=from:subject:message-id;
- bh=EOVfr2ok6rxbBdxN7bYBtEviOJjGs6G3RxZU8KfK1eo=;
- b=8xYSioI2uWnPZREYmRnWEyTIdXS0zjZ+TlyEg5XE6IsciKW7kUGokXwO724O50Q/rJTYXWUlR
- DW4p++Hr2d1Beh3dCNI+P14TUfGYmrJbbtWTvqqIKGmkdHAhtWVgxZZ
-X-Developer-Key: i=ryan_chen@aspeedtech.com; a=ed25519;
- pk=Xe73xY6tcnkuRjjbVAB/oU30KdB3FvG4nuJuILj7ZVc=
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: FR3PPFB3D0CF1D2:EE_|BEUP281MB3788:EE_
+X-MS-Office365-Filtering-Correlation-Id: 9163e407-44ca-4b50-c6c3-08def8b0451c
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|23010399003|10070799003|376014|7416014|52116014|1800799024|366016|10067099003|56012099006|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	ekTmyW5ulEc6WUb69aIvo1PdkWOY8RJYPYQmQ1PoMLFa6bQ3YLg7jqLO9huv9NC0lNpXDhDkDeV73I3a4vmE5WUaqigjudU41EZHoWFHruzv4CjDLxOF1wezxd8TgWeylmZzmTIB90K5K+XleRNAJOR2/DZFTrHrB9J7u9ZBOej5lLJ/FyOJWLvYOuO80x0CCePVRlXuLvHwEuCfc5OaFs12sXnaYGpAjz+y3B0nIhoVef/qZdVLyPSrLtQOJsaPME89ZHL1yvErDBvj+VGyDiuBuMr9Lz3BZtQvnZ10aPrY4hyiCZJBsIdd5Bf1ivpR2F5I/I9hGsgZO2ePUim93nYr9ovVPQ6itBX6Sbm/Vyg836W4JAkaPBIVawF4hyzZO6G2dLL5Bljw3Kz5KLsWSw5PRfFzQAsUJX09O9DHiqkRZlTpRtmKGOSgyzz4et1S1bfY8CbSs02qKShA7bCwH2UXjcuWIKjidbUhxJO8TdCQ11D4J1TWfzLjxfOX9l1XsO6617RVIvTG/27lQrevNkGGxikh71VfXgPEQAJUnnrFOp0cTeJiMHL19fafiFM3U8oaqcV9tqDGZMqN+EpMiEOwi2Qk7A0Zma2alLoknjLgNgufW6zT/ZeQbqVrg0jIqOy0I2mc1w+dfzY6E1U/swFjC+xt8w+A+otUAWHV/m4=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:FR3PPFB3D0CF1D2.DEUP281.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(10070799003)(376014)(7416014)(52116014)(1800799024)(366016)(10067099003)(56012099006)(18002099003);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?S2ZvdUxvcWY1NFRqZFhrbldkMW5TVUd3TEZjeFZISWErTm10U1UwblJzblNK?=
+ =?utf-8?B?Z2xKT1ZlQW1rTG1QNXhFaHlIQVZTNk5KcnlEc2pPMSsxL0NlR2x3YUhjYysx?=
+ =?utf-8?B?VTRiRWhvekN6RDRQRGhoRUtNM2RYbXJ6eGlxNTlxVlVVVG82dEdaRkhsOHBJ?=
+ =?utf-8?B?UEppUnBXVnN5U0J0SkZrT01mdnp0RjR3MTJOWW1JNXk4YmNXK3FScmhaRVRV?=
+ =?utf-8?B?NUY4VDNvdWNCNHhLbDJMdkNKclA4VDA3MHY1ZzMxMFMyd1ppMURCMUU5ZGMw?=
+ =?utf-8?B?cGpGU3NEVzNpcWhMZHlrV1VYZkxzNTJtTmNoN1lQcWdFcCtsQ2gvOU5nQzMy?=
+ =?utf-8?B?UkJQUGF6ajJIYWxDQVBuSkt3Q1RxamwxdGJHcno4NGFMb0MyYlBFYlRpd2ZF?=
+ =?utf-8?B?WERBM25TdC94eTJ0UDBnM2h2ejErTEx3UVpWZlBJemppallRUW9WQ215OVZT?=
+ =?utf-8?B?bFJ2MkZNSklXUU1Cc2lER2JtRy9DTzNaQ2xzSEg1VG0yWVNwQlJ2dDhnVnR2?=
+ =?utf-8?B?cXZVSExVTHRmYnAyMkhWcW1mNUgxQ2NBdTdPV2l6ajljM2JaWEVUcUVrYlpN?=
+ =?utf-8?B?K1QyeDFWTmR3V05PM1pMWlIvRUt3d2ZROEhVNndwU1ZLMjFmUlFOM0VFQ0dR?=
+ =?utf-8?B?T2ZXcnNEODYxZjJnSXVSY2JwQ095RVpvN0lEM2llQTRTSWthVTRZU1RJWENP?=
+ =?utf-8?B?T3l1NVNTL0JNOXAwK1VMbXdWSmNFMk9GMzcwemY3dytFY0hPNW53Uk95MDRH?=
+ =?utf-8?B?V3p1eHh5d01naEVGLzJVeXVFZWRZUmdxOUNabFpWalF2OTZPWERQVWpWSXBp?=
+ =?utf-8?B?dFVxY2xLclN1UDdENmhTaTZTWGRSSzVEbkhKZjZjdnlnSHo0VWk0dmM0cXBH?=
+ =?utf-8?B?V0dPMmRQNzJHWW1sM3pIMDhtK3czeHUvcDRPd2hpS1ZxQ1ZodmV6YjVtQ3NM?=
+ =?utf-8?B?bzREbVZaMzduNkUxREtvL3BuUVFoM2VGZ0dtSXJvQWZqcG8vbmRDMDUrcHBy?=
+ =?utf-8?B?Z0pwaWJqdFVhN3lTcVJjODlXWHhSK0FoT0Flb1FCZmpHaVZ0d3U4dkx6Ly90?=
+ =?utf-8?B?ZVJXaGhYcU5vTXNQVmdKZ09zN29DUWxmRVd6MHpBYXdITEdaK1BYMmxBL09l?=
+ =?utf-8?B?SFovK3pNZnFkVXA1bjF1OVpoZ0J3dmViNDlXdVZDWnVYVldLeHhBZHphNzE0?=
+ =?utf-8?B?cG9HYm1xUndJZDBNY0hWVy9vWHRwUHVjOTVQcldQOEhDZ3Y2bSs0SDd5eUd1?=
+ =?utf-8?B?R1JudU5HLy9JZldXWTdabFZIUGE0eFVhOHhTNXdDZ1I3Z2pZNFdzNjl3ajZV?=
+ =?utf-8?B?Y0kvbmxTZEo4UFVWOWs1RjIvQ3NEcU82U0IzVWUzWTNDTldxNXY4YlhMeW5S?=
+ =?utf-8?B?T04vbjk2YzNyTVRvaFVVaVVINlVHdDVvZ3h4azVOMVpWMHp6VEYvQ251ODVW?=
+ =?utf-8?B?T2VLM3NNRXFvSUwvNlZVRlJEOHlWTENZbEllRjYrbTA2dnlFR3krQlptMGxS?=
+ =?utf-8?B?WTJUUkhvZkF3UFJQdzJkZkZLTE9zZHk4NUQ2czlPak9ZS1lKeW51TGZFTnJa?=
+ =?utf-8?B?c1dzS1VTeGVZQlVEd2tzUGZFejRyV3I2VkRiQ3ZUNUVmQ2I3S0xRMEZuR0Q4?=
+ =?utf-8?B?cEhDSmNsSnJmdW9xRGJQajZKMDlNSXhwVy9oeWFWRHJKalhBTTdPZFU5VWJW?=
+ =?utf-8?B?cytZUW1UMEsycU9ieEk4M3FrYmRzc3pMQjNjUnNvNmg0dXlzOEE0SE9MZDZT?=
+ =?utf-8?B?ZUllS1BSdW02Q1FSSVFwYkVPaFNWemtyTDhNVTNXUDBock8wU1l3dDdaYWlt?=
+ =?utf-8?B?TnBXRTZhQ1dHQ1BVY1g0cVl2VGpxVk1HV1pjVytEcVdFbENCUWxRMWgvV3Bv?=
+ =?utf-8?B?akRlTDFlWEpDSU05V3hmN0UxVFhPOGJnZmZSV0FYSnRFSFBhTi9UVjd1eHVH?=
+ =?utf-8?B?ZlU3aUh3Q2xzelZ1cVVQQXNUZWNzUHlLS2ZiNHk0eHI5d1hWc1pjenJZdXE2?=
+ =?utf-8?B?UGVOZHdMTm1sai9oSit6Qyt4TUdvN2Nlbm9WOHJRMEJXSGV1eFV5S0JvcTVR?=
+ =?utf-8?B?ZHhkbUlpRlBPL21VVUJqcW9aNG8ybHNJR00xMnVQbnNJOFEwK2VFUFZCUjFF?=
+ =?utf-8?B?cjB0YytHWWU0VkpxdHA4M2N4dEJnOUVVc1JHbEg3blJvcmZCazlnakFtSVBZ?=
+ =?utf-8?B?R1A2cEN2UUcveHMrNWhpdDl2eXd6Vm1kcG8xVnJkOWJaR3VtOGJHUGxpbnMx?=
+ =?utf-8?B?MmNxa1d2dWR5VVdDdjBhRDRXSzZ6djVOVlg1dmdGeSt1dWtBS3lScVltVC9P?=
+ =?utf-8?B?MTNDaXpxZTc3WWNTSFp3MDlodDJtMEJOYUxobW1mTG5SZUN4a3dtNW9Cdnlu?=
+ =?utf-8?Q?WD7igqAtoMTutHkCg3Qy7x+nvnMYZ6dMfXfOF?=
+X-OriginatorOrg: siewert.io
+X-MS-Exchange-CrossTenant-Network-Message-Id: 9163e407-44ca-4b50-c6c3-08def8b0451c
+X-MS-Exchange-CrossTenant-AuthSource: FR3PPFB3D0CF1D2.DEUP281.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 Aug 2026 20:28:29.4311
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: e8b4abbe-444b-4835-b8fd-87ac97451a7e
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: n7FjsYqO5cCPdjO0f5XCJNqUMVaPgKAXD3H3NlQA/OYzmlMKbh9COvn/LSe2Gwk9
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BEUP281MB3788
 
-Add SDRAM ECC reporting for the Aspeed AST2700. Its DRAMC has a different
-register layout, a split interrupt status/clear/mask scheme, DDR4/DDR5
-memory and interrupt registers that are not key-protected.
+This series adds support for the BMC of the ASRock Rack X470D4U mainboard,
+which uses an ASPEED AST2500.
 
-Its interrupt status/clear and enable sequences differ from the earlier
-SoCs, so add per-chip isr() and set_irq() hooks and route the request_irq
-and enable/disable paths through them, keeping the existing AST2400/2500/
-2600 behaviour under the shared aspeed_mcr_isr()/aspeed_set_irq().
+The mainboard exists in three known flavors, the "normal" X470D4U, the
+X470D4U2-2T (with 2x10G RJ45) and the X470D4U2/1N1 (an ODM version with
+2x1G RJ45 that is now available in retail). The 1N1 version also has a 64MB
+BMC SPI by default, but they are all swappable.
 
-Unlike the earlier SoCs it records a single failure address shared by
-both error types, so extend the shared count_rec()/count_un_rec()
-helpers with a have_addr flag to report an error without an address
-(existing SoCs pass have_addr = true, unchanged) and widen their address
-argument to phys_addr_t as the AST2700 address can exceed 32 bits.
+There are two device trees, one that has all the config and uses a 32MB
+flash layout, and another one called "data64" (similar to facebook-fuji)
+that uses the 64MB flash layout.
 
-Tested on an AST2700: A correctable error was injected from the console by
-unlocking the controller and writing its ECC error inject test register:
+Please note that this board has been fully reverse-engineered.
 
-  # mw 12c00000 1688a8a8
-  # mw 12c00080 31
-  EDAC MC0: 1 CE on mc#0csrow#0channel#0 (csrow:0 channel:0 page:0x40f6da offset:0xdb0 grain:16 syndrome:0x0)
+Thanks,
+Tan
 
-Assisted-by: Claude:claude-opus-4-8
-Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+Signed-off-by: Tan Siewert <tan@siewert.io>
 ---
- drivers/edac/aspeed_edac.c | 154 +++++++++++++++++++++++++++++++++++++--------
- 1 file changed, 128 insertions(+), 26 deletions(-)
+Changes in v3:
+- remove mdio pinctrl from mac1 nc-si interface [Andrew Jeffrey]
+- remove "st,24c128" compatibility from fru eeprom [Tan]
+- enable uart1-4 [Tan]
+- add a data64 tree as alternative for boards with a 64M SPI [Zev]
+- add hog to bmc-ready GPIO pin as required by the host BIOS [Tan]
+- fix offenses reported by scripts/dtc/dt-check-style --mode strict [Tan]
+- Link to v2: https://lore.kernel.org/all/20251011112124.17588-1-tan@siewert.io/
 
-diff --git a/drivers/edac/aspeed_edac.c b/drivers/edac/aspeed_edac.c
-index 91df5d2df5f1..8b48044a00d1 100644
---- a/drivers/edac/aspeed_edac.c
-+++ b/drivers/edac/aspeed_edac.c
-@@ -32,6 +32,19 @@
- #define ASPEED_MCR_INTR_CTRL_CNT_UNREC  GENMASK(15, 12)
- #define ASPEED_MCR_INTR_CTRL_ENABLE     (BIT(0) | BIT(1))
- 
-+#define AST2700_INT_STS			0x04
-+#define AST2700_INT_CLR			0x08
-+#define AST2700_INT_MASK		0x0c
-+#define   AST2700_INT_ECC_RECOVERABLE	BIT(5)
-+#define   AST2700_INT_ECC_UNRECOVERABLE	BIT(4)
-+#define AST2700_MCFG			0x10
-+#define   AST2700_MCFG_ECC		BIT(6)
-+#define   AST2700_MCFG_DRAM_TYPE	BIT(0) /* 0=DDR4, 1=DDR5 */
-+#define AST2700_ECC_STS			0x78
-+#define   AST2700_ECC_REC_CNT		GENMASK(15, 8)
-+#define   AST2700_ECC_UNREC_CNT		GENMASK(7, 0)
-+#define AST2700_ECC_FAIL_ADDR		0x7c
-+
- struct aspeed_edac_chip {
- 	unsigned int conf_reg;
- 	u32 conf_ecc;
-@@ -40,6 +53,8 @@ struct aspeed_edac_chip {
- 	unsigned long mtype_cap;
- 	unsigned int prot_reg;
- 	u32 prot_key;
-+	irqreturn_t (*isr)(int irq, void *arg);
-+	void (*set_irq)(struct mem_ctl_info *mci, bool enable);
- };
- 
- struct aspeed_edac {
-@@ -49,26 +64,34 @@ struct aspeed_edac {
- 	const struct aspeed_edac_chip *chip;
- };
- 
--static void count_rec(struct mem_ctl_info *mci, u8 rec_cnt, u32 rec_addr)
-+static void count_rec(struct mem_ctl_info *mci, u8 rec_cnt, phys_addr_t rec_addr,
-+		      bool have_addr)
- {
- 	struct csrow_info *csrow = mci->csrows[0];
--	u32 page, offset, syndrome;
-+	unsigned long page, offset, syndrome;
- 
- 	if (!rec_cnt)
- 		return;
- 
--	/* report first few errors (if there are) */
--	/* note: no addresses are recorded */
--	if (rec_cnt > 1) {
-+	/*
-+	 * Report the errors whose address is not recorded: all of them when
-+	 * no address is available, otherwise all but the last one (reported
-+	 * with its address below).
-+	 */
-+	if (rec_cnt > 1 || !have_addr) {
- 		/* page, offset and syndrome are not available */
- 		page = 0;
- 		offset = 0;
- 		syndrome = 0;
--		edac_mc_handle_error(HW_EVENT_ERR_CORRECTED, mci, rec_cnt-1,
-+		edac_mc_handle_error(HW_EVENT_ERR_CORRECTED, mci,
-+				     have_addr ? rec_cnt - 1 : rec_cnt,
- 				     page, offset, syndrome, 0, 0, -1,
- 				     "address(es) not available", "");
- 	}
- 
-+	if (!have_addr)
-+		return;
-+
- 	/* report last error */
- 	/* note: rec_addr is the last recoverable error addr */
- 	page = rec_addr >> PAGE_SHIFT;
-@@ -81,32 +104,34 @@ static void count_rec(struct mem_ctl_info *mci, u8 rec_cnt, u32 rec_addr)
- }
- 
- static void count_un_rec(struct mem_ctl_info *mci, u8 un_rec_cnt,
--			 u32 un_rec_addr)
-+			 phys_addr_t un_rec_addr, bool have_addr)
- {
- 	struct csrow_info *csrow = mci->csrows[0];
--	u32 page, offset, syndrome;
-+	unsigned long page, offset, syndrome;
- 
- 	if (!un_rec_cnt)
- 		return;
- 
--	/* report 1. error */
--	/* note: un_rec_addr is the first unrecoverable error addr */
--	page = un_rec_addr >> PAGE_SHIFT;
--	offset = un_rec_addr & ~PAGE_MASK;
--	/* syndrome is not available */
--	syndrome = 0;
--	edac_mc_handle_error(HW_EVENT_ERR_UNCORRECTED, mci, 1,
--			     csrow->first_page + page, offset, syndrome,
--			     0, 0, -1, "", "");
-+	/* report the first error with its address when one is available */
-+	if (have_addr) {
-+		/* note: un_rec_addr is the first unrecoverable error addr */
-+		page = un_rec_addr >> PAGE_SHIFT;
-+		offset = un_rec_addr & ~PAGE_MASK;
-+		/* syndrome is not available */
-+		syndrome = 0;
-+		edac_mc_handle_error(HW_EVENT_ERR_UNCORRECTED, mci, 1,
-+				     csrow->first_page + page, offset, syndrome,
-+				     0, 0, -1, "", "");
-+	}
- 
--	/* report further errors (if there are) */
--	/* note: no addresses are recorded */
--	if (un_rec_cnt > 1) {
-+	/* report the remaining errors without a recorded address */
-+	if (un_rec_cnt > 1 || !have_addr) {
- 		/* page, offset and syndrome are not available */
- 		page = 0;
- 		offset = 0;
- 		syndrome = 0;
--		edac_mc_handle_error(HW_EVENT_ERR_UNCORRECTED, mci, un_rec_cnt-1,
-+		edac_mc_handle_error(HW_EVENT_ERR_UNCORRECTED, mci,
-+				     have_addr ? un_rec_cnt - 1 : un_rec_cnt,
- 				     page, offset, syndrome, 0, 0, -1,
- 				     "address(es) not available", "");
- 	}
-@@ -160,8 +185,8 @@ static irqreturn_t aspeed_mcr_isr(int irq, void *arg)
- 		rec_cnt, un_rec_cnt);
- 
- 	/* process recoverable and unrecoverable errors */
--	count_rec(mci, rec_cnt, rec_addr);
--	count_un_rec(mci, un_rec_cnt, un_rec_addr);
-+	count_rec(mci, rec_cnt, rec_addr, true);
-+	count_un_rec(mci, un_rec_cnt, un_rec_addr, true);
- 
- 	if (!rec_cnt && !un_rec_cnt)
- 		dev_dbg_ratelimited(mci->pdev, "received edac interrupt, but did not find any ECC counters\n");
-@@ -174,6 +199,52 @@ static irqreturn_t aspeed_mcr_isr(int irq, void *arg)
- 	return IRQ_HANDLED;
- }
- 
-+static irqreturn_t ast2700_dramc_isr(int irq, void *arg)
-+{
-+	u32 int_sts, ecc_sts, fail_addr;
-+	struct mem_ctl_info *mci = arg;
-+	struct aspeed_edac *priv;
-+	u8 rec_cnt, un_rec_cnt;
-+	phys_addr_t addr;
-+
-+	priv = mci->pvt_info;
-+
-+	scoped_guard(raw_spinlock, &priv->lock) {
-+		int_sts = readl(priv->regs + AST2700_INT_STS);
-+		ecc_sts = readl(priv->regs + AST2700_ECC_STS);
-+		fail_addr = readl(priv->regs + AST2700_ECC_FAIL_ADDR);
-+
-+		/* the interrupt registers are not key-protected; clear only ECC */
-+		writel(int_sts & (AST2700_INT_ECC_RECOVERABLE | AST2700_INT_ECC_UNRECOVERABLE),
-+		       priv->regs + AST2700_INT_CLR);
-+	}
-+
-+	rec_cnt = FIELD_GET(AST2700_ECC_REC_CNT, ecc_sts);
-+	un_rec_cnt = FIELD_GET(AST2700_ECC_UNREC_CNT, ecc_sts);
-+
-+	/* the register holds address bits [35:4], in units of 16 bytes */
-+	addr = (phys_addr_t)fail_addr << 4;
-+
-+	/*
-+	 * The controller records only the address of the latest failure,
-+	 * shared by both error types. When only one type occurred it owns
-+	 * that address; when both occurred attribute it to the uncorrectable
-+	 * error and report the corrected ones without an address.
-+	 */
-+	if (un_rec_cnt && !rec_cnt) {
-+		count_un_rec(mci, un_rec_cnt, addr, true);
-+	} else if (!un_rec_cnt && rec_cnt) {
-+		count_rec(mci, rec_cnt, addr, true);
-+	} else if (un_rec_cnt && rec_cnt) {
-+		count_un_rec(mci, un_rec_cnt, addr, true);
-+		count_rec(mci, rec_cnt, 0, false);
-+	} else {
-+		dev_dbg_ratelimited(mci->pdev, "received interrupt with no ECC counters set\n");
-+	}
-+
-+	return IRQ_HANDLED;
-+}
-+
- static void aspeed_set_irq(struct mem_ctl_info *mci, bool enable)
- {
- 	struct aspeed_edac *priv = mci->pvt_info;
-@@ -192,8 +263,22 @@ static void aspeed_set_irq(struct mem_ctl_info *mci, bool enable)
- 	aspeed_mcr_irq_update_exit(priv);
- }
- 
-+static void ast2700_set_irq(struct mem_ctl_info *mci, bool enable)
-+{
-+	u32 mask = AST2700_INT_ECC_RECOVERABLE | AST2700_INT_ECC_UNRECOVERABLE;
-+	struct aspeed_edac *priv = mci->pvt_info;
-+	u32 val;
-+
-+	guard(raw_spinlock_irqsave)(&priv->lock);
-+
-+	/* interrupts are enabled by clearing their mask bits */
-+	val = readl(priv->regs + AST2700_INT_MASK);
-+	writel(enable ? (val & ~mask) : (val | mask), priv->regs + AST2700_INT_MASK);
-+}
-+
- static int config_irq(struct mem_ctl_info *mci, struct platform_device *pdev)
- {
-+	struct aspeed_edac *priv = mci->pvt_info;
- 	int irq;
- 	int rc;
- 
-@@ -203,13 +288,13 @@ static int config_irq(struct mem_ctl_info *mci, struct platform_device *pdev)
- 	if (irq < 0)
- 		return irq;
- 
--	rc = devm_request_irq(&pdev->dev, irq, aspeed_mcr_isr, IRQF_TRIGGER_HIGH,
-+	rc = devm_request_irq(&pdev->dev, irq, priv->chip->isr, IRQF_TRIGGER_HIGH,
- 			      DRV_NAME, mci);
- 	if (rc)
- 		return rc;
- 
- 	/* enable interrupts */
--	aspeed_set_irq(mci, true);
-+	priv->chip->set_irq(mci, true);
- 
- 	return 0;
- }
-@@ -354,9 +439,10 @@ static int aspeed_probe(struct platform_device *pdev)
- static void aspeed_remove(struct platform_device *pdev)
- {
- 	struct mem_ctl_info *mci = platform_get_drvdata(pdev);
-+	struct aspeed_edac *priv = mci->pvt_info;
- 
- 	/* disable interrupts */
--	aspeed_set_irq(mci, false);
-+	priv->chip->set_irq(mci, false);
- 
- 	/* free resources */
- 	edac_mc_del_mc(&pdev->dev);
-@@ -371,6 +457,8 @@ static const struct aspeed_edac_chip ast2400_edac = {
- 	.mtype_cap = MEM_FLAG_DDR3 | MEM_FLAG_DDR4,
- 	.prot_reg = ASPEED_MCR_PROT,
- 	.prot_key = ASPEED_MCR_PROT_PASSWD,
-+	.isr = aspeed_mcr_isr,
-+	.set_irq = aspeed_set_irq,
- };
- 
- /* The AST2600 does not key-protect the interrupt control register (MCR50). */
-@@ -380,12 +468,26 @@ static const struct aspeed_edac_chip ast2600_edac = {
- 	.conf_dram_type = ASPEED_MCR_CONF_DRAM_TYPE,
- 	.dram_type = { MEM_DDR3, MEM_DDR4 },
- 	.mtype_cap = MEM_FLAG_DDR3 | MEM_FLAG_DDR4,
-+	.isr = aspeed_mcr_isr,
-+	.set_irq = aspeed_set_irq,
-+};
-+
-+/* The AST2700 interrupt registers are not key-protected either. */
-+static const struct aspeed_edac_chip ast2700_edac = {
-+	.conf_reg = AST2700_MCFG,
-+	.conf_ecc = AST2700_MCFG_ECC,
-+	.conf_dram_type = AST2700_MCFG_DRAM_TYPE,
-+	.dram_type = { MEM_DDR4, MEM_DDR5 },
-+	.mtype_cap = MEM_FLAG_DDR4 | MEM_FLAG_DDR5,
-+	.isr = ast2700_dramc_isr,
-+	.set_irq = ast2700_set_irq,
- };
- 
- static const struct of_device_id aspeed_of_match[] = {
- 	{ .compatible = "aspeed,ast2400-sdram-edac", .data = &ast2400_edac },
- 	{ .compatible = "aspeed,ast2500-sdram-edac", .data = &ast2400_edac },
- 	{ .compatible = "aspeed,ast2600-sdram-edac", .data = &ast2600_edac },
-+	{ .compatible = "aspeed,ast2700-sdram-edac", .data = &ast2700_edac },
- 	{},
- };
- 
+Changes in v2:
+- fix led node names [robh]
+- fix missing gfx memory region and other fixable dtbs_check issues [Tan]
+- Link to v1: https://lore.kernel.org/all/20250919185621.6647-1-tan@siewert.io/
 
--- 
-2.34.1
+To: Rob Herring <robh@kernel.org>
+To: Krzysztof Kozlowski <krzk+dt@kernel.org>
+To: Conor Dooley <conor+dt@kernel.org>
+To: Joel Stanley <joel@jms.id.au>
+To: Andrew Jeffery <andrew@codeconstruct.com.au>
+Cc: Zev Weiss <zev@bewilderbeest.net>
+Cc: devicetree@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-aspeed@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org
+
+---
+Tan Siewert (2):
+      dt-bindings: arm: aspeed: add ASRock X470D4U BMC
+      ARM: dts: aspeed: add asrock x470d4u bmc
+
+ .../devicetree/bindings/arm/aspeed/aspeed.yaml     |   2 +
+ arch/arm/boot/dts/aspeed/Makefile                  |   2 +
+ .../aspeed/aspeed-bmc-asrock-x470d4u-data64.dts    |  15 +
+ .../boot/dts/aspeed/aspeed-bmc-asrock-x470d4u.dts  | 381 +++++++++++++++++++++
+ 4 files changed, 400 insertions(+)
+---
+base-commit: 749c34389679f8d56cb200a69b62f9a64670034f
+change-id: 20251017-ts-x470d4u-54b9e98e4333
+
+Best regards,
+--  
+Tan Siewert <tan@siewert.io>
 
 
