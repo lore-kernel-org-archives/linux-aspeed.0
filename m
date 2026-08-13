@@ -1,56 +1,56 @@
-Return-Path: <linux-aspeed+bounces-4708-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4709-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D594AC5CFCF
-	for <linux-aspeed@archiver.kernel.org>; Fri, 14 Aug 2026 00:46:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A39FC5DF67
+	for <linux-aspeed@archiver.kernel.org>; Fri, 14 Aug 2026 00:46:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hLk7C18bmz2yrf;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hLk7C31Djz2yqX;
 	Fri, 14 Aug 2026 10:46:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786622411;
-	cv=none; b=VToConkv4Ih7zD1p9BXS68xXZ75OYvIg3wpfy6PVDMk97KWysgBebX2kWr6IAwCGm+SYjamgC47yeR4r61PXSDvDoewphZVngo36DafVEEwBdHaHxGm+91kJsKG3FBSsYYdUwcnNiC2202UCpF8Yd+kvgn5LAoxxb7gqO24V5FIhRM9M37SKB+FTHu+jsGNHx1LykKF/bdhTVY3tl5pZN0DnEZqx7+PD+ItUuh+cn6+xFcZ1+98SWY7dvDKwv4nc5UGpOKNovMq0wBvxE9EmWp3FqGd9zAt2+6x9rR6mpA7csy9wMISZihZtXbnG10PGUNdbwhM1kiq2qpsaXMUagA==
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786622408;
+	cv=none; b=Kz7a31BqrVzeNdhVL9i5aCCq2hntR+gFjUFQLjMAdAdujlB7iJ769bbexF4bgT3sjKDEv8fRW5XYRwG/qZAWGXDL1PsiAPa5wLnQC1k4QNGx8pmvFC3mGMqthtkOLfK3P32ZRgY/o01CVvpWIrdv4VWBg4kTsHBnUPDLJQ+fbZoVIjb/DRC4X5yVhW5Crns/SrWK82GEXzC0Fxo/Jc8QvJVqc7KQdy5bS7eqbm8MO0DUX469WEE1j2c84XF6c1be++9YITn16oQpC0JjXaYFHrwqJGNpIfiktR87qNJU67J3jGYEdQI7loph6AVSnqZQCk28bM2ytdYczLHqlv1cqg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786622411; c=relaxed/relaxed;
-	bh=Qb9KsJmuphPj+EJzVvySOdWbA7tlqNj0bmjJR+xgdsQ=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=KG90h39Aem4IkWXAn5z2xGv+2AOzpUic2O7WZCasoaWvsdPYBPS5mhhiMqbmctz+PsUGswhsBlrDddc3gX/ylvWXokM6Jy8LKqR/99jtwStSr2rLBrdj4lIw8rTRaTh6vDuK7FzFewWau7+MzAkasrJNl95EyoYuz+rguqVWjhxypGZeClHucvPxzXGC2HUf4z7a0xendJ/TMh3PvIm7/10Vvk+mSiyCnxdXCWo6GCbu/3HeJfRWaARAacPGNTOZnrzSqW6qkM4j058NKjmoPuLGNzxbFpqvy5HmNFA1Dbruee2y9DfXBWx3gJtRVFtee7kc0n21Tr7EemvnbDFHew==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Omx/1v+N; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=devnull+u8813345.gmail.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1786622408; c=relaxed/relaxed;
+	bh=Am0FRf1MiyG9Qisxihff4Ico7LVKmPXMY6H0lNw2zw0=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=fSqVdOlSCAtWR/ArgL88m+6eY/wt3y3lkKTKciPaZg34KI0itrG3DNU+1MmEc72XnkKKdoMJZ5LGHYh14KrqbOekMkT2N6u7Ljaszqu+gSofWvnk7T3JkR//GhBJm2nSvNXeUETePyuFmnzKynVMc3h+4VwKU3DmZC1BEwcyxzbpeQyDSePOgnFb6txe6IVaO6d4oOT2kE5pUg5Ak2qJF1i29rTB5MG3dQKiORa4bvJbL5iRjFlfFpCK+J6X9uSEtIuFl93nyZEeM4gYm/Xwc6EYJFsAEY4HavG/AVDQvRWsyeKW5Vp4oc0eQbj5gJuzizaY9oI+YFJPzcyO+gvSEA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bC13H6GT; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=devnull+u8813345.gmail.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Omx/1v+N;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bC13H6GT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=devnull+u8813345.gmail.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=devnull+u8813345.gmail.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hLP7D0ZQXz2ySS
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 13 Aug 2026 22:00:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hLP775B4Dz2yl2
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 13 Aug 2026 22:00:02 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 31F0C44205;
-	Thu, 13 Aug 2026 12:00:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 645EAC32786;
+	by tor.source.kernel.org (Postfix) with ESMTP id 24E81600AD;
 	Thu, 13 Aug 2026 12:00:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id AB6DBC19425;
+	Thu, 13 Aug 2026 11:59:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1786622401;
-	bh=0w+n+lPjz3WSPIo2NDXp6hSQIIS7CvZuDO3z2haGJjQ=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=Omx/1v+NK+SEUZaeuGPngQg8GIpGTOqNf35ORjHSom5wLa+eTDjTIJn+CIceTE5Ln
-	 XnLLTxFfFR6TR+Ippd6OaIhicdDjPGgPMyG6ZC5Ja0uR7c6lrBZn1Rt438FJvOSj0p
-	 9fFiD5RAFRlze83FEZDfXCD5HN71rm8LT3YG+PE3DNDwhar29rpcGK4bnLRGFiM/rg
-	 C5lwdTkh/mY5jLwdd4r7h0Bv/6zHNwohVpId/RRL3dj2QhujwYup81zAbEM8QXNB9O
-	 m9Uwd0EXD7BOrkEiClA2i8RULCzIOMfbiTLm4BI1Dzsa32jXDfD8YWCH9oedDewEvH
-	 wt/sSoke8cBbg==
+	s=k20201202; t=1786622399;
+	bh=KspGXcyx0zJEN9WlK/sXLb3sPuYZz8T7kJQlmBlGklA=;
+	h=From:Subject:Date:To:Cc:Reply-To:From;
+	b=bC13H6GT9bb5Rh800MSSS94DDhbZOr846x0Wqj4CNu3D6d+jX4lFuxKOgerfKG2s/
+	 O+heO6OjhR0aO5b8zV6jhj8tILolee9NLlF3/MjokTvmeH3YAHlSKHh1lswgdUuSGc
+	 3h/49EPFwEJfun2PP0sbFYMgkUHWKTZt3tq+fgYpGRX8+vKMqJUItlw9UHhlTDcKKw
+	 p6T5JVXlbohnyJ46B1vL7uiUns41Tj/6PLYFqfiaRpVKuYShAZhem0P09iN9kKRfDm
+	 mcfoVjFqlCwBe6nDm6FIWsQ+7/ChB9Nnq5IMdyllK5UE2fip2Sec9vJ07oNcbzWgo3
+	 Cr0jIqXvxKpfg==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 40F79C5DF6D;
-	Thu, 13 Aug 2026 12:00:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 81EDAC5CFEB;
+	Thu, 13 Aug 2026 11:59:59 +0000 (UTC)
 From: Colin Huang via B4 Relay <devnull+u8813345.gmail.com@kernel.org>
-Date: Thu, 13 Aug 2026 19:59:41 +0800
-Subject: [PATCH v5 11/15] ARM: dts: aspeed: anacapa: Simplify leakage GPIO
- line names
+Subject: [PATCH v5 00/15] ARM: dts: aspeed: anacapa: restructure devicetree
+ for development-phase
+Date: Thu, 13 Aug 2026 19:59:30 +0800
+Message-Id: <20260813-anacapa-devlop-phase-devicetree-v5-0-c7058f63dc67@gmail.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -66,22 +66,27 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260813-anacapa-devlop-phase-devicetree-v5-11-c7058f63dc67@gmail.com>
-References: <20260813-anacapa-devlop-phase-devicetree-v5-0-c7058f63dc67@gmail.com>
-In-Reply-To: <20260813-anacapa-devlop-phase-devicetree-v5-0-c7058f63dc67@gmail.com>
+X-B4-Tracking: v=1; b=H4sIAKKxfWoC/43NsW7DIBSF4VeJmEt1AQOmU98j6kAulxgpsS2IU
+ KrI716cJVEyuON/hu/cWKGcqLCv3Y1lqqmkaWyhP3YMBz8eiafQmkmQBjqw3I8e/ex5oHqaZj4
+ PvtAaCemSiXgnQAQVlZAIrClzppiu94f9T+shlcuUf++HVazr/+0qOHBnD84oY9Gj+j6efTp94
+ nRmq13ls+e2Pdk800cle2OF0W+eengG5LanmmfRKdQh9sEdXr3u4fWgt72ueToYS0DRG9TP3rI
+ sfyMIS5y+AQAA
+X-Change-ID: 20260407-anacapa-devlop-phase-devicetree-4101d3f312c0
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
  Andrew Jeffery <andrew@codeconstruct.com.au>
 Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
  linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
  colin.huang2@amd.com, Colin Huang <u8813345@gmail.com>, 
- Rex Fu <rex.fu.amd@gmail.com>
+ Conor Dooley <conor.dooley@microchip.com>, Carl Lee <carl.lee@amd.com>, 
+ Rex Fu <rex.fu.amd@gmail.com>, Andy Chung <Andy.Chung@amd.com>, 
+ Peter Shen <peter.shen@amd.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1786622378; l=2439;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1786622378; l=4004;
  i=u8813345@gmail.com; s=20260202; h=from:subject:message-id;
- bh=vmghXUBmwzP2rgOwg7WGwWzuzw+iRgP5cEGqkIrQPXw=;
- b=pEFjHbiPWEuuAx+9aKAgOXonLGB9aaADwUMzcXOZvctDmNGlfeDK6UPme8VQqK7e1ouGlwKsb
- soUm2NLhSotCEnIOPDuSe0xobuTniSUSZ/Uqyk8hbrtbeoc2Y1Saz7W
+ bh=KspGXcyx0zJEN9WlK/sXLb3sPuYZz8T7kJQlmBlGklA=;
+ b=zJW+wxbsgrn7odameHSrHPNFOoXZrsOk1aKRQSZdYLK+ZFFLrxpbYx13lcUvpxoLLTh86LQIc
+ 5DGIJRDwC4WBE5N5ifI7bcvBcxB1DCkUCHaZO1jhbzOGYMoU0i7Upcq
 X-Developer-Key: i=u8813345@gmail.com; a=ed25519;
  pk=Zlg0WqpCw4qbswOqamTBTXIchwR/3SnYZpy7rjaGMdQ=
 X-Endpoint-Received: by B4 Relay for u8813345@gmail.com/20260202 with
@@ -89,71 +94,87 @@ X-Endpoint-Received: by B4 Relay for u8813345@gmail.com/20260202 with
 X-Original-From: Colin Huang <u8813345@gmail.com>
 Reply-To: u8813345@gmail.com
 
-From: Rex Fu <rex.fu.amd@gmail.com>
+This series refactors the Anacapa BMC devicetree layout to better support
+development-phase hardware revisions (EVT1/EVT2/DVT) while keeping a platform
+entrypoint.
 
-Remove the board location suffixes from the leakage present GPIO line
-names. The channel number is enough to identify each leakage present
-signal.
-
-Signed-off-by: Rex Fu <rex.fu.amd@gmail.com>
+Signed-off-by: Colin Huang <u8813345@gmail.com>
 ---
- .../dts/aspeed/aspeed-bmc-facebook-anacapa-dvt.dts | 28 +++++++++++-----------
- 1 file changed, 14 insertions(+), 14 deletions(-)
+Changes in v5:
+- Remove redundant vhub pinctrl-names
+- Use default SPI2 memory mapping
+- Fix dt-check-style strict violations
+- Add Acked-by from Conor Dooley
+- Sort compatible strings in alphabetical order
+- More commit message for ARM: dts: aspeed: anacapa: Add EVT1 devicetree and point wrapper to it.
+- Update commit message to describe both LPDB and RPDB GPIO expanders  
+- Link to v4: https://lore.kernel.org/r/20260805-anacapa-devlop-phase-devicetree-v4-0-5d67e0efa6c5@gmail.com
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-dvt.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-dvt.dts
-index f09dd1abe77d..f710046f79bc 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-dvt.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-dvt.dts
-@@ -111,32 +111,32 @@ &sgpiom0 {
- 	"", "",
- 
- 	/* B0-B7 line 16-31 */
--	"Channel0_leakage_EAM3", "FM_CPU_FPGA_JTAG_MUX_SEL",
--	"Channel1_leakage_EAM0", "FM_SCM_JTAG_MUX_SEL",
--	"Channel2_leakage_Manifold1", "FM_BRIDGE_JTAG_MUX_SEL",
--	"Channel5_leakage_present_EAM1", "FM_CPU0_NMI_SYNC_FLOOD_N",
--	"Channel4_leakage_Manifold2", "BMC_AINIC0_WP_R2_L",
--	"Channel5_leakage_EAM1", "BMC_AINIC1_WP_R2_L",
--	"Channel6_leakage_CPU_DIMM", "CPLD_BUF_R_AGPIO330",
--	"Channel7_leakage_EAM2", "CPLD_BUF_R_AGPIO331",
-+	"Channel0_leakage", "FM_CPU_FPGA_JTAG_MUX_SEL",
-+	"Channel1_leakage", "FM_SCM_JTAG_MUX_SEL",
-+	"Channel2_leakage", "FM_BRIDGE_JTAG_MUX_SEL",
-+	"Channel5_leakage_present", "FM_CPU0_NMI_SYNC_FLOOD_N",
-+	"Channel4_leakage", "BMC_AINIC0_WP_R2_L",
-+	"Channel5_leakage", "BMC_AINIC1_WP_R2_L",
-+	"Channel6_leakage", "CPLD_BUF_R_AGPIO330",
-+	"Channel7_leakage", "CPLD_BUF_R_AGPIO331",
- 
- 	/* C0-C7 line 32-47 */
- 	"RSVD_RMC_GPIO3", "RTM_MUX_L",
- 	"LEAK_DETECT_RMC_N", "RTM_MUX_R",
- 	"HDR_P0_NMI_BTN_BUF_R_N", "FPGA_JTAG_SCM_DBREQ_N",
--	"Channel6_leakage_present_CPU_DIMM", "whdt_sel",
-+	"Channel6_leakage_present", "whdt_sel",
- 	"R_EAM0_NIC_CBL_PRSNT_L", "JTAG_CPLD_TRST_R_N",
- 	"R_EAM1_NIC_CBL_PRSNT_L", "",
- 	"L_EAM0_NIC_CBL_PRSNT_L", "",
- 	"L_EAM1_NIC_CBL_PRSNT_L", "",
- 
- 	/* D0-D7 line 48-63 */
--	"Channel0_leakage_present_EAM3", "",
--	"Channel1_leakage_present_EAM0", "",
--	"Channel2_leakage_present_Manifold1", "",
--	"Channel4_leakage_present_Manifold2", "",
-+	"Channel0_leakage_present", "",
-+	"Channel1_leakage_present", "",
-+	"Channel2_leakage_present", "",
-+	"Channel4_leakage_present", "",
- 	"AMC_BRD_PRSNT_CPLD_L", "",
--	"Channel7_leakage_present_EAM2", "",
-+	"Channel7_leakage_present", "",
- 	"", "",
- 	"", "",
- 
+Changes in v4:
+- Capitalize the first word of the short description.
+- Rework the Anacapa development-phase devicetree hierarchy.
+- Ensure that anacapa-evt1 generates an identical devicetree to the existing aspeed-bmc-facebook-anacapa.dts.
+- Add SPI flash VCC supply.
+- Simplify leakage GPIO line names.
+- Add LPDB fuse monitor GPIO expander.
+- Link to v3: https://lore.kernel.org/r/20260602-anacapa-devlop-phase-devicetree-v3-0-7c93c5df8d9b@gmail.com
 
+Changes in v3:
+- Restructure the EVT2 devicetree to inherit from the EVT1 devicetree, making it incremental rather than standalone.
+- Add the DVT devicetree, inheriting from the EVT2 devicetree.
+- Enable MCTP and FRU support for the NIC.
+- Align PDB fan GPIO numbering.
+- Add an EEPROM device node for the NFC adaptor board.
+- Add an additional EEPROM device node for the SCM.
+- Add shunt resistor values for HSC monitors
+- Link to v2: https://lore.kernel.org/r/20260409-anacapa-devlop-phase-devicetree-v2-0-68f328671653@gmail.com
+
+Changes in v2:
+- Fix dtbs_check fail.
+  Validated by following command:
+    make dt_binding_check DT_SCHEMA_FILES=arm/aspeed/aspeed.yaml
+    make CHECK_DTBS=y DT_SCHEMA_FILES=arm/aspeed/aspeed.yaml aspeed/aspeed-bmc-facebook-anacapa.dtb
+    make CHECK_DTBS=y DT_SCHEMA_FILES=arm/aspeed/aspeed.yaml aspeed/aspeed-bmc-facebook-anacapa-evt1.dtb
+    make CHECK_DTBS=y DT_SCHEMA_FILES=arm/aspeed/aspeed.yaml aspeed/aspeed-bmc-facebook-anacapa-evt2.dtb
+- Link to v1: https://lore.kernel.org/r/20260407-anacapa-devlop-phase-devicetree-v1-0-97b96367cac3@gmail.com
+
+---
+Andy Chung (1):
+      ARM: dts: aspeed: anacapa: Enable MCTP and FRU for NIC
+
+Carl Lee (1):
+      ARM: dts: aspeed: anacapa: Add eeprom device node for NFC adaptor board
+
+Colin Huang (9):
+      dt-bindings: arm: aspeed: Add Anacapa EVT1 EVT2 DVT board
+      ARM: dts: aspeed: anacapa: Add EVT1 devicetree and point wrapper to it
+      ARM: dts: aspeed: anacapa: Add EVT2 devicetree inheriting EVT1
+      ARM: dts: aspeed: anacapa: Add DVT devicetree inheriting EVT2
+      ARM: dts: aspeed: anacapa: Add additional EEPROM node for SCM
+      ARM: dts: aspeed: anacapa: evt2: Add shunt resistor values for HSC monitors
+      ARM: dts: aspeed: anacapa: fix dt-check-style strict violations
+      ARM: dts: aspeed: anacapa: Use default SPI2 memory mapping
+      ARM: dts: aspeed: anacapa: Remove redundant vhub pinctrl-names
+
+Rex Fu (4):
+      ARM: dts: aspeed: anacapa: Align PDB fan GPIO numbering
+      ARM: dts: aspeed: anacapa: Add LPDB fuse monitor GPIO expander
+      ARM: dts: aspeed: anacapa: Simplify leakage GPIO line names
+      ARM: dts: aspeed: anacapa: Add SPI flash VCC supply
+
+ .../devicetree/bindings/arm/aspeed/aspeed.yaml     |    3 +
+ .../dts/aspeed/aspeed-bmc-facebook-anacapa-dvt.dts |  270 +++++
+ .../aspeed/aspeed-bmc-facebook-anacapa-evt1.dts    | 1128 ++++++++++++++++++++
+ .../aspeed/aspeed-bmc-facebook-anacapa-evt2.dts    |  435 ++++++++
+ .../dts/aspeed/aspeed-bmc-facebook-anacapa.dts     | 1078 +------------------
+ 5 files changed, 1837 insertions(+), 1077 deletions(-)
+---
+base-commit: 112264fb0bd0a7982b13da18cd3e289e2ab76eed
+change-id: 20260407-anacapa-devlop-phase-devicetree-4101d3f312c0
+
+Best regards,
 -- 
-2.34.1
+Colin Huang <u8813345@gmail.com>
 
 
 
