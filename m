@@ -1,50 +1,64 @@
-Return-Path: <linux-aspeed+bounces-4740-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4741-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79BD4C5B572
-	for <linux-aspeed@archiver.kernel.org>; Mon, 17 Aug 2026 00:41:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3377C5CFC1
+	for <linux-aspeed@archiver.kernel.org>; Mon, 17 Aug 2026 07:16:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hNYtc1HP2z2y8F;
-	Mon, 17 Aug 2026 10:41:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.226.251.21
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786694262;
-	cv=none; b=ejmdyfD6A4KbjWX8VAe+nEHVt+pl9Kcz3P9yoN52BJ8p+M5o3qVhrGp6nOhsESslHKB5pduK94rl4EsrIfwEfnoo26v5DmHmVnpAc6kynRrg77cME4IL5Uo2Nf6oZIwJ45VB2LsBHD3lQPa4rEiK9fJUv0KNJxW+R60W0qIcAcwaynTKY1gH4LX+Xd/tBUorhpx56GSevQ2hGYYTTFPpH34qda8XGgrez6ZJ3fjv8jn9q7K4R/ruGqPRzTKvGBlS2ISWnSaG8x3eSwxZ1S1fG7RpKG0n4XV2vqL1uN9XVDUdHhgO0xXzUW0bnFU1lPQ23bCl3SEHqKtKlmh0AJOLLQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hNkdr1B5xz2y1Y;
+	Mon, 17 Aug 2026 17:16:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1786950976;
+	cv=none; b=n5RQjUezAgakOOUMxSTNBq1a91dhqiiCMvHPcLNsLNhhTkYzZnxvssRsa4JB3PsfzNPKEFAbKPGiJr7osMGkhXNooyICvawp2fSDYU47qRFZ2tKVCKgqhQCwiDMyDLWUnO0sSjIwbCDTVDeMVvOGmJEmQR/3gxs3V2k6cwO3X1LvNymAufGjskKfyfCOCSzN9yGrjZsFSObRHxG0gImxXYR3K84dXQfKp0Dc/dzMJHoGKLjKsjd9CuekwvwJIj7w15jhjOGWw0xGkgqZOv76gKyBX6llWALb0ksR/1D93m9KY63T2IJrHijX4j1py/NA+Cs+RDuciy2IOjReGqso/g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1786694262; c=relaxed/relaxed;
-	bh=mL4j5vM5lGTNjWISMmnHoD354a3SrDw7wyh5Y5wrwvM=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=Y34dAfcTxea8kcdq8xDl4MakVCEjmavVAa6bgpIkkayW8wcYLfuEapwK9pwsPD91v0hoSC4bNkqpCCUTYc+Uhs9zGNQ7lm06WwrJhH3aZ9rydpWbB5D0Qo+nWbEp3Xl2S5fNGb89QzGj5ahkZ1j7Zte3fq2ycT7jmbcWjX2FXoLVHJyKd09XBeeJkd5Njy7L1ygWs99hQ7WH2lvoztxcHhRqhglS4YCqKCWwdS5zfZ/GYB11vNRITs8ho2WT5IIyfbzpGBsK0d14X6zLmFMMvsP9JRiFiyVcMr0pbxq2AtkKD2VFiE7299dYRyQxBOCe5BEWh1Z7XcSxdrb9aFOgzw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass (client-ip=159.226.251.21; helo=cstnet.cn; envelope-from=pengpeng@iscas.ac.cn; receiver=lists.ozlabs.org) smtp.mailfrom=iscas.ac.cn
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=iscas.ac.cn (client-ip=159.226.251.21; helo=cstnet.cn; envelope-from=pengpeng@iscas.ac.cn; receiver=lists.ozlabs.org)
-X-Greylist: delayed 434 seconds by postgrey-1.37 at boromir; Fri, 14 Aug 2026 17:57:41 AEST
-Received: from cstnet.cn (smtp21.cstnet.cn [159.226.251.21])
+	t=1786950976; c=relaxed/relaxed;
+	bh=kMKlIBl3NAuuM6jvx30dD/Hizd+fyHJnLS0PwEyzfBo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=BrZzH9vLxk15M6m/in10hLHc1XcKyG5eLaqXGtJ/F3s7QxUoPJLZeZBloY1K+hg8ckFdvWaFc3qwEjQmcSiGPYcj3nCGBUNQEIAqtqLA9XmLm+/evDL2+26wqGWypExrH7iKx+Bquu7l0LS/PJqX7zO/qz2oocYttZyWS46LD0nrwShBHUp62cqRD1iCQGVZri7d5ZqpJNVqLEUooqGrzAIhbslv4j/G4nkICLRiNyqNIP3WAW9KnnCEqPTlTglByMaDhKmGIW2PRv4ROi8wLHUqvDwshJ4+UT9YQNRAzlH85RhXqtITv2GzfwwQxccazI0SAwQkYiI31dztNLnE0Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ls9iI2r+; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ls9iI2r+;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hLvj12zvkz2y81;
-	Fri, 14 Aug 2026 17:57:41 +1000 (AEST)
-Received: from localhost.localdomain (unknown [111.196.241.250])
-	by APP-01 (Coremail) with SMTP id qwCowAC3ie2xyH5q21KeBQ--.63393S2;
-	Fri, 14 Aug 2026 15:50:10 +0800 (CST)
-From: Pengpeng Hou <pengpeng@iscas.ac.cn>
-To: Eddie James <eajames@linux.ibm.com>,
-	Ninad Palsule <ninad@linux.ibm.com>
-Cc: Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Ryan Chen <ryan_chen@aspeedtech.com>,
-	Billy Tsai <billy_tsai@aspeedtech.com>,
-	linux-fsi@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	Pengpeng Hou <pengpeng@iscas.ac.cn>
-Subject: [PATCH v2] fsi: aspeed: publish cfam_reset through driver groups
-Date: Fri, 14 Aug 2026 15:50:08 +0800
-Message-ID: <20260814075008.9031-1-pengpeng@iscas.ac.cn>
-X-Mailer: git-send-email 2.50.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hNkdp6rRRz2xy6
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 17 Aug 2026 17:16:14 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 6A352601E9;
+	Mon, 17 Aug 2026 07:16:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2CA681F000E9;
+	Mon, 17 Aug 2026 07:16:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1786950972;
+	bh=kMKlIBl3NAuuM6jvx30dD/Hizd+fyHJnLS0PwEyzfBo=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=Ls9iI2r+IlBlLw9a/a2pq380+4Uj4p8CPg37Pz3IGZq7RfdNs64ygbmNAoFmBPYZQ
+	 XCupHoFDg7lHseSajml1GcWDUKKp53Ug/1m/d4VR2KXi0EnaQu6tJnA8z1OMyC8jua
+	 ncy8dUte2S9BS/+u3r99QD8JIW6Ne649nZpSqlJakA38BclnVUN55lVUrfkFcAUfkm
+	 gtEELzBCzyBaFe4YKFlAgVwc7AcBN/D/7zZ/xWaMgZYoq4Xoub9qIYsH2veCwMJ7Do
+	 Dfd+C4Rvovr72/qUTDNsH9uraVuRBIa/um8PE01cWRDUPzspnQhOoz2NGfeIllKLnt
+	 5hWhphvCtM8Wg==
+Date: Mon, 17 Aug 2026 09:16:03 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Yu-Che Hsieh <yc_hsieh@aspeedtech.com>
+Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, 
+	Chia-Wei Wang <chiawei_wang@aspeedtech.com>, Corey Minyard <corey@minyard.net>, 
+	Andrew Jeffery <andrew@aj.id.au>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+	openipmi-developer@lists.sourceforge.net, jammy_huang@aspeedtech.com
+Subject: Re: [PATCH v2 1/2] dt-bindings: mfd: aspeed-lpc: Document lpcN alias
+ for multi-instance SoCs
+Message-ID: <20260817-icy-peridot-mouse-ad50f6@quoll>
+References: <20260813-upstream_kcs_multiple_lpc-v2-0-775b1db3fe95@aspeedtech.com>
+ <20260813-upstream_kcs_multiple_lpc-v2-1-775b1db3fe95@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -58,127 +72,25 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:qwCowAC3ie2xyH5q21KeBQ--.63393S2
-X-Coremail-Antispam: 1UD129KBjvJXoWxGF47XFW7XrWUur1kGFW8Xrb_yoW5uF4kpa
-	97WFWYgr48Gr1fJayDJan2v3WF9w4rtrWUGr4fKw1S9asxAa4YqryxtrWIvF1xZFWrCF15
-	Jr1Dt3yUuF4kZr7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUU9Y14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-	1l84ACjcxK6xIIjxv20xvE14v26r4j6ryUM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
-	6F4UM28EF7xvwVC2z280aVAFwI0_Cr1j6rxdM28EF7xvwVC2z280aVCY1x0267AKxVW0oV
-	Cq3wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0
-	I7IYx2IY67AKxVWUJVWUGwAv7VC2z280aVAFwI0_Jr0_Gr1lOx8S6xCaFVCjc4AY6r1j6r
-	4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq67IIx4CEVc8vx2IErcIFxwACI402YVCY1x02628v
-	n2kIc2xKxwCY1x0262kKe7AKxVWUtVW8ZwCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7x
-	kEbVWUJVW8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E
-	67AF67kF1VAFwI0_Jw0_GFylIxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUJVWUCw
-	CI42IY6xIIjxv20xvEc7CjxVAFwI0_Gr0_Cr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1x
-	MIIF0xvEx4A2jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr1j6F4UJbIYCT
-	nIWIevJa73UjIFyTuYvjfUonmRUUUUU
-X-Originating-IP: [111.196.241.250]
-X-CM-SenderInfo: pshqw1xhqjqxpvfd2hldfou0/
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20260813-upstream_kcs_multiple_lpc-v2-1-775b1db3fe95@aspeedtech.com>
 
-The cfam_reset attribute currently gets created manually while probe is
-still initializing the master. Its store callback expects device drvdata
-and the master's mutex to be ready, and manual publication also requires
-matching cleanup on every later failure and remove path.
+On Thu, Aug 13, 2026 at 02:42:31PM +0800, Yu-Che Hsieh wrote:
+> Some SoCs (e.g. AST2700) expose more than one physical LPC controller
+> instance. Downstream devices such as KCS channels need a stable,
 
-Expose the attribute through the driver's default groups instead. The
-driver core publishes those groups only after probe succeeds. Hide the
-attribute when the optional reset GPIO is unavailable, while retaining
-probe deferral and other GPIO acquisition errors.
+We do not care about downstream devices.
 
-Fixes: 4a851d714eade ("fsi: aspeed: Support CFAM reset GPIO")
-Assisted-by: Codex:gpt-5
-Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
----
-Changes since v1: https://lore.kernel.org/all/20260615065944.34767-1-pengpeng@iscas.ac.cn/
-- replace manual sysfs publication with driver-core groups and is_visible()
-- preserve optional-GPIO and probe-deferral error semantics
-- remove manual sysfs unwind paths
+> globally-unique index derived from which LPC controller instance they
+> belong to, so document the "lpcN" alias convention on the LPC
 
-The probe/publication ordering was reviewed statically; no Aspeed FSI
-hardware test was performed.
+New aliases are generally not accepted and if your reason is
+"downstream", then answer is simple:
 
- drivers/fsi/fsi-master-aspeed.c | 38 ++++++++++++++++++++++++---------
- 1 file changed, 28 insertions(+), 10 deletions(-)
+NAK
 
-diff --git a/drivers/fsi/fsi-master-aspeed.c b/drivers/fsi/fsi-master-aspeed.c
-index aa1380cdff33..ac05e1a263ac 100644
---- a/drivers/fsi/fsi-master-aspeed.c
-+++ b/drivers/fsi/fsi-master-aspeed.c
-@@ -464,26 +464,42 @@ static ssize_t cfam_reset_store(struct device *dev, struct device_attribute *att
- 
- static DEVICE_ATTR(cfam_reset, 0200, NULL, cfam_reset_store);
- 
-+static umode_t fsi_master_aspeed_attr_is_visible(struct kobject *kobj,
-+						 struct attribute *attr, int n)
-+{
-+	struct fsi_master_aspeed *aspeed = dev_get_drvdata(kobj_to_dev(kobj));
-+
-+	if (!aspeed || !aspeed->cfam_reset_gpio)
-+		return 0;
-+
-+	return attr->mode;
-+}
-+
-+static struct attribute *fsi_master_aspeed_attrs[] = {
-+	&dev_attr_cfam_reset.attr,
-+	NULL,
-+};
-+
-+static const struct attribute_group fsi_master_aspeed_group = {
-+	.attrs = fsi_master_aspeed_attrs,
-+	.is_visible = fsi_master_aspeed_attr_is_visible,
-+};
-+
-+static const struct attribute_group *fsi_master_aspeed_groups[] = {
-+	&fsi_master_aspeed_group,
-+	NULL,
-+};
-+
- static int setup_cfam_reset(struct fsi_master_aspeed *aspeed)
- {
- 	struct device *dev = aspeed->dev;
- 	struct gpio_desc *gpio;
--	int rc;
- 
- 	gpio = devm_gpiod_get_optional(dev, "cfam-reset", GPIOD_OUT_LOW);
- 	if (IS_ERR(gpio))
- 		return PTR_ERR(gpio);
--	if (!gpio)
--		return 0;
- 
- 	aspeed->cfam_reset_gpio = gpio;
--
--	rc = device_create_file(dev, &dev_attr_cfam_reset);
--	if (rc) {
--		devm_gpiod_put(dev, gpio);
--		return rc;
--	}
--
- 	return 0;
- }
- 
-@@ -573,6 +589,7 @@ static int fsi_master_aspeed_probe(struct platform_device *pdev)
- 	rc = setup_cfam_reset(aspeed);
- 	if (rc) {
- 		dev_err(&pdev->dev, "CFAM reset GPIO setup failed\n");
-+		goto err_release;
- 	}
- 
- 	writel(0x1, aspeed->base + OPB_CLK_SYNC);
-@@ -664,6 +681,7 @@ static struct platform_driver fsi_master_aspeed_driver = {
- 	.driver = {
- 		.name		= "fsi-master-aspeed",
- 		.of_match_table	= fsi_master_aspeed_match,
-+		.dev_groups	= fsi_master_aspeed_groups,
- 	},
- 	.probe	= fsi_master_aspeed_probe,
- 	.remove = fsi_master_aspeed_remove,
--- 
-2.50.1 (Apple Git-155)
+Best regards,
+Krzysztof
 
 
