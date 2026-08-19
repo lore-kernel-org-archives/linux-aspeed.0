@@ -1,94 +1,40 @@
-Return-Path: <linux-aspeed+bounces-4754-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4755-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F147C5DF7D
-	for <linux-aspeed@archiver.kernel.org>; Tue, 18 Aug 2026 23:50:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 799DEC5DF81
+	for <linux-aspeed@archiver.kernel.org>; Wed, 19 Aug 2026 01:09:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hPmds49CCz2yRc;
-	Wed, 19 Aug 2026 09:49:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c105::5" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787059589;
-	cv=pass; b=kcOXWS88uCiEOl1GKqZ2UXb/cAlqy8yE92hPrqzmVogGNPNPBdIYiYbtAtC7JMny47h6bDRvmtzpDiUSggGvEns+TrwVmPSH4FzlS48rQe8vKQQissYFEPARksj3GZjcTIssw0F/cEigbYQz+0CGlSgpvRsc3LUmyOW3/AN249nIHsc/9GBqDV8pzb3+fQL3mYb96c3EfZEV09PqNvDaSLoxwWUHeJLsYV4MBK6LbwWFo0XBTK8/ahbai6QMAdspYpjaFfR4WjcdFN7YfJV9evoYya5eVAMF5tb4nSFCzjdrRF9GPJHkKz9rciNzyHxKuFsl6z1fn4GRPH/t7kzI/Q==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787059589; c=relaxed/relaxed;
-	bh=yxjlTP53SQoeogNhOuOEBlnVgbnKw2L3P1OM3KGtioU=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=gnYRVWHntcNHnDZkqPU4D56w9fFqO53V1nrff/2RrlS/CGf5CnPLlajihX/e4U91j+xs3s3arl7JO00yNUuN8CT8imeL/JUWLyzdIpXVZtgOsQIhy81rtgCfote38bUK6Gl830/xGDgJqvAGfHExjbZgsDJE5OEJx2P0qvdxXbncT3lDRfIzbGjj/YjOtgQ3YsTpElafB9+lcqMa1qyy2DNq8GFKyG+vZvgOJw5r5kK3aw37otRXJ2jrbBvnv0VSh4b4M1PGHkyq5k6fKvApsPY7SbXE142aoR9SlGkcw1QVtkDy3TVWjk0gnSP9ft/ou3bO3AQhU+9mcG6Fk1+BHA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=o2ABzX1p; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c105::5; helo=ch5pr02cu005.outbound.protection.outlook.com; envelope-from=krishnamoorthi.m@amd.com; receiver=lists.ozlabs.org) smtp.mailfrom=amd.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=o2ABzX1p;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f403:c105::5; helo=ch5pr02cu005.outbound.protection.outlook.com; envelope-from=krishnamoorthi.m@amd.com; receiver=lists.ozlabs.org)
-Received: from CH5PR02CU005.outbound.protection.outlook.com (mail-northcentralusazlp170120005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c105::5])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hPpQ52Ft8z2yFd;
+	Wed, 19 Aug 2026 11:09:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787101789;
+	cv=none; b=J/JIuUjOllIF6nQQ/Vb6nXHqoDH2As91QmE2xqxDknRFNG5RbfL6lZvMi4dptq6M+J+w5IgRc9/wq8vat15xp3ria79Kx1QOSPce7pyTweSGp29mfQjHXKgQlk9A0ZHrjlTVo1+R7XO039jdDB0AdfFsWXyUBo4o9/jOi0VzA6HsHg+40dKF2tZzRvM6a95RBUeYi/sRAezyI8EIQrHUZ02Rxf8OUcUoTfEnidun6tprqGRdFJ7S7MGP+rz5yufDA98oa/J1XIXXVNDynfk/xkjwNwW6FLVcb46KdAWsLa52yvd4Ak8siCL1vFTaYe10y6OKZ7FaPprzmk5PTQZnIg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1787101789; c=relaxed/relaxed;
+	bh=GKJPQ1K7MzyYuRxbvHGWlf/wDgLHSxbc0lEn8Y0Ezdk=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:To:CC; b=c2CKGeVokx2hp2UV23ZOQH+QFNP5A51cEw7vELFJajt91nm30LzzN4VMetk4adIPwyjJZmTxCITgWSlM6NSFr1F5IYcU5HrHMxToM2rLMjmAU7N++y/HVSRGIvR/t4NRmk4NqaRU9RhqUOzYQW88NMVY+jfxFczz5QWugLd9X/TpO+6/4ljaBvfNauG7PML4jYgUYGYIAIwm5jdMwMV9uq6z/grA4HDA2QM+cPIrbEhLriBLbZd6do9bzdZxEwSsETIOiDigKZrZCaNGW/eZT6IYSSknpTb4bfBEXrupiGVlYCbSPNI4MrQUBRKc3ItNG13Ii3bwBotc0TSt5atKvg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeedtech.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeedtech.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from twmbx01.aspeedtech.com (mail.aspeedtech.com [211.20.114.72])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hPVpR40Jjz2xlw;
-	Tue, 18 Aug 2026 23:26:22 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=PddADsqG1Bxh3FJloPD3k+eHOJj62/ctD7mwWlTRE86bmQkDcGaimLrapw6kzls/Kv5Ax50zgmT7qt7ezP2uUpUe4wKtQHj/JS5xyjoEtFGGT19jpAXZRJJ9NURfcTQ83UflX6rp4zf7pe4dhPI6+Ao8w0Ig55WNTHQlAp5ruGkdybE+8PNsM3dN5IGgoAsy20koBpyHwdgMk2Bi0/opMq+M84dhKdv9aPUjrwGvODsdd4RnkzjtBLrudkhPLn9ZlJAfOzd3QprmFEeq9ICQmu9alMsbzndqConLJKTUGc93U9/VfumJ5G7ipbaZ2EW2KEuDtzVCy6F0wuCHuq4uhg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=yxjlTP53SQoeogNhOuOEBlnVgbnKw2L3P1OM3KGtioU=;
- b=AZwTPGuzh7FDhswo3aXe+83QWWXFis6E9nzkk1NQNiAF+OOBuYUfFcDHzGlUO4+WqzsQzNfco6UrHrfRp+ClUhJPBpfbAdgtpCDykJpmzuerwiABhRXaxBMBh/jIPxpkzIgE6naM0UHqb8xWIJa1DNZmW7ZBb3Xn4lEOPNxrESpmIMSjJVor9ID0x1myebepNnPkM/eXTiAcxocxoCFpZhtO3y1OkSySBm+G3c7thvlsqo0WQkdyWWO1I/nnhwP26+wgOr5uUIps9mGHSxkS5v13mGy7FRE3/QYSX8N68gDr+hT2QAUshaBSe786dLx028Y9KasbUu4z5i1WhbA5Vg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=yxjlTP53SQoeogNhOuOEBlnVgbnKw2L3P1OM3KGtioU=;
- b=o2ABzX1p6rFTAHUa+ipVAUb+byWO3lcD8ix3nH5SkRASc6c+i/hcXdaT1ojpcaPZADU+d7tDjOVdgAcD3wNezrOE4FA3SenYMrtZZC8nosgdELTCL4MSk7cqti3HQ1hiNoENP1WPzueU4VNHTyq3SyYvMIJhaCFO8Xith26PK2I=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from DM4PR12MB9733.namprd12.prod.outlook.com (2603:10b6:8:225::13)
- by BN7PPFCE25C719B.namprd12.prod.outlook.com (2603:10b6:40f:fc02::6e1) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.315.17; Tue, 18 Aug
- 2026 13:25:53 +0000
-Received: from DM4PR12MB9733.namprd12.prod.outlook.com
- ([fe80::aeaa:23b5:1d59:602c]) by DM4PR12MB9733.namprd12.prod.outlook.com
- ([fe80::aeaa:23b5:1d59:602c%3]) with mapi id 15.21.0315.014; Tue, 18 Aug 2026
- 13:25:51 +0000
-Message-ID: <d1bdc779-724a-4851-8c26-7e02981bae7a@amd.com>
-Date: Tue, 18 Aug 2026 18:55:42 +0530
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH 0/4] espi: introduce eSPI bus framework
-To: YH Chung <yh_chung@aspeedtech.com>,
- Andrew Jeffery <andrew@codeconstruct.com.au>,
- Greg KH <gregkh@linuxfoundation.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "broonie@kernel.org" <broonie@kernel.org>,
- "linux-spi@vger.kernel.org" <linux-spi@vger.kernel.org>,
- "akshata.mukundshetty@amd.com" <akshata.mukundshetty@amd.com>,
- "bleung@chromium.org" <bleung@chromium.org>,
- "groeck@chromium.org" <groeck@chromium.org>,
- "chrome-platform@lists.linux.dev" <chrome-platform@lists.linux.dev>,
- "corbet@lwn.net" <corbet@lwn.net>,
- "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
- "skhan@linuxfoundation.org" <skhan@linuxfoundation.org>,
- "linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
- "openbmc@lists.ozlabs.org" <openbmc@lists.ozlabs.org>,
- YC Hsieh <yc_hsieh@aspeedtech.com>,
- Maciej Lawniczak <maciej.lawniczak@intel.com>,
- Ryan Chen <ryan_chen@aspeedtech.com>
-References: <20260804115259.4065638-1-krishnamoorthi.m@amd.com>
- <2026080416-lagoon-delirium-8e84@gregkh>
- <83210c6e2a7b203bd5913b455ea45cfddf3d29ec.camel@codeconstruct.com.au>
- <9180f5d5-9885-492b-b80e-c2aaaeb39501@amd.com>
- <KL1PR0601MB42768F2FB7E907618E1DAB4E90DE2@KL1PR0601MB4276.apcprd06.prod.outlook.com>
-Content-Language: en-US
-From: "M, Krishnamoorthi" <krishnamoorthi.m@amd.com>
-In-Reply-To: <KL1PR0601MB42768F2FB7E907618E1DAB4E90DE2@KL1PR0601MB4276.apcprd06.prod.outlook.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: MA5P287CA0076.INDP287.PROD.OUTLOOK.COM
- (2603:1096:a01:1d8::10) To DM4PR12MB9733.namprd12.prod.outlook.com
- (2603:10b6:8:225::13)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hPpQ40klnz2yFP
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 19 Aug 2026 11:09:47 +1000 (AEST)
+Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Wed, 19 Aug
+ 2026 09:09:29 +0800
+Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
+ Transport; Wed, 19 Aug 2026 09:09:29 +0800
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Date: Wed, 19 Aug 2026 09:09:19 +0800
+Subject: [PATCH] irqchip/ast2700-intc: Avoid allocating in the irq_domain
+ activate callback
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -102,254 +48,102 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DM4PR12MB9733:EE_|BN7PPFCE25C719B:EE_
-X-MS-Office365-Filtering-Correlation-Id: cdcf0578-d21b-495b-7a2f-08defd2c3942
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|23010399003|7416014|366016|1800799024|6133799003|10067099003|4143699003|11063799006|56012099006|18002099003|22082099003|3023799007;
-X-Microsoft-Antispam-Message-Info:
-	/k3dpoIBTZG86wKtVTQSdv4E0YuIN/y6oGsxGVDIbRO/Wb4o8SGOiU0mzQ3ZiiOTvoVKDBj40a06gQdStLF2t42ytjRNuPcgJ3xU4EB5MULNPpDUER2Jiy7MUjsDJilumkfhFKFAzi3rl3czjL7/psIxt8cE3nBVO3ZFw8425vMxiaBkFOYmy21HQGWiWntQ8pbA/y4p4mxsVmsWV4gLUpMlzL1j0WOsNd5b5wdYuobNLehfmDym4FDPxdqOitpcOM4ItgnmC6uIFa7LeJ/M48qMpNCfVS4rQo6utIeNEbdT5p+QFgMlEAw6oLIzzndkSBU4g0fWJ6P++iRFZ3XMRPxWm2/QG0nfk3JPpmLB1L7P/D4xKiH6RSCSNXgEn72G553lYITLkRA8ayaKpjZxYgHz1DKP7p271o8coSak/qmJH8Ut9Qyo2PVb6Pd574mv3imxmAMlZbpUSgq00iTOO89vu9ua4R058kiX61/TgwXwYweu8qC6ie35KWkMKUw7nDTo/fkvCYMwwKXgl4SGiEqrljcNLiZb3ECVhTqZFrZmMIkdY9zP4YPN1h9jgGAJoq7S8zem4vRli+7kI9XwgRaJ7QKEu5f6nKX/Ns3i89QMdI/Oz46ftyAkQ0c2pguFVDK66MimNTVK2kDowMj9Gduu7GTD7Z7ZPtqe8MUd6Cw=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM4PR12MB9733.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(23010399003)(7416014)(366016)(1800799024)(6133799003)(10067099003)(4143699003)(11063799006)(56012099006)(18002099003)(22082099003)(3023799007);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?MnQrWndFUno4aTVIcTdNWjNRUSszRFN5OTE0MW9aSC93YnNSSXVWS2Q4WWFh?=
- =?utf-8?B?L2h4U011aGJrajJnRlNwMDFncWoxSFZjNGVEeUVUMk1GWkxTY2dmOWdhcXk4?=
- =?utf-8?B?SjdDUXZnVVM2YWk5RVdOL2ZXOXpRMUNVMVpyaHNMVGYrQmVRSGwzcUFVK3BB?=
- =?utf-8?B?K2k0M29ES1A3NURaaDhvaXlIeTEzcmtEOUxWKzFZM3NjQkxUUWdsZ3d0eUpv?=
- =?utf-8?B?M0FObncyYzlaSHN4V2pZR0s3UkMveW1FWTN3WVExb3g5OHMydUVLMXNzb2Ix?=
- =?utf-8?B?UGlMc05EeDUvMTdDRmI4OHg3UXE4THhueTNNWUx4WlBlbWtiamVHT3pyM1N6?=
- =?utf-8?B?OFFHUkJPZ2NmcXJRTzN1Q1prWW54cEkrTWszdjUzak1lcXBEM0pSY280cHFk?=
- =?utf-8?B?NzhhYWpudGkrdm9yVCtMV3o4UFB6aVYxYXdwS1FtYnQ4ZFhnZVFxZkFFU0FC?=
- =?utf-8?B?aGp4ajR4NTE4c0J0VU45NWpsL1VvNXJMTHdmOVdNc3FSZmFsUlovcFJjUHBr?=
- =?utf-8?B?YURTdXlyQ1grZ3Y2YnluOHpSMDRtWEx6cGRsdjk5WTBzZUJPSUw0czVFU3Y2?=
- =?utf-8?B?eG51NU82NzRVb0ZiS2ZrcXh3TDA0YWMyTExHWEVpclh3VlUzV0Z1a1FKSGVt?=
- =?utf-8?B?UFNBaFg1bmRoZWl6M0cyYVowN1BqL3o2Z09zT3F1VGN3RDFJaEpiOEN3L0RR?=
- =?utf-8?B?K1I2Zk1Tbjd4bzZsekZ2bm4wUHNUM2k2WkdFbnJHSDYrSDdmTWJXbjdMMmNZ?=
- =?utf-8?B?MmV0aEk0aVd3MXpKNi9pRDV5ZnRwOFlwbGNQa1ZhMUdTcVcxbzVybG4zTHdM?=
- =?utf-8?B?bUI3Zm1PSkJwMGdTYS9qQkZrczQvSFM5N2hPbCt1UVZTcUlXb1BNbzlBZzho?=
- =?utf-8?B?dHV2RDRJVVNnNWw4WlYwbzlHaVJFMU40US8vcmJmb0JtTGtHaWFWRU1vVDND?=
- =?utf-8?B?VUtPTnNSaVNpQTh2U3lTYkhSVERMZXB2S2laR2ozUFRQY3lQb0hDWlpSQkpk?=
- =?utf-8?B?WXJZMkExN2QxR3F1RDJOVGNNRFVYWmtEMTNKMEg4NVpTL1BSQnRrMko4KzhS?=
- =?utf-8?B?ZWtDWi94WUVtTkdTVHZ1Tlp6YWtJNlFaOUZJYjRnZ2ZLbjlRRk5EZ3RSdytv?=
- =?utf-8?B?NThHUjZ4MDVWbHRWelZHRk5LbGJEdmFQV2RRS0hkM2svVDUvd01WUUZUSEVx?=
- =?utf-8?B?ZFd3dmhIZi9HL3JQNTJ6T0tFbXBRQnRQN2VycWw4YzNkN2tUeHBlTTFHWi9Y?=
- =?utf-8?B?RkRXTWZjNS90VWpqUFA3VjVwRmhldGNjQjliM3dxbmR4MzkwVjE2TmFZeUFl?=
- =?utf-8?B?QWVoZGkrQS9wWERCME5GcFNiclhTcEZrVzRqOHEzOHFVdHNCOUFaNytidkhW?=
- =?utf-8?B?Y0VtbXMvc1lLL1lkMTkwbG9zRzNYbXRteC9adyt1SmZwODh2WUdnOEpScy9q?=
- =?utf-8?B?VHlwQ0VlaWp6YUd2WHZoRWp1UjZKWlRaMmNRUmoyWlcvWU8wT1k1TDNDRnpt?=
- =?utf-8?B?UjV4WEFud0ZsS3ZIT1hMYisxc1NtREk3R3pYWjhHU3ZSelJ1RTE1Y3dJQ0xk?=
- =?utf-8?B?SDlxWlZxTUo4WW5OZk5mZllrQitSYmpuR3ZSb01aQ0hvcGFkZmpMd085L1pq?=
- =?utf-8?B?N2ZXcFQxQzc0WDRpZ1BlemNWTVNOTVhFbE4yUFRQL3JRNW1NMHV0S1lUSWQz?=
- =?utf-8?B?ZGl2R1NkbWw1VjJxQUFMTHY2VzgwM2VodzZKNy9TSkZhenM4WGxVSW8yY2xi?=
- =?utf-8?B?SmJhWVZOVE1UZDBaU3drRFU2RHA4N0VXS3B3STFOaTNmUVk2eTF3WjU4MTAy?=
- =?utf-8?B?aGgvTmNLRjhDUEdUOEFDY3pmMGRIdkwxZ3ZER3hiNkdqcFdHZU5nR1BaNTAx?=
- =?utf-8?B?bzJrRTAwQTZCQ011SkNzOTk2VWpLYWFpWVp0eEE4c2E5Q2ZoK0U4RW52dlI0?=
- =?utf-8?B?Uit3MFhScHMxZVU2OSswbGVOKzNVWVE4ZUJKWVNsV1hEYzZrb2dQUG53bmZC?=
- =?utf-8?B?ZjRmTFNmb0J3UlhkdVpOSkxnM0gyNzh3U0NMV3RtS0NWajhKanBaK01MRWNz?=
- =?utf-8?B?Y0U0NnlSeVY2akY5c2VHbSswbnEvc1BnVy84SDRNUGE5enFVUDVUbEx1OTRt?=
- =?utf-8?B?eXNIdjlLaWhMcGVkcjJ1VlRGV3pQdEh0aUxvRC9Ob3Z1aHpHVHAzQVdIeHFK?=
- =?utf-8?B?cEFpa0ZpRVdDc1RCS2ZmL0doMzJ6RDhkcTBCaGpFaVBQOEdrRXVlWlZxTlQw?=
- =?utf-8?B?bkVXbGl1TVgzYVVQWlcydFozcHhjUkNZRHFrcGdoSDNqKzhzRU54bWx2NVQ4?=
- =?utf-8?B?MFZCbnhpNzlXOGlCc0IzKytXanpob3g4MGRUQ0txVStFdEVnRnVsUT09?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: cdcf0578-d21b-495b-7a2f-08defd2c3942
-X-MS-Exchange-CrossTenant-AuthSource: DM4PR12MB9733.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Aug 2026 13:25:51.7557
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 2+mttYKCtZncdodBWHnw88+MVf5zKm0m1B+ZujHDBG3WddwfMjSFnVUXWgIbaczOP9jhPlBaHIqG/n6qCHemXA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN7PPFCE25C719B
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-ID: <20260819-fix-ast2700-intc-atomic-alloc-v1-1-d92a02e2a239@aspeedtech.com>
+X-B4-Tracking: v=1; b=H4sIAD4ChWoC/x2M0QrCMAwAf2Xk2UAaxa3+ivgQatwCWyttEWHs3
+ w0+Hfdwt0PTatrgNuxQ9WPNSnYJpwHSInlWtKc7MPGVphDxZV+U1nkkQss9ofSymWNdS8J45ss
+ kHCUkAn+8q3rw/98fx/EDtmZR2m8AAAA=
+X-Change-ID: 20260819-fix-ast2700-intc-atomic-alloc-93248a29a1c0
+To: Thomas Gleixner <tglx@kernel.org>, Joel Stanley <joel@jms.id.au>, "Andrew
+ Jeffery" <andrew@codeconstruct.com.au>, Paul Walmsley <pjw@kernel.org>,
+	"Palmer Dabbelt" <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+	"Alexandre Ghiti" <alex@ghiti.fr>
+CC: Radu Rendec <radu@rendec.net>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-aspeed@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+	<linux-riscv@lists.infradead.org>, Ryan Chen <ryan_chen@aspeedtech.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1787101769; l=3189;
+ i=ryan_chen@aspeedtech.com; s=20251126; h=from:subject:message-id;
+ bh=ZRBbxvpAQxQ9WSWrReHJgmHc7WwhW/QkN01mfSF5T+A=;
+ b=y1Ml1E/xkjDXkFmU+iV4p/nM5dpGUJaEb88IKzFFXQ5J4lWuwqKhEp/CQFMZOJ9+32v9B/0yF
+ 5nN0wH0Wn49BXicFlAqMoXXI50tdDMwxm2iC2qh6n8B5Wh9l0n/EUvQ
+X-Developer-Key: i=ryan_chen@aspeedtech.com; a=ed25519;
+ pk=Xe73xY6tcnkuRjjbVAB/oU30KdB3FvG4nuJuILj7ZVc=
 
-Hi Chung,
+The IRQ core calls the irq_domain .activate callback from __setup_irq()
+with desc->lock held and interrupts disabled. Both
+aspeed_intc1_irq_domain_activate() and the aspeed_intc0_resolve_route()
+it invokes test a compatible string with fwnode_device_is_compatible(),
+which wraps fwnode_property_match_string() and allocates with GFP_KERNEL.
 
-On 8/10/2026 11:43 AM, YH Chung wrote:
-> Hi Krishnamoorthi,
-> 
->> YH Chung, would you be open to collaborating on the slave-side
->> interfaces of the new eSPI framework? Happy to discuss further on the
->> list or off-list to align on the design before the next revision.
-> 
-> Thanks for reaching out. I am glad to share some design considerations
-> from a target-side point of view.
-> 
-> After reading the series, I think it might be useful to align on the
-> layering between the eSPI core, channel implementations, and hardware
-> drivers as part of defining the target-side interfaces.
-> 
-> 1. Reuse existing kernel subsystems for the individual channels
-> 
-> I agree that we should reuse existing kernel subsystems where their
-> semantics match, for example GPIO for general-purpose Virtual Wire
-> groups, MCTP for MCTP-over-OOB, and MTD for flash access. Other Virtual
-> Wire groups and OOB protocols may need different consumers.
-> 
-> The eSPI subsystem could provide common adapters between those
-> subsystems and the corresponding channel instead of requiring each
-> controller or target hardware driver to implement the integration
-> independently.
-> 
-> For example, Controller Attached Flash Sharing (CAFS) and Target
-> Attached Flash Sharing (TAFS) have different ownership and transaction
-> directions, but share the eSPI Flash packet and request/completion
-> semantics. A common Flash layer could provide that protocol handling,
-> with a requester-side MTD frontend that turns MTD operations into eSPI
-> requests and a provider-side backend that services requests using
-> locally attached flash.
+Besides sleeping in atomic context, that makes the irq_desc lock depend
+on fs_reclaim, which lockdep reports as an inversion because
+irq_desc_lock_class is also taken in hardirq context:
 
-Reusing GPIO for VWire, MCTP for OOB, and MTD for Flash where semantics 
-match is the right direction.
+  WARNING: possible irq lock inversion dependency detected
+  swapper/0/0 just changed the state of lock:
+  (&irq_desc_lock_class){-...}-{2:2}, at: handle_level_irq+0x28/0x168
+  but this lock took another, HARDIRQ-unsafe lock in the past:
+   (fs_reclaim){+.+.}-{0:0}
+  ...
+    fs_reclaim_acquire
+    __kmalloc_noprof
+    fwnode_property_match_string
+    aspeed_intc0_resolve_route
+    aspeed_intc1_irq_domain_activate
 
-For CAFS/TAFS, the same espi-flash channel type is used on both sides: a 
-requester role exposing an MTD frontend (controller owns flash), and a 
-provider role servicing requests from local flash (target owns flash). 
-It's the same channel/protocol layer and packet/completion semantics on 
-each side; on any given endpoint, only one role is active.
+Both call sites are only ever handed OF nodes, so use
+of_device_is_compatible() instead: it walks the property in place and
+does not allocate.
 
-> 
-> 2. Consider the boundary between channel semantics and hardware transport
-> 
-> The current struct espi_controller_ops exposes high-level operations
-> such as periph_io_read(), oob_send(), and flash_read(). These may be
-> useful as channel-consumer APIs, but I wonder whether they are too
-> high-level for the hardware-driver interface itself.
-> 
-> Would it make sense to keep high-level behavior in the channel layers
-> while defining the hardware-facing boundary in terms of per-channel
-> transmit and receive primitives?
-> 
-> Conceptually:
-> 
->      TX: core/channel -> *_tx()      -> hardware
->      RX: hardware IRQ -> espi_*_rx() -> core/channel
-> 
-> The packet or request structure could remain channel-specific. The main
-> idea is to keep register, FIFO, and DMA handling below this boundary and
-> eSPI channel semantics above it.
-> 
-> For example, a controller read from target-attached flash could use the
-> same transport interface on both sides:
-> 
->      Controller (requester)        Target (flash owner)
->      ----------------------             --------------------
-> 
->      MTD frontend
->         |
->      Flash layer
->         |
->      build READ request
->         |
->      flash_tx()    ------- READ ------->   espi_flash_rx()
->                                      |
->                                   Flash provider
->                                      |
->                                   local MTD read
->                                      |
->      espi_flash_rx() <-- COMPLETION --- flash_tx()
->         |
->      match request
->         |
->      complete MTD read
-> 
-> One option would be for controller and target drivers to use the same
-> low-level endpoint interface, including the same per-channel *_tx()
-> callbacks and espi_*_rx() entry points. A common endpoint object could
-> carry the role, for example:
-> 
->      enum espi_role {
->          ESPI_ROLE_CONTROLLER,
->          ESPI_ROLE_TARGET,
->      };
-> 
-> The endpoint role and capabilities would determine which transaction
-> types are valid and which optional operations are implemented. Object
-> lifetime, capabilities, packet definitions, and request state could
-> also be shared. Linux SPI's shared spi_controller infrastructure for
-> host and target roles may be a useful reference, although eSPI's
-> role-specific protocol behavior is more asymmetric.
-> 
-> The benefit of this boundary is that common packet and channel protocol
-> handling can be implemented once while each hardware driver remains
-> focused on its registers, FIFOs, DMA, and interrupts. It should reduce
-> duplication and role-specific divergence, make support for additional
-> controller or target hardware easier to add, and allow both roles to be
-> tested against the same transport contract.
-> 
-> Channel-independent commands such as GET/SET_CONFIGURATION and
-> GET_STATUS may likewise need role-specific callbacks within this common
-> endpoint interface: command submission/completion on the controller
-> side and configuration-provider callbacks on the target side. These
-> callbacks could be optional to support hardware-assisted
-> implementations.
+Fixes: 07825e41519a ("irqchip/ast2700-intc: Add AST2700-A2 support")
+Reported-by: Andrew Jeffery <andrew@codeconstruct.com.au>
+Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+Tested-by: Andrew Jeffery <andrew@codeconstruct.com.au>
+---
+Tested on an AST2700 EVB with CONFIG_PROVE_LOCKING=y: the irq lock
+inversion splat quoted in the patch is gone, and the ast2700-intc0 KUnit
+suite still passes 9/9.
+---
+ drivers/irqchip/irq-ast2700-intc0.c | 2 +-
+ drivers/irqchip/irq-ast2700-intc1.c | 3 ++-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
-The TX/RX boundary is a clean separation and we agree hardware drivers 
-should focus purely on registers, FIFOs and DMA while channel semantics 
-live above. That means the current high-level ops (flash_read(), 
-oob_send(), ...) move up into the channel layers, and the hardware 
-boundary becomes your per-channel *_tx() / espi_*_rx() primitives.
+diff --git a/drivers/irqchip/irq-ast2700-intc0.c b/drivers/irqchip/irq-ast2700-intc0.c
+index 14b8b88f1179..c85b98a19bd4 100644
+--- a/drivers/irqchip/irq-ast2700-intc0.c
++++ b/drivers/irqchip/irq-ast2700-intc0.c
+@@ -312,7 +312,7 @@ int aspeed_intc0_resolve_route(const struct irq_domain *c0domain, size_t nc1outs
+ 		return -ENOENT;
+ 
+ 	if (!IS_ENABLED(CONFIG_ASPEED_AST2700_INTC_TEST) &&
+-	    !fwnode_device_is_compatible(c0domain->fwnode, "aspeed,ast2700-intc0"))
++	    !of_device_is_compatible(to_of_node(c0domain->fwnode), "aspeed,ast2700-intc0"))
+ 		return -ENODEV;
+ 
+ 	intc0 = c0domain->host_data;
+diff --git a/drivers/irqchip/irq-ast2700-intc1.c b/drivers/irqchip/irq-ast2700-intc1.c
+index 59e8f0d5ddcd..df6acbafce2d 100644
+--- a/drivers/irqchip/irq-ast2700-intc1.c
++++ b/drivers/irqchip/irq-ast2700-intc1.c
+@@ -157,7 +157,8 @@ static int aspeed_intc1_irq_domain_activate(struct irq_domain *domain,
+ 					intc1->ranges.nranges,
+ 					intc1->ranges.ranges, &resolved);
+ 	if (rc < 0) {
+-		if (!fwnode_device_is_compatible(intc1->upstream->fwnode, "riscv,aplic")) {
++		if (!of_device_is_compatible(to_of_node(intc1->upstream->fwnode),
++					     "riscv,aplic")) {
+ 			dev_warn(intc1->dev,
+ 				 "Failed to resolve interrupt route for hwirq %lu in domain %s\n",
+ 				 data->hwirq, domain->name);
 
-As an alternative to a shared espi_role endpoint, we are considering one
-device per channel under the target (CS#), single target shown for
-clarity:
+---
+base-commit: 4477a78374a57c3809b172ad30cceabda48c47c6
+change-id: 20260819-fix-ast2700-intc-atomic-alloc-93248a29a1c0
 
-     espi0                     (controller)
-     `-- espi0-cs0             (target at Chip Select 0)
-         |-- espi0-cs0-periph  -> I/O + memory
-         |-- espi0-cs0-vwire   -> gpiochip (GP VWire groups; system
-         |                        VWires handled separately)
-         |-- espi0-cs0-oob     -> MCTP
-         `-- espi0-cs0-flash   -> MTD
-
-Both controller and target drivers populate the same per-channel ops and 
-the role (requester/provider) stays local to each channel driver and 
-decides direction and which optional callbacks exist. The 
-channel-independent commands (GET/SET_CONFIGURATION, GET_STATUS) are 
-link-level, so they stay on the controller device with role-specific 
-callbacks. This gives the same separation as your endpoint model.
-
-> 
-> 3. Leave room for asynchronous deferred transaction handling
-> 
-> This does not necessarily need to be implemented in the initial
-> framework. A synchronous API may be a practical first step, provided
-> the hardware-facing interface does not prevent asynchronous handling
-> from being added later.
-> 
-> As a future improvement, the common channel layer could track
-> outstanding non-posted Peripheral and Flash requests and complete them
-> when the corresponding completion packets arrive. For tagged requests,
-> this state would be scoped by endpoint/Chip Select#, channel, and tag.
-> A complete request object would also need to handle split completions,
-> timeouts, errors, and cancellation during channel or link reset.
-> 
-
-Agreed on synchronous first. We will keep the boundary open for later 
-async tracking of non-posted requests, scoped by CS#/channel/tag.
-
-Thanks for the detailed design considerations. Do you have any 
-comments/suggestions about the per channel approach as a starting point? 
-Happy to continue on or off the list.
-
-Thanks,
-Krishna
-
-> The exact model could remain channel-specific because OOB is
-> message-oriented and Virtual Wire is event/state-oriented. Keeping this
-> possibility open would allow asynchronous handling to be added later
-> without changing the hardware-driver interface.
-> 
-> These are my initial thoughts from the target-side implementation
-> perspective. I hope they are useful when considering the layering and
-> public interfaces for the next revision, and I would be interested in
-> your thoughts on the proposed transport boundary and common endpoint
-> model.
-> 
-> Regards,
-> Yun-Hsuan Chung
+Best regards,
+-- 
+Ryan Chen <ryan_chen@aspeedtech.com>
 
 
