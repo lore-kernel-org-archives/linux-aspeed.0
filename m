@@ -1,36 +1,36 @@
-Return-Path: <linux-aspeed+bounces-4796-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4797-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1233AC5DF7D
-	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Aug 2026 09:01:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2A78C5DF87
+	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Aug 2026 09:02:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hRDnl1vyRz2yFK;
-	Fri, 21 Aug 2026 19:01:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787302907;
-	cv=none; b=mCAOqMlWClVLFgOv5cnym/tya1xzs0zhCxTzAzmshyL8QG33arprGrqsG34bmkBkRQqMrUND6+wNVtD+rS86iC5onP55RenWJvOC6uJuRJO3fs6Yq+rfcbSO5W2wVftepa9eoshAL8jDkvEHNWPC1YOM1VnwEdYwd7WwtKwMlkH/Zs3Pk44IcOZ4eswV/VFa4SsCoenyOSp9frgqQefef0YnmEpmzPphtAobEPGWsHnWmQ5NVD0LFHpCspxzytaNof1OTBKEgt1I/P5xEK71cWgOudsrNdOMcyu5PwTjfVmy1Iem3RkCehQFRZ7QVgmreVpUWcHzqIRto/35tmdjzA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hRDp231zhz2ywn;
+	Fri, 21 Aug 2026 19:02:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787302922;
+	cv=none; b=CGr017OuF+Jilz6NAPbkiXbB5WIBsT/mt+JqI8MhaXmPGaQU12fDY/OTvs97+/aB5K3GbP3maHNaDR42oifbz3ixzboIcS5abPXH3iV8adF+PkZl+s6NJvT6FTATDg3KW4dZlmBgpKCCpCCO2133yPhGbbOPr2xRYjMpgx7UQ9fsFnalSCVou1Uu1ihwTMeVY0PzyGMh0HIKdcYxaFbvQ+iYW4iOFkxwbPRru45ZUPhv9Ra4eIP5YiLmcsDWJ6os2sdrPZqHfJD6v+toeaoqoGQerPirneEUL5qq01ka7OSVwZwYpN1A+VWD/QRhj5DUhn8xxCgw3KCj8OhtszzpIA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787302907; c=relaxed/relaxed;
-	bh=rh6PFwmCJ1xglf/mQve+dGIZod24rHn0R7f9Dl9SJ9k=;
+	t=1787302922; c=relaxed/relaxed;
+	bh=NQHMtNGYh33aRoPAi8RPd3UZO5E2j6ZyBROIFyP12mM=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=OmlUfH6b9r3L2ff4wpSzUdVEf5CO7+G8/QndpD+dVPAU2fK8xkvfb0U/ZU1ctN+Jfu3zBawZbGDhxBZqtzAbh92HCrjPbs1o0EWm3+HGNx2uW6l91DyIO1oWvTSx+iUR+78DJto4lzxjLBTqwp1UuGBH5/UtTOC9qKBzveeQfZh2jIxJF7JtQN+gys08SBvDPeRLTazlF/16MWRXMg4C0CmBYXg4qOwrknlRBGZrLQa1Z3b7UNQYSyCB5nTr3GEVAJSdGMGo/SwUX39I8PZmH3/pezN30WelxLfc1pw5ZeRfMOScKhOO5Ye9O+y7Uwz0UFUQYqQFYVJaDqAS7a2pRA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=QbbA2kRbdqpHycxwN9KVXUM40EU6ABhuHmtFojKPWBiY0JK9BtlFa9kQlJGuCsWYk0vDhFQI2QCTWKeCROvWzpTYMR1C8PrIFgDrmSxSP4iFap4TRRUfQwym1PEUEZv5OcbD65XCYYTs3ei/JnmwPZbS9DRyX1K8fFu8el5/E6n25YipGSuR6ByYD9PlAYszm0NXlVODOzjlqTwVoafjeLhpDm7j9ALEWqLUZfoFJKyGR6xLa0e598RIEMrH1Han7nzQidjLMB5pGssZClQuIwueQRk09LE9RhY8ZpeNR7SIG2+MooP2DJl70JH70tfgZG8+dn60667jIo7DUfqCXQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRDnk21dHz2xWt;
-	Fri, 21 Aug 2026 19:01:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRDp12rTYz2yDc;
+	Fri, 21 Aug 2026 19:02:01 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 0364143D4F;
+	by tor.source.kernel.org (Postfix) with ESMTP id 359B661899;
+	Fri, 21 Aug 2026 09:01:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 55F1C1F000E9;
 	Fri, 21 Aug 2026 09:01:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 244E31F00A3D;
-	Fri, 21 Aug 2026 09:01:28 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Ryan Chen <ryan_chen@aspeedtech.com>,
 	Joel Stanley <joel@jms.id.au>,
@@ -110,9 +110,9 @@ Cc: linux-clk@vger.kernel.org,
 	linux-tegra@vger.kernel.org,
 	linux-mediatek@lists.infradead.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 29/45] clk: samsung: Make sure clk_init_data is fully initialized
-Date: Fri, 21 Aug 2026 10:53:39 +0200
-Message-ID: <87b3e83137e1a987f3c69d214706e93ef3898cab.1787239813.git.geert+renesas@glider.be>
+Subject: [PATCH 30/45] clk: scpi: Make sure clk_init_data is fully initialized
+Date: Fri, 21 Aug 2026 10:53:40 +0200
+Message-ID: <939f1be93abebc7967a889e9c24c34942df8229a.1787239813.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1787239813.git.geert+renesas@glider.be>
 References: <cover.1787239813.git.geert+renesas@glider.be>
@@ -146,35 +146,20 @@ Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
 Compile-tested only.
 ---
- drivers/clk/samsung/clk-cpu.c | 2 +-
- drivers/clk/samsung/clk-pll.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/clk/clk-scpi.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/clk/samsung/clk-cpu.c b/drivers/clk/samsung/clk-cpu.c
-index 37cf47533dc610e1..a17ce26494f3ebd5 100644
---- a/drivers/clk/samsung/clk-cpu.c
-+++ b/drivers/clk/samsung/clk-cpu.c
-@@ -647,7 +647,7 @@ static int __init exynos_register_cpu_clock(struct samsung_clk_provider *ctx,
- 	const struct clk_hw *parent, *alt_parent;
- 	struct clk_hw **hws;
- 	struct exynos_cpuclk *cpuclk;
--	struct clk_init_data init;
-+	struct clk_init_data init = {};
- 	const char *parent_name;
- 	unsigned int num_cfgs;
- 	int ret = 0;
-diff --git a/drivers/clk/samsung/clk-pll.c b/drivers/clk/samsung/clk-pll.c
-index e74552846ba34105..813b8834ef16cc9b 100644
---- a/drivers/clk/samsung/clk-pll.c
-+++ b/drivers/clk/samsung/clk-pll.c
-@@ -1591,8 +1591,8 @@ static const struct clk_ops samsung_a9fraco_clk_min_ops = {
- static void __init _samsung_clk_register_pll(struct samsung_clk_provider *ctx,
- 				const struct samsung_pll_clock *pll_clk)
+diff --git a/drivers/clk/clk-scpi.c b/drivers/clk/clk-scpi.c
+index 2328d2abf6d88012..16796cf3c89271a9 100644
+--- a/drivers/clk/clk-scpi.c
++++ b/drivers/clk/clk-scpi.c
+@@ -128,7 +128,7 @@ static int
+ scpi_clk_ops_init(struct device *dev, const struct of_device_id *match,
+ 		  struct scpi_clk *sclk, const char *name)
  {
-+	struct clk_init_data init = {};
- 	struct samsung_clk_pll *pll;
 -	struct clk_init_data init;
- 	unsigned int len = 0;
++	struct clk_init_data init = {};
+ 	unsigned long min = 0, max = 0;
  	int ret;
  
 -- 
