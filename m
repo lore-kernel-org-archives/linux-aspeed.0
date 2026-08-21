@@ -1,22 +1,22 @@
-Return-Path: <linux-aspeed+bounces-4811-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4812-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A303C5DF87
-	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Aug 2026 09:05:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 758A3C5DF8C
+	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Aug 2026 09:05:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hRDt46v6Vz3bsy;
-	Fri, 21 Aug 2026 19:05:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hRDtN0kykz3btc;
+	Fri, 21 Aug 2026 19:05:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787303132;
-	cv=none; b=F3wVDxLez71D95K4weSpEVBHsD6tQ3I+BZmRJAAu30pXFI8ITXwt0rM9/NJBb42rq5EkPN/hWnPCGwrf5W7Bap+QcV7r02zqxRE1YSVokn5SEb8kCgzTUQ7gs1i5wHHGy7iu8jlLjlQ9pPQtZMHXfYBGiKK1f2k+xqwNntSud++1IeJWN61q2xEMKaj/kC3G9KZfKNx18zeYbRgY4Zpz8/enCvAe5ctjpjv1WytMsxNGxHIM13UBNXtlbfjjRh8MzBDYXsaLFXM2zFm2kntZDpm+rZZYmIl9rp1fkQQ7IitwPfrJaJkdM6ZxYnvUqyzdYEUQxjZ4/EtedNORQ4vNIA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787303148;
+	cv=none; b=aJ8HnvP4IPN36P1hTts+CAnHvr6ffrBwEGewPAUhrKj38ZyQkPQL+qrTlKV6OV59fwxBLbDIw/4qj1NW9M68VhIbePiOtVm/y6XJgv28OzJ+k22N8/OV8CDRC37VXnNq7wY+O+G4s4D7I8YdFDiWbvLEV77o28a5scgDtCOyK6GEg9nvsmlEycihT03fz93mu8G9qyc6Xt5jt45azx33jj5WqEPQHt0br9Exckan6ySEDFcy8a2rfS/yaVgLkCyDt90wVcGXLNmCl+0NAyPQFYij6QH6T6vcjWs5w+rJCcabcXhoBeLtzHT3+hzQhtvAftn5CR4BqwgxGhAGvAAKVQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787303132; c=relaxed/relaxed;
-	bh=f5Hzvca94/MpqPmGFa6vAWEDRGZpUXT7cxp37bpGpu8=;
+	t=1787303148; c=relaxed/relaxed;
+	bh=p8811fIOUMeDJPL4kxhAUd5eRiyVv42HJh+DBrKnPwQ=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=fz5OLrB8wH9GU1Kq3KmyLhFPOVJQwBC+/1YZeCbKw365wQiEl6DbvWv+9rT3IMStjVfXtf8LZ5zSfQdRgn4pyC5SPQf6wzlfMnAfSMEtOPkQFGM9EWbNOizZPj1WQJQL5Xehajqd/jq59h0dG4rnp5o+avy48Qcuw82SrLiYXJkBMt0JiLyvuFRYPUnfQF7FTnwlJBwqAzyrRA2XqTYyvekUyAJ9PB8ceQwkMZPENYEg6/eBYrHGwBr84gX7lQCIArfhDOakgIokdufdusTCY+PhxXc8qgsydC3Wivt5fPDYD6WoiW57sfn4ceKn9T1q8Mvi1+rlSCeiTfh28GWPUQ==
+	 MIME-Version; b=KqJ0FT6LKh6yjBaWYn+9YXfA0OlNwnvT1gdSBuczYUjPs+rG3doJJ7P6zO+tBxswdL6kvUM6k0tD1z9rQYIOk1s8q5vCFdo9x7oXF7DurzvcmtzsBRrvMJPrGJReCsXJrdSncSkEpRHaGjpiopsV5bVGZMbrnINBVkLkSXCcxAZINvzNVVTyrCWKz3W3SXjp85zlc77tescMZqS365sV2pFeKx/DBaRUCDj5Cc1cXKnSqUXsQkxyEhB5rW+eP1tGsDRG2ssoGXXEInc4aRXqLJ6T8rYbZ+7rFjddlpoqE3YjRClZVeFvu8jZhO6FjtXO5EEPZC2ETVl6Wcp5JNj0rw==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
@@ -24,13 +24,13 @@ Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRDt40dx8z3bsT;
-	Fri, 21 Aug 2026 19:05:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRDtM1YGgz3bsq;
+	Fri, 21 Aug 2026 19:05:47 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 2D1EC618F9;
+	by tor.source.kernel.org (Postfix) with ESMTP id 3C88D618FB;
+	Fri, 21 Aug 2026 09:05:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5598F1F000E9;
 	Fri, 21 Aug 2026 09:05:30 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 437761F00A3E;
-	Fri, 21 Aug 2026 09:05:15 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Ryan Chen <ryan_chen@aspeedtech.com>,
 	Joel Stanley <joel@jms.id.au>,
@@ -110,9 +110,9 @@ Cc: linux-clk@vger.kernel.org,
 	linux-tegra@vger.kernel.org,
 	linux-mediatek@lists.infradead.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 44/45] clk: xilinx: Make sure clk_init_data is fully initialized
-Date: Fri, 21 Aug 2026 10:53:54 +0200
-Message-ID: <cf858f84a9d517745fb53981f02f9c3dcd65a14f.1787239813.git.geert+renesas@glider.be>
+Subject: [PATCH 45/45] clk: zynqmp: Make sure clk_init_data is fully initialized
+Date: Fri, 21 Aug 2026 10:53:55 +0200
+Message-ID: <ca5b863571e9e21d123ab95cd5667b19f0d14d96.1787239813.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1787239813.git.geert+renesas@glider.be>
 References: <cover.1787239813.git.geert+renesas@glider.be>
@@ -146,57 +146,68 @@ Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
 Compile-tested only.
 ---
- drivers/clk/xilinx/clk-xlnx-clock-wizard.c | 6 +++---
- drivers/clk/xilinx/xlnx_vcu.c              | 2 +-
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/clk/zynqmp/clk-gate-zynqmp.c | 2 +-
+ drivers/clk/zynqmp/clk-mux-zynqmp.c  | 2 +-
+ drivers/clk/zynqmp/divider.c         | 2 +-
+ drivers/clk/zynqmp/pll.c             | 2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/clk/xilinx/clk-xlnx-clock-wizard.c b/drivers/clk/xilinx/clk-xlnx-clock-wizard.c
-index edf8c0eaca27cab4..4e5b9cb3754b9a18 100644
---- a/drivers/clk/xilinx/clk-xlnx-clock-wizard.c
-+++ b/drivers/clk/xilinx/clk-xlnx-clock-wizard.c
-@@ -936,9 +936,9 @@ static struct clk_hw *clk_wzrd_register_divf(struct device *dev,
- 					  u32 div_type,
- 					  spinlock_t *lock)
+diff --git a/drivers/clk/zynqmp/clk-gate-zynqmp.c b/drivers/clk/zynqmp/clk-gate-zynqmp.c
+index db10eb69f3fe01a5..1a462af7b8ea3efa 100644
+--- a/drivers/clk/zynqmp/clk-gate-zynqmp.c
++++ b/drivers/clk/zynqmp/clk-gate-zynqmp.c
+@@ -109,10 +109,10 @@ struct clk_hw *zynqmp_clk_register_gate(const char *name, u32 clk_id,
+ 					u8 num_parents,
+ 					const struct clock_topology *nodes)
  {
 +	struct clk_init_data init = {};
- 	struct clk_wzrd_divider *div;
+ 	struct zynqmp_clk_gate *gate;
+ 	struct clk_hw *hw;
+ 	int ret;
+-	struct clk_init_data init;
+ 
+ 	/* allocate the gate */
+ 	gate = kzalloc_obj(*gate);
+diff --git a/drivers/clk/zynqmp/clk-mux-zynqmp.c b/drivers/clk/zynqmp/clk-mux-zynqmp.c
+index e37bd3516974c1ee..79509e387b51fe40 100644
+--- a/drivers/clk/zynqmp/clk-mux-zynqmp.c
++++ b/drivers/clk/zynqmp/clk-mux-zynqmp.c
+@@ -133,9 +133,9 @@ struct clk_hw *zynqmp_clk_register_mux(const char *name, u32 clk_id,
+ 				       u8 num_parents,
+ 				       const struct clock_topology *nodes)
+ {
++	struct clk_init_data init = {};
+ 	struct zynqmp_clk_mux *mux;
  	struct clk_hw *hw;
 -	struct clk_init_data init;
  	int ret;
  
- 	div = devm_kzalloc(dev, sizeof(*div), GFP_KERNEL);
-@@ -980,9 +980,9 @@ static struct clk_hw *clk_wzrd_ver_register_divider(struct device *dev,
- 						 u32 div_type,
- 						 spinlock_t *lock)
+ 	mux = kzalloc_obj(*mux);
+diff --git a/drivers/clk/zynqmp/divider.c b/drivers/clk/zynqmp/divider.c
+index 4075f6ecf076a8e6..3eabd1cf211ddba3 100644
+--- a/drivers/clk/zynqmp/divider.c
++++ b/drivers/clk/zynqmp/divider.c
+@@ -278,9 +278,9 @@ struct clk_hw *zynqmp_clk_register_divider(const char *name,
+ 					   u8 num_parents,
+ 					   const struct clock_topology *nodes)
  {
 +	struct clk_init_data init = {};
- 	struct clk_wzrd_divider *div;
+ 	struct zynqmp_clk_divider *div;
  	struct clk_hw *hw;
 -	struct clk_init_data init;
  	int ret;
  
- 	div = devm_kzalloc(dev, sizeof(*div), GFP_KERNEL);
-@@ -1026,9 +1026,9 @@ static struct clk_hw *clk_wzrd_register_divider(struct device *dev,
- 					     u32 div_type,
- 					     spinlock_t *lock)
+ 	/* allocate the divider */
+diff --git a/drivers/clk/zynqmp/pll.c b/drivers/clk/zynqmp/pll.c
+index 6463787cf57b6018..6158386ca743d1f8 100644
+--- a/drivers/clk/zynqmp/pll.c
++++ b/drivers/clk/zynqmp/pll.c
+@@ -313,9 +313,9 @@ struct clk_hw *zynqmp_clk_register_pll(const char *name, u32 clk_id,
+ 				       u8 num_parents,
+ 				       const struct clock_topology *nodes)
  {
 +	struct clk_init_data init = {};
- 	struct clk_wzrd_divider *div;
- 	struct clk_hw *hw;
--	struct clk_init_data init;
- 	int ret;
- 
- 	div = devm_kzalloc(dev, sizeof(*div), GFP_KERNEL);
-diff --git a/drivers/clk/xilinx/xlnx_vcu.c b/drivers/clk/xilinx/xlnx_vcu.c
-index f14bda375e353e6a..ccd9d7c0b18098a5 100644
---- a/drivers/clk/xilinx/xlnx_vcu.c
-+++ b/drivers/clk/xilinx/xlnx_vcu.c
-@@ -406,9 +406,9 @@ static struct clk_hw *xvcu_register_pll(struct device *dev,
- 					const char *name, const char *parent,
- 					unsigned long flags)
- {
-+	struct clk_init_data init = {};
- 	struct vcu_pll *pll;
+ 	struct zynqmp_pll *pll;
  	struct clk_hw *hw;
 -	struct clk_init_data init;
  	int ret;
