@@ -1,94 +1,118 @@
-Return-Path: <linux-aspeed+bounces-4766-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4767-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26F3AC5DF88
-	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Aug 2026 06:48:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EBAE0C5DF87
+	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Aug 2026 08:54:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hR9rL2H4bz2xnW;
-	Fri, 21 Aug 2026 16:48:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::236" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787294930;
-	cv=pass; b=hpKsW8GI9HPqrdunSnXN/d5623btvLWLtWmjG3C729yB8gD4RewYDz+3a5szm91WccvTVdbTugaZuFEA6oAkWQVc/U6aYV/Ae+4PvDQws2tvTAIkj9yNFDswB0VzYAIQI20GCwKnhg6Zfq1yZGNDdpyoyx6Y99oNVw7ZWB3F4Jbt2OBkZqlGnTBpfZ846uFP8nhambD90n09pnlMMeAXhVhTk6vN6x6pC+rHvh7Q4BRHBjkSgWmmFMTHjUHxa7shpPaKbkDhnS3NIRr8Quq0+WojLCwBHF6sBMBX8Kbm9oy1J90KRBpAT0Zo6UsOAFEsAQVp8r/QdlqVfsw9UqsQ5w==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787294930; c=relaxed/relaxed;
-	bh=ZZV2eo8l44i659VRpU6Jc0rPYdN+/WIVgMkUx/EFXO4=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Yb+JKK6y6/jt0VsmoxMxyjUOHZLTbBL94XMzu+xW/J6jGAqdWrumg67t3Omx16OZyeW2BKl3l/bCSdCxduDQa868AW1UWUyOoBRWeKgptNOHyIfb5Qela6W6rSjLugSc4c9kb1PWUSfTn3G9jkPxRNWGZRw27/nCpjIEQyKW5rIcNp/iRbji63jXpf+Nab2cElPlhTM5+60SfeH5Uv5AJ3LTtFQc5PTwQM3o9QbCVBFF1xOTnijsIKXNWbqs41gsZJARtmfmdNBfQVH4u9BWCHu1Bs4NqyZcvaAkC8IAgmqkH62S/ryG12fBoMgHyd7W1dyqe5EfLwZeOC6M5VXY7g==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=YB0yGmJz; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::236; helo=mail-lj1-x236.google.com; envelope-from=kylehsieh1995@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=YB0yGmJz;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::236; helo=mail-lj1-x236.google.com; envelope-from=kylehsieh1995@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-lj1-x236.google.com (mail-lj1-x236.google.com [IPv6:2a00:1450:4864:20::236])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hRDdD325cz2xtt;
+	Fri, 21 Aug 2026 18:54:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787302464;
+	cv=none; b=bdJ5RnqWXOe9OChHyraTEV7ioJOklitqV55QM1h67jG+qFC/MRULNp3DgRLaXBGZKbG2MRANRQQGwfaPJFUmVGB94uQvsxp16dpkHbbf6wYv8mYF13YaVuAbvE8LEDKmPNc7qOOkH8maa5No5AtquG4PAi03LIuk46fjJaQBhqDgNHgoyQs0oYAXtNUbT7t9tC8EpW8QV7OBBFajdR+F8udpelu7RDxw72uWZw+Ml3IKRFfEj3/5Wo1KKXLY1LLMWWC+OGeaLGkj8CrREwwiaVmRIxukOPP9BR0KbbPZoyusdfUhbJr8xBH2rlLu92kPSlQcVu+i7Cq0z9rM8Yp4xg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1787302464; c=relaxed/relaxed;
+	bh=UEAKAK3qVtW6dETuDI56Cj+E7CBI3JhviZhDgPCqUgc=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=VM+E5ddBJdb8LDG6P6YMzB68MTm1fnrnWnae03XmvUXQ5x4zb/QPOLLGVfmn2w626FjGfhpaMW6nNmk7ItQdBikvWLKbaXe1pp4/dXYU51k0HxSd0rb8Vhd9XKolk7N1x0BvOg/wQueDFE15BqEBPlcIbRF9pmuy4qB3eXIIJn1EkniRQv7DGIKT6HCMHzbwycnGvtlibMttShBXEeiqlafBCSQzGim5vpiiEdj4q1Mk/VmwFyGgSDDmD83qoGEhlNYKZJD73oDQzRIAFUDNXLwdR04/wqBubAbbK0Nv8dSN1LRapF2XwFwCoyRPSS4fpKwSWMNtDm6Ol7xCqWY5Xg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hR9rJ5Wqlz2xWt
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 21 Aug 2026 16:48:47 +1000 (AEST)
-Received: by mail-lj1-x236.google.com with SMTP id 38308e7fff4ca-39c74722e27so8959971fa.0
-        for <linux-aspeed@lists.ozlabs.org>; Thu, 20 Aug 2026 23:48:47 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1787294924; cv=none;
-        d=google.com; s=arc-20260327;
-        b=gzU+jY4oV0phlfq3TVd9965CF9lE8QigRYekFyufzVMRVD3ojTlH4kY3xe3OkYVQ56
-         XgAOTl2HTRnEKbzQAa+9v9FTlcqQrfxSBd4hDCxC9M3aBQXId4XiOctbSWu8SYY9OA61
-         ZlTiszw8KZ005vRzNyEcvFWESYq7ZW5pabJSw24+lAqwxpG+2ISLPi7AfqLzNiCHTvsf
-         pvUG4iiVXR1QjkFTOjX7itly8eO1Q0+QoUr03Ff8RHD53YDo11bvAkLcmweNVesM10wB
-         1sIXHsZpNfDZlzZSSjch7i6ebv6TdKT5Y0oIlvLkhUbnyFC2ND2HzViv8ajgtMMbmQi3
-         igIA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=ZZV2eo8l44i659VRpU6Jc0rPYdN+/WIVgMkUx/EFXO4=;
-        fh=0OWgvJzaQqbJ91u4wgbsS3WEjlg1DXqzUN59JzR1uvs=;
-        b=RV6L9uoPyXlDPPRZg2Kbr0MnzzuSfDI2dfkWzQ6+ypFgDpZfCGiJdIrSUYpp+WDsBA
-         6nqRvVqHg2BhtsgGUraa11GK/YC+uZLK9voUOxKt1Mza/ChSpRKsSlDUGKjA+UZE/YYY
-         MXq3tkGxGdmxJwW75RPYDpDxiyFv6J1pPZ+nPndJEbq/SyuCQSX7JhXnWTIClVUcDVxd
-         2cHS034K+QW4Iv1p/IS6gg1dwDjMrKiWyRfKNcs3b2G45KidTHa49vwAZe6S8vU2HQhc
-         iFbP1nGgIi/OM/YE2RFDzUWcvl4aRk9O0H4tIs9enpWYUkZbhJg2aZsF5WH04rLglLaB
-         I92A==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1787294924; x=1787899724; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=ZZV2eo8l44i659VRpU6Jc0rPYdN+/WIVgMkUx/EFXO4=;
-        b=YB0yGmJzkPVy9XmUr9pLmbVsmzGcFKOeM1BD/9rVzF4e04HKdriZGFOXvcD7UGv7XB
-         pv0vA9brQIntKpYx+i5lbHqypYvRQoVy3hsZ3ApwAIedfgnnZYZCoQbcH9fkNRys65MM
-         x+XzkWNh6vGuYMQteLSwxB0uY1wNJZ7pKfJ63cjMXrmzEPcOrCccQNuiPn4gyaC+orMP
-         4mnkN+at26luHfnVLlWMYCDLZmC8Ey9V6Cvrh+7mUYyk2uGVsLgqcy9KJAWyrtua5yn4
-         cSnbB3piUAaV6X74NNq5XrOCFkO7Rp51p1Y704nFH+ZOdlctHsBTv0LXQnZmUPDiVpBK
-         N+dw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1787294924; x=1787899724;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=ZZV2eo8l44i659VRpU6Jc0rPYdN+/WIVgMkUx/EFXO4=;
-        b=RTZS69/qzFyWaEKu7Lw8TsUyM5CrPneJ2vkyGte47HRJGk/CAeMBi8r40ERUsklFB3
-         DLtv/GLTHDfKxp5AcIDuDgofeq1ULNL8dMsLb8nRysQcg0boQAl5+fjh/ajmxjGlJ7lr
-         TeTacho8KJMX4CjoE1xRkrZ3A8hLspwdui5zppUqA8whI0bC3o3Uoxh7MpOOCg2XE+uB
-         BbkSis4WFZrJ2c5OIlq9GGTNrRrflGPRkQV1a5wmP7u1GwTmEjNxHvieBnu/yx7r9rAC
-         Na9xU9BRn6HgLCDe9PRW1cGf6Ei8yhZnMtbxeSOiYJoPEFNeKZXlUpbhofZCeYNkwkdb
-         C4Ng==
-X-Forwarded-Encrypted: i=1; AHgh+RqiV074Vfy2iYMZaw42IWnM8jhUbcFY//EWbqN7Y9erNzN6onodO86QDwOEiBpUDLTrn/T2Oy+lPdoheAc=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++nIaAj5pVnWQL6rDFAgbZOhqIRKZPMcQ9Nj+x6eDUYMqMZJQICH
-	lTNDW9xngsJxqQ0fSB3xsqmKTEW/Ul/oHBfx5gbCo2TcMgqBAT5dKvLJrpgJCEksdIwqgil3pYK
-	pf0oeD182lcYTYESVYxf8Rdni/a/iyFY=
-X-Gm-Gg: AR+sD10MYfJzJbFyMJun6DD/YLP04eKg6+2sgxSUeOd6vuYA9QKu7JPfMUZQ4F38X5N
-	UtOCoN5Jkyp5Af5uRFhV0IUm8ifc1CyPWD/UUb0S9iHKbuuajDduxAgUY76GIgskNSi+XCE+Ap6
-	f16DW1V2/b5kNNYOz8cl54T/uCdo97yD4C7WAbWR7Rl9eyZdtYA40YWgKHDjbWk++A9qqIGco5H
-	L/sQxz9vapBqvEY2JjC5NUCdWm74qs42yCmRNqyz4YJKrzHpvGLstfSxj4xtTX+eotYjj2L69yd
-	zZFxYNJsS5ER+C6mWDV8CtccNHsw9CDhy+2tNPzuBsdy9g==
-X-Received: by 2002:a05:651c:222b:b0:3a1:8dd6:aada with SMTP id
- 38308e7fff4ca-3a1b0e134edmr3994451fa.4.1787294924052; Thu, 20 Aug 2026
- 23:48:44 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRDdB6l3Mz2xWt;
+	Fri, 21 Aug 2026 18:54:22 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 50BB7419CF;
+	Fri, 21 Aug 2026 08:54:20 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1626D1F000E9;
+	Fri, 21 Aug 2026 08:54:04 +0000 (UTC)
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+To: Ryan Chen <ryan_chen@aspeedtech.com>,
+	Joel Stanley <joel@jms.id.au>,
+	Stephen Boyd <sboyd@kernel.org>,
+	Brian Masney <bmasney+clk@redhat.com>,
+	Jerome Brunet <jbrunet+clk@baylibre.com>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Billy Tsai <billy_tsai@aspeedtech.com>,
+	Nicolas Ferre <nicolas.ferre@microchip.com>,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	Claudiu Beznea <claudiu.beznea@tuxon.dev>,
+	Ray Jui <rjui@broadcom.com>,
+	Scott Branden <sbranden@broadcom.com>,
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+	Taichi Sugaya <sugaya.taichi@socionext.com>,
+	Takao Orito <orito.takao@socionext.com>,
+	Linus Walleij <linusw@kernel.org>,
+	Avi Fishman <avifishman70@gmail.com>,
+	Tomer Maimon <tmaimon77@gmail.com>,
+	Tali Perry <tali.perry1@gmail.com>,
+	Patrick Venture <venture@google.com>,
+	Nancy Yuen <yuenn@google.com>,
+	Benjamin Fair <benjaminfair@google.com>,
+	Sudeep Holla <sudeep.holla@kernel.org>,
+	Cristian Marussi <cristian.marussi@arm.com>,
+	David Lechner <david@lechnology.com>,
+	Abel Vesa <abelvesa@kernel.org>,
+	Peng Fan <peng.fan@nxp.com>,
+	Frank Li <Frank.Li@nxp.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	Paul Cercueil <paul@crapouillou.net>,
+	Santosh Shilimkar <ssantosh@kernel.org>,
+	Andrew Lunn <andrew@lunn.ch>,
+	Gregory Clement <gregory.clement@bootlin.com>,
+	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+	Vladimir Zapolskiy <vz@mleia.com>,
+	Heiko Stuebner <heiko@sntech.de>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	Sylwester Nawrocki <s.nawrocki@samsung.com>,
+	Chanwoo Choi <cw00.choi@samsung.com>,
+	Peter Griffin <peter.griffin@linaro.org>,
+	Alim Akhtar <alim.akhtar@samsung.com>,
+	Dinh Nguyen <dinguyen@kernel.org>,
+	Viresh Kumar <vireshk@kernel.org>,
+	Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+	Alexandre Torgue <alexandre.torgue@foss.st.com>,
+	=?UTF-8?q?Emilio=20L=C3=B3pez?= <emilio@elopez.com.ar>,
+	Chen-Yu Tsai <wens@kernel.org>,
+	Jernej Skrabec <jernej.skrabec@gmail.com>,
+	Samuel Holland <samuel@sholland.org>,
+	Prashant Gaikwad <pgaikwad@nvidia.com>,
+	Thierry Reding <thierry.reding@kernel.org>,
+	Jonathan Hunter <jonathanh@nvidia.com>,
+	Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
+	Masami Hiramatsu <mhiramat@kernel.org>,
+	Ulf Hansson <ulfh@kernel.org>,
+	Liviu Dudau <liviu.dudau@arm.com>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Michal Simek <michal.simek@amd.com>,
+	Matthias Brugger <matthias.bgg@gmail.com>
+Cc: linux-clk@vger.kernel.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	openbmc@lists.ozlabs.org,
+	arm-scmi@vger.kernel.org,
+	imx@lists.linux.dev,
+	linux-mips@vger.kernel.org,
+	linux-renesas-soc@vger.kernel.org,
+	linux-rockchip@lists.infradead.org,
+	linux-samsung-soc@vger.kernel.org,
+	soc@lists.linux.dev,
+	linux-stm32@st-md-mailman.stormreply.com,
+	linux-sunxi@lists.linux.dev,
+	linux-tegra@vger.kernel.org,
+	linux-mediatek@lists.infradead.org,
+	Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH 00/45] clk: Make sure clk_init_data is fully initialized (part two)
+Date: Fri, 21 Aug 2026 10:53:10 +0200
+Message-ID: <cover.1787239813.git.geert+renesas@glider.be>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -102,126 +126,243 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260727-ventura2_initial_dts-v9-0-504c0ec68039@gmail.com>
- <20260727-ventura2_initial_dts-v9-2-504c0ec68039@gmail.com>
- <178724902712.20555.7009712214570349708.b4-review@b4> <CAF7HswN1ZzwjfXjG2hV5tEkVZkZYp0CiVNSo_9A4m3tsqQp_Bg@mail.gmail.com>
-In-Reply-To: <CAF7HswN1ZzwjfXjG2hV5tEkVZkZYp0CiVNSo_9A4m3tsqQp_Bg@mail.gmail.com>
-From: Kyle Hsieh <kylehsieh1995@gmail.com>
-Date: Fri, 21 Aug 2026 14:51:47 +0800
-X-Gm-Features: AcwNN1U6V2Do82rvIt74ZZ-aX7aerlDnXhaA1qYUWN10XHuS2TwjSTUhQfWOomU
-Message-ID: <CAF7HswMpfibMRysJQYrkA4EC2Ks3C_20nZkhpVPP3w-J4BoxQA@mail.gmail.com>
-Subject: Re: [PATCH v9 2/2] ARM: dts: aspeed: ventura2: Add Meta ventura2 BMC
-To: Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, devicetree@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org, Tan Siewert <tan.siewert@9elements.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-Hi Andrew,
+	Hi all,
 
-On Fri, Aug 21, 2026 at 2:31=E2=80=AFPM Kyle Hsieh <kylehsieh1995@gmail.com=
-> wrote:
->
-> Hi Tan,
->
-> Thanks for the review.
->
-> On Fri, Aug 21, 2026 at 2:04=E2=80=AFAM Tan Siewert <tan.siewert@9element=
-s.com> wrote:
-> >
-> > Hi Kyle,
-> >
-> > > Ventura2 is a Rack Management Controller. It is a modular
-> > > device designed to manage liquid cooling systems and monitor hardware
-> > > states within an IT rack. The system uses an AST2600 BMC for manageme=
-nt.
-> > >
-> > > RMCv2 serves several critical roles:
-> > > - Detects liquid leakage at both tray and rack levels.
-> > > - Communicates with and controls liquid cooling equipment.
-> > > - Manages leakage events and executes system recovery protocols.
-> > >
-> > > Key hardware features include:
-> > > - An extensive I2C and IO expander topology to support comprehensive
-> > >   sensor monitoring and backward compatibility with legacy trays.
-> > > - MCTP over I2C support for asynchronous device communications.
-> > > - A dual-flash design for BMC firmware redundancy.
-> > >
-> > > Signed-off-by: Kyle Hsieh <kylehsieh1995@gmail.com>
-> >
-> > *snip*
-> >
-> > > diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura2.dt=
-s b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura2.dts
-> > > new file mode 100644
-> > > index 000000000000..f1273ca31bf8
-> > > --- /dev/null
-> > > +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura2.dts
-> > > @@ -0,0 +1,3005 @@
-> > > +// SPDX-License-Identifier: GPL-2.0
-> > > +// Copyright (c) 2023 Facebook Inc.
-> > > +/dts-v1/;
-> > > +
-> > > +#include "aspeed-g6.dtsi"
-> > > +#include <dt-bindings/i2c/i2c.h>
-> > > +#include <dt-bindings/gpio/aspeed-gpio.h>
-> > > +
-> > > +/ {
-> > > +     compatible =3D "facebook,ventura2-rmc", "aspeed,ast2600";
-> > > +     model =3D "Facebook Ventura2 RMC";
-> > > +
-> > > +     aliases {
-> > > +             /*
-> > > +             * Pre-allocate I2C bus aliases for userspace predictabi=
-lity.
-> > > +             * Several I2C channels are intentionally left empty in =
-this
-> > > +             * DTS as they are strictly reserved for future hardware
-> > > +             * feature expansions and add-on boards that will interf=
-ace
-> > > +             * with these busses.
-> > > +             */
-> > > +             /*
-> > > +             * i2c switch 0-0077, pca9548, 8 child channels assigned
-> > > +             * with bus number 16-23.
-> > > +             */
-> >
-> > This alignment is one of the things that seem to be a false-positive fo=
-r
-> > dt-check-style in strict mode (value-whitespace). See [0] where Krzyszt=
-of said
-> > that it may report false-positives, and "Review and investigate warning=
-s from
-> > 'strict' mode, but do not fix them automatically without thinking".
-> >
-> > @Krzysztof wdyt about this one?
->
-> You're right, and this is a regression I introduced in v9. In v8 these co=
-mment
-> blocks used the standard kernel style. While running dt-check-style, I ap=
-plied
-> the strict-mode output too mechanically and dropped the space before '*' =
-in all
-> 38 comment blocks in the file. I will restore to the standard style in v1=
-0.
+The clk_init_data structure contains several mutually-exclusive members
+for different methods to specify the possible parents of a clock,
+prompting drivers to initialize only the members they need.  However,
+not initializing all members may cause subtle issues, which are only
+exposed when CONFIG_INIT_STACK_ALL_PATTERN or CONFIG_INIT_STACK_NONE is
+enabled.
 
-This is the part I'd like your input on, since it goes against your v8
-review where you asked me to fix the 49 mixed-indent-chars reported in
-relaxed mode.
+Hence this series aims to make sure all members are fully initialized,
+to avoid such bugs, and to prevent future breakage when converting
+drivers to a different method for specifying the parents.
 
-Looking at the output again, all 52 hits on the current file are on comment
-lines. The standard kernel comment style '\t * ' is a tab followed by a
-space, so the tool flags every correctly formatted multi-line comment. The
-49 you saw in v8 were the same thing. [property-order] on the spi node
-behaves the same way - it wants #address-cells and #size-cells split apart,
-which is what Tan asked me to change back.
+Part One[1] fixed all cases that I identified to be real bugs, in
+response to a crash I saw on BeagleBone Black.
 
-So I can either restore the kernel comment style and note these as false
-positives in the cover letter, or keep the v9 form that satisfies the tool.
-Which would you prefer for v10?
+This series is the clock subpart of Part Two, which fixes remaining
+cases that are currently harmless.  These are still fragile, and may
+cause future breakage when converting drivers to a different method for
+specifying the parents.
 
-Thanks,
-Kyle Hsieh
+Thanks for your comments!
+
+[1] "[PATCH treewide 0/5] clk: Make sure clk_init_data is fully
+     initialized (part 1)"
+    https://lore.kernel.org/cover.1787165329.git.geert+renesas@glider.be
+
+Geert Uytterhoeven (45):
+  clk: aspeed: Make sure clk_init_data is fully initialized
+  clk: at91: Make sure clk_init_data is fully initialized
+  clk: bcm: iproc: Make sure clk_init_data is fully initialized
+  clk: berlin: Make sure clk_init_data is fully initialized
+  clk: cdce925: Make sure clk_init_data is fully initialized
+  clk: clk-axi-clkgen: Make sure clk_init_data is fully initialized
+  clk: cs2000-cp: Make sure clk_init_data is fully initialized
+  clk: davinci: Make sure clk_init_data is fully initialized
+  clk: fractional-divider: Make sure clk_init_data is fully initialized
+  clk: gemini: Make sure clk_init_data is fully initialized
+  clk: highbank: Make sure clk_init_data is fully initialized
+  clk: hisilicon: Make sure clk_init_data is fully initialized
+  clk: imx: Make sure clk_init_data is fully initialized
+  clk: ingenic: Make sure clk_init_data is fully initialized
+  clk: keystone: Make sure clk_init_data is fully initialized
+  clk: lmk04832: Make sure clk_init_data is fully initialized
+  clk: mediatek: Make sure clk_init_data is fully initialized
+  clk: milbeaut: Make sure clk_init_data is fully initialized
+  clk: mmp: Make sure clk_init_data is fully initialized
+  clk: mvebu: Make sure clk_init_data is fully initialized
+  clk: mxs: Make sure clk_init_data is fully initialized
+  clk: nomadik: Make sure clk_init_data is fully initialized
+  clk: npcm7xx: Make sure clk_init_data is fully initialized
+  clk: nxp: Make sure clk_init_data is fully initialized
+  clk: pistachio: Make sure clk_init_data is fully initialized
+  clk: pwm: Make sure clk_init_data is fully initialized
+  clk: renesas: Make sure clk_init_data is fully initialized
+  clk: rockchip: Make sure clk_init_data is fully initialized
+  clk: samsung: Make sure clk_init_data is fully initialized
+  clk: scpi: Make sure clk_init_data is fully initialized
+  clk: silabs: Make sure clk_init_data is fully initialized
+  clk: socfpga: Make sure clk_init_data is fully initialized
+  clk: spear: Make sure clk_init_data is fully initialized
+  clk: stm32: Make sure clk_init_data is fully initialized
+  clk: st: Make sure clk_init_data is fully initialized
+  clk: sunxi: Make sure clk_init_data is fully initialized
+  clk: tegra: Make sure clk_init_data is fully initialized
+  clk: uniphier: Make sure clk_init_data is fully initialized
+  clk: ux500: Make sure clk_init_data is fully initialized
+  clk: versatile: Make sure clk_init_data is fully initialized
+  clk: vt8500: Make sure clk_init_data is fully initialized
+  clk: x86: Make sure clk_init_data is fully initialized
+  clk: xgene: Make sure clk_init_data is fully initialized
+  clk: xilinx: Make sure clk_init_data is fully initialized
+  clk: zynqmp: Make sure clk_init_data is fully initialized
+
+ drivers/clk/aspeed/clk-aspeed.c                |  2 +-
+ drivers/clk/aspeed/clk-ast2600.c               |  2 +-
+ drivers/clk/aspeed/clk-ast2700.c               |  2 +-
+ drivers/clk/at91/clk-audio-pll.c               |  4 ++--
+ drivers/clk/at91/clk-h32mx.c                   |  2 +-
+ drivers/clk/at91/clk-main.c                    |  2 +-
+ drivers/clk/at91/clk-pll.c                     |  2 +-
+ drivers/clk/at91/clk-plldiv.c                  |  2 +-
+ drivers/clk/at91/clk-slow.c                    |  2 +-
+ drivers/clk/at91/clk-smd.c                     |  2 +-
+ drivers/clk/at91/clk-usb.c                     |  6 +++---
+ drivers/clk/at91/sckc.c                        |  2 +-
+ drivers/clk/bcm/clk-iproc-armpll.c             |  2 +-
+ drivers/clk/bcm/clk-iproc-asiu.c               |  2 +-
+ drivers/clk/bcm/clk-iproc-pll.c                |  2 +-
+ drivers/clk/berlin/berlin2-avpll.c             |  4 ++--
+ drivers/clk/berlin/berlin2-pll.c               |  2 +-
+ drivers/clk/clk-axi-clkgen.c                   |  2 +-
+ drivers/clk/clk-cdce925.c                      |  2 +-
+ drivers/clk/clk-cs2000-cp.c                    |  2 +-
+ drivers/clk/clk-fractional-divider.c           |  2 +-
+ drivers/clk/clk-gemini.c                       |  2 +-
+ drivers/clk/clk-highbank.c                     |  2 +-
+ drivers/clk/clk-lmk04832.c                     |  6 +++---
+ drivers/clk/clk-milbeaut.c                     |  4 ++--
+ drivers/clk/clk-nomadik.c                      |  4 ++--
+ drivers/clk/clk-npcm7xx.c                      |  2 +-
+ drivers/clk/clk-pwm.c                          |  2 +-
+ drivers/clk/clk-scpi.c                         |  2 +-
+ drivers/clk/clk-si514.c                        |  2 +-
+ drivers/clk/clk-si5341.c                       |  2 +-
+ drivers/clk/clk-si544.c                        |  2 +-
+ drivers/clk/clk-si570.c                        |  2 +-
+ drivers/clk/clk-stm32f4.c                      |  4 ++--
+ drivers/clk/clk-stm32h7.c                      |  2 +-
+ drivers/clk/clk-vt8500.c                       |  4 ++--
+ drivers/clk/clk-xgene.c                        |  6 +++---
+ drivers/clk/davinci/da8xx-cfgchip.c            |  4 ++--
+ drivers/clk/davinci/pll.c                      |  2 +-
+ drivers/clk/davinci/psc.c                      |  2 +-
+ drivers/clk/hisilicon/clk-hi3559a.c            |  2 +-
+ drivers/clk/hisilicon/clk-hi3620.c             |  2 +-
+ drivers/clk/hisilicon/clk-hi6220-stub.c        |  2 +-
+ drivers/clk/hisilicon/clk-hisi-phase.c         |  2 +-
+ drivers/clk/hisilicon/clk-hix5hd2.c            |  2 +-
+ drivers/clk/hisilicon/clkdivider-hi6220.c      |  2 +-
+ drivers/clk/hisilicon/clkgate-separated.c      |  2 +-
+ drivers/clk/imx/clk-busy.c                     |  4 ++--
+ drivers/clk/imx/clk-cpu.c                      |  2 +-
+ drivers/clk/imx/clk-divider-gate.c             |  2 +-
+ drivers/clk/imx/clk-fixup-div.c                |  2 +-
+ drivers/clk/imx/clk-fixup-mux.c                |  2 +-
+ drivers/clk/imx/clk-frac-pll.c                 |  2 +-
+ drivers/clk/imx/clk-fracn-gppll.c              |  2 +-
+ drivers/clk/imx/clk-gate-93.c                  |  2 +-
+ drivers/clk/imx/clk-gate-exclusive.c           |  2 +-
+ drivers/clk/imx/clk-gate2.c                    |  2 +-
+ drivers/clk/imx/clk-lpcg-scu.c                 |  2 +-
+ drivers/clk/imx/clk-pfd.c                      |  2 +-
+ drivers/clk/imx/clk-pfdv2.c                    |  2 +-
+ drivers/clk/imx/clk-pll14xx.c                  |  2 +-
+ drivers/clk/imx/clk-pllv1.c                    |  2 +-
+ drivers/clk/imx/clk-pllv2.c                    |  2 +-
+ drivers/clk/imx/clk-pllv3.c                    |  2 +-
+ drivers/clk/imx/clk-pllv4.c                    |  2 +-
+ drivers/clk/imx/clk-scu.c                      |  4 ++--
+ drivers/clk/imx/clk-sscg-pll.c                 |  2 +-
+ drivers/clk/ingenic/cgu.c                      |  2 +-
+ drivers/clk/keystone/gate.c                    |  2 +-
+ drivers/clk/keystone/pll.c                     |  2 +-
+ drivers/clk/keystone/syscon-clk.c              |  2 +-
+ drivers/clk/mediatek/clk-cpumux.c              |  2 +-
+ drivers/clk/mmp/clk-apbc.c                     |  2 +-
+ drivers/clk/mmp/clk-apmu.c                     |  2 +-
+ drivers/clk/mmp/clk-frac.c                     |  2 +-
+ drivers/clk/mmp/clk-gate.c                     |  2 +-
+ drivers/clk/mmp/clk-mix.c                      |  2 +-
+ drivers/clk/mmp/clk-pll.c                      |  2 +-
+ drivers/clk/mvebu/ap-cpu-clk.c                 |  2 +-
+ drivers/clk/mvebu/clk-corediv.c                |  2 +-
+ drivers/clk/mvebu/clk-cpu.c                    |  2 +-
+ drivers/clk/mxs/clk-div.c                      |  2 +-
+ drivers/clk/mxs/clk-frac.c                     |  2 +-
+ drivers/clk/mxs/clk-pll.c                      |  2 +-
+ drivers/clk/mxs/clk-ref.c                      |  2 +-
+ drivers/clk/nxp/clk-lpc18xx-creg.c             |  2 +-
+ drivers/clk/pistachio/clk-pll.c                |  2 +-
+ drivers/clk/renesas/rzg2l-cpg.c                | 18 +++++++++---------
+ drivers/clk/renesas/rzv2h-cpg.c                |  8 ++++----
+ drivers/clk/rockchip/clk-cpu.c                 |  2 +-
+ drivers/clk/rockchip/clk-ddr.c                 |  2 +-
+ drivers/clk/rockchip/clk-gate-grf.c            |  2 +-
+ drivers/clk/rockchip/clk-inverter.c            |  2 +-
+ drivers/clk/rockchip/clk-mmc-phase.c           |  2 +-
+ drivers/clk/rockchip/clk-muxgrf.c              |  2 +-
+ drivers/clk/rockchip/clk-pll.c                 |  2 +-
+ drivers/clk/rockchip/clk.c                     |  2 +-
+ drivers/clk/samsung/clk-cpu.c                  |  2 +-
+ drivers/clk/samsung/clk-pll.c                  |  2 +-
+ drivers/clk/socfpga/clk-gate-a10.c             |  2 +-
+ drivers/clk/socfpga/clk-gate-s10.c             |  6 +++---
+ drivers/clk/socfpga/clk-gate.c                 |  2 +-
+ drivers/clk/socfpga/clk-periph-a10.c           |  2 +-
+ drivers/clk/socfpga/clk-periph-s10.c           |  8 ++++----
+ drivers/clk/socfpga/clk-periph.c               |  2 +-
+ drivers/clk/socfpga/clk-pll-a10.c              |  2 +-
+ drivers/clk/socfpga/clk-pll-s10.c              |  8 ++++----
+ drivers/clk/socfpga/clk-pll.c                  |  2 +-
+ drivers/clk/spear/clk-aux-synth.c              |  2 +-
+ drivers/clk/spear/clk-frac-synth.c             |  2 +-
+ drivers/clk/spear/clk-gpt-synth.c              |  2 +-
+ drivers/clk/spear/clk-vco-pll.c                |  2 +-
+ drivers/clk/st/clk-flexgen.c                   |  2 +-
+ drivers/clk/st/clkgen-fsyn.c                   |  4 ++--
+ drivers/clk/st/clkgen-pll.c                    |  2 +-
+ drivers/clk/stm32/clk-stm32mp1.c               |  4 ++--
+ drivers/clk/sunxi/clk-sun4i-tcon-ch1.c         |  2 +-
+ drivers/clk/tegra/clk-audio-sync.c             |  2 +-
+ drivers/clk/tegra/clk-divider.c                |  2 +-
+ drivers/clk/tegra/clk-periph-fixed.c           |  2 +-
+ drivers/clk/tegra/clk-periph-gate.c            |  2 +-
+ drivers/clk/tegra/clk-periph.c                 |  2 +-
+ drivers/clk/tegra/clk-pll-out.c                |  2 +-
+ drivers/clk/tegra/clk-pll.c                    |  2 +-
+ drivers/clk/tegra/clk-sdmmc-mux.c              |  2 +-
+ drivers/clk/tegra/clk-super.c                  |  4 ++--
+ drivers/clk/tegra/clk-tegra-super-cclk.c       |  2 +-
+ drivers/clk/tegra/clk-tegra124-emc.c           |  2 +-
+ drivers/clk/tegra/clk-tegra20-emc.c            |  2 +-
+ drivers/clk/tegra/clk-tegra210-emc.c           |  2 +-
+ drivers/clk/uniphier/clk-uniphier-cpugear.c    |  2 +-
+ .../clk/uniphier/clk-uniphier-fixed-factor.c   |  2 +-
+ drivers/clk/uniphier/clk-uniphier-fixed-rate.c |  2 +-
+ drivers/clk/uniphier/clk-uniphier-gate.c       |  2 +-
+ drivers/clk/uniphier/clk-uniphier-mux.c        |  2 +-
+ drivers/clk/ux500/clk-prcc.c                   |  2 +-
+ drivers/clk/ux500/clk-prcmu.c                  |  4 ++--
+ drivers/clk/ux500/clk-sysctrl.c                |  2 +-
+ drivers/clk/versatile/clk-icst.c               |  2 +-
+ drivers/clk/versatile/clk-sp810.c              |  2 +-
+ drivers/clk/versatile/clk-vexpress-osc.c       |  2 +-
+ drivers/clk/x86/clk-pmc-atom.c                 |  2 +-
+ drivers/clk/xilinx/clk-xlnx-clock-wizard.c     |  6 +++---
+ drivers/clk/xilinx/xlnx_vcu.c                  |  2 +-
+ drivers/clk/zynqmp/clk-gate-zynqmp.c           |  2 +-
+ drivers/clk/zynqmp/clk-mux-zynqmp.c            |  2 +-
+ drivers/clk/zynqmp/divider.c                   |  2 +-
+ drivers/clk/zynqmp/pll.c                       |  2 +-
+ 148 files changed, 188 insertions(+), 188 deletions(-)
+
+-- 
+2.43.0
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
