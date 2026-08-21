@@ -1,36 +1,36 @@
-Return-Path: <linux-aspeed+bounces-4781-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4782-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2892CC5DF87
-	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Aug 2026 08:58:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB0D3C5DF8C
+	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Aug 2026 08:58:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hRDjK2591z2yXm;
-	Fri, 21 Aug 2026 18:57:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787302677;
-	cv=none; b=YePuKnfvRREwdiYAZipoGAFF9fg5ufuNxxA0+HIruDhVJUok6tpESP/GEPIf7V8xMrgKsFHjbJZN1hYf6BiYFb37UAsrbRMwgy4xT1S/Mwi1Vv7ta73Qko/kqJk7nFRKlJRBdanGsU/Y2wIWJyVWwhEkXKwEZO2sRzh0/H4enReX1vTDF8tAW2zvspWNrIGlqEq5PPEDyZRKPKA69KPIriHmAcgIqzCoZW37AZuXlpSCVcGsOIBbch5buAl1XxF0q2fRHx37g1j9kU5diTralKuapqKqrRAyM1Dn41ZG4w2UPOAvrAqE5SdL4DhslL4Du1ckiq0ncuTS7dCSZ1Bmpw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hRDjc1n7yz2yjq;
+	Fri, 21 Aug 2026 18:58:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787302692;
+	cv=none; b=i+w8EPHPAnfBS4m/8nUO8ON7ogjNN0UtXPkmPtY6Zgmdl8/6Ig5w8tuChGibV/UUkWTL/Rc8AQjSA7DX+T8b1PHVhTcD94BuLt2g9crMHd6u1DWYPdur4zncGTjPgTYcN1SgmyyXIa4vGWDhUha8BqXPS8mwVmCNghmZMCA0rG8B/mR8mGyL2JPjVx4Hh+5m/BDDmr92KVwXiHejJPlsXINPKQJylLOY+39FxxFRP6b5dAwb4r2wVdBQ1iMVl0jj+tUyhtOn+OAPRcXIggkFjeSBfTtMNUGNhjO7pvqqsKwtfjR7AKS9Wbr3PFainlQ5Q49xng31JC4go4o6O1x0jg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787302677; c=relaxed/relaxed;
-	bh=wS3ioiZuLxiQp6eu7NOe45+zg3ZZWzEZtKMoi4HTz/Y=;
+	t=1787302692; c=relaxed/relaxed;
+	bh=4ahANutkKdTMCFb8GNirNf69UC5A1LB0mCSk6qbK/ko=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=KLDHuKJ/+iIuz+lJ+ln5KJtWhIq7Jq+2cLB/JaEyDPvMWq81WJNTMF1s6z0VTWSQwO23pw6aYUsASlmNZ+hiwWOW1APBMN3z6vBzy1bTG1YNeI/QYcjj7bq8HouU2IYnRjQAT5v+6dfUhAs4QEYagicElOmyhmAlWBgDUKqMeLnRGNrnPbJ/7inRE4CeZQOKJI13YO90az2nStEZoq8a5aZAoqORJoEiivcmb8NVPXXPkitmVGkP+v2jSidQPDT0sYWNZvmdcHdIaQwNhMCXRcnwbzSgY4HBsVBfWWyXMRkVW/+xhLNNN/CkqZEjsyjcbUQzU3sDTlsE5JSzsXRSpw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=iS20gL4eP5WizbbYvmx26BjZ+on+h7VIYLlp8VvRQglMNAe9F010GMttaMZ1U6PWSTynBuc91weVzlas++mq6163sIf8YqpGaABgBAmoDLjUNqTQVHD9zvt/Nv175QAxViOYav8ltqPZQxUgjJmyeX8jR6Y63aRq5S6ltCU5DjLAzsKNMvmtD2izLf06282sFtulHCM9Vmj/GMlaZEyAEI0mSMjxFvE2xt4US78QtJi0D8hhfhqLp0h9P0pmogE+y83ZE0vzgXPZpVO2wwlcBB4Uhb/ORxE9PP5BviVtTg/qt3lSiqMtwyIM2Hoyn1jvPV0RgE9pD81EGlHvUdgehg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRDjJ1zc6z2yYs;
-	Fri, 21 Aug 2026 18:57:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRDjb2YVZz2yjs;
+	Fri, 21 Aug 2026 18:58:11 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id D367743B97;
-	Fri, 21 Aug 2026 08:57:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E73351F000E9;
-	Fri, 21 Aug 2026 08:57:38 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 3EB8360A7E;
+	Fri, 21 Aug 2026 08:58:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 32CD21F00A3A;
+	Fri, 21 Aug 2026 08:57:54 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Ryan Chen <ryan_chen@aspeedtech.com>,
 	Joel Stanley <joel@jms.id.au>,
@@ -110,9 +110,9 @@ Cc: linux-clk@vger.kernel.org,
 	linux-tegra@vger.kernel.org,
 	linux-mediatek@lists.infradead.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 14/45] clk: ingenic: Make sure clk_init_data is fully initialized
-Date: Fri, 21 Aug 2026 10:53:24 +0200
-Message-ID: <e3a8b277773f46eb200f3c4bac98ee380f3a24bc.1787239813.git.geert+renesas@glider.be>
+Subject: [PATCH 15/45] clk: keystone: Make sure clk_init_data is fully initialized
+Date: Fri, 21 Aug 2026 10:53:25 +0200
+Message-ID: <a431874631da9e5843af0a00dcca70002ffa2c0f.1787239813.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1787239813.git.geert+renesas@glider.be>
 References: <cover.1787239813.git.geert+renesas@glider.be>
@@ -146,23 +146,50 @@ Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
 Compile-tested only.
 ---
- drivers/clk/ingenic/cgu.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/clk/keystone/gate.c       | 2 +-
+ drivers/clk/keystone/pll.c        | 2 +-
+ drivers/clk/keystone/syscon-clk.c | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/clk/ingenic/cgu.c b/drivers/clk/ingenic/cgu.c
-index 41e4c69131bd6ec7..ad223aa20e8db5a5 100644
---- a/drivers/clk/ingenic/cgu.c
-+++ b/drivers/clk/ingenic/cgu.c
-@@ -644,8 +644,8 @@ static const struct clk_ops ingenic_clk_ops = {
- static int ingenic_register_clock(struct ingenic_cgu *cgu, unsigned idx)
+diff --git a/drivers/clk/keystone/gate.c b/drivers/clk/keystone/gate.c
+index 03e854f10fd98afc..e83e3d4c7d67a1ac 100644
+--- a/drivers/clk/keystone/gate.c
++++ b/drivers/clk/keystone/gate.c
+@@ -164,7 +164,7 @@ static struct clk *clk_register_psc(struct device *dev,
+ 			struct clk_psc_data *psc_data,
+ 			spinlock_t *lock)
  {
- 	const struct ingenic_cgu_clk_info *clk_info = &cgu->clock_info[idx];
--	struct clk_init_data clk_init;
- 	struct ingenic_clk *ingenic_clk = NULL;
-+	struct clk_init_data clk_init = {};
- 	struct clk *clk, *parent;
- 	const char *parent_names[4];
- 	unsigned caps, i, num_possible;
+-	struct clk_init_data init;
++	struct clk_init_data init = {};
+ 	struct clk_psc *psc;
+ 	struct clk *clk;
+ 
+diff --git a/drivers/clk/keystone/pll.c b/drivers/clk/keystone/pll.c
+index ed197ee0cc88f8e5..020d5f4e9ed64119 100644
+--- a/drivers/clk/keystone/pll.c
++++ b/drivers/clk/keystone/pll.c
+@@ -122,7 +122,7 @@ static struct clk *clk_register_pll(struct device *dev,
+ 			const char *parent_name,
+ 			struct clk_pll_data *pll_data)
+ {
+-	struct clk_init_data init;
++	struct clk_init_data init = {};
+ 	struct clk_pll *pll;
+ 	struct clk *clk;
+ 
+diff --git a/drivers/clk/keystone/syscon-clk.c b/drivers/clk/keystone/syscon-clk.c
+index ecf180a7949c9345..338174be41215fe9 100644
+--- a/drivers/clk/keystone/syscon-clk.c
++++ b/drivers/clk/keystone/syscon-clk.c
+@@ -67,7 +67,7 @@ static struct clk_hw
+ 			     const struct ti_syscon_gate_clk_data *data)
+ {
+ 	struct ti_syscon_gate_clk_priv *priv;
+-	struct clk_init_data init;
++	struct clk_init_data init = {};
+ 	char *name = NULL;
+ 	int ret;
+ 
 -- 
 2.43.0
 
