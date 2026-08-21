@@ -1,22 +1,22 @@
-Return-Path: <linux-aspeed+bounces-4778-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4779-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0BE6CC5DF7D
-	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Aug 2026 08:57:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31FA9C5DF7D
+	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Aug 2026 08:57:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hRDhR3whlz2ySJ;
-	Fri, 21 Aug 2026 18:57:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hRDhk34wVz2yf0;
+	Fri, 21 Aug 2026 18:57:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787302631;
-	cv=none; b=KBpMTDdIaY0nHfIXXAd+2EVDt0uUAu+1BUFvhAtNYHInFYRu6Rw0I2qDb0zAl3p9DGr75E8Fzaemcm87vjKLXqRr+LkTxIzSNfS9G1mf9V1oFQAMQj28uHxBotFXMfRq/M5zvTeTnPZ4F9dHuMUkLhGggf4lh4q+lOHoX/z6iFZfshRdqshVwCrriaqCzD0b+z3Ys9O5V9IJZ4U4kesWM+cNA4OKqcrzRfQ7rjBW2o7jyiw8HfH2PMeXbzQsY12/87dcitDXDz1uRnnUMPCiM36cAyiNTW2JwMAnxqQZgJu3lvnMi2R8W8BIY316lu+PrPIycAzvIBvmNXgEhmQ66w==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787302646;
+	cv=none; b=Wa43rW9sCN/FHyx5DD/RsQ/oJ9FtzCTIemuesyzOCSZZKnK3BRoxIPqkB5reW+WvkJLHyZL5zOcvq8QPM9Nk2n91klcSMP8IsVPwymA4T7yx050VHmjekC/PQ2DPtYH5ne+tagsi2BHTqe61GXaI3sBv7FQStDJXd/1RACrSmYvM5qxxegbHXtJPA8StFYryNwhSdq6CA/I2C3d2XeMrZ6Fr8IFFBJFjFf6aqcUZdpd48PsLswhghbVV6mx2zlm5GLTF2298N+pD8JUyBiXTKyKmZCv/EbIXK27QXhlFG1l5vlJMNwY+wuOYqCSPL8y23j9psoAyz+7NbnbdyVhi5A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787302631; c=relaxed/relaxed;
-	bh=Bk5GXW1DfINuzC0uMaEplrh3tvMFCiyq0/LQwpMggl0=;
+	t=1787302646; c=relaxed/relaxed;
+	bh=hIHDTurKhrl/9rra11H+BxL+3S/r2r2zOmNm2py4nZ0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=IidqsqB0LWwl5VeonGKLrolGIq36tS3+giLIQlriwc4EJeJQi2m/7oSBSCTPogZtPcYHVHrfBC/0AdQfd4CJQoLK6JFFIOwQ1MDqMuq78/VupCS7OK/yLj4sUPhnx/h4GTsux0f5ikKoid4XUfc1bzKZqvNfbxwSXyloi0cN4b0+Fj4zniIF+fTOObzlPJV6VkWHcHV3l6it1BneKw6m3Ytw/KO8W4QLwg1paek0p+mcKJqf4WrYodYYcbWpMfHmPs3ff19vwpmNUkGAd0fRKMrm87UrYYoTpd5XQ51+NnUxJXRTDpMusR6mdIDfrWf+SrqUxjKBW6lcWbVdjbS8Lg==
+	 MIME-Version; b=Mi720XWEnGJn/NAjx2FEtup2TcLaV/F6gD7fsyXD9pfppI2Gja9wMGph7zOv/NmlhLric4VEMhAG1xQmDokQTh17Xon5KcIXoQejB/3LVScHmJeRy9vvNTJGhyVQwjbe+ZoUkabslrI8sSAAhKXvsan6nicITBTYiOMdo6P9LhjXuv2CV1k4cZDVU73hfHtVyt9wjfMN9j6e5qTGhkF3NubPh1BYfPs1eqS6MXvcbH6kv1WqH9JMwsXr9lCQ+areV9mtl+4KvrYPI0Zrg2o81ZSVv//73QicXcZDKxt1YCe0GAKwndQBKyEUznspeArzXQJT+bc667L/7MjVoxPc8Q==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
@@ -24,13 +24,13 @@ Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRDhQ4nLVz2yVP;
-	Fri, 21 Aug 2026 18:57:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRDhj433qz2yYs;
+	Fri, 21 Aug 2026 18:57:25 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 663966187B;
+	by tor.source.kernel.org (Postfix) with ESMTP id 9898660A7A;
+	Fri, 21 Aug 2026 08:57:23 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8E6C41F000E9;
 	Fri, 21 Aug 2026 08:57:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 706AD1F00A3A;
-	Fri, 21 Aug 2026 08:56:53 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Ryan Chen <ryan_chen@aspeedtech.com>,
 	Joel Stanley <joel@jms.id.au>,
@@ -110,9 +110,9 @@ Cc: linux-clk@vger.kernel.org,
 	linux-tegra@vger.kernel.org,
 	linux-mediatek@lists.infradead.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 11/45] clk: highbank: Make sure clk_init_data is fully initialized
-Date: Fri, 21 Aug 2026 10:53:21 +0200
-Message-ID: <21a8ecd80d87eb4fbea3a098957ccf8450299efd.1787239813.git.geert+renesas@glider.be>
+Subject: [PATCH 12/45] clk: hisilicon: Make sure clk_init_data is fully initialized
+Date: Fri, 21 Aug 2026 10:53:22 +0200
+Message-ID: <04ef5b163e1ae63ffd6b568d3544c482b43f347f.1787239813.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1787239813.git.geert+renesas@glider.be>
 References: <cover.1787239813.git.geert+renesas@glider.be>
@@ -146,22 +146,112 @@ Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
 Compile-tested only.
 ---
- drivers/clk/clk-highbank.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/clk/hisilicon/clk-hi3559a.c       | 2 +-
+ drivers/clk/hisilicon/clk-hi3620.c        | 2 +-
+ drivers/clk/hisilicon/clk-hi6220-stub.c   | 2 +-
+ drivers/clk/hisilicon/clk-hisi-phase.c    | 2 +-
+ drivers/clk/hisilicon/clk-hix5hd2.c       | 2 +-
+ drivers/clk/hisilicon/clkdivider-hi6220.c | 2 +-
+ drivers/clk/hisilicon/clkgate-separated.c | 2 +-
+ 7 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/clk/clk-highbank.c b/drivers/clk/clk-highbank.c
-index e9b177811dfc2ced..61c23199763508ea 100644
---- a/drivers/clk/clk-highbank.c
-+++ b/drivers/clk/clk-highbank.c
-@@ -269,7 +269,7 @@ static void __init hb_clk_init(struct device_node *node, const struct clk_ops *o
- 	struct hb_clk *hb_clk;
- 	const char *clk_name = node->name;
- 	const char *parent_name;
+diff --git a/drivers/clk/hisilicon/clk-hi3559a.c b/drivers/clk/hisilicon/clk-hi3559a.c
+index f297fb25c512a322..fea6fb9e98f59a86 100644
+--- a/drivers/clk/hisilicon/clk-hi3559a.c
++++ b/drivers/clk/hisilicon/clk-hi3559a.c
+@@ -456,8 +456,8 @@ static void hisi_clk_register_pll(struct hi3559av100_pll_clock *clks,
+ {
+ 	void __iomem *base = data->base;
+ 	struct hi3559av100_clk_pll *p_clk = NULL;
++	struct clk_init_data init = {};
+ 	struct clk *clk = NULL;
+-	struct clk_init_data init;
+ 	int i;
+ 
+ 	p_clk = devm_kcalloc(dev, nums, sizeof(*p_clk), GFP_KERNEL);
+diff --git a/drivers/clk/hisilicon/clk-hi3620.c b/drivers/clk/hisilicon/clk-hi3620.c
+index 8dcad74e679aa462..a2c4637eaa9880d5 100644
+--- a/drivers/clk/hisilicon/clk-hi3620.c
++++ b/drivers/clk/hisilicon/clk-hi3620.c
+@@ -410,9 +410,9 @@ static const struct clk_ops clk_mmc_ops = {
+ static struct clk *hisi_register_clk_mmc(struct hisi_mmc_clock *mmc_clk,
+ 			void __iomem *base, struct device_node *np)
+ {
++	struct clk_init_data init = {};
+ 	struct clk_mmc *mclk;
+ 	struct clk *clk;
+-	struct clk_init_data init;
+ 
+ 	mclk = kzalloc_obj(*mclk);
+ 	if (!mclk)
+diff --git a/drivers/clk/hisilicon/clk-hi6220-stub.c b/drivers/clk/hisilicon/clk-hi6220-stub.c
+index bf99cfafafa0133d..a70544d2bdb9a805 100644
+--- a/drivers/clk/hisilicon/clk-hi6220-stub.c
++++ b/drivers/clk/hisilicon/clk-hi6220-stub.c
+@@ -195,7 +195,7 @@ static const struct clk_ops hi6220_stub_clk_ops = {
+ static int hi6220_stub_clk_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
 -	struct clk_init_data init;
 +	struct clk_init_data init = {};
- 	struct device_node *srnp;
- 	int rc;
+ 	struct hi6220_stub_clk *stub_clk;
+ 	struct clk *clk;
+ 	struct device_node *np = pdev->dev.of_node;
+diff --git a/drivers/clk/hisilicon/clk-hisi-phase.c b/drivers/clk/hisilicon/clk-hisi-phase.c
+index ba6afad66a2b0c25..d8e555d9728de9ad 100644
+--- a/drivers/clk/hisilicon/clk-hisi-phase.c
++++ b/drivers/clk/hisilicon/clk-hisi-phase.c
+@@ -94,8 +94,8 @@ struct clk *clk_register_hisi_phase(struct device *dev,
+ 		const struct hisi_phase_clock *clks,
+ 		void __iomem *base, spinlock_t *lock)
+ {
++	struct clk_init_data init = {};
+ 	struct clk_hisi_phase *phase;
+-	struct clk_init_data init;
  
+ 	phase = devm_kzalloc(dev, sizeof(struct clk_hisi_phase), GFP_KERNEL);
+ 	if (!phase)
+diff --git a/drivers/clk/hisilicon/clk-hix5hd2.c b/drivers/clk/hisilicon/clk-hix5hd2.c
+index 57db6fab43aacd41..4b7ebebfac4be608 100644
+--- a/drivers/clk/hisilicon/clk-hix5hd2.c
++++ b/drivers/clk/hisilicon/clk-hix5hd2.c
+@@ -258,8 +258,8 @@ hix5hd2_clk_register_complex(struct hix5hd2_complex_clock *clks, int nums,
+ 
+ 	for (i = 0; i < nums; i++) {
+ 		struct hix5hd2_clk_complex *p_clk;
++		struct clk_init_data init = {};
+ 		struct clk *clk;
+-		struct clk_init_data init;
+ 
+ 		p_clk = kzalloc_obj(*p_clk);
+ 		if (!p_clk)
+diff --git a/drivers/clk/hisilicon/clkdivider-hi6220.c b/drivers/clk/hisilicon/clkdivider-hi6220.c
+index 20a337383a1e1fea..cc53d0a33e3c4e92 100644
+--- a/drivers/clk/hisilicon/clkdivider-hi6220.c
++++ b/drivers/clk/hisilicon/clkdivider-hi6220.c
+@@ -103,7 +103,7 @@ struct clk *hi6220_register_clkdiv(struct device *dev, const char *name,
+ {
+ 	struct hi6220_clk_divider *div;
+ 	struct clk *clk;
+-	struct clk_init_data init;
++	struct clk_init_data init = {};
+ 	struct clk_div_table *table;
+ 	u32 max_div, min_div;
+ 	int i;
+diff --git a/drivers/clk/hisilicon/clkgate-separated.c b/drivers/clk/hisilicon/clkgate-separated.c
+index 199303157ebd84da..e02d6bb5ada79a3c 100644
+--- a/drivers/clk/hisilicon/clkgate-separated.c
++++ b/drivers/clk/hisilicon/clkgate-separated.c
+@@ -87,8 +87,8 @@ struct clk *hisi_register_clkgate_sep(struct device *dev, const char *name,
+ 				      u8 clk_gate_flags, spinlock_t *lock)
+ {
+ 	struct clkgate_separated *sclk;
++	struct clk_init_data init = {};
+ 	struct clk *clk;
+-	struct clk_init_data init;
+ 
+ 	sclk = kzalloc_obj(*sclk);
+ 	if (!sclk)
 -- 
 2.43.0
 
