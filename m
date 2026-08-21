@@ -1,36 +1,36 @@
-Return-Path: <linux-aspeed+bounces-4770-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4771-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1F843C5DF8C
-	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Aug 2026 08:55:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19D0DC5DF87
+	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Aug 2026 08:55:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hRDf52Xh3z2yDD;
-	Fri, 21 Aug 2026 18:55:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787302509;
-	cv=none; b=hCHXxX73g1m645NOIcJJ40Adz/5Sjng/j40j1ZYkT5jVcVnq/atNu4QRHUV27bU4ntCx1wJ2+UnisN42EvTZ6kdkN4t++w7r9FNvswBLZZgmFjYa5AaFHJNLk46+vEruL9TwO8flxl3B+Rcrj36ExnoFHOJKvbNSFUeA0CZVSTEagtwoDJjUwYgxh+O6HPoycDVMXanS/+PSUZgqc6W94uUzvs46TKT8w55UXEV64keMImYll/D3WuEHwGIP3AawqoyO04xIQwJ2e/NZKvxlyh6oSpmrr3NwF0rU3o/wpFVAEL5h1U6i3nDJjYpaloJjTU3JqYr0FBvlLm6W6g2R1A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hRDfP0R3Fz2xyh;
+	Fri, 21 Aug 2026 18:55:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787302525;
+	cv=none; b=b1MlIoWRYRz96TyaLfWOl8B1mWiqAzizgDRmWWJZ6pgBmHpWhcOR+savstrwlrYC6XpR+v+CclhMsxiAc+zWGm2klrGbg8fzviu4udLQAbXnKnHTrTUVmW97IUbJK/cZRA1kFvnixkjdg4NgWCspqlzQUw6HJ6itT152onppDQHjk1UDjBJEB5JHwMZTONKc8NUyuZPIhHuK4s1HR4W8deQF8sw98cQvMG5hFlf0esFNrjjjSNmj9xyxBvqSCjMxUrGtJ7t4PkID3SwYjfWOjY44Y5eqyY1vFpZnlEgOw+bdX2h205POwIaNMOr7+7RRvhQt9YvKANNb6tObF7nQXw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787302509; c=relaxed/relaxed;
-	bh=QD0U9xK1rC/Vkp4rzBGD7TSrjwEYAxQIFW/CXuEcbag=;
+	t=1787302525; c=relaxed/relaxed;
+	bh=/x6fJX9wdapsSuYOG/DAqgNYAs4vDEXC4k1wR1h3QdM=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=cW6RX52r/hb3S92y5hSWldfZMLb7CgTrN1hfwGdaJcCvmKiNmRXh3J+w2eDl5XiP8tVTwYOyGZbbB2M62wqRDzy1YHXQcNXVct6QPWXPAiWcNqMyr4RypRDggAYeMB9W1cvPGKF2p63kdGJD1imPY1orMYpj49BRMtpx6/vUoHzsib0ANoxibnghWD+8OihjgKPVWjwl/rufu2EqRfLgSmO1GwB1nylv4SYRe8RmylS0ZOOuti4CkYxSkjAzos5XMJm36pBlICf1SOInSCsINmZIj2/HzT6LpP+ZOmPjGwssK4SLOK5x+tAeCDb/67Kd21z03hmTVcmzGVZXzo6G/w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=XLwumY77nRsp4R2YfVwMaSj4jFJewJSMNct59Jn27Sf2bh4+bOkfgOO2kEfG8FRCk6di6CNlATaCsZnPkfDqAWmA9aK0qf8hlLRXPN18ms7MssyYQzDHdUpDjbY2wIK6b4Yhqye/3VSPV7a+8HO2yjruKzWPhR5UhB3nLTBlk/wn06g+yM+RxIJgBVSJr93uqbteTw6mOjVf13yD4MI0Q7BCVLJhBpqbeSXjuDTfSll5XZnjbw/6SsIiMHpaheDqGXuQVCwXGsQyjo9K4S3TBs6ii794wBzUty9aSok7BHeCc9zOM19OFa1mfrZLxKDxDcKPcQVLjawxrJvSUncQgA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRDf42xhNz2xWt;
-	Fri, 21 Aug 2026 18:55:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRDfN1Mp6z2xWt;
+	Fri, 21 Aug 2026 18:55:24 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 781F361879;
+	by tor.source.kernel.org (Postfix) with ESMTP id B859261838;
+	Fri, 21 Aug 2026 08:55:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A05811F000E9;
 	Fri, 21 Aug 2026 08:55:06 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 64BD61F00A3A;
-	Fri, 21 Aug 2026 08:54:51 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Ryan Chen <ryan_chen@aspeedtech.com>,
 	Joel Stanley <joel@jms.id.au>,
@@ -110,9 +110,9 @@ Cc: linux-clk@vger.kernel.org,
 	linux-tegra@vger.kernel.org,
 	linux-mediatek@lists.infradead.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 03/45] clk: bcm: iproc: Make sure clk_init_data is fully initialized
-Date: Fri, 21 Aug 2026 10:53:13 +0200
-Message-ID: <28233748ddbdefe6a2eb18127d5cd5f72984ab62.1787239813.git.geert+renesas@glider.be>
+Subject: [PATCH 04/45] clk: berlin: Make sure clk_init_data is fully initialized
+Date: Fri, 21 Aug 2026 10:53:14 +0200
+Message-ID: <cb9b1a8fe20577c2519f40f41dbb3ded2aa67fba.1787239813.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1787239813.git.geert+renesas@glider.be>
 References: <cover.1787239813.git.geert+renesas@glider.be>
@@ -146,50 +146,46 @@ Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
 Compile-tested only.
 ---
- drivers/clk/bcm/clk-iproc-armpll.c | 2 +-
- drivers/clk/bcm/clk-iproc-asiu.c   | 2 +-
- drivers/clk/bcm/clk-iproc-pll.c    | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/clk/berlin/berlin2-avpll.c | 4 ++--
+ drivers/clk/berlin/berlin2-pll.c   | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/clk/bcm/clk-iproc-armpll.c b/drivers/clk/bcm/clk-iproc-armpll.c
-index 8485428fe49ce667..aca53e2bda010cca 100644
---- a/drivers/clk/bcm/clk-iproc-armpll.c
-+++ b/drivers/clk/bcm/clk-iproc-armpll.c
-@@ -235,7 +235,7 @@ void __init iproc_armpll_setup(struct device_node *node)
+diff --git a/drivers/clk/berlin/berlin2-avpll.c b/drivers/clk/berlin/berlin2-avpll.c
+index c801d42397bf06b2..33a3cc16b0cc5f4b 100644
+--- a/drivers/clk/berlin/berlin2-avpll.c
++++ b/drivers/clk/berlin/berlin2-avpll.c
+@@ -181,8 +181,8 @@ int __init berlin2_avpll_vco_register(void __iomem *base,
+ 			       const char *name, const char *parent_name,
+ 			       u8 vco_flags, unsigned long flags)
  {
- 	int ret;
- 	struct iproc_arm_pll *pll;
++	struct clk_init_data init = {};
+ 	struct berlin2_avpll_vco *vco;
+-	struct clk_init_data init;
+ 
+ 	vco = kzalloc_obj(*vco);
+ 	if (!vco)
+@@ -358,7 +358,7 @@ int __init berlin2_avpll_channel_register(void __iomem *base,
+ 			   u8 ch_flags, unsigned long flags)
+ {
+ 	struct berlin2_avpll_channel *ch;
 -	struct clk_init_data init;
 +	struct clk_init_data init = {};
- 	const char *parent_name;
+ 
+ 	ch = kzalloc_obj(*ch);
+ 	if (!ch)
+diff --git a/drivers/clk/berlin/berlin2-pll.c b/drivers/clk/berlin/berlin2-pll.c
+index d0ec3d0bcf3e57ea..1c4203736ecf4ff7 100644
+--- a/drivers/clk/berlin/berlin2-pll.c
++++ b/drivers/clk/berlin/berlin2-pll.c
+@@ -78,7 +78,7 @@ berlin2_pll_register(const struct berlin2_pll_map *map,
+ 		     void __iomem *base, const char *name,
+ 		     const char *parent_name, unsigned long flags)
+ {
+-	struct clk_init_data init;
++	struct clk_init_data init = {};
+ 	struct berlin2_pll *pll;
  
  	pll = kzalloc_obj(*pll);
-diff --git a/drivers/clk/bcm/clk-iproc-asiu.c b/drivers/clk/bcm/clk-iproc-asiu.c
-index 56a8132279814d03..86c0100934f81bd5 100644
---- a/drivers/clk/bcm/clk-iproc-asiu.c
-+++ b/drivers/clk/bcm/clk-iproc-asiu.c
-@@ -206,7 +206,7 @@ void __init iproc_asiu_setup(struct device_node *node,
- 		goto err_iomap_gate;
- 
- 	for (i = 0; i < num_clks; i++) {
--		struct clk_init_data init;
-+		struct clk_init_data init = {};
- 		const char *parent_name;
- 		struct iproc_asiu_clk *asiu_clk;
- 		const char *clk_name;
-diff --git a/drivers/clk/bcm/clk-iproc-pll.c b/drivers/clk/bcm/clk-iproc-pll.c
-index d708f770971ceed1..4354aac2d2707d71 100644
---- a/drivers/clk/bcm/clk-iproc-pll.c
-+++ b/drivers/clk/bcm/clk-iproc-pll.c
-@@ -722,7 +722,7 @@ void iproc_pll_clk_setup(struct device_node *node,
- 	int i, ret;
- 	struct iproc_pll *pll;
- 	struct iproc_clk *iclk;
--	struct clk_init_data init;
-+	struct clk_init_data init = {};
- 	const char *parent_name;
- 	struct iproc_clk *iclk_array;
- 	struct clk_hw_onecell_data *clk_data;
 -- 
 2.43.0
 
