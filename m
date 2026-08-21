@@ -1,36 +1,36 @@
-Return-Path: <linux-aspeed+bounces-4806-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4807-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E236C5DF87
-	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Aug 2026 09:04:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 66E92C5DF87
+	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Aug 2026 09:04:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hRDrd4R58z3bqM;
-	Fri, 21 Aug 2026 19:04:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787303057;
-	cv=none; b=RIob09Ge39cFMm5jfaYRdUHtYVAZtvwTt655z28qiuxG9pOkdr7JqNvNpygHxYOg0tKJcXW5TLVW7PHbAtaUGB9uN2sV+KuWwQZyVaUMiiGrHKGFriZH2Xo+6b1zdm9tIwVz4WO0vbO0gyXYdNpkAoh9r+R57jPhC2HA8x0q55OIhYZT/8Hr++Tpfp5kjw3xSjJCKYMbh0aKD4hO2aGdkJP+FRFtxrag5veKksZL0DBQ66hPr5Fy1lmDLD+AqPrNUVsF5/ADcFqUKuG5WDLiAnlAxMKoMk3m2+X5JjW/OmRbMYeODrZlpHoG9AmbGclbp3IgVODazKGN/Rd8ap0rJg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hRDrw0Y7gz3bqq;
+	Fri, 21 Aug 2026 19:04:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787303072;
+	cv=none; b=od6y+ZTlwlwQ0cdOzsSlU1lRtv6J18rijpCbapceyYPjVgi4nW3gJB+qDUdz5OPUIb9xJHaJmEGh6yOoDd0RvqrI1N3TwTpT3HODEDIsK64q0U9YSB49cnyOMAloJV2IZcyjgcxlZhKyqndBpFhyobgbWAoWnnmjvAVLI3d6zfT15kXEWhqFyavGvkymIAi9qicG8+Tzn5u1hGv7AlD+cIped0HsSRKuALdo+JrVhNieWTH1d+RbV7BHpbxu8mP70whyFmeS4e96TjHcq/8BYmnRWxrTod9lVXowGcTYhowi5uBqlFuBFnqjf8IIqfta/gunv4T/9lppIS+2vkmJog==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787303057; c=relaxed/relaxed;
-	bh=Usy3PgSBIh1QSQ6laEpUYZGvqSHbiAzqMCe9pFrPVU0=;
+	t=1787303072; c=relaxed/relaxed;
+	bh=UjAbSupE/I3gjkA/r+CxggJI0p9J85Zn8zuFFXwGXVU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=g4GbDA/FeG1NeUCJdLqbiCBQ5EiWt9YG8xaDmq84G60BI6jhIhRem8dN2mfifFf7M/nsdagbh5q3pdKSpRtzomOwdyYpd23txEGXBFQfjM0b/y9fVugGqFM0n4kOxzMPExUZ+auMnD8kDL2bZ9DWW7zy4ii4c5z3qANXSHlc69IbTx9EDVyIahgPCBMkRr0mzN8Q+Mj2KmSy3ekinLId1QRZN6i5Wn4/hrQxdvscgzBxU+IT+PBu0YV6P0HSkofx32uajudY601409321jV7ocj2eEXQSJSonBv9MuGvS+qdJN8GDF3JlcPwkNU/t1dDQDBIXYs9EbSXvUmC09DWNA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=k15hDv5hHEOU5JW2C3+SPb/Koz6yob8HbASuZaWIaPSnxR8hIbJ3tsmsthfV/joCY0xzGUwvZ9Vai+NVufGgvVK1NCFCEmVJuMWr3fgDL8vFjD8E4nY5gee7u10Q3ny5sT2MYPAd0necTy02m2hBHHc4RZ3R+4HLYeMzYqpAhzCYw+agCdpmQf96iw/ri5Aro0tGaKIqHh01DxwV0kZBakwZCgHTkFcB8v7AiapxNPfvG6Umxj5pn7B8ToH24Av6It4zlJABZEa04Aewcqx60e2c7MFVDh75v+i/DiOeI4lrVBMCBJK2dBw4v2du4ujFH9zkwGFn+IiGPhgAPgk8Fg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRDrc5LMlz30gX;
-	Fri, 21 Aug 2026 19:04:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRDrv1wrtz3bpx;
+	Fri, 21 Aug 2026 19:04:31 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id C3B4C618D2;
+	by sea.source.kernel.org (Postfix) with ESMTP id AADB745142;
+	Fri, 21 Aug 2026 09:04:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EBE701F000E9;
 	Fri, 21 Aug 2026 09:04:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D49841F00A3E;
-	Fri, 21 Aug 2026 09:03:59 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Ryan Chen <ryan_chen@aspeedtech.com>,
 	Joel Stanley <joel@jms.id.au>,
@@ -110,9 +110,9 @@ Cc: linux-clk@vger.kernel.org,
 	linux-tegra@vger.kernel.org,
 	linux-mediatek@lists.infradead.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 39/45] clk: ux500: Make sure clk_init_data is fully initialized
-Date: Fri, 21 Aug 2026 10:53:49 +0200
-Message-ID: <bd84df92640a05a1a73a8bc775b2d50568a9d0ec.1787239813.git.geert+renesas@glider.be>
+Subject: [PATCH 40/45] clk: versatile: Make sure clk_init_data is fully initialized
+Date: Fri, 21 Aug 2026 10:53:50 +0200
+Message-ID: <7c480e73222bb51982fb82dc0cc6cd503f2e8b92.1787239813.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1787239813.git.geert+renesas@glider.be>
 References: <cover.1787239813.git.geert+renesas@glider.be>
@@ -146,63 +146,51 @@ Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
 Compile-tested only.
 ---
- drivers/clk/ux500/clk-prcc.c    | 2 +-
- drivers/clk/ux500/clk-prcmu.c   | 4 ++--
- drivers/clk/ux500/clk-sysctrl.c | 2 +-
- 3 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/clk/versatile/clk-icst.c         | 2 +-
+ drivers/clk/versatile/clk-sp810.c        | 2 +-
+ drivers/clk/versatile/clk-vexpress-osc.c | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/clk/ux500/clk-prcc.c b/drivers/clk/ux500/clk-prcc.c
-index dce235df2576dfb2..dde72d2fd0ac67ae 100644
---- a/drivers/clk/ux500/clk-prcc.c
-+++ b/drivers/clk/ux500/clk-prcc.c
-@@ -97,8 +97,8 @@ static struct clk *clk_reg_prcc(const char *name,
- 				unsigned long flags,
- 				const struct clk_ops *clk_prcc_ops)
+diff --git a/drivers/clk/versatile/clk-icst.c b/drivers/clk/versatile/clk-icst.c
+index 6bd3db54dd229d28..97a1bfd6cf0ed995 100644
+--- a/drivers/clk/versatile/clk-icst.c
++++ b/drivers/clk/versatile/clk-icst.c
+@@ -360,8 +360,8 @@ struct clk *icst_clk_setup(struct device *dev,
  {
-+	struct clk_init_data clk_prcc_init = {};
- 	struct clk_prcc *clk;
--	struct clk_init_data clk_prcc_init;
- 	struct clk *clk_reg;
+ 	struct clk *clk;
+ 	struct clk_icst *icst;
+-	struct clk_init_data init;
+ 	struct icst_params *pclone;
++	struct clk_init_data init = {};
  
- 	if (!name) {
-diff --git a/drivers/clk/ux500/clk-prcmu.c b/drivers/clk/ux500/clk-prcmu.c
-index ac96c46bd1bbf76b..d89f3b634f8bbd26 100644
---- a/drivers/clk/ux500/clk-prcmu.c
-+++ b/drivers/clk/ux500/clk-prcmu.c
-@@ -200,8 +200,8 @@ static struct clk_hw *clk_reg_prcmu(const char *name,
- 				    unsigned long flags,
- 				    const struct clk_ops *clk_prcmu_ops)
- {
-+	struct clk_init_data clk_prcmu_init = {};
- 	struct clk_prcmu *clk;
--	struct clk_init_data clk_prcmu_init;
- 	int ret;
- 
- 	if (!name) {
-@@ -357,8 +357,8 @@ struct clk_hw *clk_reg_prcmu_clkout(const char *name,
- 				    u8 source, u8 divider)
- 
- {
-+	struct clk_init_data clk_prcmu_clkout_init = {};
- 	struct clk_prcmu_clkout *clk;
--	struct clk_init_data clk_prcmu_clkout_init;
- 	u8 clkout_id;
- 	int ret;
- 
-diff --git a/drivers/clk/ux500/clk-sysctrl.c b/drivers/clk/ux500/clk-sysctrl.c
-index ba3258c88d28e101..2127a949e56ccf27 100644
---- a/drivers/clk/ux500/clk-sysctrl.c
-+++ b/drivers/clk/ux500/clk-sysctrl.c
-@@ -127,8 +127,8 @@ static struct clk *clk_reg_sysctrl(struct device *dev,
- 				unsigned long flags,
- 				const struct clk_ops *clk_sysctrl_ops)
- {
-+	struct clk_init_data clk_sysctrl_init = {};
- 	struct clk_sysctrl *clk;
--	struct clk_init_data clk_sysctrl_init;
- 	struct clk *clk_reg;
+ 	icst = kzalloc_obj(*icst);
+ 	if (!icst)
+diff --git a/drivers/clk/versatile/clk-sp810.c b/drivers/clk/versatile/clk-sp810.c
+index b0e69686f7a9a93e..28e5c0cf1fda38e4 100644
+--- a/drivers/clk/versatile/clk-sp810.c
++++ b/drivers/clk/versatile/clk-sp810.c
+@@ -86,7 +86,7 @@ static void __init clk_sp810_of_setup(struct device_node *node)
+ 	const char *parent_names[2];
+ 	int num = ARRAY_SIZE(parent_names);
+ 	char name[12];
+-	struct clk_init_data init;
++	struct clk_init_data init = {};
+ 	static int instance;
  	int i;
+ 	bool deprecated;
+diff --git a/drivers/clk/versatile/clk-vexpress-osc.c b/drivers/clk/versatile/clk-vexpress-osc.c
+index 9adbf5c33bd1cada..72e872ec6b7c9b47 100644
+--- a/drivers/clk/versatile/clk-vexpress-osc.c
++++ b/drivers/clk/versatile/clk-vexpress-osc.c
+@@ -64,7 +64,7 @@ static const struct clk_ops vexpress_osc_ops = {
  
+ static int vexpress_osc_probe(struct platform_device *pdev)
+ {
+-	struct clk_init_data init;
++	struct clk_init_data init = {};
+ 	struct vexpress_osc *osc;
+ 	u32 range[2];
+ 	int ret;
 -- 
 2.43.0
 
