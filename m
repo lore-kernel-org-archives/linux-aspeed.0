@@ -1,36 +1,36 @@
-Return-Path: <linux-aspeed+bounces-4805-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4806-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0E1BC5DF8C
-	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Aug 2026 09:04:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E236C5DF87
+	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Aug 2026 09:04:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hRDrK6fDRz3bnx;
-	Fri, 21 Aug 2026 19:04:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787303041;
-	cv=none; b=gK32g+blcLmtx/M+FI9I5348qXMNoB4fjsVNOW9Wzow9Ai9aDPO4zhYQ2binfbBqTSg7Ban2bcstyQfDpjZcadCT6bNyhMR6oeDz0Z20o9YhVkLiujXhBFr6NFaywCPqrE8AerEpqvhEcM7uKACDlGGfzmd+VAu4Q2Z9CjeGGQme78lI7XN5MTrlGX0iOWzzKJTALKvuzmKbnAQ+MctgfNBznjEl9fZYjwjJfD/uG4PY9WfCv6G9yjmOKZQ/HfagDIZ/rbwUrejA81kryZvyN+uDeIMrhoxcrADR5iOHsekNZbsvu9qr7d2qdiSuOq2IgIjvIQBei6IKK8vQ/Hljcw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hRDrd4R58z3bqM;
+	Fri, 21 Aug 2026 19:04:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787303057;
+	cv=none; b=RIob09Ge39cFMm5jfaYRdUHtYVAZtvwTt655z28qiuxG9pOkdr7JqNvNpygHxYOg0tKJcXW5TLVW7PHbAtaUGB9uN2sV+KuWwQZyVaUMiiGrHKGFriZH2Xo+6b1zdm9tIwVz4WO0vbO0gyXYdNpkAoh9r+R57jPhC2HA8x0q55OIhYZT/8Hr++Tpfp5kjw3xSjJCKYMbh0aKD4hO2aGdkJP+FRFtxrag5veKksZL0DBQ66hPr5Fy1lmDLD+AqPrNUVsF5/ADcFqUKuG5WDLiAnlAxMKoMk3m2+X5JjW/OmRbMYeODrZlpHoG9AmbGclbp3IgVODazKGN/Rd8ap0rJg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787303041; c=relaxed/relaxed;
-	bh=HHw2phGMpilBrCUaA9JhcC9At+jiJ9lpbnVuwcbaeEg=;
+	t=1787303057; c=relaxed/relaxed;
+	bh=Usy3PgSBIh1QSQ6laEpUYZGvqSHbiAzqMCe9pFrPVU0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=lLNyBIQBAfwydShOfZcOHzW1oziz7/OMpJ5t+7Jb0HYGMJfJwnuKYS+TzlfuoNT6XoRIXgbdLURyJ3t85n9a0ErPoucn8yfHb0fuPa5vvjWmclpd8pamSVCrLekkOgHfBr1K1YJ4Cjan2SBLAPqLoLNyR+PqhMxDFt4A3pNAxz38gQXSiNQmvgDbK/5t3uO6PMJvnTrG/liPfmN6DNzTlpfWxRbSrNvbvwgNesTgLD03kAHxD8wnnZwHdoWkPd3sDXj9P7uxVGJLVmY7vDdcHuECZlKpN/X2sFFpyzWeaNgViSgsg5zCRNU1I2y5coL3pVWaHwGHneWyCj7dk0AV7w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=g4GbDA/FeG1NeUCJdLqbiCBQ5EiWt9YG8xaDmq84G60BI6jhIhRem8dN2mfifFf7M/nsdagbh5q3pdKSpRtzomOwdyYpd23txEGXBFQfjM0b/y9fVugGqFM0n4kOxzMPExUZ+auMnD8kDL2bZ9DWW7zy4ii4c5z3qANXSHlc69IbTx9EDVyIahgPCBMkRr0mzN8Q+Mj2KmSy3ekinLId1QRZN6i5Wn4/hrQxdvscgzBxU+IT+PBu0YV6P0HSkofx32uajudY601409321jV7ocj2eEXQSJSonBv9MuGvS+qdJN8GDF3JlcPwkNU/t1dDQDBIXYs9EbSXvUmC09DWNA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRDrK18VQz30B7;
-	Fri, 21 Aug 2026 19:04:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRDrc5LMlz30gX;
+	Fri, 21 Aug 2026 19:04:16 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 815A5402BF;
+	by tor.source.kernel.org (Postfix) with ESMTP id C3B4C618D2;
+	Fri, 21 Aug 2026 09:04:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D49841F00A3E;
 	Fri, 21 Aug 2026 09:03:59 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C869B1F00A3A;
-	Fri, 21 Aug 2026 09:03:44 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Ryan Chen <ryan_chen@aspeedtech.com>,
 	Joel Stanley <joel@jms.id.au>,
@@ -110,9 +110,9 @@ Cc: linux-clk@vger.kernel.org,
 	linux-tegra@vger.kernel.org,
 	linux-mediatek@lists.infradead.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 38/45] clk: uniphier: Make sure clk_init_data is fully initialized
-Date: Fri, 21 Aug 2026 10:53:48 +0200
-Message-ID: <491e41d759cec667d6bcd742673e1fec70b4bc31.1787239813.git.geert+renesas@glider.be>
+Subject: [PATCH 39/45] clk: ux500: Make sure clk_init_data is fully initialized
+Date: Fri, 21 Aug 2026 10:53:49 +0200
+Message-ID: <bd84df92640a05a1a73a8bc775b2d50568a9d0ec.1787239813.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1787239813.git.geert+renesas@glider.be>
 References: <cover.1787239813.git.geert+renesas@glider.be>
@@ -146,82 +146,63 @@ Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
 Compile-tested only.
 ---
- drivers/clk/uniphier/clk-uniphier-cpugear.c      | 2 +-
- drivers/clk/uniphier/clk-uniphier-fixed-factor.c | 2 +-
- drivers/clk/uniphier/clk-uniphier-fixed-rate.c   | 2 +-
- drivers/clk/uniphier/clk-uniphier-gate.c         | 2 +-
- drivers/clk/uniphier/clk-uniphier-mux.c          | 2 +-
- 5 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/clk/ux500/clk-prcc.c    | 2 +-
+ drivers/clk/ux500/clk-prcmu.c   | 4 ++--
+ drivers/clk/ux500/clk-sysctrl.c | 2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/clk/uniphier/clk-uniphier-cpugear.c b/drivers/clk/uniphier/clk-uniphier-cpugear.c
-index a2f01a4da1276903..165c6832b722faa9 100644
---- a/drivers/clk/uniphier/clk-uniphier-cpugear.c
-+++ b/drivers/clk/uniphier/clk-uniphier-cpugear.c
-@@ -79,7 +79,7 @@ struct clk_hw *uniphier_clk_register_cpugear(struct device *dev,
- 				const struct uniphier_clk_cpugear_data *data)
+diff --git a/drivers/clk/ux500/clk-prcc.c b/drivers/clk/ux500/clk-prcc.c
+index dce235df2576dfb2..dde72d2fd0ac67ae 100644
+--- a/drivers/clk/ux500/clk-prcc.c
++++ b/drivers/clk/ux500/clk-prcc.c
+@@ -97,8 +97,8 @@ static struct clk *clk_reg_prcc(const char *name,
+ 				unsigned long flags,
+ 				const struct clk_ops *clk_prcc_ops)
  {
- 	struct uniphier_clk_cpugear *gear;
--	struct clk_init_data init;
-+	struct clk_init_data init = {};
++	struct clk_init_data clk_prcc_init = {};
+ 	struct clk_prcc *clk;
+-	struct clk_init_data clk_prcc_init;
+ 	struct clk *clk_reg;
+ 
+ 	if (!name) {
+diff --git a/drivers/clk/ux500/clk-prcmu.c b/drivers/clk/ux500/clk-prcmu.c
+index ac96c46bd1bbf76b..d89f3b634f8bbd26 100644
+--- a/drivers/clk/ux500/clk-prcmu.c
++++ b/drivers/clk/ux500/clk-prcmu.c
+@@ -200,8 +200,8 @@ static struct clk_hw *clk_reg_prcmu(const char *name,
+ 				    unsigned long flags,
+ 				    const struct clk_ops *clk_prcmu_ops)
+ {
++	struct clk_init_data clk_prcmu_init = {};
+ 	struct clk_prcmu *clk;
+-	struct clk_init_data clk_prcmu_init;
  	int ret;
  
- 	gear = devm_kzalloc(dev, sizeof(*gear), GFP_KERNEL);
-diff --git a/drivers/clk/uniphier/clk-uniphier-fixed-factor.c b/drivers/clk/uniphier/clk-uniphier-fixed-factor.c
-index a6a37a6bca3ab047..c86683fce20549d9 100644
---- a/drivers/clk/uniphier/clk-uniphier-fixed-factor.c
-+++ b/drivers/clk/uniphier/clk-uniphier-fixed-factor.c
-@@ -13,8 +13,8 @@ struct clk_hw *uniphier_clk_register_fixed_factor(struct device *dev,
- 						  const char *name,
- 			const struct uniphier_clk_fixed_factor_data *data)
+ 	if (!name) {
+@@ -357,8 +357,8 @@ struct clk_hw *clk_reg_prcmu_clkout(const char *name,
+ 				    u8 source, u8 divider)
+ 
  {
-+	struct clk_init_data init = {};
- 	struct clk_fixed_factor *fix;
--	struct clk_init_data init;
++	struct clk_init_data clk_prcmu_clkout_init = {};
+ 	struct clk_prcmu_clkout *clk;
+-	struct clk_init_data clk_prcmu_clkout_init;
+ 	u8 clkout_id;
  	int ret;
  
- 	fix = devm_kzalloc(dev, sizeof(*fix), GFP_KERNEL);
-diff --git a/drivers/clk/uniphier/clk-uniphier-fixed-rate.c b/drivers/clk/uniphier/clk-uniphier-fixed-rate.c
-index 3bc55ab75314bf8d..63f49d3bab80bae8 100644
---- a/drivers/clk/uniphier/clk-uniphier-fixed-rate.c
-+++ b/drivers/clk/uniphier/clk-uniphier-fixed-rate.c
-@@ -13,8 +13,8 @@ struct clk_hw *uniphier_clk_register_fixed_rate(struct device *dev,
- 						const char *name,
- 				const struct uniphier_clk_fixed_rate_data *data)
+diff --git a/drivers/clk/ux500/clk-sysctrl.c b/drivers/clk/ux500/clk-sysctrl.c
+index ba3258c88d28e101..2127a949e56ccf27 100644
+--- a/drivers/clk/ux500/clk-sysctrl.c
++++ b/drivers/clk/ux500/clk-sysctrl.c
+@@ -127,8 +127,8 @@ static struct clk *clk_reg_sysctrl(struct device *dev,
+ 				unsigned long flags,
+ 				const struct clk_ops *clk_sysctrl_ops)
  {
-+	struct clk_init_data init = {};
- 	struct clk_fixed_rate *fixed;
--	struct clk_init_data init;
- 	int ret;
++	struct clk_init_data clk_sysctrl_init = {};
+ 	struct clk_sysctrl *clk;
+-	struct clk_init_data clk_sysctrl_init;
+ 	struct clk *clk_reg;
+ 	int i;
  
- 	/* allocate fixed-rate clock */
-diff --git a/drivers/clk/uniphier/clk-uniphier-gate.c b/drivers/clk/uniphier/clk-uniphier-gate.c
-index e58093e79dd7dc23..9f49e6bb6b2042f7 100644
---- a/drivers/clk/uniphier/clk-uniphier-gate.c
-+++ b/drivers/clk/uniphier/clk-uniphier-gate.c
-@@ -61,8 +61,8 @@ struct clk_hw *uniphier_clk_register_gate(struct device *dev,
- 					  const char *name,
- 				const struct uniphier_clk_gate_data *data)
- {
-+	struct clk_init_data init = {};
- 	struct uniphier_clk_gate *gate;
--	struct clk_init_data init;
- 	int ret;
- 
- 	gate = devm_kzalloc(dev, sizeof(*gate), GFP_KERNEL);
-diff --git a/drivers/clk/uniphier/clk-uniphier-mux.c b/drivers/clk/uniphier/clk-uniphier-mux.c
-index 1998e9d4cfc0224a..a63ad4df8e65ebcf 100644
---- a/drivers/clk/uniphier/clk-uniphier-mux.c
-+++ b/drivers/clk/uniphier/clk-uniphier-mux.c
-@@ -58,8 +58,8 @@ struct clk_hw *uniphier_clk_register_mux(struct device *dev,
- 					 const char *name,
- 				const struct uniphier_clk_mux_data *data)
- {
-+	struct clk_init_data init = {};
- 	struct uniphier_clk_mux *mux;
--	struct clk_init_data init;
- 	int ret;
- 
- 	mux = devm_kzalloc(dev, sizeof(*mux), GFP_KERNEL);
 -- 
 2.43.0
 
