@@ -1,36 +1,36 @@
-Return-Path: <linux-aspeed+bounces-4800-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4801-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42B5AC5DF87
-	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Aug 2026 09:02:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2068DC5DF8C
+	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Aug 2026 09:03:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hRDpv3Rslz303K;
-	Fri, 21 Aug 2026 19:02:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787302967;
-	cv=none; b=NdEF9xQUcLRObxQavE/Os6Hwa12NGD+gzn25iLixSCvdbulCDSH06HV6AKHs0UsZbhcIT9aW6nS6lUwDI5ZEZX44+3X2p5Z/VroS+foCySeM2aUCH9pGUsJohl0nonQVa96+k4qOOeIhIHSnreFBWx31fezqrigVtwq+NSwlqKrq/5YNEWmovaWxmujdtR0Wrn1pFKPArFiU2zuD9ssdyE535Y/3BXHEW5fPSL6V3jkxKnp4Qknl97d7ntzD9GD1DsX757VyH7GFb5rBLRWjQgG6fVAAzu+Vg69wbVLE+xIUfQAkWq+bdahkmzpBYxobBN/ptNIhp+2Tn8CoA6XN2w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hRDqB26WWz304l;
+	Fri, 21 Aug 2026 19:03:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787302982;
+	cv=none; b=PBraRxS7jKVuNAhG02mkb6kzgKC/2OVD9OgEevjJNwflzu+0hGy04zs/WTTA0IkpnGVqahAAQinMu+8Lzvs9/b2dxGrlzY/YQxAlxC1fBAh6vriSJTSe5KxaLcBO7s1vJzpsyjAaIVI0shDS81VyDmeAYe394NtdoJ4xS7W+DMq8NBATlu01yZnPkKI+vPB5L4Pa77EX0IaoY++7lDUEalgI1qqgNvBhEJrhHAn4XEQ9elRmRetcbwfegZcR6rmFk89Ubfv6+u9juy2Z2NsnUtb5u6H+Ax4eiEgffdh6OaCj6xNf/Ax/QsnFgs5VzXuYMSzcf2Kui77jMnPosjen/Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787302967; c=relaxed/relaxed;
-	bh=XncYP+BmWd0bM+SFVau3RxfhKReq5yCMsSPg4Vjf4C8=;
+	t=1787302982; c=relaxed/relaxed;
+	bh=6E5fG2+nEik0ay/c+1HINFkbMjG4z3r5bpfH0fvjLhI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=eOiLLVte3qs1NAM/bgn9M9FzgBSBW2cSJHHjUgI5MSeQtsfWM9dINNxNdyd5x+nmfBwKDjCLaDX2LXIqLzJhrf2uC5YvEF8dw4xPW2vokQripmiW7p3GETSd8BNA9JefFkp/lZVUf0pj6GRNO8EZso5W/2JAON3FxV/wdX4Zq/yq90a/GRbKniDsXsd03oUe6FSl7G3+C+Tibg4ftocBNZFxSg0Hu7wvXvHQWYj9zZhToqXS6dIEmmBgSMXQM9hVUta0T8fGwxp6S+FHY5JyAuZQwA2zAw4XgUGmG9mQhOQpco/I1yU6r6cz80ad4FNtKp2OH39mCpvsGzT085ywpQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=cfUVX7S/N+cwuzkWRk4r5tAcc+VXYePLjloF+3Xt8AARPbCmnGm2ZLoQSB1zOHmoQJFueySoK/90GNql/B1erNKxi+ChzbMAk/mRrOF5Czki4pi3Pozd1OL83gvyM/HMf/L9Kj5Cb6CV4iv4fTP6SI8EqaMFsH0ZOpLh2t9kz6wyJr1r0FwyJRwXppt+Ieu1Dywt8K3ZycavEL61vmAUCv3vkZ8OuMPiXlGaJiJILmrhYU3y1MGFfwBksc5Ohw7bdwCtyf+vvzr+EI4vYzmv+PZevU2wLWBLkeE4knLNdL2WYkqV8HSgBFAdEcZlQ6kMnd13rK0h8xvXsJ0NnNsBuQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRDpt3tgfz303F;
-	Fri, 21 Aug 2026 19:02:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRDq92zchz302l;
+	Fri, 21 Aug 2026 19:03:01 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 3266045123;
+	by tor.source.kernel.org (Postfix) with ESMTP id 6B4156189B;
+	Fri, 21 Aug 2026 09:02:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 856551F000E9;
 	Fri, 21 Aug 2026 09:02:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7BCB11F00A3D;
-	Fri, 21 Aug 2026 09:02:29 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Ryan Chen <ryan_chen@aspeedtech.com>,
 	Joel Stanley <joel@jms.id.au>,
@@ -110,9 +110,9 @@ Cc: linux-clk@vger.kernel.org,
 	linux-tegra@vger.kernel.org,
 	linux-mediatek@lists.infradead.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 33/45] clk: spear: Make sure clk_init_data is fully initialized
-Date: Fri, 21 Aug 2026 10:53:43 +0200
-Message-ID: <d4500d249021013d52aa87407f875dc203a251df.1787239813.git.geert+renesas@glider.be>
+Subject: [PATCH 34/45] clk: stm32: Make sure clk_init_data is fully initialized
+Date: Fri, 21 Aug 2026 10:53:44 +0200
+Message-ID: <0b80535e9cfdc96d43169e5023e3a92a8f2252d6.1787239813.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1787239813.git.geert+renesas@glider.be>
 References: <cover.1787239813.git.geert+renesas@glider.be>
@@ -146,65 +146,73 @@ Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
 Compile-tested only.
 ---
- drivers/clk/spear/clk-aux-synth.c  | 2 +-
- drivers/clk/spear/clk-frac-synth.c | 2 +-
- drivers/clk/spear/clk-gpt-synth.c  | 2 +-
- drivers/clk/spear/clk-vco-pll.c    | 2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/clk/clk-stm32f4.c        | 4 ++--
+ drivers/clk/clk-stm32h7.c        | 2 +-
+ drivers/clk/stm32/clk-stm32mp1.c | 4 ++--
+ 3 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/clk/spear/clk-aux-synth.c b/drivers/clk/spear/clk-aux-synth.c
-index 61a8c3d4c1e40d0c..85cfb9b5ec35346c 100644
---- a/drivers/clk/spear/clk-aux-synth.c
-+++ b/drivers/clk/spear/clk-aux-synth.c
-@@ -138,8 +138,8 @@ struct clk *clk_register_aux(const char *aux_name, const char *gate_name,
- 	        const struct aux_clk_masks *masks, struct aux_rate_tbl *rtbl,
- 		u8 rtbl_cnt, spinlock_t *lock, struct clk **gate_clk)
+diff --git a/drivers/clk/clk-stm32f4.c b/drivers/clk/clk-stm32f4.c
+index 565b4d99bebb06e8..6603d4815514151a 100644
+--- a/drivers/clk/clk-stm32f4.c
++++ b/drivers/clk/clk-stm32f4.c
+@@ -485,8 +485,8 @@ static struct clk *clk_register_apb_mul(struct device *dev, const char *name,
+ 					const char *parent_name,
+ 					unsigned long flags, u8 bit_idx)
  {
 +	struct clk_init_data init = {};
- 	struct clk_aux *aux;
+ 	struct clk_apb_mul *am;
 -	struct clk_init_data init;
  	struct clk *clk;
  
- 	if (!aux_name || !parent_name || !reg || !rtbl || !rtbl_cnt) {
-diff --git a/drivers/clk/spear/clk-frac-synth.c b/drivers/clk/spear/clk-frac-synth.c
-index 3549f1cfdae1160f..1b5e184d9668fd51 100644
---- a/drivers/clk/spear/clk-frac-synth.c
-+++ b/drivers/clk/spear/clk-frac-synth.c
-@@ -125,7 +125,7 @@ struct clk *clk_register_frac(const char *name, const char *parent_name,
- 		unsigned long flags, void __iomem *reg,
- 		struct frac_rate_tbl *rtbl, u8 rtbl_cnt, spinlock_t *lock)
+ 	am = kzalloc_obj(*am);
+@@ -810,8 +810,8 @@ static struct clk_hw *clk_register_pll_div(const char *name,
+ 		struct clk_hw *pll_hw, spinlock_t *lock)
  {
--	struct clk_init_data init;
+ 	struct stm32f4_pll_div *pll_div;
 +	struct clk_init_data init = {};
- 	struct clk_frac *frac;
- 	struct clk *clk;
+ 	struct clk_hw *hw;
+-	struct clk_init_data init;
+ 	int ret;
  
-diff --git a/drivers/clk/spear/clk-gpt-synth.c b/drivers/clk/spear/clk-gpt-synth.c
-index 1a431d7ec20c0ff3..411cacdfc11f51b1 100644
---- a/drivers/clk/spear/clk-gpt-synth.c
-+++ b/drivers/clk/spear/clk-gpt-synth.c
-@@ -114,7 +114,7 @@ struct clk *clk_register_gpt(const char *name, const char *parent_name, unsigned
- 		long flags, void __iomem *reg, struct gpt_rate_tbl *rtbl, u8
- 		rtbl_cnt, spinlock_t *lock)
+ 	/* allocate the divider */
+diff --git a/drivers/clk/clk-stm32h7.c b/drivers/clk/clk-stm32h7.c
+index 82e0789cf189c7cb..c6afa9b202351c04 100644
+--- a/drivers/clk/clk-stm32h7.c
++++ b/drivers/clk/clk-stm32h7.c
+@@ -462,8 +462,8 @@ static struct clk_hw *clk_register_stm32_timer_ker(struct device *dev,
+ 		u8 dppre_shift,
+ 		spinlock_t *lock)
  {
--	struct clk_init_data init;
 +	struct clk_init_data init = {};
- 	struct clk_gpt *gpt;
- 	struct clk *clk;
+ 	struct timer_ker *element;
+-	struct clk_init_data init;
+ 	struct clk_hw *hw;
+ 	int err;
  
-diff --git a/drivers/clk/spear/clk-vco-pll.c b/drivers/clk/spear/clk-vco-pll.c
-index faba727e2f84365e..21fcc522c738e6b2 100644
---- a/drivers/clk/spear/clk-vco-pll.c
-+++ b/drivers/clk/spear/clk-vco-pll.c
-@@ -284,7 +284,7 @@ struct clk *clk_register_vco_pll(const char *vco_name, const char *pll_name,
- 	struct clk_vco *vco;
- 	struct clk_pll *pll;
- 	struct clk *vco_clk, *tpll_clk, *tvco_gate_clk;
--	struct clk_init_data vco_init, pll_init;
-+	struct clk_init_data vco_init = {}, pll_init = {};
- 	const char **vco_parent_name;
+diff --git a/drivers/clk/stm32/clk-stm32mp1.c b/drivers/clk/stm32/clk-stm32mp1.c
+index 2d9ccd96ec98c05e..b265e3f3e94c2805 100644
+--- a/drivers/clk/stm32/clk-stm32mp1.c
++++ b/drivers/clk/stm32/clk-stm32mp1.c
+@@ -902,8 +902,8 @@ static struct clk_hw *clk_register_pll(struct device *dev, const char *name,
+ 				       unsigned long flags,
+ 				       spinlock_t *lock)
+ {
++	struct clk_init_data init = {};
+ 	struct stm32_pll_obj *element;
+-	struct clk_init_data init;
+ 	struct clk_hw *hw;
+ 	int err;
  
- 	if (!vco_name || !pll_name || !parent_name || !mode_reg || !cfg_reg ||
+@@ -1041,8 +1041,8 @@ static struct clk_hw *clk_register_cktim(struct device *dev, const char *name,
+ 					 void __iomem *timpre,
+ 					 spinlock_t *lock)
+ {
++	struct clk_init_data init = {};
+ 	struct timer_cker *tim_ker;
+-	struct clk_init_data init;
+ 	struct clk_hw *hw;
+ 	int err;
+ 
 -- 
 2.43.0
 
