@@ -1,22 +1,22 @@
-Return-Path: <linux-aspeed+bounces-4789-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4790-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5A9F6C5DF87
-	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Aug 2026 09:00:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE0C6C5DF7D
+	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Aug 2026 09:00:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hRDlj2MCmz2yrH;
-	Fri, 21 Aug 2026 19:00:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hRDm02Xqjz2yrd;
+	Fri, 21 Aug 2026 19:00:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787302801;
-	cv=none; b=blgyN9c0DLPUMJgPGQPIEGmKtQ+S4jMxIfluCbu2M4xbHSkpdblZvy2jM7gJgLFWHNhkPqgSvNDRJ029h2nAEQf2culvVu2KPm/J/rGvbR9Po3YZse4tHKDPYA5EqJF9yXKnHhBdhFUD2DzIy0gqWhYQtF5Gd9KUiE7CjEezdV76O5pDXXuY0QhJyU2fHoc+OgwWPudL0s6MrG3xn0vB2GqqQN/Cq5gVgwdync9UvWgUvXz0myEmUpDsksnC1FKy09+OmpLlZ0rPepZy3IWRjNvBo6viOlbraTbWfciX6z1FPQWIX3HcPtiBtVnW/NF4DqYA2F692kViJ1AI5xzIOQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787302816;
+	cv=none; b=aKp9li10G6s6+PTRN7D/3fCT30IkEY99Iv0KC90m2paL4s1xXWthtbVzVjUiXqnXq/UUSwkk4s+0RQFtnOKQI8chhMCd2LorhVcUhWnJqyM46tehcWj0bvj51MoNqEn+9QcqYiYYnzd4kMyu2wXvJqJQYTC17dNJyEkYgDGldHhbDRK3yGzSFBAri0fBVgKfkiXWbfyo1B+MU9ZL4Vt+GL8Pr9vTjf9Rrz7DqOmalQYSkkVI688zDY71G0C7oPRy2uT+vUOOUxiQTxYmcRbTp0fD4DD7Yhc65wDDIbWEuFtIHAOujWzoDbIp7SaaAdTa3zJ0Bjg8G/h2x2PEitfUkw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787302801; c=relaxed/relaxed;
-	bh=FGPEhrlWiHMmUVrc+nustzQYPzVsEgzV8P9Ed2pRqQc=;
+	t=1787302816; c=relaxed/relaxed;
+	bh=Ei2Z/4Z//MoglD7UD2ddbMyMQ8G3BvNtRg6Lye20yd4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=BnY02hAem221cgsi7/1+1csk+E2y+cydngnnNVbzMIjjsK5N6Q6QBSFxdDP1pSld+s/69KdN/SMBvgTh9X4mIsKL4XXcDHBJqo5822Vs7UcWPH/uplsadeuxzkVKMti+iJO2Mvw6EJR4r/1vT3b3o4dMkc7MZZV64FvfCXUiHqOj+Nfm+vq68LD+fZMEFgBt6lETzYaeLFUPtNpsXoOLPSRHayLbW9MiNQAgzak3wDjtIKRdxbTrQsX6BR+lYg8OKcj19ViUgdhVb1VHRexMNVxqHeusszFBNLaWqioRwfTUK1mxK0Tq8T2kuXnc5PUvcPUj/ovupFA8yMK6cDIZlg==
+	 MIME-Version; b=NGSvfvXIA+1/FB81KPW+C1f6iaUB0p0ggGKCVqjS7S+Gtoa2D/fuHfYj1ZIu7kw5S0AuQHpuYPmyJIE0Tw+9u/cVxIc1hsm2RJDvELgsew8nIDW9dtU1trMfa5gx9OtavuzoiwwBZS5xcpq7GsRjkV10rB65Z1Gh1w+qddh9FpWaqPWv/1FWe/2CjFUlkqkniaT6GvqD12/RRoavYXvh4RV0tnw0SF5c4pUnwjAcPENoCreGHG4c37mybTtE7Zm+l4PNQZ5p8rkUwd94nkmUwZVi1RmJQQnZT420tJHTohPC6etcLly914A4xdUgxqka66+5sihuDQDhE1b3ylHlLw==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
@@ -24,13 +24,13 @@ Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRDlh3KZYz2yqP;
-	Fri, 21 Aug 2026 19:00:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRDlz3Dgmz2yqP;
+	Fri, 21 Aug 2026 19:00:15 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 6263B61883;
+	by tor.source.kernel.org (Postfix) with ESMTP id 8943B61882;
+	Fri, 21 Aug 2026 09:00:13 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8B1641F00A3D;
 	Fri, 21 Aug 2026 08:59:58 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8491B1F000E9;
-	Fri, 21 Aug 2026 08:59:43 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Ryan Chen <ryan_chen@aspeedtech.com>,
 	Joel Stanley <joel@jms.id.au>,
@@ -110,9 +110,9 @@ Cc: linux-clk@vger.kernel.org,
 	linux-tegra@vger.kernel.org,
 	linux-mediatek@lists.infradead.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 22/45] clk: nomadik: Make sure clk_init_data is fully initialized
-Date: Fri, 21 Aug 2026 10:53:32 +0200
-Message-ID: <631df13629bf77d55bda770f94c7b1863690f2e2.1787239813.git.geert+renesas@glider.be>
+Subject: [PATCH 23/45] clk: npcm7xx: Make sure clk_init_data is fully initialized
+Date: Fri, 21 Aug 2026 10:53:33 +0200
+Message-ID: <f357a73e6eecfc3fde7aae81f03e1e5b6b2e0e9a.1787239813.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1787239813.git.geert+renesas@glider.be>
 References: <cover.1787239813.git.geert+renesas@glider.be>
@@ -146,31 +146,23 @@ Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
 Compile-tested only.
 ---
- drivers/clk/clk-nomadik.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/clk/clk-npcm7xx.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/clk/clk-nomadik.c b/drivers/clk/clk-nomadik.c
-index da6b89759a14ecb0..890084b3912b4cb5 100644
---- a/drivers/clk/clk-nomadik.c
-+++ b/drivers/clk/clk-nomadik.c
-@@ -263,7 +263,7 @@ pll_clk_register(struct device *dev, const char *name,
+diff --git a/drivers/clk/clk-npcm7xx.c b/drivers/clk/clk-npcm7xx.c
+index 79eca6ee3120c646..562d2d406d7a00fc 100644
+--- a/drivers/clk/clk-npcm7xx.c
++++ b/drivers/clk/clk-npcm7xx.c
+@@ -69,8 +69,8 @@ static struct clk_hw *
+ npcm7xx_clk_register_pll(void __iomem *pllcon, const char *name,
+ 			 const char *parent_name, unsigned long flags)
  {
- 	int ret;
- 	struct clk_pll *pll;
--	struct clk_init_data init;
 +	struct clk_init_data init = {};
- 
- 	if (id != 1 && id != 2) {
- 		pr_err("%s: the Nomadik has only PLL 1 & 2\n", __func__);
-@@ -355,7 +355,7 @@ src_clk_register(struct device *dev, const char *name,
- {
- 	int ret;
- 	struct clk_src *sclk;
+ 	struct npcm7xx_clk_pll *pll;
 -	struct clk_init_data init;
-+	struct clk_init_data init = {};
+ 	struct clk_hw *hw;
+ 	int ret;
  
- 	sclk = kzalloc_obj(*sclk);
- 	if (!sclk)
 -- 
 2.43.0
 
