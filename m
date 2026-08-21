@@ -1,36 +1,36 @@
-Return-Path: <linux-aspeed+bounces-4769-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4770-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BF144C5DF7D
-	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Aug 2026 08:54:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1F843C5DF8C
+	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Aug 2026 08:55:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hRDdp38XGz2y83;
-	Fri, 21 Aug 2026 18:54:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787302494;
-	cv=none; b=XOI08c7mrjlrzjP+TuPtra6FY6D4p2weW+1mgdXJVY2OB+n2wXdiMwXww9zVNyHwMTQ9bE9r5M/E4TvMUtDY66R/JUjJ2RnOklaUWzqu44qh/50S+uC0mIDvGKg6HrsaTna5TcTwQZCMN8k5yCFC9yyw6YzY55OWF/n0HW8Xs4r7M1iq7c7kd+aE5BiKxCGOYX347zNM4V+EBrDEhBmOLF8qaKKbJkWX7EH4xB7tRzKFTRXt9auc0kk52sFGlG78dqY8UD6Pj2WRn3kpkOKXf18y7e08/Ofz54a/klw7j3+fFwohgP2t3+QzfnXI9AM2jrd1M8Niuj0BKEZ2o9XtmA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hRDf52Xh3z2yDD;
+	Fri, 21 Aug 2026 18:55:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787302509;
+	cv=none; b=hCHXxX73g1m645NOIcJJ40Adz/5Sjng/j40j1ZYkT5jVcVnq/atNu4QRHUV27bU4ntCx1wJ2+UnisN42EvTZ6kdkN4t++w7r9FNvswBLZZgmFjYa5AaFHJNLk46+vEruL9TwO8flxl3B+Rcrj36ExnoFHOJKvbNSFUeA0CZVSTEagtwoDJjUwYgxh+O6HPoycDVMXanS/+PSUZgqc6W94uUzvs46TKT8w55UXEV64keMImYll/D3WuEHwGIP3AawqoyO04xIQwJ2e/NZKvxlyh6oSpmrr3NwF0rU3o/wpFVAEL5h1U6i3nDJjYpaloJjTU3JqYr0FBvlLm6W6g2R1A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787302494; c=relaxed/relaxed;
-	bh=YXBXonxdki/yWapcMtRzH7OUwshKvPwDPA/+AEnX4xI=;
+	t=1787302509; c=relaxed/relaxed;
+	bh=QD0U9xK1rC/Vkp4rzBGD7TSrjwEYAxQIFW/CXuEcbag=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ib6ny6hz92B15K+pzNl7xYKnbPvzOtMjjwNWaxYCyt96cSHeRNGyeGVU0gbVgAsgl9KKHpsx9YAVm447+ZWEY+LM0vSbgtmUWMWu0l2/6hioh4k6Ko6SLjr+tF9aXHeJ5Kkw3NvhsI45+HC0LocYPjsp8JeXdGdClKKj8roNt/yW0pBEWrXNLe3AK0hfOkhV+VO1TEZREWh64j4wzsNSfwuDc3RnzMP27MmoFcACPGau9Wb0A0Oof2Q1Z0WP2yUu2XgmLm/z4wxdJmKFUe+ALZ6CSgluWMGsj0opT3bU1yFqab8XH+d1c/0iUuxajFHm+nrU75O1WKkqnzEwduCYVw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=cW6RX52r/hb3S92y5hSWldfZMLb7CgTrN1hfwGdaJcCvmKiNmRXh3J+w2eDl5XiP8tVTwYOyGZbbB2M62wqRDzy1YHXQcNXVct6QPWXPAiWcNqMyr4RypRDggAYeMB9W1cvPGKF2p63kdGJD1imPY1orMYpj49BRMtpx6/vUoHzsib0ANoxibnghWD+8OihjgKPVWjwl/rufu2EqRfLgSmO1GwB1nylv4SYRe8RmylS0ZOOuti4CkYxSkjAzos5XMJm36pBlICf1SOInSCsINmZIj2/HzT6LpP+ZOmPjGwssK4SLOK5x+tAeCDb/67Kd21z03hmTVcmzGVZXzo6G/w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRDdn46R5z2xWt;
-	Fri, 21 Aug 2026 18:54:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRDf42xhNz2xWt;
+	Fri, 21 Aug 2026 18:55:08 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 3C3DF60A73;
+	by tor.source.kernel.org (Postfix) with ESMTP id 781F361879;
+	Fri, 21 Aug 2026 08:55:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 64BD61F00A3A;
 	Fri, 21 Aug 2026 08:54:51 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2B9A21F000E9;
-	Fri, 21 Aug 2026 08:54:35 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Ryan Chen <ryan_chen@aspeedtech.com>,
 	Joel Stanley <joel@jms.id.au>,
@@ -110,9 +110,9 @@ Cc: linux-clk@vger.kernel.org,
 	linux-tegra@vger.kernel.org,
 	linux-mediatek@lists.infradead.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 02/45] clk: at91: Make sure clk_init_data is fully initialized
-Date: Fri, 21 Aug 2026 10:53:12 +0200
-Message-ID: <f402b659481b7e5abe90340bb43adc427cdfe70f.1787239813.git.geert+renesas@glider.be>
+Subject: [PATCH 03/45] clk: bcm: iproc: Make sure clk_init_data is fully initialized
+Date: Fri, 21 Aug 2026 10:53:13 +0200
+Message-ID: <28233748ddbdefe6a2eb18127d5cd5f72984ab62.1787239813.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1787239813.git.geert+renesas@glider.be>
 References: <cover.1787239813.git.geert+renesas@glider.be>
@@ -146,177 +146,50 @@ Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
 Compile-tested only.
 ---
- drivers/clk/at91/clk-audio-pll.c | 4 ++--
- drivers/clk/at91/clk-h32mx.c     | 2 +-
- drivers/clk/at91/clk-main.c      | 2 +-
- drivers/clk/at91/clk-pll.c       | 2 +-
- drivers/clk/at91/clk-plldiv.c    | 2 +-
- drivers/clk/at91/clk-slow.c      | 2 +-
- drivers/clk/at91/clk-smd.c       | 2 +-
- drivers/clk/at91/clk-usb.c       | 6 +++---
- drivers/clk/at91/sckc.c          | 2 +-
- 9 files changed, 12 insertions(+), 12 deletions(-)
+ drivers/clk/bcm/clk-iproc-armpll.c | 2 +-
+ drivers/clk/bcm/clk-iproc-asiu.c   | 2 +-
+ drivers/clk/bcm/clk-iproc-pll.c    | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/clk/at91/clk-audio-pll.c b/drivers/clk/at91/clk-audio-pll.c
-index 732037bfbda836fe..26875ad0cce79ae0 100644
---- a/drivers/clk/at91/clk-audio-pll.c
-+++ b/drivers/clk/at91/clk-audio-pll.c
-@@ -486,8 +486,8 @@ struct clk_hw * __init
- at91_clk_register_audio_pll_pad(struct regmap *regmap, const char *name,
- 				const char *parent_name)
+diff --git a/drivers/clk/bcm/clk-iproc-armpll.c b/drivers/clk/bcm/clk-iproc-armpll.c
+index 8485428fe49ce667..aca53e2bda010cca 100644
+--- a/drivers/clk/bcm/clk-iproc-armpll.c
++++ b/drivers/clk/bcm/clk-iproc-armpll.c
+@@ -235,7 +235,7 @@ void __init iproc_armpll_setup(struct device_node *node)
  {
-+	struct clk_init_data init = {};
- 	struct clk_audio_pad *apad_ck;
--	struct clk_init_data init;
  	int ret;
+ 	struct iproc_arm_pll *pll;
+-	struct clk_init_data init;
++	struct clk_init_data init = {};
+ 	const char *parent_name;
  
- 	apad_ck = kzalloc_obj(*apad_ck);
-@@ -517,8 +517,8 @@ struct clk_hw * __init
- at91_clk_register_audio_pll_pmc(struct regmap *regmap, const char *name,
- 				const char *parent_name)
- {
-+	struct clk_init_data init = {};
- 	struct clk_audio_pmc *apmc_ck;
--	struct clk_init_data init;
- 	int ret;
+ 	pll = kzalloc_obj(*pll);
+diff --git a/drivers/clk/bcm/clk-iproc-asiu.c b/drivers/clk/bcm/clk-iproc-asiu.c
+index 56a8132279814d03..86c0100934f81bd5 100644
+--- a/drivers/clk/bcm/clk-iproc-asiu.c
++++ b/drivers/clk/bcm/clk-iproc-asiu.c
+@@ -206,7 +206,7 @@ void __init iproc_asiu_setup(struct device_node *node,
+ 		goto err_iomap_gate;
  
- 	apmc_ck = kzalloc_obj(*apmc_ck);
-diff --git a/drivers/clk/at91/clk-h32mx.c b/drivers/clk/at91/clk-h32mx.c
-index 12bd112d3c509fe6..8d5488223e4937ef 100644
---- a/drivers/clk/at91/clk-h32mx.c
-+++ b/drivers/clk/at91/clk-h32mx.c
-@@ -97,7 +97,7 @@ at91_clk_register_h32mx(struct regmap *regmap, const char *name,
- 			const char *parent_name)
- {
- 	struct clk_sama5d4_h32mx *h32mxclk;
+ 	for (i = 0; i < num_clks; i++) {
+-		struct clk_init_data init;
++		struct clk_init_data init = {};
+ 		const char *parent_name;
+ 		struct iproc_asiu_clk *asiu_clk;
+ 		const char *clk_name;
+diff --git a/drivers/clk/bcm/clk-iproc-pll.c b/drivers/clk/bcm/clk-iproc-pll.c
+index d708f770971ceed1..4354aac2d2707d71 100644
+--- a/drivers/clk/bcm/clk-iproc-pll.c
++++ b/drivers/clk/bcm/clk-iproc-pll.c
+@@ -722,7 +722,7 @@ void iproc_pll_clk_setup(struct device_node *node,
+ 	int i, ret;
+ 	struct iproc_pll *pll;
+ 	struct iproc_clk *iclk;
 -	struct clk_init_data init;
 +	struct clk_init_data init = {};
- 	int ret;
- 
- 	h32mxclk = kzalloc_obj(*h32mxclk);
-diff --git a/drivers/clk/at91/clk-main.c b/drivers/clk/at91/clk-main.c
-index ab515239adcf49e6..6074ed2a16cede94 100644
---- a/drivers/clk/at91/clk-main.c
-+++ b/drivers/clk/at91/clk-main.c
-@@ -298,8 +298,8 @@ at91_clk_register_main_rc_osc(struct regmap *regmap,
- 			      const char *name,
- 			      u32 frequency, u32 accuracy)
- {
-+	struct clk_init_data init = {};
- 	struct clk_main_rc_osc *osc;
--	struct clk_init_data init;
- 	struct clk_hw *hw;
- 	int ret;
- 
-diff --git a/drivers/clk/at91/clk-pll.c b/drivers/clk/at91/clk-pll.c
-index b89f60cf02416eb6..1b9a37a9e0701b56 100644
---- a/drivers/clk/at91/clk-pll.c
-+++ b/drivers/clk/at91/clk-pll.c
-@@ -318,7 +318,7 @@ at91_clk_register_pll(struct regmap *regmap, const char *name,
- {
- 	struct clk_pll *pll;
- 	struct clk_hw *hw;
--	struct clk_init_data init;
-+	struct clk_init_data init = {};
- 	int offset = PLL_REG(id);
- 	unsigned int pllr;
- 	int ret;
-diff --git a/drivers/clk/at91/clk-plldiv.c b/drivers/clk/at91/clk-plldiv.c
-index 5f93aead03fa5810..135ca0abeb18898f 100644
---- a/drivers/clk/at91/clk-plldiv.c
-+++ b/drivers/clk/at91/clk-plldiv.c
-@@ -86,9 +86,9 @@ struct clk_hw * __init
- at91_clk_register_plldiv(struct regmap *regmap, const char *name,
- 			 const char *parent_name)
- {
-+	struct clk_init_data init = {};
- 	struct clk_plldiv *plldiv;
- 	struct clk_hw *hw;
--	struct clk_init_data init;
- 	int ret;
- 
- 	plldiv = kzalloc_obj(*plldiv);
-diff --git a/drivers/clk/at91/clk-slow.c b/drivers/clk/at91/clk-slow.c
-index f0cad50e490bf16e..dc0009ca2cef55b8 100644
---- a/drivers/clk/at91/clk-slow.c
-+++ b/drivers/clk/at91/clk-slow.c
-@@ -42,8 +42,8 @@ at91_clk_register_sam9260_slow(struct regmap *regmap,
- 			       int num_parents)
- {
- 	struct clk_sam9260_slow *slowck;
-+	struct clk_init_data init = {};
- 	struct clk_hw *hw;
--	struct clk_init_data init;
- 	int ret;
- 
- 	if (!name)
-diff --git a/drivers/clk/at91/clk-smd.c b/drivers/clk/at91/clk-smd.c
-index 77f2b8fe6cabd5fb..4eff52a9798ba443 100644
---- a/drivers/clk/at91/clk-smd.c
-+++ b/drivers/clk/at91/clk-smd.c
-@@ -113,9 +113,9 @@ struct clk_hw * __init
- at91sam9x5_clk_register_smd(struct regmap *regmap, const char *name,
- 			    const char **parent_names, u8 num_parents)
- {
-+	struct clk_init_data init = {};
- 	struct at91sam9x5_clk_smd *smd;
- 	struct clk_hw *hw;
--	struct clk_init_data init;
- 	int ret;
- 
- 	smd = kzalloc_obj(*smd);
-diff --git a/drivers/clk/at91/clk-usb.c b/drivers/clk/at91/clk-usb.c
-index b4dc86193e09fbd0..0e4c0367c1afa77c 100644
---- a/drivers/clk/at91/clk-usb.c
-+++ b/drivers/clk/at91/clk-usb.c
-@@ -224,9 +224,9 @@ _at91sam9x5_clk_register_usb(struct regmap *regmap, const char *name,
- 			     const char **parent_names, u8 num_parents,
- 			     u32 usbs_mask)
- {
-+	struct clk_init_data init = {};
- 	struct at91sam9x5_clk_usb *usb;
- 	struct clk_hw *hw;
--	struct clk_init_data init;
- 	int ret;
- 
- 	usb = kzalloc_obj(*usb);
-@@ -275,9 +275,9 @@ struct clk_hw * __init
- at91sam9n12_clk_register_usb(struct regmap *regmap, const char *name,
- 			     const char *parent_name)
- {
-+	struct clk_init_data init = {};
- 	struct at91sam9x5_clk_usb *usb;
- 	struct clk_hw *hw;
--	struct clk_init_data init;
- 	int ret;
- 
- 	usb = kzalloc_obj(*usb);
-@@ -394,9 +394,9 @@ struct clk_hw * __init
- at91rm9200_clk_register_usb(struct regmap *regmap, const char *name,
- 			    const char *parent_name, const u32 *divisors)
- {
-+	struct clk_init_data init = {};
- 	struct at91rm9200_clk_usb *usb;
- 	struct clk_hw *hw;
--	struct clk_init_data init;
- 	int ret;
- 
- 	usb = kzalloc_obj(*usb);
-diff --git a/drivers/clk/at91/sckc.c b/drivers/clk/at91/sckc.c
-index 776118f14867de02..fc5ca22d181a7502 100644
---- a/drivers/clk/at91/sckc.c
-+++ b/drivers/clk/at91/sckc.c
-@@ -231,9 +231,9 @@ at91_clk_register_slow_rc_osc(void __iomem *sckcr,
- 			      unsigned long startup,
- 			      const struct clk_slow_bits *bits)
- {
-+	struct clk_init_data init = {};
- 	struct clk_slow_rc_osc *osc;
- 	struct clk_hw *hw;
--	struct clk_init_data init;
- 	int ret;
- 
- 	if (!sckcr || !name)
+ 	const char *parent_name;
+ 	struct iproc_clk *iclk_array;
+ 	struct clk_hw_onecell_data *clk_data;
 -- 
 2.43.0
 
