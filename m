@@ -1,22 +1,22 @@
-Return-Path: <linux-aspeed+bounces-4774-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4775-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9EA17C5DF7D
-	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Aug 2026 08:56:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7DB12C5DF87
+	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Aug 2026 08:56:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hRDgG0Z7Yz2yH4;
-	Fri, 21 Aug 2026 18:56:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hRDgY0Lblz2yFt;
+	Fri, 21 Aug 2026 18:56:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787302570;
-	cv=none; b=VFtnl1uaoqlJxHOy4hMfmf0cw0zLFyxLdPgnuim+oEqUtKcY0BuF0X8k4sAwJgN27Atm8dXk24KQ4KO1UX3q0830kqxAW5fjRwNSAIB7n+B0pp/Cf/rGK392j1XddIiHUq4bvrychgt8tb8hd/uI82ReLcl6r3d/37/5wuJ68EtJIhSq9Eg2YMsnqA4VFP1KPRw7vQfjlQ6t9972PUy4AENxuP6vlOGZzkVqxNt/tvgCQ3129LCzbtv3L1hlcXqA+Yx3ovR7AVDB4PdwmP5fy1xGqmbt2CHbV7YbxiBjiurcRCeMYA2IWelcbG5RbFCkDPEecPAZcxc1rIbszTpSUw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787302584;
+	cv=none; b=PMlIO7pbookY+B49T7RW6yORI29Q/3Qa16kZWdI34WXNJDvQg1UWnU+KLqJXbNQ9MyrejOE1tHrmx/qugQpsfWVLLfpmDQ+qWKrwZz6i5q1WQyi9v7nxl9DBoeNvIGBuIOq/tCLGfHJKiJ3ShDo0argVlpyYNSNaEsMMxZRaOLrIQQCj8butplPoYD1Txml/K45B2qUYtXF/wjw8di4mxCFv2Aj0wJYoanDVz/Vk397XgK+4/EkBrCcU9eQZXJ35MRTpomyODUwenEjDLuEVwCpKGvjj8RluA/BHLyzSLKOeSiQOVp9P5KbHP3AYTx/Qe53FL44tDKgXn/4/aBnbIQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787302570; c=relaxed/relaxed;
-	bh=itpHEbH4k2lsJzsxO46eYTw/+gTeQhNYN3Hz551XSrE=;
+	t=1787302584; c=relaxed/relaxed;
+	bh=R9u7lZYYlv+jpnW9eq1qoOhjFLXyVrFARYd3PLbz7IU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=R61CKzZudyMZ9o3G6QG9yNN5NiFcSMjtfRLS6/YXC9KTP+f//sAPhrglvL6hr8n1yph9CFlpjERLasckf4tCwbqpzQGVaSztlbEFD23oBPNhNZg57dLwTEpdtbchbb5A/mWyyzrTbp4xXyKRpRBVkzsF6WK9G0/xJD9/Z2hAOn6TmsZdHjnuMpRv+GxbMwbwOg4f5/kcv5h00us52447Zi/dmDY7zNM4m576BqDLE4459WIwbTQ+JKRDIiH5KWlQJrfOzDISXflt1YrRR6Z4UpvIrbXDWs6i7BCpITL7foXLticyqOOysUGBt7jZA5lxPW9jPkcljxzoPMiYbhIVXg==
+	 MIME-Version; b=ZITe/n35cY9Eviz/gfV8w9Bnyb5MdH2MJsiOiP/WroAdQ/ALHBw/5iE2Rcc1uvsD4lu5KqKkqeCyzdZehzFJRY1g1+kfnJ3cPxpT5TfeN35wNIapveb09I1rSQoUGwYYbphMvnQWGUUt1GrK2UmTOg76ymizVN6iMroBgzyaxqZlj1P1GeVSyv+l+CyqYikUW3azZGlE0NAyd7B80AyGaSOl1/faR2otMF/f4ibCJw5eX56o7/xcxci1RzrLm0cWNxwwMLrPHYAFLLgsscJ7vYfH99Cbt2jG5HsJJw/onec8Vne47iOkslLByRu0dP+ngUzCAHxlzd/FNcU3ck9Rlg==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
@@ -24,13 +24,13 @@ Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRDgF1mD2z2yDm;
-	Fri, 21 Aug 2026 18:56:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRDgX1sPXz2yDm;
+	Fri, 21 Aug 2026 18:56:24 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 4B0F74034A;
+	by sea.source.kernel.org (Postfix) with ESMTP id 7400E4390C;
+	Fri, 21 Aug 2026 08:56:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A27A51F000E9;
 	Fri, 21 Aug 2026 08:56:07 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7F09E1F00A3D;
-	Fri, 21 Aug 2026 08:55:52 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Ryan Chen <ryan_chen@aspeedtech.com>,
 	Joel Stanley <joel@jms.id.au>,
@@ -110,9 +110,9 @@ Cc: linux-clk@vger.kernel.org,
 	linux-tegra@vger.kernel.org,
 	linux-mediatek@lists.infradead.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 07/45] clk: cs2000-cp: Make sure clk_init_data is fully initialized
-Date: Fri, 21 Aug 2026 10:53:17 +0200
-Message-ID: <e8d75ce94cde05d165c8a25c93cebd3fd7cf05d5.1787239813.git.geert+renesas@glider.be>
+Subject: [PATCH 08/45] clk: davinci: Make sure clk_init_data is fully initialized
+Date: Fri, 21 Aug 2026 10:53:18 +0200
+Message-ID: <f3b503ff3fda049988c3e16071bbbfabf1b04629.1787239813.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1787239813.git.geert+renesas@glider.be>
 References: <cover.1787239813.git.geert+renesas@glider.be>
@@ -144,24 +144,61 @@ for specifying the parents.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
-Boot-tested on Salvator-X(S) and Ebisu-4D.
+Compile-tested only.
 ---
- drivers/clk/clk-cs2000-cp.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/clk/davinci/da8xx-cfgchip.c | 4 ++--
+ drivers/clk/davinci/pll.c           | 2 +-
+ drivers/clk/davinci/psc.c           | 2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/clk/clk-cs2000-cp.c b/drivers/clk/clk-cs2000-cp.c
-index 5a7758f5a1e4a0f1..b28fd4e5615ff7a7 100644
---- a/drivers/clk/clk-cs2000-cp.c
-+++ b/drivers/clk/clk-cs2000-cp.c
-@@ -461,7 +461,7 @@ static int cs2000_clk_register(struct cs2000_priv *priv)
- {
- 	struct device *dev = priv_to_dev(priv);
- 	struct device_node *np = dev->of_node;
+diff --git a/drivers/clk/davinci/da8xx-cfgchip.c b/drivers/clk/davinci/da8xx-cfgchip.c
+index a5109fe8b16e9b40..9d7fced898ae07fc 100644
+--- a/drivers/clk/davinci/da8xx-cfgchip.c
++++ b/drivers/clk/davinci/da8xx-cfgchip.c
+@@ -91,7 +91,7 @@ da8xx_cfgchip_gate_clk_register(struct device *dev,
+ 	struct clk *parent;
+ 	const char *parent_name;
+ 	struct da8xx_cfgchip_gate_clk *gate;
 -	struct clk_init_data init;
 +	struct clk_init_data init = {};
- 	const char *name = np->name;
- 	static const char *parent_names[CLK_MAX];
- 	u32 aux_out = 0;
+ 	int ret;
+ 
+ 	parent = devm_clk_get(dev, NULL);
+@@ -241,7 +241,7 @@ da8xx_cfgchip_mux_clk_register(struct device *dev,
+ {
+ 	const char * const parent_names[] = { info->parent0, info->parent1 };
+ 	struct da8xx_cfgchip_mux_clk *mux;
+-	struct clk_init_data init;
++	struct clk_init_data init = {};
+ 	int ret;
+ 
+ 	mux = devm_kzalloc(dev, sizeof(*mux), GFP_KERNEL);
+diff --git a/drivers/clk/davinci/pll.c b/drivers/clk/davinci/pll.c
+index f73b0ac5d8a08bf1..0e58b02d7acaf175 100644
+--- a/drivers/clk/davinci/pll.c
++++ b/drivers/clk/davinci/pll.c
+@@ -371,7 +371,7 @@ struct clk *davinci_pll_clk_register(struct device *dev,
+ 	char pllout_name[MAX_NAME_SIZE];
+ 	char postdiv_name[MAX_NAME_SIZE];
+ 	char pllen_name[MAX_NAME_SIZE];
+-	struct clk_init_data init;
++	struct clk_init_data init = {};
+ 	struct davinci_pll_clk *pllout;
+ 	struct davinci_pllen_clk *pllen;
+ 	struct clk *oscin_clk = NULL;
+diff --git a/drivers/clk/davinci/psc.c b/drivers/clk/davinci/psc.c
+index ff603520d56f94d6..73dce7ce2be6cc88 100644
+--- a/drivers/clk/davinci/psc.c
++++ b/drivers/clk/davinci/psc.c
+@@ -234,7 +234,7 @@ davinci_lpsc_clk_register(struct device *dev, const char *name,
+ 			  const char *parent_name, struct regmap *regmap,
+ 			  u32 md, u32 pd, u32 flags)
+ {
+-	struct clk_init_data init;
++	struct clk_init_data init = {};
+ 	struct davinci_lpsc_clk *lpsc;
+ 	int ret;
+ 	bool is_on;
 -- 
 2.43.0
 
