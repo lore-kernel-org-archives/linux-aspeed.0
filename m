@@ -1,59 +1,51 @@
-Return-Path: <linux-aspeed+bounces-4818-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4819-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD42FC5DF87
-	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Aug 2026 12:01:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9EF8AC5DF89
+	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Aug 2026 13:31:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hRJn90l3Cz2yGv;
-	Fri, 21 Aug 2026 22:01:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=178.79.152.223
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787313693;
-	cv=none; b=h/gl4tIcLoI5ylikN0r27GzLN+lG1tRhOER7rkZC+lul030K/BmRuCNeTbetJLf2KjsYF245p4F9eaOqFw7oEL+AIeUNOpcKOtPpjtBnvOr3DYeyNJyOIp8UPTy9652IjpvIpe4l7FwtGRR8oegQNDvcnGmpe/3zoUR7vKOHFon3LEMumvqcVOXeJPul7mWZBv7S3399UfSngoCXHiV382ggisGYHXarGKwMSmDjRjO7xU/QDSxR5ozw59VD4TOl312KehuOpJ+z3zDC2glQp0mDdU8OIU9R5JqfZttEvTNyO2//KsLnKkPkl//frWRPYyep9F9uO7VxQ1uYCiwMoA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hRLmf6DK4z2xRx;
+	Fri, 21 Aug 2026 23:31:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787319074;
+	cv=none; b=TT6qRHhuK0bQ06UO59LOOVBv+bsxA02AOwfcrHpkXIJX1AMUki2Dyzi0tUt92osNqV1DmunDpGYK+9f1/WExNKD5o6H4x3qa5oUbyBeBB11TGNmwPUnp2/68XXEDH9zupnYwiXw8HSW+FrkPsZkSO5WqjR0I68rp9x/rJi/Scnijm0V3plBkI8WWMVFLhZ7mYO6zIscK9pg9n1ODPwWIpIQ0+ZzLFD09NISdwBJbPSPsFunTs1xTptUV8lXAyNr/RdVHwbcaVfVquw5oBju1ogGQE7U+fhuSY0G03f8HJNzb3u7VCEzOrAwqDWjNrHXnnRtE6VWsU2Xm+HToTYtQWQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787313693; c=relaxed/relaxed;
-	bh=Fy7q0LDk0mFttSEZPyj5LdprEXxuVGgJAGebjPEw9Zs=;
+	t=1787319074; c=relaxed/relaxed;
+	bh=Uo/du0VNmVsqMTeIOJgXLNIRsqWuxBkETztHJiXKlH8=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=A/1uadzxR/P+i8q5a+SLNtMQ+yngoPtaUBWsmn/37SknIF1J7CIrMYlOfhW4IPLI8HnMLrRbZBhYDrQD6Bpb5dVu6hZteCrTZ6AFYIxgJySHq+SjaWWbwpnnR2qiQquPq/EQOdSR67Y4spJkBq0/IsOAIxN9FHqYGG2nyUqACn8T09/yXAnKXCAVDxLVbBfU5lAjRMxIurvg8LGxkB/DY3Aw3Vp+P6v1Vfxkl6bm7RmZJM3ziWq2wjYsiFzNSjM2rvKra63LaOcSoo+zBWVze/TEJKWggLa2gDs/e9HqxBecP51PWOX8L9NqsQr3TBy6sC3vXjpDNDOG3SOpWTVC2g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=mleia.com; dkim=pass (2048-bit key; unprotected) header.d=mleia.com header.i=@mleia.com header.a=rsa-sha256 header.s=mail header.b=oPKzPzeT; dkim=pass (2048-bit key) header.d=mleia.com header.i=@mleia.com header.a=rsa-sha256 header.s=mail header.b=oPKzPzeT; dkim-atps=neutral; spf=none (client-ip=178.79.152.223; helo=mail.mleia.com; envelope-from=vz@mleia.com; receiver=lists.ozlabs.org) smtp.mailfrom=mleia.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=mleia.com
+	 In-Reply-To:Content-Type; b=Ku0LdRpZs+kb6HzS7VSD91kw+wigdY2MZEOXOkw4/LKNGXx6NAtHKw30CS6nH+hvZohM+keJ1JAAQLs2g7Q7qxwpu4dW2WsJuVVrmn+G6IuTCCVC0EzeEIMt5BX3Mvszx3EpUkeS+4tnrk+JbKSe7KTOW+t5ZYx4CF0svKv3O1u1OK3wPEN5sCZx3hI+VNDabwbQD5GAdYjNcfEADL6pJanr/5MgZK5VEhBACqxkF8MNl4XaZzCFExjltGWyGrSywc3N5BvTKz+MT4hDsS1ZjoNskOuVT0kl6TKsAB4ZRU+wqTdDYBGxsxc67wRpeAGQVOwGqS2zh4MIx8LavM71+w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QwHm1tBF; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=dinguyen@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=mleia.com header.i=@mleia.com header.a=rsa-sha256 header.s=mail header.b=oPKzPzeT;
-	dkim=pass (2048-bit key) header.d=mleia.com header.i=@mleia.com header.a=rsa-sha256 header.s=mail header.b=oPKzPzeT;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QwHm1tBF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=mleia.com (client-ip=178.79.152.223; helo=mail.mleia.com; envelope-from=vz@mleia.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 512 seconds by postgrey-1.37 at boromir; Fri, 21 Aug 2026 22:01:30 AEST
-Received: from mail.mleia.com (mleia.com [178.79.152.223])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=dinguyen@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRJn65zHZz2yDs
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 21 Aug 2026 22:01:29 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=mleia.com; s=mail;
-	t=1787313174; bh=l8B8jrUwtIpdpun0A6Qe16xv/NvpR7D53DSTYbiZ4f0=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=oPKzPzeTto3Rtpjceb9FC+Dvuza3fomwF5mQYCAp+YKs0B/tPC1MS8THVmmrxs6ou
-	 zhiaamwhVaKDU7jU5WC1gTjRBzRQhbcACY4ctkYJr6WQjgcTThdl7GQCUPiZ7UqH7g
-	 csnjYmgX9WYMTrZ29W734dsp9g33Y9EvhzWyUQ1uIRDQObGY8D1xbj3hedRPFAHoQF
-	 U0n9q2y/XGnsZ38tLRDkPYoQO7zr7GLXOdk7I0zy5OppGqqM0BG/JRKMVW1YmJtoNp
-	 P+8saJSIi5glthGejj0fJxKtW1i/9gb2SNwscq7IITpJmbx1bAaAsSZSU3WAHWldb2
-	 JTVqZ/wxxf+qg==
-Received: from mail.mleia.com (localhost [127.0.0.1])
-	by mail.mleia.com (Postfix) with ESMTP id AC49D81EF9;
-	Fri, 21 Aug 2026 11:52:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=mleia.com; s=mail;
-	t=1787313174; bh=l8B8jrUwtIpdpun0A6Qe16xv/NvpR7D53DSTYbiZ4f0=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=oPKzPzeTto3Rtpjceb9FC+Dvuza3fomwF5mQYCAp+YKs0B/tPC1MS8THVmmrxs6ou
-	 zhiaamwhVaKDU7jU5WC1gTjRBzRQhbcACY4ctkYJr6WQjgcTThdl7GQCUPiZ7UqH7g
-	 csnjYmgX9WYMTrZ29W734dsp9g33Y9EvhzWyUQ1uIRDQObGY8D1xbj3hedRPFAHoQF
-	 U0n9q2y/XGnsZ38tLRDkPYoQO7zr7GLXOdk7I0zy5OppGqqM0BG/JRKMVW1YmJtoNp
-	 P+8saJSIi5glthGejj0fJxKtW1i/9gb2SNwscq7IITpJmbx1bAaAsSZSU3WAHWldb2
-	 JTVqZ/wxxf+qg==
-Message-ID: <9def4b16-50e2-4fe0-918f-d680cb9f075c@mleia.com>
-Date: Fri, 21 Aug 2026 14:52:49 +0300
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRLmd6gS8z2xQ7;
+	Fri, 21 Aug 2026 23:31:13 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 5CCFC6001D;
+	Fri, 21 Aug 2026 13:31:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4A77E1F00A3A;
+	Fri, 21 Aug 2026 13:31:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1787319070;
+	bh=Uo/du0VNmVsqMTeIOJgXLNIRsqWuxBkETztHJiXKlH8=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=QwHm1tBFzOeH4Q0RYUy0xNdqoFrvBjA9HTqq6VmrDUlCgzv+1nCQZ/2uv6cHX6ji8
+	 37U+QqRy5UX4cTix0OR322ZtM/qjLHwZvNVdGFWybpV5QKSQd5sQ3TDsLyyX7t22In
+	 nplaIC9Cmv5FUehFUuYwLIiVAxWv+IDdAh+zMD/QcRgAXlPEOMmsQf8JWG2rBlwNrV
+	 H3LWEJehc9NPBS3W4fPn5M405hnEr6shAga5JXiz6caYsYDqMGgZL8J1AHSmn2WeYU
+	 cGvX+q5cSLfWe61Cn842w15VfrXA+2O/Fr9+LgqtwG+YIKSPkGUxYp5BlYHNU1as8r
+	 0Lazhv1fc8TCg==
+Message-ID: <170920ea-e8d9-46a1-8415-659672bd8de4@kernel.org>
+Date: Fri, 21 Aug 2026 08:31:01 -0500
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -68,8 +60,9 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 24/45] clk: nxp: Make sure clk_init_data is fully
+Subject: Re: [PATCH 32/45] clk: socfpga: Make sure clk_init_data is fully
  initialized
+Content-Language: en-US
 To: Geert Uytterhoeven <geert+renesas@glider.be>,
  Ryan Chen <ryan_chen@aspeedtech.com>, Joel Stanley <joel@jms.id.au>,
  Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>,
@@ -97,12 +90,12 @@ To: Geert Uytterhoeven <geert+renesas@glider.be>,
  Santosh Shilimkar <ssantosh@kernel.org>, Andrew Lunn <andrew@lunn.ch>,
  Gregory Clement <gregory.clement@bootlin.com>,
  Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
- Heiko Stuebner <heiko@sntech.de>, Krzysztof Kozlowski <krzk@kernel.org>,
+ Vladimir Zapolskiy <vz@mleia.com>, Heiko Stuebner <heiko@sntech.de>,
+ Krzysztof Kozlowski <krzk@kernel.org>,
  Sylwester Nawrocki <s.nawrocki@samsung.com>,
  Chanwoo Choi <cw00.choi@samsung.com>,
  Peter Griffin <peter.griffin@linaro.org>,
- Alim Akhtar <alim.akhtar@samsung.com>, Dinh Nguyen <dinguyen@kernel.org>,
- Viresh Kumar <vireshk@kernel.org>,
+ Alim Akhtar <alim.akhtar@samsung.com>, Viresh Kumar <vireshk@kernel.org>,
  Maxime Coquelin <mcoquelin.stm32@gmail.com>,
  Alexandre Torgue <alexandre.torgue@foss.st.com>,
  =?UTF-8?Q?Emilio_L=C3=B3pez?= <emilio@elopez.com.ar>,
@@ -124,16 +117,15 @@ Cc: linux-clk@vger.kernel.org, linux-aspeed@lists.ozlabs.org,
  linux-sunxi@lists.linux.dev, linux-tegra@vger.kernel.org,
  linux-mediatek@lists.infradead.org
 References: <cover.1787239813.git.geert+renesas@glider.be>
- <fa00846b4f9e3b91d3cbcb21cd27be7697b3994e.1787239813.git.geert+renesas@glider.be>
-From: Vladimir Zapolskiy <vz@mleia.com>
-In-Reply-To: <fa00846b4f9e3b91d3cbcb21cd27be7697b3994e.1787239813.git.geert+renesas@glider.be>
+ <2d38d78f8d59583e29778bebc65eaab911d8a120.1787239813.git.geert+renesas@glider.be>
+From: Dinh Nguyen <dinguyen@kernel.org>
+In-Reply-To: <2d38d78f8d59583e29778bebc65eaab911d8a120.1787239813.git.geert+renesas@glider.be>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-49551924 
-X-CRM114-CacheID: sfid-20260821_115254_755594_54D68DD2 
-X-CRM114-Status: GOOD (  17.51  )
 
-On 8/21/26 11:53, Geert Uytterhoeven wrote:
+
+
+On 8/21/26 03:53, Geert Uytterhoeven wrote:
 > The clk_init_data structure contains several mutually-exclusive members
 > for different methods to specify the possible parents of a clock,
 > prompting drivers to initialize only the members they need.  However,
@@ -149,26 +141,19 @@ On 8/21/26 11:53, Geert Uytterhoeven wrote:
 > ---
 > Compile-tested only.
 > ---
->   drivers/clk/nxp/clk-lpc18xx-creg.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
+>   drivers/clk/socfpga/clk-gate-a10.c   | 2 +-
+>   drivers/clk/socfpga/clk-gate-s10.c   | 6 +++---
+>   drivers/clk/socfpga/clk-gate.c       | 2 +-
+>   drivers/clk/socfpga/clk-periph-a10.c | 2 +-
+>   drivers/clk/socfpga/clk-periph-s10.c | 8 ++++----
+>   drivers/clk/socfpga/clk-periph.c     | 2 +-
+>   drivers/clk/socfpga/clk-pll-a10.c    | 2 +-
+>   drivers/clk/socfpga/clk-pll-s10.c    | 8 ++++----
+>   drivers/clk/socfpga/clk-pll.c        | 2 +-
+>   9 files changed, 17 insertions(+), 17 deletions(-)
 > 
-> diff --git a/drivers/clk/nxp/clk-lpc18xx-creg.c b/drivers/clk/nxp/clk-lpc18xx-creg.c
-> index 3d3982e9c661a5c2..de3c214a80fcf903 100644
-> --- a/drivers/clk/nxp/clk-lpc18xx-creg.c
-> +++ b/drivers/clk/nxp/clk-lpc18xx-creg.c
-> @@ -138,7 +138,7 @@ static struct clk *clk_register_creg_clk(struct device *dev,
->   					 const char **parent_name,
->   					 struct regmap *syscon)
->   {
-> -	struct clk_init_data init;
-> +	struct clk_init_data init = {};
->   
->   	init.ops = creg_clk->ops;
->   	init.name = creg_clk->name;
+Acked-by: Dinh Nguyen <dinguyen@kernel.org>
 
-Reviewed-by: Vladimir Zapolskiy <vz@mleia.com>
-
--- 
-Best wishes,
-Vladimir
+Thanks,
+Dinh
 
