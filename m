@@ -1,22 +1,22 @@
-Return-Path: <linux-aspeed+bounces-4775-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4776-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7DB12C5DF87
-	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Aug 2026 08:56:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4D4FC5DF87
+	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Aug 2026 08:56:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hRDgY0Lblz2yFt;
-	Fri, 21 Aug 2026 18:56:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hRDgr2gxBz2yDr;
+	Fri, 21 Aug 2026 18:56:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787302584;
-	cv=none; b=PMlIO7pbookY+B49T7RW6yORI29Q/3Qa16kZWdI34WXNJDvQg1UWnU+KLqJXbNQ9MyrejOE1tHrmx/qugQpsfWVLLfpmDQ+qWKrwZz6i5q1WQyi9v7nxl9DBoeNvIGBuIOq/tCLGfHJKiJ3ShDo0argVlpyYNSNaEsMMxZRaOLrIQQCj8butplPoYD1Txml/K45B2qUYtXF/wjw8di4mxCFv2Aj0wJYoanDVz/Vk397XgK+4/EkBrCcU9eQZXJ35MRTpomyODUwenEjDLuEVwCpKGvjj8RluA/BHLyzSLKOeSiQOVp9P5KbHP3AYTx/Qe53FL44tDKgXn/4/aBnbIQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787302600;
+	cv=none; b=K0iJJjG/aY4LldfdoqNQNHoMyWTC2fcFGRz06+W7u1E8116tjNSPhEo9q1bWDu9NK3x+bYLg46DL9lY+VLqqYdspoxW9PIOoqQoIEdwOQ7u6VzcX2f0y0BAGb4PqJrTQ9Ogv8VcRxJ5XN8GB7CONlr4XeFGu+L/QmprLbA1hcSRfM9UM1t5+zgLbH3Yz1lKdmviRKHPdDoDw547sFNIRIjYQ/RJK+uB3gJolvrKH0fvByyoEUZIt4i0YoXL9IHmpz7/f1LGSTejD3dnr06dPpMJPBkoGjh7YfNUOQTRqv0PQ8qA/lvF/8LzNAL6ghgbVcsrbQKv2nDc9q7ugvw3FEQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787302584; c=relaxed/relaxed;
-	bh=R9u7lZYYlv+jpnW9eq1qoOhjFLXyVrFARYd3PLbz7IU=;
+	t=1787302600; c=relaxed/relaxed;
+	bh=UR6atlCP3FphM2N6zIOKlBJxITxm/iB+gJiPh67GSgk=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ZITe/n35cY9Eviz/gfV8w9Bnyb5MdH2MJsiOiP/WroAdQ/ALHBw/5iE2Rcc1uvsD4lu5KqKkqeCyzdZehzFJRY1g1+kfnJ3cPxpT5TfeN35wNIapveb09I1rSQoUGwYYbphMvnQWGUUt1GrK2UmTOg76ymizVN6iMroBgzyaxqZlj1P1GeVSyv+l+CyqYikUW3azZGlE0NAyd7B80AyGaSOl1/faR2otMF/f4ibCJw5eX56o7/xcxci1RzrLm0cWNxwwMLrPHYAFLLgsscJ7vYfH99Cbt2jG5HsJJw/onec8Vne47iOkslLByRu0dP+ngUzCAHxlzd/FNcU3ck9Rlg==
+	 MIME-Version; b=iNSXNNDWc1CPCL21/PkaWYcP2lTUa01h/kV0wvOZY6r+lEIt/ynTcd943p/ioicTprQyMMG9oJgGNlVrhTP8dGrabR1r5nZqu0STXW9B7A2OddzcQFHFgkpBGs1jrZVjysps+DGs/iTelOg6lgvLevdoRvc3kC12wdiRmy5bBEFWvVl/PtHAQgjvoV10K8WttO0U4aZjWmYPYL/v9tinqqOqFLh7bk/zTJxpre52pvOYbLVnJV9fSbckdT4EyO8kxMmUGlFslBo72Uckcc+CYRkYoAbFuomELx8p4IVcF8Yi4E9NOBdxLUsApujIrF0hQK6a+K5tBHEDzlIirSBZcA==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=h7h1=go=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
@@ -24,13 +24,13 @@ Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRDgX1sPXz2yDm;
-	Fri, 21 Aug 2026 18:56:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hRDgq3Pffz2yDD;
+	Fri, 21 Aug 2026 18:56:39 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 7400E4390C;
+	by sea.source.kernel.org (Postfix) with ESMTP id E81BE419A4;
+	Fri, 21 Aug 2026 08:56:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C82CD1F00A3A;
 	Fri, 21 Aug 2026 08:56:22 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A27A51F000E9;
-	Fri, 21 Aug 2026 08:56:07 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Ryan Chen <ryan_chen@aspeedtech.com>,
 	Joel Stanley <joel@jms.id.au>,
@@ -110,9 +110,9 @@ Cc: linux-clk@vger.kernel.org,
 	linux-tegra@vger.kernel.org,
 	linux-mediatek@lists.infradead.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 08/45] clk: davinci: Make sure clk_init_data is fully initialized
-Date: Fri, 21 Aug 2026 10:53:18 +0200
-Message-ID: <f3b503ff3fda049988c3e16071bbbfabf1b04629.1787239813.git.geert+renesas@glider.be>
+Subject: [PATCH 09/45] clk: fractional-divider: Make sure clk_init_data is fully initialized
+Date: Fri, 21 Aug 2026 10:53:19 +0200
+Message-ID: <fe73cc048970c7a4f2cdf199e17915b8d359f703.1787239813.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1787239813.git.geert+renesas@glider.be>
 References: <cover.1787239813.git.geert+renesas@glider.be>
@@ -146,59 +146,22 @@ Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
 Compile-tested only.
 ---
- drivers/clk/davinci/da8xx-cfgchip.c | 4 ++--
- drivers/clk/davinci/pll.c           | 2 +-
- drivers/clk/davinci/psc.c           | 2 +-
- 3 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/clk/clk-fractional-divider.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/clk/davinci/da8xx-cfgchip.c b/drivers/clk/davinci/da8xx-cfgchip.c
-index a5109fe8b16e9b40..9d7fced898ae07fc 100644
---- a/drivers/clk/davinci/da8xx-cfgchip.c
-+++ b/drivers/clk/davinci/da8xx-cfgchip.c
-@@ -91,7 +91,7 @@ da8xx_cfgchip_gate_clk_register(struct device *dev,
- 	struct clk *parent;
- 	const char *parent_name;
- 	struct da8xx_cfgchip_gate_clk *gate;
+diff --git a/drivers/clk/clk-fractional-divider.c b/drivers/clk/clk-fractional-divider.c
+index 1c5fdcb68a5048e3..c8e00d75cd14d8f1 100644
+--- a/drivers/clk/clk-fractional-divider.c
++++ b/drivers/clk/clk-fractional-divider.c
+@@ -271,7 +271,7 @@ struct clk_hw *clk_hw_register_fractional_divider(struct device *dev,
+ 		u8 clk_divider_flags, spinlock_t *lock)
+ {
+ 	struct clk_fractional_divider *fd;
 -	struct clk_init_data init;
 +	struct clk_init_data init = {};
+ 	struct clk_hw *hw;
  	int ret;
  
- 	parent = devm_clk_get(dev, NULL);
-@@ -241,7 +241,7 @@ da8xx_cfgchip_mux_clk_register(struct device *dev,
- {
- 	const char * const parent_names[] = { info->parent0, info->parent1 };
- 	struct da8xx_cfgchip_mux_clk *mux;
--	struct clk_init_data init;
-+	struct clk_init_data init = {};
- 	int ret;
- 
- 	mux = devm_kzalloc(dev, sizeof(*mux), GFP_KERNEL);
-diff --git a/drivers/clk/davinci/pll.c b/drivers/clk/davinci/pll.c
-index f73b0ac5d8a08bf1..0e58b02d7acaf175 100644
---- a/drivers/clk/davinci/pll.c
-+++ b/drivers/clk/davinci/pll.c
-@@ -371,7 +371,7 @@ struct clk *davinci_pll_clk_register(struct device *dev,
- 	char pllout_name[MAX_NAME_SIZE];
- 	char postdiv_name[MAX_NAME_SIZE];
- 	char pllen_name[MAX_NAME_SIZE];
--	struct clk_init_data init;
-+	struct clk_init_data init = {};
- 	struct davinci_pll_clk *pllout;
- 	struct davinci_pllen_clk *pllen;
- 	struct clk *oscin_clk = NULL;
-diff --git a/drivers/clk/davinci/psc.c b/drivers/clk/davinci/psc.c
-index ff603520d56f94d6..73dce7ce2be6cc88 100644
---- a/drivers/clk/davinci/psc.c
-+++ b/drivers/clk/davinci/psc.c
-@@ -234,7 +234,7 @@ davinci_lpsc_clk_register(struct device *dev, const char *name,
- 			  const char *parent_name, struct regmap *regmap,
- 			  u32 md, u32 pd, u32 flags)
- {
--	struct clk_init_data init;
-+	struct clk_init_data init = {};
- 	struct davinci_lpsc_clk *lpsc;
- 	int ret;
- 	bool is_on;
 -- 
 2.43.0
 
