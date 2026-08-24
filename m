@@ -1,44 +1,43 @@
-Return-Path: <linux-aspeed+bounces-4838-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4839-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AB15BC5DF94
-	for <linux-aspeed@archiver.kernel.org>; Mon, 24 Aug 2026 21:44:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 820F1C5DF94
+	for <linux-aspeed@archiver.kernel.org>; Mon, 24 Aug 2026 21:44:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hTPZb5n27z2y2c;
-	Tue, 25 Aug 2026 07:44:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hTPZh09Ypz2yCr;
+	Tue, 25 Aug 2026 07:44:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.11.138.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787607879;
-	cv=none; b=g2J0kl1PDzbzyJ0nNZI2aXP+wOymCam1W/P2AtQdQNcmOGUrprN/WT0O8KCLzNk+skTDLyw28njbhgJLgeG4db+qxjmuzgaQu5mZDZww5iySlhnYwb/XyzU3QYKk4qHfhOlaCp8gpL8mSCc9UIPplO7f6mAHsN1zXAAFjS/L5eMrZFLQTm8EdQLkhaln1xSgfbT4anYHargaI8qRcG7QIy4Z8BogFQb9g5p+XrEDrod8w+Q9RwwbEROr9uTD9h1KonDGuMjmUy/B18fTeG0MCp0pE5oEFgEP1D8bEZ9hTh3bEvugIwS2j4N4iiu4BAXyzTmeRy4SW/0tvFmRQiQZYg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787607883;
+	cv=none; b=ksUHXAqrUNqkmEHrL54WNKkJVNWg7C3jgEh8JYX741bHSJ+JeaKRiZgxQw3LTuKhofBs6tw4mUIQZG8pFKU48/O3Rx8U2L6nmv3wLKrOfEJqZYZGjuR3bkANZixqOPgtbn1RUfeobzhUyJb8xw2AGM4ScQ1qdJu43EATqq+SIcU/ZeCzCML+Be7yozHU8ZPTIKE0h3oVdcGQMmeQYiXMx9HPWlen+qsbgUoTwQdAgTiO5xk4CaBnstsJN9i2b0YyomWRl/THldf1gX6ql+PudWoDcSXSuiAEfoEEW1y+0Yq+0UZS0PWTheFHV65M08umatjif2s4JjEBlCGJpQgf0A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787607879; c=relaxed/relaxed;
-	bh=jVWHXt5kccAnCww2YkWc7+CJixLQqoOYi0ZBcColNt0=;
+	t=1787607883; c=relaxed/relaxed;
+	bh=CLZc7r+H5Cm5dsJH9Lph04hMwrcVERgqQMx1P2a2ozo=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=M8fTlUejAXXpJn3t7sBpsy55nWvd22E5LX3yZlirzDcSgtnYakP5Eduu1M/FGaui3WAecHkppBoXpgMFHwtQHmkaiWGyofHkGILYMIRXSheM07jnCTQKrVYjCfKj5LK8q1oks4+mshUkP12vJts4plx9ILGwC1065+dg/SIeQg05MNRDlT7nXnTHyni63D6fj/yJOZDPgjAJx5wnTlt9ryUKRm8F1YRbwMEcQk1bH0oNKk/YvCk3sWfaDnuIqytPvGoi77Z5vp7Mr2Z7D6ajrDzD/OUJvTTT1lNMrCoFM4Ve5UC1L+60cNUPJr2ut/QCI841vNpwFG34YAs/KgQpsA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=sntech.de; dkim=pass (2048-bit key; secure) header.d=sntech.de header.i=@sntech.de header.a=rsa-sha256 header.s=gloria202408 header.b=gWJzN7dM; dkim-atps=neutral; spf=pass (client-ip=185.11.138.130; helo=gloria.sntech.de; envelope-from=heiko@sntech.de; receiver=lists.ozlabs.org) smtp.mailfrom=sntech.de
+	 MIME-Version:Content-Type; b=e0Ts2I+EnoA850OBcUxYHIKcEi/vJ/VGEVVlwl15Sg/01Xjgnll994NEK4KESExaznfqwu37n+hvYbKPyNJsP0StWi1tltldyYh8j80o9KcBGtVkThAm2Jr9JlOvI5S2WuVGi2MUnzl4/OpAx6hbmUyMSoghVrDqhVNK39upsSZx6l5rc/9TcWwy1Elp8TkDF2inO6cqMEmRRezPc8mVhin1GTD/tVfeeuynLeQdogZsYCW0rmjzxBKXuCnZl7vNUZQ80kKEk8gWz9217lPOOpCWoT6BMvVbZD9vSIRECcWGSWUK9oiWhfv8GosK4sHUAokrcnTm5Ziqh9hLmPNc8w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=sntech.de; dkim=pass (2048-bit key; secure) header.d=sntech.de header.i=@sntech.de header.a=rsa-sha256 header.s=gloria202408 header.b=DZvpLPEk; dkim-atps=neutral; spf=pass (client-ip=185.11.138.130; helo=gloria.sntech.de; envelope-from=heiko@sntech.de; receiver=lists.ozlabs.org) smtp.mailfrom=sntech.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=sntech.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=sntech.de header.i=@sntech.de header.a=rsa-sha256 header.s=gloria202408 header.b=gWJzN7dM;
+	dkim=pass (2048-bit key; secure) header.d=sntech.de header.i=@sntech.de header.a=rsa-sha256 header.s=gloria202408 header.b=DZvpLPEk;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=sntech.de (client-ip=185.11.138.130; helo=gloria.sntech.de; envelope-from=heiko@sntech.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 1924 seconds by postgrey-1.37 at boromir; Tue, 25 Aug 2026 07:44:33 AEST
 Received: from gloria.sntech.de (gloria.sntech.de [185.11.138.130])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hTPZT2gNCz2xZh;
-	Tue, 25 Aug 2026 07:44:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hTPZg12fxz2xZh;
+	Tue, 25 Aug 2026 07:44:43 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=sntech.de;
 	s=gloria202408; h=Content-Type:Content-Transfer-Encoding:MIME-Version:
 	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Reply-To;
-	bh=jVWHXt5kccAnCww2YkWc7+CJixLQqoOYi0ZBcColNt0=; b=gWJzN7dM/JTTPxhl+cIzoI7bqh
-	xTglornZsWzyUT6gAWwHlVLJetXnZ2Z5EMuCLuAg11XlHgvf1Wk6a0btrtLN5HhjjAG2Q7UH6bgeO
-	5pNpJ0MEntul+ICrSfwFAc4fEk57NsAyll35Dcvwjx0oFXGnLlTCERbbZn+mD4nieMTql+KosEbZ5
-	inUdcsXbrlIQoUmUoxvJUnR4iJIkSUSNyx7MXP5QpUmuaGKDqp5W4m9eiveS9GyjB0lnwBJYC7Lm9
-	QtCoKLycKYO2D/67maCOOnaxcZahjOMGWSvtkjJmVar4K8lyd1CaB5mAfEoncOElmin1FKJV0R227
-	TIkdKuAg==;
+	bh=CLZc7r+H5Cm5dsJH9Lph04hMwrcVERgqQMx1P2a2ozo=; b=DZvpLPEk1MtqoBBRVWAtczTzHZ
+	QKPiaklbDy8pv/2jqpq0vKmDbMdUwHoxkMYOf8g5FmoJMh1N18o0sV8knS/rWa1e5neTd54CYAYRZ
+	T7v5zV9EGYfeiDeiiGaUXM9JULA6IqWwrVes4yMnDNMnvdE93aZlNZHDJFvY7Vmq7I6IRS1oX+aPZ
+	pIiQ6Nm6QGQWjb4eps39kwq8kjT5Jtmmod8mdsLvMN1fOpriQ3gcKW3Dl73Hd6H/vUSvrY+d3vhoV
+	fwNbK4h5sYQZ1MOo7u/dQRUPF1vruhoIxSaALuV6O1TQD0Jf+ntPiKBH0L9Qo/P/7Sb58ECzxSZhy
+	E52PwtTg==;
 From: Heiko =?UTF-8?B?U3TDvGJuZXI=?= <heiko@sntech.de>
 To: Ryan Chen <ryan_chen@aspeedtech.com>, Joel Stanley <joel@jms.id.au>,
  Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>,
@@ -94,12 +93,14 @@ Cc: linux-clk@vger.kernel.org, linux-aspeed@lists.ozlabs.org,
  linux-mediatek@lists.infradead.org,
  Geert Uytterhoeven <geert+renesas@glider.be>
 Subject:
- Re: [PATCH 00/45] clk: Make sure clk_init_data is fully initialized (part
- two)
-Date: Mon, 24 Aug 2026 23:11:32 +0200
-Message-ID: <3074509.irdbgypaU6@diego>
-In-Reply-To: <cover.1787239813.git.geert+renesas@glider.be>
-References: <cover.1787239813.git.geert+renesas@glider.be>
+ Re: [PATCH 28/45] clk: rockchip: Make sure clk_init_data is fully initialized
+Date: Mon, 24 Aug 2026 23:10:54 +0200
+Message-ID: <2765337.tdWV9SEqCh@diego>
+In-Reply-To:
+ <49127c1f7529acccb17e1408db9f21f6d15aee2b.1787239813.git.geert+renesas@glider.be>
+References:
+ <cover.1787239813.git.geert+renesas@glider.be>
+ <49127c1f7529acccb17e1408db9f21f6d15aee2b.1787239813.git.geert+renesas@glider.be>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -116,12 +117,8 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="utf-8"
 
-Hi Geert,
-
-Am Freitag, 21. August 2026, 10:53:10 Mitteleurop=C3=A4ische Sommerzeit sch=
+Am Freitag, 21. August 2026, 10:53:38 Mitteleurop=C3=A4ische Sommerzeit sch=
 rieb Geert Uytterhoeven:
-> 	Hi all,
->=20
 > The clk_init_data structure contains several mutually-exclusive members
 > for different methods to specify the possible parents of a clock,
 > prompting drivers to initialize only the members they need.  However,
@@ -129,29 +126,13 @@ rieb Geert Uytterhoeven:
 > exposed when CONFIG_INIT_STACK_ALL_PATTERN or CONFIG_INIT_STACK_NONE is
 > enabled.
 >=20
-> Hence this series aims to make sure all members are fully initialized,
-> to avoid such bugs, and to prevent future breakage when converting
-> drivers to a different method for specifying the parents.
+> Make sure all members are fully initialized, to avoid such bugs, and to
+> prevent future breakage when converting drivers to a different method
+> for specifying the parents.
 >=20
-> Part One[1] fixed all cases that I identified to be real bugs, in
-> response to a crash I saw on BeagleBone Black.
->=20
-> This series is the clock subpart of Part Two, which fixes remaining
-> cases that are currently harmless.  These are still fragile, and may
-> cause future breakage when converting drivers to a different method for
-> specifying the parents.
->=20
-> Thanks for your comments!
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-I guess more a handling question, how do you expect this series to be
-applied?
-
-I.e. each clk-arch-maintainer, or in one big thing by the core clock
-maintainers? Just wondering if I should pick the Rockchip patch
-or just let the whole series get applied by the clock maintainers.
-
-
-Heiko
+Reviewed-by: Heiko Stuebner <heiko@sntech.de>
 
 
 
