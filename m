@@ -1,40 +1,149 @@
-Return-Path: <linux-aspeed+bounces-4833-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4834-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C24DFC61CE0
-	for <linux-aspeed@archiver.kernel.org>; Mon, 24 Aug 2026 02:43:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6921AC5DF94
+	for <linux-aspeed@archiver.kernel.org>; Mon, 24 Aug 2026 04:16:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hSwFG0skBz2y8c;
-	Mon, 24 Aug 2026 12:42:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787539378;
-	cv=none; b=ATNw0bpYHOnTTtNRXig7EpIZKjqSnPikF8BfnHiSB4Zv/GqiTVefknwWIhyrFzkIV8K9Yb8oi4tCjris7L8aCEAlmDArOLkPzSmRQ1uFJeig9Ha4EVES8Fa0Oa7wCECZ3VdJCy4ssLliOMp+8EQEoFpYE4AIA/LZ+fd8V1/eo3QJDY03gBk+lOxKS0LfkHhBQQ71HzNTHtZxL46zPAIgDP5yGeLiaO99mjV1ORHDFlIv80b1yfUELAkpDBN6ZoUD7ZbsbCkJwk3Ip4ozRBjIuDmRDfD/gsFI8L2vzKzXyOOFoXtB3XVvr3aFEJu8FtW7Ip0TTTnmFMabOjVjoF6P+A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hSyJd1yPQz2y2P;
+	Mon, 24 Aug 2026 14:16:01 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787544388;
+	cv=none; b=Fyno/m11kgRbX/vSBVRMveohP408jGORBnp71fVWIGf6h41yOyoZ1U4ZMoN2i41mpIqr9JH30wTbgPqs/mSd+g/gXXkSNiGJNnjC0L4yI12vLZ67NZqDzv0oZ/E84Q9hqFow5VrG50xh4oPNvGNAaC6Z0TkObEd8KjByqVaXvVgVRm56kfpgv/E+VFERc8HSm+m2/bFmwPMLi0lmiuhMvg+PQ5E7pR70zyxBFfyNOunnzfgeUPE3BJOp1h5p9t25MhPQlsx0pK6wtKeJ67jzNWehFxi1Mn98snq6DUa2sG2BEkrydw/GdeT4jAUWEQgWe2Pa7RBavPmrfmAZbV+uEg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787539378; c=relaxed/relaxed;
-	bh=tPpi/6PIYbl3odSZFYRo6w14+egDnPip6xsURGiMkrg=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
-	 In-Reply-To:To:CC; b=G61SxbJKNW/GKls89IdoEyHbgBONB8Jtm45Wfh797WhcUwe2Yt5wgMxAft6/TmuEf1AAHTMFeMHzrTToK3uzKisbm6++FZfneDUyc7v0wqSvEVtrTn0BPSXt4YjvE346KzL4vM6nDSpcgsBUL7yOg/xrECCQx1OFKYZa88ksEdBiyuIT99i3YxjadfkwjWQNM/CrCUWKU/w/18Kaq8fEl2OlADm/Nd3bJTLgQTsMzJV4ZeeG6tM5CawnBRjp1TbVPPDZ/LRvvE0CZ4Bv6uKrvcRwR/yMftZhfLkmj8n8wCfUJhC/hr5axWEM5ZRiWMi1XYSs+3S89ZLlkcQspiKRrQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeedtech.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeedtech.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from twmbx01.aspeedtech.com (mail.aspeedtech.com [211.20.114.72])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1787544388; c=relaxed/relaxed;
+	bh=aZ+YAW/hXFppA4FxL5IflpWDS7HfTYg8qTJoBoXjwNs=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=nyGoLqa+yRbfSBQ+BvJvG1CmvRgSIleU3RgptLvuSrljSypDeapoMkFj13dc+Blk1thgmiZjOwakb5e3Ncxi0ELkRxgUyEAwY7cZSpsyeS87a9PO4m80/lHCL2aCF2qPylv5umGCvG2DaJIh3UFQbn5Ufry0XtekMoLNLYT1G9oGtst9KyyAOtYAXYeYo4tOIzkmIPOhQ+Ga22VwxPplUVPFGu/0h9CcMgd4Ehc2aeQ7dVRxbSX9vg6klnGbA5fvas1wo30aEJ1RSXt8jSZzZ7v/eelKTEpOf/TT4xPfLI+rURJILc6v4hrscXRlrEO19nVQvD81ga9Hn1A0ifFlvg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=ImPCb+sS; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52c; helo=mail-pg1-x52c.google.com; envelope-from=viresh.kumar@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=ImPCb+sS;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::52c; helo=mail-pg1-x52c.google.com; envelope-from=viresh.kumar@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x52c.google.com (mail-pg1-x52c.google.com [IPv6:2607:f8b0:4864:20::52c])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hSwFD5vRzz2xmk
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 24 Aug 2026 12:42:56 +1000 (AEST)
-Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Mon, 24 Aug
- 2026 10:42:30 +0800
-Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
- Transport; Mon, 24 Aug 2026 10:42:30 +0800
-From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Mon, 24 Aug 2026 10:42:35 +0800
-Subject: [PATCH v2 8/8] EDAC/aspeed: Add AST2700 support
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hSy5Z1G8xz2xns
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 24 Aug 2026 14:06:24 +1000 (AEST)
+Received: by mail-pg1-x52c.google.com with SMTP id 41be03b00d2f7-c999f162c9aso2128991a12.3
+        for <linux-aspeed@lists.ozlabs.org>; Sun, 23 Aug 2026 21:06:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1787544381; x=1788149181; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=aZ+YAW/hXFppA4FxL5IflpWDS7HfTYg8qTJoBoXjwNs=;
+        b=ImPCb+sSkJfJ0LFBxVX3sY5so5B6YaFkRGgzJ5mWiIGTuv0HMEzKUwBeh3x6HkqD0c
+         4IlA8RYunwZglWKo7+N0d65XGqOY+ezVcp0zDQx52myGozarpb+u0dZkRfQ8AT50afpn
+         29C4/Gt/jEEUFeRwgle/MavDW/N/AME/hWWNn3Hu1rXmewZ3Q1jE4UUiFRb9LXbNC19O
+         2UE18c7SVMNSZiK/rjg23Os/Ip0RWyVDQrx7R5yQHJti8s6zSxQWh40d2sDBDCJ1uVoy
+         qayyASuCBflHylXlRzlW0GaE+wIWlpSbt1TCtYL+Oc+E25jxPO9suneszdQ8zX6dDfep
+         WYzw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1787544381; x=1788149181;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=aZ+YAW/hXFppA4FxL5IflpWDS7HfTYg8qTJoBoXjwNs=;
+        b=HnGOcA9YI/DoYkdXETOsg8tbpiKieHuM9N1YxBE0G4i1GtNtRbfMZnMuv3EW+j62aB
+         vcqUt/JifmsGhL1jERlOYws6GPic/jWT1kvEs2fHxz4BGfz24JUBJ0jDO1MOB964UrPp
+         nijmKYevls0XGSPa/RkieKs7oOWUPOVy+iDj2DoT16CsKegeHTUMyPnIblfTU6u/u2B+
+         H93QmCAfpn41I1mXv0jNLZmABJc2MM54UQLL9e2SIZPZUGp4FCA0i0AiqgeFWUn0+oby
+         C+l7w5TcOGaSfkIfMUZeis0Py7zhG9Nh12CY4RCiEd0KaIIoG4LzkZCaUh/c5oq7weYo
+         IOTg==
+X-Forwarded-Encrypted: i=1; AHgh+RoRKRGmGP4OcPSCXwt6xsIYz2mq4mVlReBQRXtGClowI87s5h5yQbGsjMHXy/UrOHPIHrn0YWVg9nIn/rI=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++kiHCrK+BklQJHW11vOwjS/MopTMNGy9qU3vD/lQ+KVasJ3l5QB
+	VCY4aWKNSEiMM2E5o0y+959v5A3soHh5OhQVXQE4o4eHm3/BFhXJg/R7kf9di3CHN9I=
+X-Gm-Gg: AR+sD13lULN0+fbq2LXXX0p32RvXT9m8BFuSwq+dQNw9iZznf6YDLueTiyh/zg4WlYn
+	62t2S6Gly5CRT62ofP5XEQdfsGk1qNQR2Fw8g4gy9l8vvsw+faARIQwcpkwC+EgM9ZQ7SlutF6/
+	2nX0ZGR/SPg3UZMQOqwQ+NFqEQyJfwrIoBohFHM8YjIO+gmGd2NtaRMKolJRZzYVjmO65Z6pQO8
+	9gBn/wdoFh2LlLont5VzkaIqV6pxXzwJtNuvJ4OfAJZVXkmET04r6idwCJZj/GpBRDRI4V1YQKB
+	cqjx/CcwAskFtEvxH9fPxPs9vPjONvRa9Y6bzzpgaKAm2t0Yrz6BfXqJtMxBmS8FrOr5kHF+xU0
+	MA5DkERW60JuLZEJQJRE7HPbKIJ1OF8oFPoGP9yostnClMwTU3dVa9aUwzOdUtSBKx3DIzGDEX4
+	OeQj4opmo4yI5A2aB9CHWNHeRTZZpD+OwM5xiTGOh1htIlozAl8FmVLlU4OLk+Nn4=
+X-Received: by 2002:a05:6a20:7288:b0:3c3:6b6e:8ba0 with SMTP id adf61e73a8af0-3cd3008a6f1mr36995990637.11.1787544381391;
+        Sun, 23 Aug 2026 21:06:21 -0700 (PDT)
+Received: from localhost ([122.172.87.224])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1418619d6ecsm19733419c88.14.2026.08.23.21.06.19
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 23 Aug 2026 21:06:20 -0700 (PDT)
+Date: Mon, 24 Aug 2026 09:36:17 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Ryan Chen <ryan_chen@aspeedtech.com>, Joel Stanley <joel@jms.id.au>,
+	Stephen Boyd <sboyd@kernel.org>,
+	Brian Masney <bmasney+clk@redhat.com>,
+	Jerome Brunet <jbrunet+clk@baylibre.com>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Billy Tsai <billy_tsai@aspeedtech.com>,
+	Nicolas Ferre <nicolas.ferre@microchip.com>,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	Claudiu Beznea <claudiu.beznea@tuxon.dev>,
+	Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>,
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+	Taichi Sugaya <sugaya.taichi@socionext.com>,
+	Takao Orito <orito.takao@socionext.com>,
+	Linus Walleij <linusw@kernel.org>,
+	Avi Fishman <avifishman70@gmail.com>,
+	Tomer Maimon <tmaimon77@gmail.com>,
+	Tali Perry <tali.perry1@gmail.com>,
+	Patrick Venture <venture@google.com>, Nancy Yuen <yuenn@google.com>,
+	Benjamin Fair <benjaminfair@google.com>,
+	Sudeep Holla <sudeep.holla@kernel.org>,
+	Cristian Marussi <cristian.marussi@arm.com>,
+	David Lechner <david@lechnology.com>,
+	Abel Vesa <abelvesa@kernel.org>, Peng Fan <peng.fan@nxp.com>,
+	Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	Paul Cercueil <paul@crapouillou.net>,
+	Santosh Shilimkar <ssantosh@kernel.org>,
+	Andrew Lunn <andrew@lunn.ch>,
+	Gregory Clement <gregory.clement@bootlin.com>,
+	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+	Vladimir Zapolskiy <vz@mleia.com>, Heiko Stuebner <heiko@sntech.de>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	Sylwester Nawrocki <s.nawrocki@samsung.com>,
+	Chanwoo Choi <cw00.choi@samsung.com>,
+	Peter Griffin <peter.griffin@linaro.org>,
+	Alim Akhtar <alim.akhtar@samsung.com>,
+	Dinh Nguyen <dinguyen@kernel.org>,
+	Viresh Kumar <vireshk@kernel.org>,
+	Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+	Alexandre Torgue <alexandre.torgue@foss.st.com>,
+	Emilio =?iso-8859-1?Q?L=F3pez?= <emilio@elopez.com.ar>,
+	Chen-Yu Tsai <wens@kernel.org>,
+	Jernej Skrabec <jernej.skrabec@gmail.com>,
+	Samuel Holland <samuel@sholland.org>,
+	Prashant Gaikwad <pgaikwad@nvidia.com>,
+	Thierry Reding <thierry.reding@kernel.org>,
+	Jonathan Hunter <jonathanh@nvidia.com>,
+	Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
+	Masami Hiramatsu <mhiramat@kernel.org>,
+	Ulf Hansson <ulfh@kernel.org>, Liviu Dudau <liviu.dudau@arm.com>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Michal Simek <michal.simek@amd.com>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	linux-clk@vger.kernel.org, linux-aspeed@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	openbmc@lists.ozlabs.org, arm-scmi@vger.kernel.org,
+	imx@lists.linux.dev, linux-mips@vger.kernel.org,
+	linux-renesas-soc@vger.kernel.org,
+	linux-rockchip@lists.infradead.org,
+	linux-samsung-soc@vger.kernel.org, soc@lists.linux.dev,
+	linux-stm32@st-md-mailman.stormreply.com,
+	linux-sunxi@lists.linux.dev, linux-tegra@vger.kernel.org,
+	linux-mediatek@lists.infradead.org
+Subject: Re: [PATCH 33/45] clk: spear: Make sure clk_init_data is fully
+ initialized
+Message-ID: <aovDOSMKhHLI70dW@vireshk-B250M-D3H>
+References: <cover.1787239813.git.geert+renesas@glider.be>
+ <d4500d249021013d52aa87407f875dc203a251df.1787239813.git.geert+renesas@glider.be>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -48,351 +157,34 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-ID: <20260824-edac-v2-8-c8d8bb693586@aspeedtech.com>
-References: <20260824-edac-v2-0-c8d8bb693586@aspeedtech.com>
-In-Reply-To: <20260824-edac-v2-0-c8d8bb693586@aspeedtech.com>
-To: Stefan Schaeckeler <sschaeck@cisco.com>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
-	Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Borislav Petkov <bp@alien8.de>, Tony Luck <tony.luck@intel.com>
-CC: <devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-aspeed@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
-	<linux-edac@vger.kernel.org>, Ryan Chen <ryan_chen@aspeedtech.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1787539349; l=11489;
- i=ryan_chen@aspeedtech.com; s=20251126; h=from:subject:message-id;
- bh=HlelczrZse4itqbntkw1AflaRc+t0N11SCs7ovp7nzw=;
- b=LNccIVppdqVKTXHSnMaJ1c1YboG4AOpHa0LIPmIpA2GiOjZIZunNiFehQVzos/URnOHZsUYH8
- eArPWn00qQcBrxCePZvWxFGHZM47cHj6RRS5u/FpeMzUsGrFDquD4RD
-X-Developer-Key: i=ryan_chen@aspeedtech.com; a=ed25519;
- pk=Xe73xY6tcnkuRjjbVAB/oU30KdB3FvG4nuJuILj7ZVc=
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d4500d249021013d52aa87407f875dc203a251df.1787239813.git.geert+renesas@glider.be>
 
-Add SDRAM ECC reporting for the Aspeed AST2700. Its DRAMC has a different
-register layout, a split interrupt status/clear/mask scheme, DDR4/DDR5
-memory and interrupt registers that are not key-protected.
+On 21-08-26, 10:53, Geert Uytterhoeven wrote:
+> The clk_init_data structure contains several mutually-exclusive members
+> for different methods to specify the possible parents of a clock,
+> prompting drivers to initialize only the members they need.  However,
+> not initializing all members may cause subtle issues, which are only
+> exposed when CONFIG_INIT_STACK_ALL_PATTERN or CONFIG_INIT_STACK_NONE is
+> enabled.
+> 
+> Make sure all members are fully initialized, to avoid such bugs, and to
+> prevent future breakage when converting drivers to a different method
+> for specifying the parents.
+> 
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
+> Compile-tested only.
+> ---
+>  drivers/clk/spear/clk-aux-synth.c  | 2 +-
+>  drivers/clk/spear/clk-frac-synth.c | 2 +-
+>  drivers/clk/spear/clk-gpt-synth.c  | 2 +-
+>  drivers/clk/spear/clk-vco-pll.c    | 2 +-
+>  4 files changed, 4 insertions(+), 4 deletions(-)
 
-Its interrupt status/clear and enable sequences differ from the earlier
-SoCs, so add per-chip isr() and set_irq() hooks and route the
-devm_request_irq() and enable/disable paths through them, keeping the
-existing AST2400/2500/2600 behaviour under the shared
-aspeed_mcr_isr()/aspeed_set_irq().
-
-Unlike the earlier SoCs it records a single failure address shared by
-both error types, so extend the shared count_rec()/count_un_rec()
-helpers with a have_addr flag to report an error without an address
-(existing SoCs pass have_addr = true, unchanged) and widen their address
-argument to phys_addr_t as the AST2700 address can exceed 32 bits.
-
-Tested on an AST2700: A correctable error was injected from the console by
-unlocking the controller and writing its ECC error inject test register:
-
-  # mw 12c00000 1688a8a8
-  # mw 12c00080 31
-  EDAC MC0: 1 CE on mc#0csrow#0channel#0 (csrow:0 channel:0 page:0x40f6da offset:0xdb0 grain:16 syndrome:0x0)
-
-Assisted-by: Claude:claude-opus-4-8
-Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
-
----
-Changes in v2:
-- Return IRQ_NONE from ast2700_dramc_isr() when no ECC interrupt status
-  bit is set. The handler clears only the ECC bits, so unconditionally
-  claiming the interrupt could livelock the level-triggered line if
-  another DRAMC source was left unmasked.
-- Add AST2700_INT_ECC for the pair of ECC interrupt bits, now used by both
-  the handler and the enable path.
-- Expand the enable/disable ternary in ast2700_set_irq() into if/else,
-  matching the shape of aspeed_set_irq().
-- Pass struct aspeed_edac to the set_irq() hooks instead of
-  struct mem_ctl_info, which the callees only used to reach pvt_info.
----
- drivers/edac/aspeed_edac.c | 161 +++++++++++++++++++++++++++++++++++++--------
- 1 file changed, 135 insertions(+), 26 deletions(-)
-
-diff --git a/drivers/edac/aspeed_edac.c b/drivers/edac/aspeed_edac.c
-index e88d9d2646de..88b7f5ff3727 100644
---- a/drivers/edac/aspeed_edac.c
-+++ b/drivers/edac/aspeed_edac.c
-@@ -32,6 +32,23 @@
- #define ASPEED_MCR_INTR_CTRL_CNT_UNREC  GENMASK(15, 12)
- #define ASPEED_MCR_INTR_CTRL_ENABLE     (BIT(0) | BIT(1))
- 
-+#define AST2700_INT_STS			0x04
-+#define AST2700_INT_CLR			0x08
-+#define AST2700_INT_MASK		0x0c
-+#define   AST2700_INT_ECC_RECOVERABLE	BIT(5)
-+#define   AST2700_INT_ECC_UNRECOVERABLE	BIT(4)
-+#define   AST2700_INT_ECC		(AST2700_INT_ECC_RECOVERABLE | \
-+					 AST2700_INT_ECC_UNRECOVERABLE)
-+#define AST2700_MCFG			0x10
-+#define   AST2700_MCFG_ECC		BIT(6)
-+#define   AST2700_MCFG_DRAM_TYPE	BIT(0) /* 0=DDR4, 1=DDR5 */
-+#define AST2700_ECC_STS			0x78
-+#define   AST2700_ECC_REC_CNT		GENMASK(15, 8)
-+#define   AST2700_ECC_UNREC_CNT		GENMASK(7, 0)
-+#define AST2700_ECC_FAIL_ADDR		0x7c
-+
-+struct aspeed_edac;
-+
- struct aspeed_edac_chip {
- 	unsigned int conf_reg;
- 	u32 conf_ecc;
-@@ -40,6 +57,8 @@ struct aspeed_edac_chip {
- 	unsigned long mtype_cap;
- 	unsigned int prot_reg;
- 	u32 prot_key;
-+	irqreturn_t (*isr)(int irq, void *arg);
-+	void (*set_irq)(struct aspeed_edac *priv, bool enable);
- };
- 
- struct aspeed_edac {
-@@ -50,26 +69,34 @@ struct aspeed_edac {
- 	int irq;
- };
- 
--static void count_rec(struct mem_ctl_info *mci, u8 rec_cnt, u32 rec_addr)
-+static void count_rec(struct mem_ctl_info *mci, u8 rec_cnt, phys_addr_t rec_addr,
-+		      bool have_addr)
- {
- 	struct csrow_info *csrow = mci->csrows[0];
--	u32 page, offset, syndrome;
-+	unsigned long page, offset, syndrome;
- 
- 	if (!rec_cnt)
- 		return;
- 
--	/* report first few errors (if there are) */
--	/* note: no addresses are recorded */
--	if (rec_cnt > 1) {
-+	/*
-+	 * Report the errors whose address is not recorded: all of them when
-+	 * no address is available, otherwise all but the last one (reported
-+	 * with its address below).
-+	 */
-+	if (rec_cnt > 1 || !have_addr) {
- 		/* page, offset and syndrome are not available */
- 		page = 0;
- 		offset = 0;
- 		syndrome = 0;
--		edac_mc_handle_error(HW_EVENT_ERR_CORRECTED, mci, rec_cnt-1,
-+		edac_mc_handle_error(HW_EVENT_ERR_CORRECTED, mci,
-+				     have_addr ? rec_cnt - 1 : rec_cnt,
- 				     page, offset, syndrome, 0, 0, -1,
- 				     "address(es) not available", "");
- 	}
- 
-+	if (!have_addr)
-+		return;
-+
- 	/* report last error */
- 	/* note: rec_addr is the last recoverable error addr */
- 	page = rec_addr >> PAGE_SHIFT;
-@@ -82,32 +109,34 @@ static void count_rec(struct mem_ctl_info *mci, u8 rec_cnt, u32 rec_addr)
- }
- 
- static void count_un_rec(struct mem_ctl_info *mci, u8 un_rec_cnt,
--			 u32 un_rec_addr)
-+			 phys_addr_t un_rec_addr, bool have_addr)
- {
- 	struct csrow_info *csrow = mci->csrows[0];
--	u32 page, offset, syndrome;
-+	unsigned long page, offset, syndrome;
- 
- 	if (!un_rec_cnt)
- 		return;
- 
--	/* report 1. error */
--	/* note: un_rec_addr is the first unrecoverable error addr */
--	page = un_rec_addr >> PAGE_SHIFT;
--	offset = un_rec_addr & ~PAGE_MASK;
--	/* syndrome is not available */
--	syndrome = 0;
--	edac_mc_handle_error(HW_EVENT_ERR_UNCORRECTED, mci, 1,
--			     csrow->first_page + page, offset, syndrome,
--			     0, 0, -1, "", "");
-+	/* report the first error with its address when one is available */
-+	if (have_addr) {
-+		/* note: un_rec_addr is the first unrecoverable error addr */
-+		page = un_rec_addr >> PAGE_SHIFT;
-+		offset = un_rec_addr & ~PAGE_MASK;
-+		/* syndrome is not available */
-+		syndrome = 0;
-+		edac_mc_handle_error(HW_EVENT_ERR_UNCORRECTED, mci, 1,
-+				     csrow->first_page + page, offset, syndrome,
-+				     0, 0, -1, "", "");
-+	}
- 
--	/* report further errors (if there are) */
--	/* note: no addresses are recorded */
--	if (un_rec_cnt > 1) {
-+	/* report the remaining errors without a recorded address */
-+	if (un_rec_cnt > 1 || !have_addr) {
- 		/* page, offset and syndrome are not available */
- 		page = 0;
- 		offset = 0;
- 		syndrome = 0;
--		edac_mc_handle_error(HW_EVENT_ERR_UNCORRECTED, mci, un_rec_cnt-1,
-+		edac_mc_handle_error(HW_EVENT_ERR_UNCORRECTED, mci,
-+				     have_addr ? un_rec_cnt - 1 : un_rec_cnt,
- 				     page, offset, syndrome, 0, 0, -1,
- 				     "address(es) not available", "");
- 	}
-@@ -166,8 +195,8 @@ static irqreturn_t aspeed_mcr_isr(int irq, void *arg)
- 		rec_cnt, un_rec_cnt);
- 
- 	/* process recoverable and unrecoverable errors */
--	count_rec(mci, rec_cnt, rec_addr);
--	count_un_rec(mci, un_rec_cnt, un_rec_addr);
-+	count_rec(mci, rec_cnt, rec_addr, true);
-+	count_un_rec(mci, un_rec_cnt, un_rec_addr, true);
- 
- 	if (!rec_cnt && !un_rec_cnt)
- 		dev_dbg_ratelimited(mci->pdev, "received edac interrupt, but did not find any ECC counters\n");
-@@ -180,6 +209,54 @@ static irqreturn_t aspeed_mcr_isr(int irq, void *arg)
- 	return IRQ_HANDLED;
- }
- 
-+static irqreturn_t ast2700_dramc_isr(int irq, void *arg)
-+{
-+	u32 int_sts, ecc_sts, fail_addr;
-+	struct mem_ctl_info *mci = arg;
-+	struct aspeed_edac *priv;
-+	u8 rec_cnt, un_rec_cnt;
-+	phys_addr_t addr;
-+
-+	priv = mci->pvt_info;
-+
-+	scoped_guard(raw_spinlock, &priv->lock) {
-+		int_sts = readl(priv->regs + AST2700_INT_STS);
-+		if (!(int_sts & AST2700_INT_ECC))
-+			return IRQ_NONE;
-+
-+		ecc_sts = readl(priv->regs + AST2700_ECC_STS);
-+		fail_addr = readl(priv->regs + AST2700_ECC_FAIL_ADDR);
-+
-+		/* the interrupt registers are not key-protected; clear only ECC */
-+		writel(int_sts & AST2700_INT_ECC, priv->regs + AST2700_INT_CLR);
-+	}
-+
-+	rec_cnt = FIELD_GET(AST2700_ECC_REC_CNT, ecc_sts);
-+	un_rec_cnt = FIELD_GET(AST2700_ECC_UNREC_CNT, ecc_sts);
-+
-+	/* the register holds address bits [35:4], in units of 16 bytes */
-+	addr = (phys_addr_t)fail_addr << 4;
-+
-+	/*
-+	 * The controller records only the address of the latest failure,
-+	 * shared by both error types. When only one type occurred it owns
-+	 * that address; when both occurred attribute it to the uncorrectable
-+	 * error and report the corrected ones without an address.
-+	 */
-+	if (un_rec_cnt && !rec_cnt) {
-+		count_un_rec(mci, un_rec_cnt, addr, true);
-+	} else if (!un_rec_cnt && rec_cnt) {
-+		count_rec(mci, rec_cnt, addr, true);
-+	} else if (un_rec_cnt && rec_cnt) {
-+		count_un_rec(mci, un_rec_cnt, addr, true);
-+		count_rec(mci, rec_cnt, 0, false);
-+	} else {
-+		dev_dbg_ratelimited(mci->pdev, "received interrupt with no ECC counters set\n");
-+	}
-+
-+	return IRQ_HANDLED;
-+}
-+
- static void aspeed_set_irq(struct aspeed_edac *priv, bool enable)
- {
- 	u32 val;
-@@ -197,6 +274,22 @@ static void aspeed_set_irq(struct aspeed_edac *priv, bool enable)
- 	aspeed_mcr_irq_update_exit(priv);
- }
- 
-+static void ast2700_set_irq(struct aspeed_edac *priv, bool enable)
-+{
-+	u32 val;
-+
-+	guard(raw_spinlock_irqsave)(&priv->lock);
-+
-+	/* interrupts are enabled by clearing their mask bits */
-+	val = readl(priv->regs + AST2700_INT_MASK);
-+	if (enable)
-+		val &= ~AST2700_INT_ECC;
-+	else
-+		val |= AST2700_INT_ECC;
-+
-+	writel(val, priv->regs + AST2700_INT_MASK);
-+}
-+
- static int config_irq(struct mem_ctl_info *mci, struct platform_device *pdev)
- {
- 	struct aspeed_edac *priv = mci->pvt_info;
-@@ -209,7 +302,7 @@ static int config_irq(struct mem_ctl_info *mci, struct platform_device *pdev)
- 	if (irq < 0)
- 		return irq;
- 
--	rc = devm_request_irq(&pdev->dev, irq, aspeed_mcr_isr, IRQF_TRIGGER_HIGH,
-+	rc = devm_request_irq(&pdev->dev, irq, priv->chip->isr, IRQF_TRIGGER_HIGH,
- 			      DRV_NAME, mci);
- 	if (rc)
- 		return rc;
-@@ -217,7 +310,7 @@ static int config_irq(struct mem_ctl_info *mci, struct platform_device *pdev)
- 	priv->irq = irq;
- 
- 	/* enable interrupts */
--	aspeed_set_irq(priv, true);
-+	priv->chip->set_irq(priv, true);
- 
- 	return 0;
- }
-@@ -365,7 +458,7 @@ static void aspeed_remove(struct platform_device *pdev)
- 	struct aspeed_edac *priv = mci->pvt_info;
- 
- 	/* disable interrupts */
--	aspeed_set_irq(priv, false);
-+	priv->chip->set_irq(priv, false);
- 
- 	devm_free_irq(&pdev->dev, priv->irq, mci);
- 
-@@ -382,6 +475,8 @@ static const struct aspeed_edac_chip ast2400_edac = {
- 	.mtype_cap = MEM_FLAG_DDR3 | MEM_FLAG_DDR4,
- 	.prot_reg = ASPEED_MCR_PROT,
- 	.prot_key = ASPEED_MCR_PROT_PASSWD,
-+	.isr = aspeed_mcr_isr,
-+	.set_irq = aspeed_set_irq,
- };
- 
- /* The AST2600 does not key-protect the interrupt control register (MCR50). */
-@@ -391,12 +486,26 @@ static const struct aspeed_edac_chip ast2600_edac = {
- 	.conf_dram_type = ASPEED_MCR_CONF_DRAM_TYPE,
- 	.dram_type = { MEM_DDR3, MEM_DDR4 },
- 	.mtype_cap = MEM_FLAG_DDR3 | MEM_FLAG_DDR4,
-+	.isr = aspeed_mcr_isr,
-+	.set_irq = aspeed_set_irq,
-+};
-+
-+/* The AST2700 interrupt registers are not key-protected either. */
-+static const struct aspeed_edac_chip ast2700_edac = {
-+	.conf_reg = AST2700_MCFG,
-+	.conf_ecc = AST2700_MCFG_ECC,
-+	.conf_dram_type = AST2700_MCFG_DRAM_TYPE,
-+	.dram_type = { MEM_DDR4, MEM_DDR5 },
-+	.mtype_cap = MEM_FLAG_DDR4 | MEM_FLAG_DDR5,
-+	.isr = ast2700_dramc_isr,
-+	.set_irq = ast2700_set_irq,
- };
- 
- static const struct of_device_id aspeed_of_match[] = {
- 	{ .compatible = "aspeed,ast2400-sdram-edac", .data = &ast2400_edac },
- 	{ .compatible = "aspeed,ast2500-sdram-edac", .data = &ast2400_edac },
- 	{ .compatible = "aspeed,ast2600-sdram-edac", .data = &ast2600_edac },
-+	{ .compatible = "aspeed,ast2700-sdram-edac", .data = &ast2700_edac },
- 	{},
- };
- 
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
-2.34.1
-
+viresh
 
