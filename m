@@ -1,58 +1,58 @@
-Return-Path: <linux-aspeed+bounces-4840-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4841-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54B4AC5DF81
-	for <linux-aspeed@archiver.kernel.org>; Mon, 24 Aug 2026 23:43:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24684C5DF81
+	for <linux-aspeed@archiver.kernel.org>; Mon, 24 Aug 2026 23:43:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hTSCW4vp1z2y2Q;
-	Tue, 25 Aug 2026 09:43:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hTSCb3txBz2yCv;
+	Tue, 25 Aug 2026 09:43:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787604230;
-	cv=none; b=nbuQhY08MEH9uBzJ4jOv5zF7yNNgwsiqNr/43OhUNW1pO3OIfNUbJaCv8BBmZLgGDZHWbyQPG4L/ilyoyXDpb9ciMvDPEuePPC+W0vbIQ66RMRKQsd7eR6l9h/nWXuBe1HXyM5UXSfe0QDiHAbiBLPKiZHJduUZsX/QGP6Z77gPDbyO2UBS16yYv7+RZjhpXOLtSJxjHdjkYJ74RWfs0loxZybuEfXro6ufo2ryUPH32PxfRDujx977l5sTLlRQzihHS98pcfb6ze81STnRo9259AU8Kg7MmePDvpj2ljXYQyjL2Q//t7rczkchBVRKHH1g11jXg+idkbcWlKN3Kyg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787604004;
+	cv=none; b=PjWc+ewHA+JmQBXn+DQ4hlAqcVUwQ8RtHK0uBmBwSofGR7r9NiSTUX3KaGvIjbnPUcmfs9Y3zLkzrvdVkspE/k64thSBqLYlYJxafFbn8iTU5znmSpUJjUMz1buvASd2O6xScAS315epthIl3Bph/6pRylfs/GGP8/bvW5JLTvSt+pki+AwZpaa046TDevzPu9eKvCI9H/gqgDL4qe4i79CrBIEjuaFAGBmzt+f4bRiFdO+LdZArNCMHMVBbNl2uKyR4uhfmiPoe58y9FSAgGBex/lw2R5xCFB2RJIEjc0pa4pfiotYCaclrf2hGS96gFzocRH73C/XhN2+XsuDxCA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787604230; c=relaxed/relaxed;
+	t=1787604004; c=relaxed/relaxed;
 	bh=LEMIXlW7UB4hHdDf5XWpYKY9mKhf7DDvl0I5DYYVcWI=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=eBLSiMIFxlxhL1Fym5ACK2vzU6q3ObjKc8iBssgSONQr1szjt/EJqLm5/L+kJqSPzuBrv6qI7MCui+zEmWXD3erEuTS39c25bP4RqMua3haVyKsQZBBT3VaTHdY0ZcrSEzCC1vy27ywhOLTr0lHN38UATyIDS/RRC9AhsUyr5Dg0jytcUCAnggf4ESsbDrAbeCe6/YFoY9P0CgzCOtowKQeT2qPaR8dZgJiultw0NcPEM/YbgL+HaSiUccu9Lajg3IjxQMCTRUdka3prNd2XWSJd4E3wO+2kVhtEv0sSDIDNEWQ4iizkePAJl/ENe7bP0++ISSXZEHEbdOs2p49VVA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nMOOR726; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 To:Cc:Content-Type; b=csqsGd57rXLLyTiG03BNqSYGvOSSP0Jl6+kOUk8q9uH5+PzEizu3rIv8PYr5whdmXLA7gllPZAIUBG0mmUtRoL3v8TlT44cmT5tytK+n9JL7WwvcGOf+KuyjW/jw3ZXFGsSNKWWhPLnouMMeWG6FVBNNzh5uH/ojflWNhCTud4NKdU+2vk+uU5RecxPAFbOKyX+1FxvsROygnomoCYhlt+CGEkqOMPAZJqKCjgkzKWkkKLHndKNzHafW0pEDeyKnTR8ykyOFv/YkqyMccvwIM94kY4oAcfsTKJpnk1xJnVese+iyf+KljBKbvS2cxtbdRBqej08iz4ovVQDYt+TBrw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=fud7BxQ3; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=nMOOR726;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=fud7BxQ3;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hTNDP4xhfz2xr2
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 25 Aug 2026 06:43:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hTN831PfGz2xr2
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 25 Aug 2026 06:40:03 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id B42E544E6B
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 24 Aug 2026 20:43:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9C0D51F01561
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 24 Aug 2026 20:43:46 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 1CED044071
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 24 Aug 2026 20:39:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EA4781F01568
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 24 Aug 2026 20:39:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787604226;
+	s=k20260515; t=1787603999;
 	bh=LEMIXlW7UB4hHdDf5XWpYKY9mKhf7DDvl0I5DYYVcWI=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=nMOOR726iilXzB8QwTQCM71Ch8G02Vaajd2yCMS4m+O5Esok3z5r0gV3VttHfuCHb
-	 4g2AVRstZRMVo0Y6IUYR3j6owkp/ou4a00Y2jiJj33Ircz9/0ZpfuUV/cRNDW+23QA
-	 1GluzBOVjcse336a1OdBAHZT0wEvicCM/X7+pFIs19JxWLEeAHFX5XHwBkJOCMnYSD
-	 7EecCoxv1MdHvEeVrFiBCP2J2hmtiUbnaXyV6jAhIcHSP+Hj2REll4VSXfnTULnFm4
-	 epNc025JmInkZuyFP/+OYoPczOeQmlLrLlbyatcAst3s47t2gWtNNzp5Yr+0MydxwS
-	 v3L7qXsOPK1hg==
-Received: by mail-oa1-f49.google.com with SMTP id 586e51a60fabf-45ed55cbbaaso2087632fac.1
-        for <linux-aspeed@lists.ozlabs.org>; Mon, 24 Aug 2026 13:43:46 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AHgh+RqXqKX+4fZJV/s92aKE9lPmz9u9NP1HooSWmdXMmt563ufEvKJSyxtYYvY9fWEY2/zrBnqEe/xCrs0gzMI=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++kbrm1KE1gVXUk1HVHcV/22eD1ZRafHsXT9xcWCJT1/DzZeX8Nl
-	7au6QYjI5RFk/Rp1hlq6Nl5O91wOfCDAvir8HfKZSY96iHHwfoJhESe1H56fOSwIF2qr1baIxRr
-	HrZHCcvlZrg3gm5gmc1hyLiimO1A6Cd0=
-X-Received: by 2002:a05:6820:200b:b0:6b0:4fbc:aecf with SMTP id
- 006d021491bc7-6b190476525mr1271968eaf.24.1787604225387; Mon, 24 Aug 2026
- 13:43:45 -0700 (PDT)
+	b=fud7BxQ3mGLqvIlEbg6ad9ks7USWBuldJ1rhesQ/I5Z0P2TbTL/B4yjUjL1TSSrTD
+	 v9RK49uFy/MyVlVnS8Z/JZDw9ZTdeNWDOS0e+/wAdfU7LjgosBNO5vMauS2LOkhSwL
+	 h9es8uX1/IuSMbLrikq26C8DDQWS9jjYsQIWnhTN/9oY8wwhg8Ib5NngWTfnaG5VPb
+	 QNRFXSnXUIyQ729E68Byd/f2DVHD/1gkoUs1R571cy1A1O4+ogllCKGvmvCpO5h+eL
+	 qJLr9moIGO2e0IP8EFl/5HO0egD7wqzSaMyNhD5h7CfhF2rFlDdbxcC/fexzhM8k3F
+	 Rj5nuaFX6ztWw==
+Received: by mail-oa1-f43.google.com with SMTP id 586e51a60fabf-451fd21113cso186648fac.1
+        for <linux-aspeed@lists.ozlabs.org>; Mon, 24 Aug 2026 13:39:58 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RoVvj0+qjtnNcYzku/vzahCkX3CKUH0jYtRPUqwrqQmDmv6q38TzqULkO0/TdzmS1cf/FTEG/sHqeEZA5A=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++lbsFvQYc7jo6WHX4hEZu755tlUSyB4GumpSIE8qNm5GieNs93G
+	W2bJo6vYrI8A2v2YpMh6Px59JjY8/iujDogVq+2RtPqJEtp7Xby4cmiWrmQZlEwFPyUk1KTCgrM
+	RVoZ1owhylKqRGDINpIU8Fp8WneSP1zU=
+X-Received: by 2002:a05:6820:4b83:b0:6b1:779:89f6 with SMTP id
+ 006d021491bc7-6b18fa810bemr1569885eaf.3.1787603998213; Mon, 24 Aug 2026
+ 13:39:58 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -66,14 +66,14 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <cover.1787239813.git.geert+renesas@glider.be> <7c480e73222bb51982fb82dc0cc6cd503f2e8b92.1787239813.git.geert+renesas@glider.be>
-In-Reply-To: <7c480e73222bb51982fb82dc0cc6cd503f2e8b92.1787239813.git.geert+renesas@glider.be>
+References: <cover.1787239813.git.geert+renesas@glider.be> <631df13629bf77d55bda770f94c7b1863690f2e2.1787239813.git.geert+renesas@glider.be>
+In-Reply-To: <631df13629bf77d55bda770f94c7b1863690f2e2.1787239813.git.geert+renesas@glider.be>
 From: Linus Walleij <linusw@kernel.org>
-Date: Mon, 24 Aug 2026 22:43:31 +0200
-X-Gmail-Original-Message-ID: <CAD++jLkBhKLYHeK8-oHfUO1tEyz4TjwxHJgGYANRgtFunc=AYA@mail.gmail.com>
-X-Gm-Features: AcwNN1XWcFJ59Pf1hWO2vZEK8dV4kl2H2cgk-aSr89WZDKQWMFn5rql_SFN6T_E
-Message-ID: <CAD++jLkBhKLYHeK8-oHfUO1tEyz4TjwxHJgGYANRgtFunc=AYA@mail.gmail.com>
-Subject: Re: [PATCH 40/45] clk: versatile: Make sure clk_init_data is fully initialized
+Date: Mon, 24 Aug 2026 22:39:40 +0200
+X-Gmail-Original-Message-ID: <CAD++jLkQd4ZfKAxzCaOobfQKyYqa3jdaCiPEd8Tp=yyC4YeLuQ@mail.gmail.com>
+X-Gm-Features: AcwNN1WWNgSFLas9lNi7aTz9dpo8225CQLxghuyz8Km9gH4_yLCmhqwBO9vh3BQ
+Message-ID: <CAD++jLkQd4ZfKAxzCaOobfQKyYqa3jdaCiPEd8Tp=yyC4YeLuQ@mail.gmail.com>
+Subject: Re: [PATCH 22/45] clk: nomadik: Make sure clk_init_data is fully initialized
 To: Geert Uytterhoeven <geert+renesas@glider.be>
 Cc: Ryan Chen <ryan_chen@aspeedtech.com>, Joel Stanley <joel@jms.id.au>, 
 	Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
