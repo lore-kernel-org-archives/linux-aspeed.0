@@ -1,40 +1,69 @@
-Return-Path: <linux-aspeed+bounces-4835-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4836-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39BC8C5DF94
-	for <linux-aspeed@archiver.kernel.org>; Mon, 24 Aug 2026 07:05:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71C71C5DF9C
+	for <linux-aspeed@archiver.kernel.org>; Mon, 24 Aug 2026 12:47:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hT24Z46CWz2y2c;
-	Mon, 24 Aug 2026 17:05:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787555150;
-	cv=none; b=bPnPWkcXy5CxIljZ+PVLFSNpBmAO80a3dYydzYdmTkIZ+ZozYZpjXQQfXYenmYDzW3ZKzA6B7zroccDyst9gwBjUdSfgcAR7Ug+E3R0154CJD8E/cjBzg/aESig03bCMdhyXdF1OOeEaKQi0DVl79SbsKLzI7kxP9hr1y+iyvnZSv550C+XboeEsrTpSJX9sZng1JXS5Ielp7A8KiVY8jotPWbOegPbmqnCigYvVdtXU33rOwvIaCknPw1RDs0BSlr6kx1MnVR56GxKVzYtM/tvDXvosnFaaBG9Zndw2WAfhj5ujiqNfiiZvxYXU+PLhE/ppciRmgBvgRkk78/llrQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hT9gJ1XQhz2xnW;
+	Mon, 24 Aug 2026 22:47:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=74.125.224.43
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787575676;
+	cv=none; b=BpcUfVRVVANGnS766MppAKQjuqdduYQpvxx3aG5bdg3jVLJ1hMfWQeHqsWOtFRM0bcQafEgPJ+oayso1Q9GjIcnVYAvfh8TbmkZfj4hjf9pc4hebUhFu0hEHSO5hRpBUyffqvZd7B7d5I/dtiH2vcCsa4dU7NNkS92oCteEe/mzRSOKhNE86Kw2tbZgQ9yPSoqY2/KjiYwHk0KYAc3kxAEbk2pW4vSXIVaM/I5WpZ73mtMowL4iYprNhANhDD7R1dsgRWRD7Q7B/AE8RLiU/ggK7qwLHPNtuK9Zx3GlqjuWQDdK1L8jz46yraJDlXXgHo2t5zU2Aj0Q4z2SHpmFnrg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787555150; c=relaxed/relaxed;
-	bh=MMp4iId+8hPV993oqe/VJnslN15DJp3BJve6LUB1mUQ=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:To:CC; b=nPWhP6e5MwtJ0KB7E7CR18dknv+av9a0/tParEcjYLa+9AmQqNsP+v+5hTDKkzryOxgjQTnMLWUygetacK0x3lImB6NawQsKRpfe1bRdmrmGwJgnS7ixHfCUfv9/ldGUrKXFcDLzyiji7a3HgpRTuQTQBslm3FTWu0p1iix4TEc4LXS2r/vSV9lxwSKBPwNg1WRGBYZJgl7LlgFzt40Xo4HyAdRVBQ+LpW0xlndZmDUc9I/4Ur7axW3KVqO57mNOl0jwZtW2O73iddo91MAw3p/W/VnNvICKm/jrLHdpouOZ019scXA12FKaY6J3eQzmt1ghJ8LGEpBEOqUQS5OS5Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeedtech.com; envelope-from=yc_hsieh@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeedtech.com; envelope-from=yc_hsieh@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from twmbx01.aspeedtech.com (mail.aspeedtech.com [211.20.114.72])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1787575676; c=relaxed/relaxed;
+	bh=9ghuoduRfOzi+AYpDw8t1/oQryAhFbodaTAoc1849Hg=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=dEkj1Fye8meXJBk1z4t+ZbMKMluD7erYVrbxkdDRaT+fPm0O/2RmVTMQGpQ7QcRLnx/LG4fEMj0lvunswb+a7UulZEJ8QhdtDJOg8lfhpHRcg6iDkstetLiPZIN5WCaevpVey8Rz5nug1NdwdMjIYLHYRv1tc8+NXRaleBrMaLHXlw/PWL5G+5HQiIrSmeEup/99l6pgrF2X5kLytypQjRVZ8EJRsDQMMpUapsaYKSnZ4FflxySG92IE8bQQz7ATlMMBK121JxOsPxINTfRgzW9uFw5mFOpy+lpvYExLS5765rQXICk2Z2PrIVdnkwMxQ/aI5EbQ5pN7cFm1gbAScg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=74.125.224.43; helo=mail-yx1-f43.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=74.125.224.43; helo=mail-yx1-f43.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yx1-f43.google.com (mail-yx1-f43.google.com [74.125.224.43])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hT24Y2rx0z2y06
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 24 Aug 2026 17:05:48 +1000 (AEST)
-Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Mon, 24 Aug
- 2026 15:05:32 +0800
-Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
- Transport; Mon, 24 Aug 2026 15:05:32 +0800
-From: Yu-Che Hsieh <yc_hsieh@aspeedtech.com>
-Date: Mon, 24 Aug 2026 15:05:24 +0800
-Subject: [PATCH v3] ipmi: kcs_bmc_aspeed: Support multiple LPC controller
- instances
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hT9gG3CzLz2xnQ
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 24 Aug 2026 22:47:53 +1000 (AEST)
+Received: by mail-yx1-f43.google.com with SMTP id 956f58d0204a3-66ce00575dcso4634187d50.0
+        for <linux-aspeed@lists.ozlabs.org>; Mon, 24 Aug 2026 05:47:53 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1787575671; x=1788180471;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=9ghuoduRfOzi+AYpDw8t1/oQryAhFbodaTAoc1849Hg=;
+        b=nCK8Wagf2RBOERHhG4rmBDmJfNG0BCEZfSM2fK933lw0h8pRbyp5eUaY+oZkfAYj5+
+         RaNawT4xwrrEtXV8xITD2ZXhP4ojotmoY8iQ6MsYWKah1ikhZtDjB/34rUQiR2Yl9/oJ
+         O3uJGImLAloNgaIPkp0Y1mX4OhdSohK0iUQF5e5/qZ8OLXhWo4ByudRA/hvwxLrUJcj2
+         oSx5SHO5CCvtg6o5dve+BKT2vpMeHnyX3y9D/6z2HlieVj1Z9zhaO1z4ecNF0rbK1jbv
+         uxldbNrKfF0MQQ/APMkc07aGIbccvxJl52pSVWGLmUMI0gK+qZqqFdkOMDr/7I+v4njm
+         lsHw==
+X-Forwarded-Encrypted: i=1; AHgh+RrS7tEuewsxHoXVnAEUyXfWTJ0dD0t+m15oJbh3AgH915lbbKWQBD9sqh1F5w7yce8gY7FrbwlSQZs3NHQ=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++nbuvOrByijsnJMBMTlkB+yc8PYW5wJ6SiB1Qz1o8iAnzx8To3c
+	Mh4cK+4T7bHPn3xVfJUbae8N/ISmc5V6VhAyG+QSKGuSuzq+9JcPHDI+hTmJfQcx
+X-Gm-Gg: AR+sD11GEVvVs86EV+r96Ct2r32gNwbTTv5OoZbJo/RaMlRXV/Uw/f69FY495jqBwBs
+	uqi3xWLaiGu/m+W1mSLlmCinELusNSJsEAQZKZHN4rG9TFzv0iQXdIBu5uRtdMwE6IeviegfktI
+	uCW/XhiSQpdb1MpBc7gUk2rZS9gYgYovsZZ37WKgkii7+POEmd/HmZ1UN7eY+HwGe1tQTX0r8F2
+	ia/yA8Y/sxIvyc8tWQ+sJh7dDA0gP9eumNzZqkg27APsgwj30WgDRqTzfzYfSsuDgDA0skHqYcY
+	oPGTtmI02TPkBs1qwNp4upyD0Niox/RJbvYaKRKXFKM5w9PiX5SL4A5+spaimyKfKq5NxT0KnMz
+	e6YnrTJz2WvPMeOD43ywE7BKl6/euk9iCNTGp+IaTCTzl6qanWY4uh2UL5VapyWtyR0eQeBuZHi
+	wK44ZJdgpIKUk83kRj3G532je28XB0LiMg6iD2b5PBFKprKAD599gRVS3RnjaAFnHyvksHrMgLC
+	bAOXu94Byq7H609RnZe8pzaCA==
+X-Received: by 2002:a05:690e:4892:10b0:66b:30cf:64fe with SMTP id 956f58d0204a3-66ce4acfebdmr6446729d50.26.1787575670462;
+        Mon, 24 Aug 2026 05:47:50 -0700 (PDT)
+Received: from mail-yx1-f51.google.com (mail-yx1-f51.google.com. [74.125.224.51])
+        by smtp.gmail.com with ESMTPSA id 956f58d0204a3-66cf4624e9esm3606970d50.2.2026.08.24.05.47.50
+        for <linux-aspeed@lists.ozlabs.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 24 Aug 2026 05:47:50 -0700 (PDT)
+Received: by mail-yx1-f51.google.com with SMTP id 956f58d0204a3-66ce00575dcso4634153d50.0
+        for <linux-aspeed@lists.ozlabs.org>; Mon, 24 Aug 2026 05:47:50 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AHgh+RrrcHCSRjwr7EFfh2KPYinm1CS3Qn543KXgdDoojxYO0FQ6ie9W6+IuwrujkvvXXxkr9dIMymdu62ZkEcM=@lists.ozlabs.org
+X-Received: by 2002:a05:6102:26c5:b0:772:5acc:b848 with SMTP id
+ ada2fe7eead31-77a62c46273mr7826182137.6.1787575289120; Mon, 24 Aug 2026
+ 05:41:29 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -48,279 +77,91 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-ID: <20260824-upstream_kcs_multiple_lpc-v3-1-b15bb0f77462@aspeedtech.com>
-X-B4-Tracking: v=1; b=H4sIADPti2oC/33N3wqCMBTH8VeJXbfYjs1pV71HhLjtmCP/jE2lE
- N+9KUQXgZffH5zPmUlAbzGQy2EmHicbbN/FSI4HouuyeyC1JjYBBimTAHR0YfBYtsVTh6Idm8G
- 6BovGaSoTkZ8BOBcsI/Heeazsa7Nv99i1DUPv39uria/rV0121IlTRk3OMyVAMpWl1zI4RDOgr
- k+6b8lKT/DjMr7LQeSkFIoblVSYiz9uWZYP7kGXNRYBAAA=
-X-Change-ID: 20260722-upstream_kcs_multiple_lpc-735942211508
-To: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, "Krzysztof
- Kozlowski" <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, "Joel
- Stanley" <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Chia-Wei Wang <chiawei_wang@aspeedtech.com>, Corey Minyard
-	<corey@minyard.net>
-CC: Andrew Jeffery <andrew@aj.id.au>, <devicetree@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
-	<linux-kernel@vger.kernel.org>, <openipmi-developer@lists.sourceforge.net>,
-	<jammy_huang@aspeedtech.com>, Yu-Che Hsieh <yc_hsieh@aspeedtech.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1787555132; l=8767;
- i=yc_hsieh@aspeedtech.com; s=20260721; h=from:subject:message-id;
- bh=GfHE1UPhmD//6VWtbZY3B8MnLjOJloBHnV0v8zZ5ET8=;
- b=mT8OVPoiQAQQLuEwhCWoIJvcx7IeaPTWTOYzJjDdpV/QpBpAz5gAck/ViBDggQjjpwC3yqnZf
- xuL3BjQgFINCwjnYZYo9DE2ScPxBR1JRVvg8vQdUQxfXKKP9Rswb7rL
-X-Developer-Key: i=yc_hsieh@aspeedtech.com; a=ed25519;
- pk=7KnU2ozXGF2IATT+Hvu7RbRwPxBA3/b+zhfM+UsPJMs=
+References: <cover.1787239813.git.geert+renesas@glider.be> <87b3e83137e1a987f3c69d214706e93ef3898cab.1787239813.git.geert+renesas@glider.be>
+ <60a8d05a-76fa-43c3-a0f7-fb26a3b659b8@kernel.org>
+In-Reply-To: <60a8d05a-76fa-43c3-a0f7-fb26a3b659b8@kernel.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 24 Aug 2026 14:41:17 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdWnXTAVZ_eBfoWNe-sy6BC1X+5EHkDw9R0TAA65Opzi_Q@mail.gmail.com>
+X-Gm-Features: AcwNN1UOdKQEkPlARJoVF2UurscVPaHj9T1_AXs-3b7YtVRMAHuDfcVjJgM-XPk
+Message-ID: <CAMuHMdWnXTAVZ_eBfoWNe-sy6BC1X+5EHkDw9R0TAA65Opzi_Q@mail.gmail.com>
+Subject: Re: [PATCH 29/45] clk: samsung: Make sure clk_init_data is fully initialized
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Ryan Chen <ryan_chen@aspeedtech.com>, Joel Stanley <joel@jms.id.au>, 
+	Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>, 
+	Jerome Brunet <jbrunet+clk@baylibre.com>, Andrew Jeffery <andrew@codeconstruct.com.au>, 
+	Billy Tsai <billy_tsai@aspeedtech.com>, Nicolas Ferre <nicolas.ferre@microchip.com>, 
+	Alexandre Belloni <alexandre.belloni@bootlin.com>, Claudiu Beznea <claudiu.beznea@tuxon.dev>, 
+	Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, 
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, 
+	Taichi Sugaya <sugaya.taichi@socionext.com>, Takao Orito <orito.takao@socionext.com>, 
+	Linus Walleij <linusw@kernel.org>, Avi Fishman <avifishman70@gmail.com>, 
+	Tomer Maimon <tmaimon77@gmail.com>, Tali Perry <tali.perry1@gmail.com>, 
+	Patrick Venture <venture@google.com>, Nancy Yuen <yuenn@google.com>, 
+	Benjamin Fair <benjaminfair@google.com>, Sudeep Holla <sudeep.holla@kernel.org>, 
+	Cristian Marussi <cristian.marussi@arm.com>, David Lechner <david@lechnology.com>, 
+	Abel Vesa <abelvesa@kernel.org>, Peng Fan <peng.fan@nxp.com>, Frank Li <Frank.Li@nxp.com>, 
+	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
+	Fabio Estevam <festevam@gmail.com>, Paul Cercueil <paul@crapouillou.net>, 
+	Santosh Shilimkar <ssantosh@kernel.org>, Andrew Lunn <andrew@lunn.ch>, 
+	Gregory Clement <gregory.clement@bootlin.com>, 
+	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Vladimir Zapolskiy <vz@mleia.com>, 
+	Heiko Stuebner <heiko@sntech.de>, Sylwester Nawrocki <s.nawrocki@samsung.com>, 
+	Chanwoo Choi <cw00.choi@samsung.com>, Peter Griffin <peter.griffin@linaro.org>, 
+	Alim Akhtar <alim.akhtar@samsung.com>, Dinh Nguyen <dinguyen@kernel.org>, 
+	Viresh Kumar <vireshk@kernel.org>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
+	Alexandre Torgue <alexandre.torgue@foss.st.com>, =?UTF-8?Q?Emilio_L=C3=B3pez?= <emilio@elopez.com.ar>, 
+	Chen-Yu Tsai <wens@kernel.org>, Jernej Skrabec <jernej.skrabec@gmail.com>, 
+	Samuel Holland <samuel@sholland.org>, Prashant Gaikwad <pgaikwad@nvidia.com>, 
+	Thierry Reding <thierry.reding@kernel.org>, Jonathan Hunter <jonathanh@nvidia.com>, 
+	Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, Masami Hiramatsu <mhiramat@kernel.org>, 
+	Ulf Hansson <ulfh@kernel.org>, Liviu Dudau <liviu.dudau@arm.com>, 
+	Lorenzo Pieralisi <lpieralisi@kernel.org>, Michal Simek <michal.simek@amd.com>, 
+	Matthias Brugger <matthias.bgg@gmail.com>, linux-clk@vger.kernel.org, 
+	linux-aspeed@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, openbmc@lists.ozlabs.org, 
+	arm-scmi@vger.kernel.org, imx@lists.linux.dev, linux-mips@vger.kernel.org, 
+	linux-renesas-soc@vger.kernel.org, linux-rockchip@lists.infradead.org, 
+	linux-samsung-soc@vger.kernel.org, soc@lists.linux.dev, 
+	linux-stm32@st-md-mailman.stormreply.com, linux-sunxi@lists.linux.dev, 
+	linux-tegra@vger.kernel.org, linux-mediatek@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
 
-Some SoCs (e.g. AST2700) expose more than one physical LPC controller
-instance (e.g. lpc0@14c31000, lpc1@14c32000, plus pcie_lpc0@12c19000
-and pcie_lpc1@12c19800 for the PCIe-facing path), each instantiating
-its own independent set of KCS1-KCS4 channels using identical
-IDR/ODR/STR register offsets.
+Hi Krzysztof,
 
-kcs_bmc_device::channel currently serves two purposes at once:
+On Fri, 21 Aug 2026 at 13:04, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+> On 21/08/2026 10:53, Geert Uytterhoeven wrote:
+> > The clk_init_data structure contains several mutually-exclusive members
+> > for different methods to specify the possible parents of a clock,
+> > prompting drivers to initialize only the members they need.  However,
+> > not initializing all members may cause subtle issues, which are only
+> > exposed when CONFIG_INIT_STACK_ALL_PATTERN or CONFIG_INIT_STACK_NONE is
+> > enabled.
+> >
+> > Make sure all members are fully initialized, to avoid such bugs, and to
+> > prevent future breakage when converting drivers to a different method
+> > for specifying the parents.
+> >
+> > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>
+> Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
-  1. Selecting which HICR0/HICR2/HICRB bit-group to touch within a
-     single LPC controller's register file. aspeed_kcs_of_get_channel()
-     derives this purely from the KCS node's register offset, yielding
-     values 1..4.
+Thank you!
 
-  2. Naming the misc chardev (/dev/ipmi-kcsN) exposed to userspace,
-     which must be unique system-wide. kcs_bmc_cdev_ipmi.c uses
-     "ipmi-kcs%u".
+> Let me know if I should take it via Samsung SoC clock tree. I assume by
+> default this will go directly via clock tree.
 
-Both happen to be the same value only because this driver has only
-ever had to support SoCs with a single LPC controller. On AST2700, KCS1
-on every LPC controller computes to the same channel number, and
-whichever instance probes second fails outright:
+In that case, please provide your Acked-by, so the clock maintainers
+don't have to parse your English response to find out ;-)
 
-	sysfs: cannot create duplicate filename '/devices/virtual/misc/ipmi-kcs1'
-	ast-kcs-bmc 14c32024.kcs: Unable to register device: -17
-	ast-kcs-bmc 14c32024.kcs: Failed to add chardev for KCS channel 1: -17
-	ast-kcs-bmc: probe of 14c32024.kcs failed with error -17
+Gr{oetje,eeting}s,
 
-Split the two roles: keep a new driver-private `channel` field (1..4)
-in struct aspeed_kcs_bmc for register access, leaving all the
-HICR/IBFIE/LPCxE switch statements operating on it, and derive
-kcs_bmc_device::channel as `bank * KCS_CHANNEL_MAX + channel`, where
-`bank` identifies which LPC controller instance a KCS device belongs
-to.
+                        Geert
 
-`bank` is obtained from aspeed_kcs_of_get_bank(), which keeps a
-driver-private, mutex-protected list keyed by the LPC controller's
-device_node pointer and assigns bank indices in
-first-seen-during-probe order. SoCs with a single LPC controller
-always end up with bank 0, so /dev/ipmi-kcsN naming is unchanged for
-all existing boards, and no devicetree or binding changes are required
-for any platform.
-
-Signed-off-by: Yu-Che Hsieh <yc_hsieh@aspeedtech.com>
----
-Changes in v3:
-- Drop the of_alias_get_id()-based bank derivation and the dt-bindings 
-  patch that documented it.
-- Replace with dynamic bank discovery: the first time an LPC
-  controller's device_node is seen during probe, assign it the next
-  available bank index and remember it in a driver-private list. This
-  needs no DT/binding changes at all.
-
-Link to v2: https://lore.kernel.org/r/20260813-upstream_kcs_multiple_lpc-v2-0-775b1db3fe95@aspeedtech.com
-
-Changes in v2:
-  - Drop the RFC tag, per Lee Jones' feedback.
-  - Keep the alias-based bank-numbering approach unchanged.
-
-Link to v1: https://lore.kernel.org/r/20260723-upstream_kcs_multiple_lpc-v1-0-d918b5270b86@aspeedtech.com
----
- drivers/char/ipmi/kcs_bmc_aspeed.c | 71 ++++++++++++++++++++++++++++++++------
- 1 file changed, 61 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/char/ipmi/kcs_bmc_aspeed.c b/drivers/char/ipmi/kcs_bmc_aspeed.c
-index a13a3470c17a..751f477c09e0 100644
---- a/drivers/char/ipmi/kcs_bmc_aspeed.c
-+++ b/drivers/char/ipmi/kcs_bmc_aspeed.c
-@@ -10,8 +10,10 @@
- #include <linux/interrupt.h>
- #include <linux/io.h>
- #include <linux/irq.h>
-+#include <linux/list.h>
- #include <linux/mfd/syscon.h>
- #include <linux/module.h>
-+#include <linux/mutex.h>
- #include <linux/of.h>
- #include <linux/of_address.h>
- #include <linux/platform_device.h>
-@@ -125,6 +127,8 @@ struct aspeed_kcs_bmc {
- 		bool remove;
- 		struct timer_list timer;
- 	} obe;
-+
-+	u32 channel;
- };
- 
- static inline struct aspeed_kcs_bmc *to_aspeed_kcs_bmc(struct kcs_bmc_device *kcs_bmc)
-@@ -167,7 +171,7 @@ static void aspeed_kcs_outb(struct kcs_bmc_device *kcs_bmc, u32 reg, u8 data)
- 	if (priv->upstream_irq.mode != aspeed_kcs_irq_serirq)
- 		return;
- 
--	switch (kcs_bmc->channel) {
-+	switch (priv->channel) {
- 	case 1:
- 		switch (priv->upstream_irq.id) {
- 		case 12:
-@@ -232,7 +236,7 @@ static int aspeed_kcs_set_address(struct kcs_bmc_device *kcs_bmc, u32 addrs[2],
- 	if (WARN_ON(nr_addrs < 1 || nr_addrs > 2))
- 		return -EINVAL;
- 
--	switch (priv->kcs_bmc.channel) {
-+	switch (priv->channel) {
- 	case 1:
- 		regmap_update_bits(priv->map, LPC_HICR4, LPC_HICR4_LADR12AS, 0);
- 		regmap_write(priv->map, LPC_LADR12H, addrs[0] >> 8);
-@@ -315,7 +319,7 @@ static int aspeed_kcs_config_upstream_irq(struct aspeed_kcs_bmc *priv, u32 id, u
- 	priv->upstream_irq.mode = aspeed_kcs_irq_serirq;
- 	priv->upstream_irq.id = id;
- 
--	switch (priv->kcs_bmc.channel) {
-+	switch (priv->channel) {
- 	case 1:
- 		/* Needs IRQxE1 rather than (ID1IRQX, SEL1IRQX, IRQXE1) before AST2600 A3 */
- 		break;
-@@ -347,7 +351,7 @@ static int aspeed_kcs_config_upstream_irq(struct aspeed_kcs_bmc *priv, u32 id, u
- 	default:
- 		dev_warn(priv->kcs_bmc.dev,
- 			 "SerIRQ configuration not supported on KCS channel %d\n",
--			 priv->kcs_bmc.channel);
-+			 priv->channel);
- 		return -EINVAL;
- 	}
- 
-@@ -358,7 +362,7 @@ static void aspeed_kcs_enable_channel(struct kcs_bmc_device *kcs_bmc, bool enabl
- {
- 	struct aspeed_kcs_bmc *priv = to_aspeed_kcs_bmc(kcs_bmc);
- 
--	switch (kcs_bmc->channel) {
-+	switch (priv->channel) {
- 	case 1:
- 		regmap_update_bits(priv->map, LPC_HICR0, LPC_HICR0_LPC1E, enable * LPC_HICR0_LPC1E);
- 		return;
-@@ -374,7 +378,7 @@ static void aspeed_kcs_enable_channel(struct kcs_bmc_device *kcs_bmc, bool enabl
- 		regmap_update_bits(priv->map, LPC_HICRB, LPC_HICRB_LPC4E, enable * LPC_HICRB_LPC4E);
- 		return;
- 	default:
--		pr_warn("%s: Unsupported channel: %d", __func__, kcs_bmc->channel);
-+		pr_warn("%s: Unsupported channel: %d", __func__, priv->channel);
- 		return;
- 	}
- }
-@@ -435,7 +439,7 @@ static void aspeed_kcs_irq_mask_update(struct kcs_bmc_device *kcs_bmc, u8 mask,
- 	if (mask & KCS_BMC_EVENT_TYPE_IBF) {
- 		const bool enable = !!(state & KCS_BMC_EVENT_TYPE_IBF);
- 
--		switch (kcs_bmc->channel) {
-+		switch (priv->channel) {
- 		case 1:
- 			regmap_update_bits(priv->map, LPC_HICR2, LPC_HICR2_IBFIE1,
- 					   enable * LPC_HICR2_IBFIE1);
-@@ -453,7 +457,7 @@ static void aspeed_kcs_irq_mask_update(struct kcs_bmc_device *kcs_bmc, u8 mask,
- 					   enable * LPC_HICRB_IBFIE4);
- 			return;
- 		default:
--			pr_warn("%s: Unsupported channel: %d", __func__, kcs_bmc->channel);
-+			pr_warn("%s: Unsupported channel: %d", __func__, priv->channel);
- 			return;
- 		}
- 	}
-@@ -526,6 +530,47 @@ static int aspeed_kcs_of_get_channel(struct platform_device *pdev)
- 	return -EINVAL;
- }
- 
-+struct aspeed_kcs_bank {
-+	struct device_node *lpc_np;
-+	struct list_head entry;
-+};
-+
-+static DEFINE_MUTEX(aspeed_kcs_bank_lock);
-+static LIST_HEAD(aspeed_kcs_banks);
-+
-+/*
-+ * Assign each distinct LPC controller device_node a stable bank index the
-+ * first time it's seen, so that KCS devices instantiated from different LPC
-+ * controllers on the same SoC (e.g. AST2700) don't collide on the same
-+ * global kcs_bmc_device::channel value.
-+ */
-+static int aspeed_kcs_of_get_bank(struct device_node *lpc_np)
-+{
-+	struct aspeed_kcs_bank *bank;
-+	int index = 0;
-+
-+	mutex_lock(&aspeed_kcs_bank_lock);
-+
-+	list_for_each_entry(bank, &aspeed_kcs_banks, entry) {
-+		if (bank->lpc_np == lpc_np)
-+			goto out;
-+		index++;
-+	}
-+
-+	bank = kzalloc(sizeof(*bank), GFP_KERNEL);
-+	if (!bank) {
-+		mutex_unlock(&aspeed_kcs_bank_lock);
-+		return -ENOMEM;
-+	}
-+
-+	bank->lpc_np = lpc_np;
-+	list_add_tail(&bank->entry, &aspeed_kcs_banks);
-+
-+out:
-+	mutex_unlock(&aspeed_kcs_bank_lock);
-+	return index;
-+}
-+
- static int
- aspeed_kcs_of_get_io_address(struct platform_device *pdev, u32 addrs[2])
- {
-@@ -559,7 +604,7 @@ static int aspeed_kcs_probe(struct platform_device *pdev)
- 	struct device_node *np;
- 	bool have_upstream_irq;
- 	u32 upstream_irq[2];
--	int rc, channel;
-+	int rc, channel, bank;
- 	int nr_addrs;
- 	u32 addrs[2];
- 
-@@ -575,6 +620,10 @@ static int aspeed_kcs_probe(struct platform_device *pdev)
- 	if (channel < 0)
- 		return channel;
- 
-+	bank = aspeed_kcs_of_get_bank(np);
-+	if (bank < 0)
-+		return bank;
-+
- 	nr_addrs = aspeed_kcs_of_get_io_address(pdev, addrs);
- 	if (nr_addrs < 0)
- 		return nr_addrs;
-@@ -590,9 +639,11 @@ static int aspeed_kcs_probe(struct platform_device *pdev)
- 	if (!priv)
- 		return -ENOMEM;
- 
-+	priv->channel = channel;
-+
- 	kcs_bmc = &priv->kcs_bmc;
- 	kcs_bmc->dev = &pdev->dev;
--	kcs_bmc->channel = channel;
-+	kcs_bmc->channel = bank * KCS_CHANNEL_MAX + channel;
- 	kcs_bmc->ioreg = ast_kcs_bmc_ioregs[channel - 1];
- 	kcs_bmc->ops = &aspeed_kcs_ops;
- 
-
----
-base-commit: f0e6f20cb52b14c2c441f04e21cef0c95d498cac
-change-id: 20260722-upstream_kcs_multiple_lpc-735942211508
-
-Best regards,
 -- 
-Yu-Che Hsieh <yc_hsieh@aspeedtech.com>
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
 
