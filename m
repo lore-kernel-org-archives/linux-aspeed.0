@@ -1,56 +1,56 @@
-Return-Path: <linux-aspeed+bounces-4858-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4859-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 998D8C61DC4
-	for <linux-aspeed@archiver.kernel.org>; Wed, 26 Aug 2026 00:15:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86579C61DBD
+	for <linux-aspeed@archiver.kernel.org>; Wed, 26 Aug 2026 00:16:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hV4th6PgCz2x98;
-	Wed, 26 Aug 2026 10:15:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hV4tj0FFZz2ybK;
+	Wed, 26 Aug 2026 10:15:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787654924;
-	cv=none; b=QjAn57mTpoREwoO5whw0kTCNkZpYxQEr1Ch9YEkJH0QozCB03IwUiBqsGAYlP3a6HGCywX6LAbf2pjDYoUiq7IP1gVL29alPj050pfUq3onxTaUunkbNHxkMsIQA4G/sPyvPV0sKdIcFq+xQd86s2RmcIZHMVM1Sll8Ttu3saWBTSnmu9z4cM0x2C4QadNDAy7sH29oWY1XMZXitr/2dpb2JyYOW2YtDcPNgvRIRUudgJxQw4RK9/blKpotxl7Ib+PzylLfBsjD9dN/JgVEgAih/upn+6RoDu1n5vkSVCm4eDP7GDF18W6Uq+qeurIHB5g4keJZ+upQtoSOwpvp2/g==
+	cv=none; b=kzvzaRu2skp/DI4ZphTxwUsbtvfUEkoaDQAA+tVAUW++3/hfxwYVNX+RhhL0eUgo5HmlkbyXKyJbUeBFc4NcIAEtCwKUaPIu5pWe+qryG45SrzZsJbBV4hOBbWZWzB9xvY7uLJffbu/XRJc/cz+imCuDIxBLgnOW8pRpc9w1ULZ4EvBsLFBro6bCobUGALWmAFVD98DTLFeR6OIy0shlzCcMXvVi8OiRIHFy/nK0dunJ7k8DqH5jVAvmqc28Ml3k5mtsIX7tLdfu2G+gGV2440zSTr474tqURruKKy3n6cX1Bmm4K8+zlcvDyvBthUzGq+T9uyZXSnHKYmIAm4nL2g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1787654924; c=relaxed/relaxed;
-	bh=dSCgs0lQLqQsikPfdXK9PGRbuAiA76T18Sx7NNxX49E=;
+	bh=BNtgxBnxtR7jtl9YL2LKSwYhSH3qspaVlCZnLRUaWyI=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=JjljeSe0wqOyA9LViEnusAr/faToxz7EdEn0iUKAjA9AbYOTqJfxB0TX8SjWfnLGeXPrLNv+fqBNVAlCel38yv0RfwMfVgAUaRJp4S3LKKdRj68kCxjwAeGX54FONTImrr7CCiN5IUBZP5xMjAtL1Ppd323o7huUzf0d/15FVvD2saOM/UtTF5SEyQrvD0PHgif94ct0ZN5JJ9ww/0/y9Ppt7MJOmRbHA/bez4TTiSV0Gb7QE5AvDu6s5hZ6Gw7D2Huce8E8MDBzrPEGWpbKW2E4eX48IelGU/NjtpTv5B0vNXc2CMUx1vAffR6ZNssljmX65L+hkk014SLxarl89g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Wlu61ztG; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=devnull+u8813345.gmail.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=b9rvTOddrXzkS+Qhk0vDKpeyTDMfKi35r1wF2SkYAt2CphaQEMOQKBtj9U+xBXIBRVxc+7Q1kwaw+mbTbJ53B1n1BEttL5H1LLGlbUjEv2FhsfoC44raTQUxBWE6U4A+ZEfnGFxCrpJjklcq8m/cp4ovL7XcIzXWOMsXD5CU2vSWjPE0GZ5ECVhfUxiClYhu3yVOgoDaoKH7uL+rHT96njGCiE9mB6Am7gFwBk4G1Frug3dUfYeieMzoqpY0LdN9rj3Rz2rx5Hnu8M1wvnm03QQP7DxbnU+rWFJBJSalak5ALNw5aHlqh8tARp68qqMgXW3zMbyR/yg80u82bz+r0g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=i9XvgZsO; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+u8813345.gmail.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Wlu61ztG;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=i9XvgZsO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=devnull+u8813345.gmail.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+u8813345.gmail.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hTkzH6W18z2xVq
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hTkzH6Bkmz2xKh
 	for <linux-aspeed@lists.ozlabs.org>; Tue, 25 Aug 2026 20:48:43 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 73063601DE;
+	by sea.source.kernel.org (Postfix) with ESMTP id 7C7D344E9D;
 	Tue, 25 Aug 2026 10:48:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 15BDAC2BCC7;
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 535A9C2BD01;
 	Tue, 25 Aug 2026 10:48:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1787654920;
-	bh=Vj1DHrmGR0tyVO+ZlDxsQgZLtvtVuNtuX+cbxrGaewI=;
+	bh=wAwBTsf3GkIlrHwbVtRdn+g/x5eJ9jnUFDqj54HbqqY=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=Wlu61ztGYvIiCAkcwKONvj5YgDAk45PsbLBjX53+IlGR8L02chPEMJZoBRrI471D1
-	 rKMyU2cMFHhaiWMka6lqdkFwz6qf/fhvJIjv36I2fIIEtcDz2Xb+OSRrBGe929upDY
-	 N2wv92QH/fDYwliDSd72/+h5rBc7UQaU1OQWkKnZyPpEL7JyG/TpUcIOzj1/8Z1q5D
-	 HzuaOeyJ2FlnY7hftrm4+T32EfLUH6Tcc7ZaElS7mfY46vwb1ejtfK00QaPpN/P5Rq
-	 oPcGkbXIbFkKrYR+y2cX7nrMD1sLWVk6XmK1W1qjVTmze75jOLC+zj9Ukbel90HECB
-	 CvVfEQcdPHOmg==
+	b=i9XvgZsOzRwVgbl4s0RN+eeMo/VatgD1nDeMLWst42HtLlcmGa8Uuz1ZJhRRX3mIm
+	 uxV7jFR+cq9TAyFGi5kxtqWYo/dSMzRshcFonTQdy36PvG238uIZ6ZcC1CnL9OkdcB
+	 h2CKADzv8jio5Q4J+lC8+WTyiVekEvnonuB8ytmA/sx5jmaEH3kQYJNpsYaNh90pXL
+	 tTrZdop9aSi+a5tX4G8q7x6BMmDtJRfQjIdiX/Ld9FznDR0EsTlRUky0XqfG6Fk1Ev
+	 ZtuI8IlF+9ab41dVgivnSqwvOIlkPGbnq48Pt0W4eqlx1xgWFQnGg7TUY0Ol3ZAtxk
+	 b/b5qA+J7s1mA==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E69AEC61DB6;
-	Tue, 25 Aug 2026 10:48:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 40F66C61DBE;
+	Tue, 25 Aug 2026 10:48:40 +0000 (UTC)
 From: Colin Huang via B4 Relay <devnull+u8813345.gmail.com@kernel.org>
-Date: Tue, 25 Aug 2026 18:47:42 +0800
-Subject: [PATCH v6 01/12] dt-bindings: arm: aspeed: Add Anacapa EVT1 EVT2
- DVT board
+Date: Tue, 25 Aug 2026 18:47:46 +0800
+Subject: [PATCH v6 05/12] ARM: dts: aspeed: anacapa: Add additional EEPROM
+ node for SCM
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -66,7 +66,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260825-anacapa-devlop-phase-devicetree-v6-1-9059a2a279ce@gmail.com>
+Message-Id: <20260825-anacapa-devlop-phase-devicetree-v6-5-9059a2a279ce@gmail.com>
 References: <20260825-anacapa-devlop-phase-devicetree-v6-0-9059a2a279ce@gmail.com>
 In-Reply-To: <20260825-anacapa-devlop-phase-devicetree-v6-0-9059a2a279ce@gmail.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -74,14 +74,13 @@ To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
  Andrew Jeffery <andrew@codeconstruct.com.au>
 Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
  linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- colin.huang2@amd.com, Colin Huang <u8813345@gmail.com>, 
- Conor Dooley <conor.dooley@microchip.com>
+ colin.huang2@amd.com, Colin Huang <u8813345@gmail.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1787654905; l=985;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1787654905; l=1224;
  i=u8813345@gmail.com; s=20260202; h=from:subject:message-id;
- bh=Sw+OWK3YcWaJDMswc4oOvzoue3GKb6ZepbG6V99kpbc=;
- b=4A0y8x/hf3KaXM3cEV4tdE3POr/Pbjc3QPcf3gzD6S1OIXiqLc1psKaEhE352IbNumiwWyrXF
- 8tYTg9zCqU4BkQWdDFtOJ9M/T7H/tKeYNOY8xhej553QdnkEf1SzRFg
+ bh=6bqaYqKHlIwRPbR4gPkyIhffT51cOaBU7ByQ/FJQMrw=;
+ b=XMu0Lx/noo3Yw4GhiYGV3uBQBVNQwxetTW3BuNLfMxGfGVAjhSLlcpJ1GPO/6ErE0vg0SL8e+
+ i8f/ZdGC4EgAUpb33SHEAvvzThzQk2Ducd4TDuZjNGdmY992hmkH7GZ
 X-Developer-Key: i=u8813345@gmail.com; a=ed25519;
  pk=Zlg0WqpCw4qbswOqamTBTXIchwR/3SnYZpy7rjaGMdQ=
 X-Endpoint-Received: by B4 Relay for u8813345@gmail.com/20260202 with
@@ -91,28 +90,43 @@ Reply-To: u8813345@gmail.com
 
 From: Colin Huang <u8813345@gmail.com>
 
-Document Anacapa BMC EVT1, EVT2, and DVT compatibles.
+The SCM FRU EEPROM I2C address differs between SCM revisions:
+- Rev B uses address 0x50
+- Rev C/D/E/F and later use address 0x51
+
+Add an additional AT24C128 EEPROM node at 0x51 on i2c9 so the same
+device tree can support multiple SCM revisions.
 
 Signed-off-by: Colin Huang <u8813345@gmail.com>
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
 ---
- Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 3 +++
- 1 file changed, 3 insertions(+)
+ .../boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt2.dts   | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-index dd7996960de3..1c1570143bd9 100644
---- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-+++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-@@ -84,6 +84,9 @@ properties:
-               - asus,ast2600-kommando-ipmi-card
-               - asus,x4tf-bmc
-               - facebook,anacapa-bmc
-+              - facebook,anacapa-bmc-dvt
-+              - facebook,anacapa-bmc-evt1
-+              - facebook,anacapa-bmc-evt2
-               - facebook,bletchley-bmc
-               - facebook,catalina-bmc
-               - facebook,clemente-bmc
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt2.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt2.dts
+index 075ac39f369f..d2b4855ff1ad 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt2.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt2.dts
+@@ -8,6 +8,20 @@ / {
+ 	model = "Facebook Anacapa BMC";
+ };
+ 
++// SCM
++&i2c9 {
++	// SCM FRU
++	// | DC-SCM Rev        | Slave address of eeprom  |
++	// |-------------------|--------------------------|
++	// | Rev B             | 0x50                     |
++	// | Rev C/D/E/F/above | 0x51                     |
++
++	eeprom@51 {
++		compatible = "atmel,24c128";
++		reg = <0x51>;
++	};
++};
++
+ &sgpiom0 {
+ 	bus-frequency = <2000000>;
+ 	gpio-line-names =
 
 -- 
 2.34.1
