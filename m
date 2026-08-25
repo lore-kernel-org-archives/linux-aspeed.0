@@ -1,56 +1,56 @@
-Return-Path: <linux-aspeed+bounces-4850-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4851-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D22CAC61DB9
-	for <linux-aspeed@archiver.kernel.org>; Wed, 26 Aug 2026 00:06:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0488C61DBD
+	for <linux-aspeed@archiver.kernel.org>; Wed, 26 Aug 2026 00:06:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hV4gH4hNXz2x98;
-	Wed, 26 Aug 2026 10:06:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hV4gR13jMz2yYf;
+	Wed, 26 Aug 2026 10:06:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787654927;
-	cv=none; b=kPWMp5hM6S9+9c6OIN+JbTIrF/IJ29BtfQDb/gt6wkCljGEeAib3K0G2l3xK/tKDQwevwmpYDP0vDJ5LIHw/2gCouNXyeIBCSg8UiciXjH0Oxmw4l3re0nJsP7wDa2AQIX+RP/+SkWZ0isgBFz66lVeLceTuHZsbjQ6v0Nx/1Qg4wI0BWf3brod6tjFtS0Id4vh6GobpHkTrFtKtxlIPjYpcaQGzK8dPo5/0gdEfhrYAzEp9n9iSIapy6g71QgndXe3XM/pZlvUgF9fncXOmkYPbhWK5xEM1iedK//BmjnrnjXLNV94M+isO9qnK4Lf7RF+WjEV1mF2eXgeHnlxHdQ==
+	cv=none; b=lglW/f2P6nyo2wpQJXrlg6iiv6CxWPqRurr63YxoJyGS1gFUvOwvmsgsq/Yfg2XpJw+rQd07iAX3zwChPFy564Ul4U1HLCY4osyaokRIZFH1Ur2jzquSo5dI2zJ6MQx1VUx4SgkI1P9pZTSD33dAkHBwW0hJNA6/aQmnI9mwzVcsZPIh05D8qJ55FIDuBWbonP/UkViFo9f7aB1tlOk6MrhnvsN+x2FPb+vWVT83rGRaJKQOlsJL8nkwdvsC878D1emF+etQsv09FIdNynAVKOgHHcJMMmiLYw44+1eK+O1ehpfcGuKPtWrBaZ/KsmOhz9F7bGJSqIu0MRLJKHDmig==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1787654927; c=relaxed/relaxed;
-	bh=Tj9M/n7WtGJJQGjBJtmrJynwtO9r0cDKfRTR3sBGYmw=;
+	bh=VeCnRVTbtRzptHNDlHkPZvBzoYxNXZCjM6SRwtACBiE=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=AW28fQdiKQdEhsKKYmORdzVKUzaSEW/RMm38U8yEut+VuiibRNfbVS1I2iJdAZcqJQbPVeqo23tNhK7K5iZv1/5ZuK28B3V9dqphyS8xs4SufdJn9dnG/BrasLILQI7K7OWHjhIlvxNKUWwzHZl59o0qDShnshbtaGZcU1Wt4o1Yv3d9gUL3BRpk0AObu6q7qZ6heUXoba52F0L3sutqdBKnVDr4jxujdr7fj1VrWmO5oLoLlctIY15Pvw9yRLK9M2pUByVfM5E0otppunKV3FKu6Nwgit5AnAYa73+w43eM7OsQDq8G8pbvI2XCsGrkN1F2PJ9Pwl1BTbS+w0ZF3g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Ldg8AWTC; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+u8813345.gmail.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=A+lAI7vPqR+XZ2rQubZo74iMccOYKQXwpR3jfhf/u8+o2E991o6dbGzCVBsCqjM79mzMIHKB/Tsqi/CuzoxDXEWtMqs4P5MhtIH0Jps/VWtwVyIemR1FIXnB1m25JPL1XcwpOt6p1py7uz9MPaRAVSsnJRI3ZkXvFD8kJsMFySejL67XMTrUoJTmnbq3WINN/HTy5ButSSuFwiB2akf3OsQlbrAtES1DSpd3iPDy0s5tVomfqtwGTSw5PpvvWBDEHx4Ax6mAuBxmJ4SXawn5+Lf6uJDSUKhIsfXXDdmFFH9P3XX1FDDRwVHJ7Ek7g140yA1iki/1bDFTOxHF7QbtIA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DSxMj/cA; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=devnull+u8813345.gmail.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Ldg8AWTC;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DSxMj/cA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+u8813345.gmail.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=devnull+u8813345.gmail.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hTkzL1kgCz2y2h
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hTkzL6JS8z2y1F
 	for <linux-aspeed@lists.ozlabs.org>; Tue, 25 Aug 2026 20:48:46 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id D16A5431DF;
+	by sea.source.kernel.org (Postfix) with ESMTP id E35674381B;
 	Tue, 25 Aug 2026 10:48:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id B1390C2BCF6;
+Received: by smtp.kernel.org (Postfix) with ESMTPS id C537BC2BCFD;
 	Tue, 25 Aug 2026 10:48:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1787654920;
-	bh=x266lsRftT8i25oBXl2ssgbHQhGOw8P7oh+KboxNXTY=;
+	bh=5n4CWCuGf8N+WYrS1EObUuP6aViTVd0F84tGUfgyYLo=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=Ldg8AWTCDVogCcai4gszswCHs9eSDdODDdRjahUKw3ZX/AU+VXyQoXQxaTQ7mO15M
-	 evp4etERmhZY400cY3ODC7ayCmsRTDTqmwweKSikykjssHTATj+x6kEn/8f/4Yj8nv
-	 qTHSMLkk9gNZt+XkpvU07XKpWzMLT1Ajs0NMfNOMYbmrIYc5xQOTQJG9nGP0uXxmKT
-	 YwwL5llv8UorvLq5tzlQBY1G/e44sRy6nPgVKUjTe0aaEcXEXzZQ2CwyO4kpralhr4
-	 PpEDGyTxJY+2x0XM+pCnt90G41uWMD9MWgyKbuq7PA9tIeH5T9WsTn7yoI5arYBcGe
-	 1WxesrBuTUjVw==
+	b=DSxMj/cAnl35yQywTvYwbmH0vhKHgw9dyTPDtMBlOFf/jVWfAxgmjTD6uX9HOWmxq
+	 NgVWv7qXjZyQ9200lHjJIkqQFwfKSo4HP728eERD8HO2cYTLFGAc8uY8QxgL/v8K0J
+	 vkG0xIcxfmt9ZIw4lll+7hMQsXBoFEjRW2OuS16vUJ9HtpGH/On75bkaiTAYErOWn+
+	 TRT5QxK9T5W0Z6O5tDWUDB5AJLEDdNkSZrHyNHiwalLry9zTQzpi8cVV6WwcyfzxSl
+	 6ecCS+gw1s7oSvnroi6cj3X2O9uuDhYxNN2NGKeN3J0pRMLxrIFipMyB71QCW0DOxO
+	 hyP9yX9qU9z2A==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9FA3BC61DC2;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B3522C61DBD;
 	Tue, 25 Aug 2026 10:48:40 +0000 (UTC)
 From: Colin Huang via B4 Relay <devnull+u8813345.gmail.com@kernel.org>
-Date: Tue, 25 Aug 2026 18:47:49 +0800
-Subject: [PATCH v6 08/12] ARM: dts: aspeed: anacapa: Enable MCTP and FRU
- for NIC
+Date: Tue, 25 Aug 2026 18:47:50 +0800
+Subject: [PATCH v6 09/12] ARM: dts: aspeed: anacapa: evt2: Add shunt
+ resistor values for HSC monitors
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -66,7 +66,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260825-anacapa-devlop-phase-devicetree-v6-8-9059a2a279ce@gmail.com>
+Message-Id: <20260825-anacapa-devlop-phase-devicetree-v6-9-9059a2a279ce@gmail.com>
 References: <20260825-anacapa-devlop-phase-devicetree-v6-0-9059a2a279ce@gmail.com>
 In-Reply-To: <20260825-anacapa-devlop-phase-devicetree-v6-0-9059a2a279ce@gmail.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -75,13 +75,13 @@ To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
 Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
  linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
  colin.huang2@amd.com, Colin Huang <u8813345@gmail.com>, 
- Andy Chung <Andy.Chung@amd.com>
+ Peter Shen <peter.shen@amd.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1787654905; l=3240;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1787654905; l=2042;
  i=u8813345@gmail.com; s=20260202; h=from:subject:message-id;
- bh=dOnAmtbd66IVx7oXtqFQ1g3XoTMO1Ryg0F0x9FVbMP8=;
- b=ftyDPTkjdoGzotF4l5iWYs6uhTqylEgD5qyrES/Ylqri27+Dso7FI2I0uqGRiBcqYUp1nMkgc
- Dw7Lg2km/n5BgNptYTxctfAUFsGd5PPJiJW0yhYnmlyaZzPlc0+/kUh
+ bh=Nkr6isVpDdRMMBTaTgNrI6h8ViGx2pJj1Pj8jJLDOHI=;
+ b=PbLx5G7AHzh5WHvsZjQlObM/t2WWS+f13JDDHoRPhAHTS4EM3/Kmx+wi9urIcxgO1YkJ1mwJP
+ hZ1XInQY+ZCCpJwGP+ghsQrYIQ6SCJwXAdU+hKj3MluKtF1s2p7jfKT
 X-Developer-Key: i=u8813345@gmail.com; a=ed25519;
  pk=Zlg0WqpCw4qbswOqamTBTXIchwR/3SnYZpy7rjaGMdQ=
 X-Endpoint-Received: by B4 Relay for u8813345@gmail.com/20260202 with
@@ -89,173 +89,83 @@ X-Endpoint-Received: by B4 Relay for u8813345@gmail.com/20260202 with
 X-Original-From: Colin Huang <u8813345@gmail.com>
 Reply-To: u8813345@gmail.com
 
-From: Andy Chung <Andy.Chung@amd.com>
+From: Peter Shen <peter.shen@amd.com>
 
-Add the mctp-controller property to enable frontend NIC management
-via PLDM over MCTP.
-Also add EEPROM device for NIC FRU and reorder the I2C virtual bus
-index accroding to the system silkscreen index.
+Add shunt resistor configuration for LTC4287 hot-swap controllers on
+Anacapa EVT2 platform.
 
-Signed-off-by: Andy Chung <Andy.Chung@amd.com>
+The resistor values are required for accurate current and power
+measurement by the driver. These settings reflect the actual BOM used
+on EVT2, where different sense resistor values (150 uOhm and 250 uOhm)
+are populated across rails.
+
+Without this configuration, the reported readings would be incorrect.
+
+Signed-off-by: Peter Shen <peter.shen@amd.com>
 ---
- .../aspeed/aspeed-bmc-facebook-anacapa-evt2.dts    | 137 +++++++++++++++++++++
- 1 file changed, 137 insertions(+)
+ .../aspeed/aspeed-bmc-facebook-anacapa-evt2.dts    | 42 ++++++++++++++++++++++
+ 1 file changed, 42 insertions(+)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt2.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt2.dts
-index 7c641a79f63e..7fe8d279202a 100644
+index 7fe8d279202a..c36519a601a9 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt2.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt2.dts
-@@ -8,6 +8,25 @@ / {
- 	model = "Facebook Anacapa BMC";
- };
- 
-+&{/aliases} {
-+	i2c36 = &i2c11mux0ch5;
-+	i2c37 = &i2c11mux0ch6;
-+	i2c38 = &i2c11mux0ch7;
-+	i2c39 = &i2c11mux0ch0;
-+	i2c40 = &i2c11mux0ch1;
-+	i2c41 = &i2c11mux0ch2;
-+	i2c42 = &i2c11mux0ch3;
-+	i2c43 = &i2c11mux0ch4;
-+	i2c44 = &i2c10mux0ch1;
-+	i2c45 = &i2c10mux0ch2;
-+	i2c46 = &i2c10mux0ch3;
-+	i2c47 = &i2c10mux0ch4;
-+	i2c48 = &i2c10mux0ch5;
-+	i2c49 = &i2c10mux0ch6;
-+	i2c50 = &i2c10mux0ch7;
-+	i2c51 = &i2c10mux0ch0;
-+};
+@@ -43,6 +43,30 @@ gpio@24 {
+ 					"RPDB_FAN7_PRSNT_N_R", "RPDB_FAN8_PRSNT_N_R",
+ 					"", "";
+ 			};
 +
- // MB - PDB
- &i2c8 {
- 	i2c-mux@72 {
-@@ -56,6 +75,124 @@ eeprom@51 {
++			power-monitor@42 {
++				compatible = "lltc,ltc4287";
++				reg = <0x42>;
++				shunt-resistor-micro-ohms = <150>;
++			};
++
++			power-monitor@43 {
++				compatible = "lltc,ltc4287";
++				reg = <0x43>;
++				shunt-resistor-micro-ohms = <150>;
++			};
++
++			power-monitor@44 {
++				compatible = "lltc,ltc4287";
++				reg = <0x44>;
++				shunt-resistor-micro-ohms = <250>;
++			};
++
++			power-monitor@45 {
++				compatible = "lltc,ltc4287";
++				reg = <0x45>;
++				shunt-resistor-micro-ohms = <250>;
++			};
+ 		};
+ 
+ 		i2c@1 {
+@@ -57,6 +81,24 @@ gpio@24 {
+ 					"","",
+ 					"","";
+ 			};
++
++			power-monitor@40 {
++				compatible = "lltc,ltc4287";
++				reg = <0x40>;
++				shunt-resistor-micro-ohms = <150>;
++			};
++
++			power-monitor@41 {
++				compatible = "lltc,ltc4287";
++				reg = <0x41>;
++				shunt-resistor-micro-ohms = <150>;
++			};
++
++			power-monitor@45 {
++				compatible = "lltc,ltc4287";
++				reg = <0x45>;
++				shunt-resistor-micro-ohms = <250>;
++			};
+ 		};
  	};
  };
- 
-+// R Bridge Board
-+&i2c10 {
-+	multi-master;
-+
-+	mctp@10 {
-+		compatible = "mctp-i2c-controller";
-+		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
-+	};
-+
-+	i2c-mux@71 {
-+		/delete-property/ i2c-mux-idle-disconnect;
-+
-+		i2c10mux0ch1: i2c@1 {
-+			mctp-controller;
-+			// BE NIC FRU
-+
-+			eeprom@50 {
-+				compatible = "atmel,24c32";
-+				reg = <0x50>;
-+			};
-+		};
-+
-+		i2c10mux0ch2: i2c@2 {
-+			mctp-controller;
-+			// BE NIC FRU
-+
-+			eeprom@50 {
-+				compatible = "atmel,24c32";
-+				reg = <0x50>;
-+			};
-+		};
-+
-+		i2c10mux0ch3: i2c@3 {
-+			mctp-controller;
-+			// BE NIC FRU
-+
-+			eeprom@50 {
-+				compatible = "atmel,24c32";
-+				reg = <0x50>;
-+			};
-+		};
-+
-+		i2c10mux0ch4: i2c@4 {
-+			mctp-controller;
-+			// BE NIC FRU
-+
-+			eeprom@50 {
-+				compatible = "atmel,24c32";
-+				reg = <0x50>;
-+			};
-+		};
-+	};
-+};
-+
-+// L Bridge Board
-+&i2c11 {
-+	multi-master;
-+
-+	mctp@10 {
-+		compatible = "mctp-i2c-controller";
-+		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
-+	};
-+
-+	i2c-mux@71 {
-+		/delete-property/ i2c-mux-idle-disconnect;
-+
-+		i2c11mux0ch0: i2c@0 {
-+			mctp-controller;
-+			// FE NIC FRU
-+
-+			eeprom@50 {
-+				compatible = "atmel,24c32";
-+				reg = <0x50>;
-+			};
-+		};
-+
-+		i2c11mux0ch1: i2c@1 {
-+			mctp-controller;
-+			// BE NIC FRU
-+
-+			eeprom@50 {
-+				compatible = "atmel,24c32";
-+				reg = <0x50>;
-+			};
-+		};
-+
-+		i2c11mux0ch2: i2c@2 {
-+			mctp-controller;
-+			// BE NIC FRU
-+
-+			eeprom@50 {
-+				compatible = "atmel,24c32";
-+				reg = <0x50>;
-+			};
-+		};
-+
-+		i2c11mux0ch3: i2c@3 {
-+			mctp-controller;
-+			// BE NIC FRU
-+
-+			eeprom@50 {
-+				compatible = "atmel,24c32";
-+				reg = <0x50>;
-+			};
-+		};
-+
-+		i2c11mux0ch4: i2c@4 {
-+			mctp-controller;
-+			// BE NIC FRU
-+
-+			eeprom@50 {
-+				compatible = "atmel,24c32";
-+				reg = <0x50>;
-+			};
-+		};
-+	};
-+};
-+
- // MB
- &i2c13 {
- 	i2c-mux@70 {
 
 -- 
 2.34.1
