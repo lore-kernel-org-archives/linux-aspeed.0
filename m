@@ -1,56 +1,113 @@
-Return-Path: <linux-aspeed+bounces-4856-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4857-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49B23C61DC4
-	for <linux-aspeed@archiver.kernel.org>; Wed, 26 Aug 2026 00:11:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3D3EC61DB9
+	for <linux-aspeed@archiver.kernel.org>; Wed, 26 Aug 2026 00:15:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hV4mx3nt3z2x98;
-	Wed, 26 Aug 2026 10:10:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787654929;
-	cv=none; b=jSUGSRfIS/PDEwyc38PBrjxu1Q5C61lz4DDXC2jmM4Bmd4OE9Na0L+jgYTkffS1uqyqj7Ksa4+NEQbrewHWEnmRgMVOui2C19VpPric7apSbkc2Ivxr19QQuOCN5Lwsw0QsqhuqyChT/4k4PAOUXph6Sni3mDo+IOGJrd2p5/mC/xzFhoO037ROzsgC/VF5R1iiGlHJMwR7dYkyTz59jO/lTxHQVYWLsOSvlosWS5dieSPGpJiKgajfG8sqSppc/Eqnmwns1yhCzv1nem2kZd15CWhW8PYt78H5QTKbZhSZvyHDxVKpSMiGhgyrgI0hXW83nMSoB3OOM4eQoCLTiZA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787654929; c=relaxed/relaxed;
-	bh=c30cFW/Jdw0cb31QGl1jPJwN0K3fYkjWV360hRC2iOI=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=LCjqBF2F0+fc27BOlUol3Ct9T7HC2Xq6I7ilphBJPnFEdOV6/zgDy0NBN3mP0y35KQ+BJDeSqHIJ0LE0HJBYosR8QvUjYPfA4mDx/2Xtep0KItX3BAxjtFTUYmR81qM7dumExDwpeqiln391sZHe8ko+cA51DyPBNbJJBRo86GKxpUAYl/wEe599FNz0WGhjLEhiyBex6XD30yYNszRxPsC5nYZoIKg62f9Q7R7Lf132MH9g1FsydJOOHyT4E1YNPc1+Q4gTNlPCP/DDJuZt+hnLRKyoj8Esc2wBAbAMejNhMFhAgxI8CJz/aSduQ9HDl01gaV1n3NyXitqjjXqDRg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=a3cZLasc; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=devnull+u8813345.gmail.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hV4th0SVRz2yb9;
+	Wed, 26 Aug 2026 10:15:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=205.220.180.131 arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787644853;
+	cv=pass; b=KKnziIEUkmmG3XWQAq7ccMj2LYPv6lmoNc8dsEvh0BFTm5R9DKvTJMR21HI7R6gnUyKqzC7VSncIKiRxk9TuYBem0rxd7KyapZIFm53Ihkg2brb7on6EvulKMd9ILBOsvqgNnxqhG3bgBXF6R3E/LuSUo0pciFb9Z738pJylLKCL5nG3klYBPRLqDrb7klBvp0+0FrHnbPp/5JrOpZUpcMBy257iT+xY2SiVtu/Ioi12wKcLvcywx33gB9uuweSvR1pFqcuWciZtB5aCGHxZSq3OUtsGMS4tY2Vn07qSHNP/qm1/h/SvHmODrwLczjvhSc7gxBgL+2wWIq1UNuUykg==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1787644853; c=relaxed/relaxed;
+	bh=5i22KieYsA+kqY5NiRh4D02J0ZkjG6AI3NKqJFhFDss=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=SgPL42eA1LdjC8QyBk+3+CQHWC+gAikCRsuPMjozPRjXMdnzBEmWjAqtcGiRguw0pzhhXvjw4+tmcSflQUEJXaC/lyyOCugtglFkF8X+dvXmGeOvksc19MtuxrPIlczuSbljUL/g2oDjVIdq7HGMy0crO0mbZ5RVwG4pWvKQeWcVtVbJYv+0DRnj/vxhMAnU5FKbmElPC+ZpdSI9smYMCx6aLeXQqL3m83P32cy1AyijdccAr8SgS+PNGXPxTChIdUrp1Vd0CcAQ074XfY08j9v1y7QytNHYPp3zca7+J/uB8yNNBvVu+4C06u9IEUw7sGZA3hHGFhheUQ1iZ3+gOA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=hW245yiu; dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=arbXaHWi; dkim-atps=neutral; spf=pass (client-ip=205.220.180.131; helo=mx0b-0031df01.pphosted.com; envelope-from=ulf.hansson@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=a3cZLasc;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=hW245yiu;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=arbXaHWi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=devnull+u8813345.gmail.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.180.131; helo=mx0b-0031df01.pphosted.com; envelope-from=ulf.hansson@oss.qualcomm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hTkzN4l4lz2y1F
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 25 Aug 2026 20:48:48 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 06C4944F55;
-	Tue, 25 Aug 2026 10:48:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id DBA23C2BCFB;
-	Tue, 25 Aug 2026 10:48:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1787654920;
-	bh=6jOFUYvgMlcmzafj/Ti74phm3e09p8uFSSwu6v757NU=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=a3cZLascbDxL1ZPivBZ5+d92jyNU9u8kz28ZCtM0E0UzGdYZYlbrUc4bo/q6DR6Qr
-	 IA+YswSO7Ea/cMka9/rtuilA7SdOoyL8yUUdbMQOwDkMNtgPnEWYSqq8nhC7r+bhL4
-	 O/zw5BIXfy5wCCe4zWF/OR8WDVa30Ho3hnqnzp89Xv8HRJPhjrverB/4W9SO0Jbd3S
-	 wVO1UWWvx8htDS1ahpBrN84mTYPHMNCXBSQ83PdrqxVHOwVq89a8obiZAjJr6iWr68
-	 4aVfegnGKqHZNZ/Likh/Yhgz1jaXt3fZpYtg7MrCDztYcWGMccBudmHTx5qShW6JHF
-	 VJibGegl6sbqA==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C9330C61DC4;
-	Tue, 25 Aug 2026 10:48:40 +0000 (UTC)
-From: Colin Huang via B4 Relay <devnull+u8813345.gmail.com@kernel.org>
-Date: Tue, 25 Aug 2026 18:47:51 +0800
-Subject: [PATCH v6 10/12] ARM: dts: aspeed: anacapa: Add LPDB fuse monitor
- GPIO expander
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hTgFb6F2wz2xKh
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 25 Aug 2026 18:00:50 +1000 (AEST)
+Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 67P2R1Z3404219
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 25 Aug 2026 08:00:46 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	5i22KieYsA+kqY5NiRh4D02J0ZkjG6AI3NKqJFhFDss=; b=hW245yiuzPpw7Zc7
+	TgI5VNmqUcEW+F7q3OTTfJAr9m+I8U+Mi99eCl1qdFtPN2dzojQ3waErOzZM/SV4
+	raw/gVvUm3SlExnqFleFA4w3we4B3eHvab/tWFLtTjSZXJfySDZ1DKqwOkHzrh9y
+	+zGcn1Vz17mWFL/hvjpDHkwGf9jZMNi6GCRKAaTJ6aUKu4tlA37r3CBEXy+uI1BU
+	nO9dfrLc6QhISS+yH/aHgJt0l/HNqwUSn0YC5a4QhIYZwS6zr9RomQjt9CEwUj1f
+	SE7xuEoZrCDNPmc33MonGrwEmaAcBQyGQD4H94PSwHSRoxoysR8Tr3DQYjQOiUNi
+	/Hr+0A==
+Received: from mail-pj1-f69.google.com (mail-pj1-f69.google.com [209.85.216.69])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4g8y5jhm0h-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 25 Aug 2026 08:00:46 +0000 (GMT)
+Received: by mail-pj1-f69.google.com with SMTP id 98e67ed59e1d1-38e8e864ef0so8813399a91.0
+        for <linux-aspeed@lists.ozlabs.org>; Tue, 25 Aug 2026 01:00:46 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1787644845; cv=none;
+        d=google.com; s=arc-20260327;
+        b=mMCjudskHcn09Nbx3cWmDU2kJopK6yYH7M53zTUHIkAAXKdBObQFGu06VdQm2sjTCQ
+         Ng4tlAnjaKCW2dxXxj4uFKJ9vNO4TxTidxPOnxjX/yyiAEfGV7QQ1XzgNGI+GgiGze0n
+         VvYS0gur0TzwcRRR6Vm+hQ/9dC6r9+2W6Qvsj4XMJdYTvxmBwBUw3zcQqhZtJzD1HNcv
+         Qce2jrPp9+Ctk903u0wkBdAx/MnWF906giivsXDrcKYLA6nTQfxp1HAY3IYaP88vZlnt
+         X1BIt2mn8QBSwUofYlWjMB6FgwpYPSDYs5n3nrANrU1mUy8XUDm3XCB5j1HiuuHdQm3A
+         rebA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=5i22KieYsA+kqY5NiRh4D02J0ZkjG6AI3NKqJFhFDss=;
+        fh=iJggxB9KaHcLT4dTHPEE9UDgdHZCao6k0K7+C37pcyo=;
+        b=guTXT3R9QSQ3SSSmUaFZW+9XXbm5E4V7CQDzlnyPs5gJ6sC53H7/sDEZtdbwkVvK9Y
+         Fnvw+/5RVe+hew75vNIv+ApX2B1HgfaR5bdhPs86KK0VzpBqYrz+bPHFGSO/VWETgrl6
+         GpNmyDuKd3iS8oQoqJUNrSdl+TvatWXgG+vC41Luw3LZVHGODm9mCVhjO82ggYEGp5+X
+         4dpa8f6vq5GUKn3Knk3lKrDhnbj42cw/n/D1eyEd1S1gF0nofSgvB/7QtOxuYwQRHqP7
+         ms97N+TNDQIRLpOidKQHKg8wG52/LPiZgOHAj2ufV8XLh3yVcblTEeZay+83WIjN5WzO
+         UCMw==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1787644845; x=1788249645; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=5i22KieYsA+kqY5NiRh4D02J0ZkjG6AI3NKqJFhFDss=;
+        b=arbXaHWiYtzlPAvBzvdJsJdivfhaV405aBnU4NBOI6uEs9850kP8BGTFsvK/OFw43Y
+         OG4Pt7vzVem03ylFxTOJyh/PmQORzWpALeQbTg+EVevgPOoxUEQp6isV0RaLckIZHEmd
+         3tuZ0EDED7LLPs+VZi+RGhh1JRSuQDniK/475ZmcuRd9huqOGtD9wcbWU6BSryNmauYO
+         6H0XtNB0PWH0rPFlipXBmVt41oECTtwl1vW6Xv6kAquW58CHQwDWwrJhStkuiA+VULKX
+         gzP4l//l5b/9+tULPDXc0suZoSk1tyKG1nGNTTYbYN8pvkMBN/vbOhEq6thzpB+OlsQT
+         yi9g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1787644845; x=1788249645;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=5i22KieYsA+kqY5NiRh4D02J0ZkjG6AI3NKqJFhFDss=;
+        b=Wcsuax08rOBg/heGLWj/RDlp5vE/D2R39BArlAFPyDzBtJhYsfHlrq8YL1RC4/GxKQ
+         GxaBRH7RM0KEVHKzMQgIla7wslplXmmXmdfWiUK98oeVemOuO4K/rbNcpeQLqg1Wy7Hw
+         k3rsOI/TrgZ3YUPeT/CsFWr4A2f4G7b3TUMJ4S+T9QhMwB6fGjFFDB7m5TG6UWglBgN/
+         94VBc0nqm6JgOaepdDRLrHFISTeXOsnvpzopJKBGAVuwHNEY2/andDUCMBIMa76NfNr4
+         H1uijvshn+jWTAvs+mQ5Vmkxtp7Syez8lIYfUeiqFRS3nXvGj59r3sOAEDeceSH+w8p6
+         CHpA==
+X-Forwarded-Encrypted: i=1; AHgh+Roj5VfpaYm8vkwsB1SQ/XFhFMlcdoUUm01YGdA0lniBnmM4QXMygCyU32ZYSTIKmq2H7E/J9p+7ONU7lCM=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++l4rNa5n9CtbqBulkZzJlKhZve/9SW99+FirqJ1dFmOL1OGKOgh
+	F+5c4+YVKMXLVmEOo8aRYlELHh1XXZ5yijwuHOoxMEYKsXIEkQfJ7nsA9uJrQVTV3fQLpLaPOIb
+	QntWAK65rc0vppPikDCHLyEF/HMRZ3gnimTO+zz+uARGeHeaucIaT5+NX3XEeF14AKIugYWDzT0
+	ehWexqLOJuJpY6plvO+k2DyPZeVBYoz1RDMAtQ3YzmkT8=
+X-Gm-Gg: AR+sD11u/CqBo0x5Ps+Q6NUspo0Dc2r7tN0OBjAZ5V32osTiHmr9cU4LMzu0zoHrPQR
+	gqy9t3UiHf4VppNvuRmW24/hRjp5tt0LVxnBeh9Zv/e0RVJDIIz+jVHYJKX7uJ0NfrTaUXIamdv
+	XF6oOGo7Rp935flwXgFHW13AKl7bXbTzBSUZLo0LoAUjZe6u39eYymdAUsow==
+X-Received: by 2002:a17:90b:1d83:b0:380:9f17:6df3 with SMTP id 98e67ed59e1d1-395c3367376mr54366279a91.4.1787644844842;
+        Tue, 25 Aug 2026 01:00:44 -0700 (PDT)
+X-Received: by 2002:a17:90b:1d83:b0:380:9f17:6df3 with SMTP id
+ 98e67ed59e1d1-395c3367376mr54366138a91.4.1787644844301; Tue, 25 Aug 2026
+ 01:00:44 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -64,151 +121,187 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260825-anacapa-devlop-phase-devicetree-v6-10-9059a2a279ce@gmail.com>
-References: <20260825-anacapa-devlop-phase-devicetree-v6-0-9059a2a279ce@gmail.com>
-In-Reply-To: <20260825-anacapa-devlop-phase-devicetree-v6-0-9059a2a279ce@gmail.com>
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- colin.huang2@amd.com, Colin Huang <u8813345@gmail.com>, 
- Rex Fu <rex.fu.amd@gmail.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1787654905; l=3697;
- i=u8813345@gmail.com; s=20260202; h=from:subject:message-id;
- bh=E531mFcQuSg4vkfS0BrbVzRcV4G9+LgoYtq/R4Xx1MI=;
- b=UjQBhYpkRedPJGHhjHpjBxaA7X7I2AKSg5HvZVfdXO73zjLgpdDG00HVQ0TMRWF2h4ynW5o8K
- giROwDkqboJAqjqasdnTAu8sFudjHh//Uaw8jhZy44wIXQStaTXYPeG
-X-Developer-Key: i=u8813345@gmail.com; a=ed25519;
- pk=Zlg0WqpCw4qbswOqamTBTXIchwR/3SnYZpy7rjaGMdQ=
-X-Endpoint-Received: by B4 Relay for u8813345@gmail.com/20260202 with
- auth_id=761
-X-Original-From: Colin Huang <u8813345@gmail.com>
-Reply-To: u8813345@gmail.com
+References: <cover.1787239813.git.geert+renesas@glider.be> <bd84df92640a05a1a73a8bc775b2d50568a9d0ec.1787239813.git.geert+renesas@glider.be>
+In-Reply-To: <bd84df92640a05a1a73a8bc775b2d50568a9d0ec.1787239813.git.geert+renesas@glider.be>
+From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Date: Tue, 25 Aug 2026 10:00:32 +0200
+X-Gm-Features: AcwNN1WaGLEXokEDN-w-P7YAI63J28S_AjYowYxFfZoRRRkDa1AUJBYrsKRUG74
+Message-ID: <CAPx+jO9LSfy6-3Gb1+0RvHeVeU9dAN+-1jcGaCESpTZXEAE_YQ@mail.gmail.com>
+Subject: Re: [PATCH 39/45] clk: ux500: Make sure clk_init_data is fully initialized
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Ryan Chen <ryan_chen@aspeedtech.com>, Joel Stanley <joel@jms.id.au>,
+        Stephen Boyd <sboyd@kernel.org>, Brian Masney <bmasney+clk@redhat.com>,
+        Jerome Brunet <jbrunet+clk@baylibre.com>,
+        Andrew Jeffery <andrew@codeconstruct.com.au>,
+        Billy Tsai <billy_tsai@aspeedtech.com>,
+        Nicolas Ferre <nicolas.ferre@microchip.com>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Claudiu Beznea <claudiu.beznea@tuxon.dev>, Ray Jui <rjui@broadcom.com>,
+        Scott Branden <sbranden@broadcom.com>,
+        Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+        Taichi Sugaya <sugaya.taichi@socionext.com>,
+        Takao Orito <orito.takao@socionext.com>,
+        Linus Walleij <linusw@kernel.org>,
+        Avi Fishman <avifishman70@gmail.com>,
+        Tomer Maimon <tmaimon77@gmail.com>, Tali Perry <tali.perry1@gmail.com>,
+        Patrick Venture <venture@google.com>, Nancy Yuen <yuenn@google.com>,
+        Benjamin Fair <benjaminfair@google.com>,
+        Sudeep Holla <sudeep.holla@kernel.org>,
+        Cristian Marussi <cristian.marussi@arm.com>,
+        David Lechner <david@lechnology.com>, Abel Vesa <abelvesa@kernel.org>,
+        Peng Fan <peng.fan@nxp.com>, Frank Li <Frank.Li@nxp.com>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        Paul Cercueil <paul@crapouillou.net>,
+        Santosh Shilimkar <ssantosh@kernel.org>, Andrew Lunn <andrew@lunn.ch>,
+        Gregory Clement <gregory.clement@bootlin.com>,
+        Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+        Vladimir Zapolskiy <vz@mleia.com>, Heiko Stuebner <heiko@sntech.de>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Sylwester Nawrocki <s.nawrocki@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Peter Griffin <peter.griffin@linaro.org>,
+        Alim Akhtar <alim.akhtar@samsung.com>,
+        Dinh Nguyen <dinguyen@kernel.org>, Viresh Kumar <vireshk@kernel.org>,
+        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+        Alexandre Torgue <alexandre.torgue@foss.st.com>,
+        =?UTF-8?Q?Emilio_L=C3=B3pez?= <emilio@elopez.com.ar>,
+        Chen-Yu Tsai <wens@kernel.org>,
+        Jernej Skrabec <jernej.skrabec@gmail.com>,
+        Samuel Holland <samuel@sholland.org>,
+        Prashant Gaikwad <pgaikwad@nvidia.com>,
+        Thierry Reding <thierry.reding@kernel.org>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
+        Masami Hiramatsu <mhiramat@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
+        Liviu Dudau <liviu.dudau@arm.com>,
+        Lorenzo Pieralisi <lpieralisi@kernel.org>,
+        Michal Simek <michal.simek@amd.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>, linux-clk@vger.kernel.org,
+        linux-aspeed@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org, openbmc@lists.ozlabs.org,
+        arm-scmi@vger.kernel.org, imx@lists.linux.dev,
+        linux-mips@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
+        linux-rockchip@lists.infradead.org, linux-samsung-soc@vger.kernel.org,
+        soc@lists.linux.dev, linux-stm32@st-md-mailman.stormreply.com,
+        linux-sunxi@lists.linux.dev, linux-tegra@vger.kernel.org,
+        linux-mediatek@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Authority-Analysis: v=2.4 cv=O5QJeh9W c=1 sm=1 tr=0 ts=6a8d4bae cx=c_pps
+ a=vVfyC5vLCtgYJKYeQD43oA==:117 a=IkcTkHD0fZMA:10 a=Sv0fKeRqtYgA:10
+ a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
+ a=ZpdpYltYx_vBUK5n70dp:22 a=VwQbUJbxAAAA:8 a=xsHTnWN7LAWtonkW0D4A:9
+ a=QEXdDO2ut3YA:10 a=rl5im9kqc5Lf4LNbBjHf:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwODI1MDA2NyBTYWx0ZWRfX9LlS/PXFJvWR
+ hMDEcDBVJ1vDIgr/70ElbVePnVzrarljRlU4tDmG/AdBwhfoIvgPm0LCQchD9ISXxpA8+3LghY2
+ vVm7wQjvu8fHdv6m2oFdUxDFgfkH5a1j5cwS7GKLei2SSBagu2CH9OgeHT1NcKFIwYiCCx5hrZH
+ yS842cp0VFUqSnoxIY/n3y3li6OIkc6YlcZ1JEN1YozXoGnCFZE7Bt9xhJYk/yNrsege2eN77IY
+ UjChR2y2nq/1GCAtN2tnc3F2RSDxZqUNSKCXj5saQugmWFZywAB6mOYZ2PnaXlZYzDCFXpemCQL
+ gCXWaxInU2WQW815azrwzEYR2nrJwUg4Pj4K3p158eKzx5xS7vVzxZU+Fz4BhpgEKuGP7dsy+2X
+ Tk9k7niX2D0UPnNzDqj1kVB1PLh289JZvPybRB3+1kLdIr3b4TZZYlswxkDSZnm/WTcr1ErGD/z
+ QdzNI2svPx9gEgAWzUw==
+X-Proofpoint-Spam-Info: AW1haW4tMjYwODI1MDA2NyBTYWx0ZWRfXyde7Mcie+hC+
+ tyxzIWnhopVh71eghdvE2yTwRCSMM7jxYKtFPwFxCqu1vuMe0GI5Csp6YvTkLkwgHEzGG52ksao
+ +Np4mIRtumxIRmhORwfBkOWTrBcZclE=
+X-Proofpoint-GUID: 1SZ36K82HPgI-SxkSIH6EJEMlzLC3mqT
+X-Proofpoint-ORIG-GUID: 1SZ36K82HPgI-SxkSIH6EJEMlzLC3mqT
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-08-25_01,2026-08-24_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 lowpriorityscore=0 spamscore=0 adultscore=0 bulkscore=0
+ suspectscore=0 priorityscore=1501 malwarescore=0 clxscore=1015
+ impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2606150000
+ definitions=main-2608250067
 
-From: Rex Fu <rex.fu.amd@gmail.com>
+On Fri, Aug 21, 2026 at 11:04=E2=80=AFAM Geert Uytterhoeven
+<geert+renesas@glider.be> wrote:
+>
+> The clk_init_data structure contains several mutually-exclusive members
+> for different methods to specify the possible parents of a clock,
+> prompting drivers to initialize only the members they need.  However,
+> not initializing all members may cause subtle issues, which are only
+> exposed when CONFIG_INIT_STACK_ALL_PATTERN or CONFIG_INIT_STACK_NONE is
+> enabled.
+>
+> Make sure all members are fully initialized, to avoid such bugs, and to
+> prevent future breakage when converting drivers to a different method
+> for specifying the parents.
+>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Add PCA9554 GPIO expanders for PDB fuse monitor signals on the
-Anacapa DVT board.
+Acked-by: Ulf Hansson <ulfh@kernel.org>
 
-The patch adds GPIO expander definitions for both the left and
-right PDBs under the i2c8 multiplexer and updates the associated
-gpio-line-names to reflect the final signal assignments.
+Kind regards
+Uffe
 
-Signed-off-by: Rex Fu <rex.fu.amd@gmail.com>
----
- .../dts/aspeed/aspeed-bmc-facebook-anacapa-dvt.dts | 92 ++++++++++++++++++++++
- 1 file changed, 92 insertions(+)
-
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-dvt.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-dvt.dts
-index 975d603ca540..923954cff7a2 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-dvt.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-dvt.dts
-@@ -8,6 +8,98 @@ / {
- 	model = "Facebook Anacapa BMC";
- };
- 
-+// MB - PDB
-+&i2c8 {
-+	i2c-mux@72 {
-+		i2c@0 {
-+			gpio@22 {
-+				gpio-line-names =
-+					"RPDB_FAN_FULL_SPEED_R_N", "RPDB_I2C_TMP432_U8_ALERT_R_N",
-+					"RPDB_I2C_TMP432_U29_ALERT_R_N", "RPDB_GLOBAL_WP",
-+					"RPDB_FAN_CT_FAN_FAIL_R_N", "RPDB_VERID_A0",
-+					"RPDB_VERID_A1", "RPDB_VERID_A2",
-+					"RPDB_ALERT_P50V_HSC2_R_N", "RPDB_ALERT_P50V_HSC3_R_N",
-+					"RPDB_ALERT_P50V_HSC4_R_N", "RPDB_ALERT_P50V_STBY_R_N",
-+					"RPDB_P12V_MB_VRM_ALERT_R_N",
-+					"RPDB_P12V_STBY_VRM_ALERT_R_N",
-+					"RPDB_PGD_P3V3_STBY_PWRGD_R",
-+					"RPDB_P12V_STBY_VRM_PWRGD_BUF_R";
-+			};
-+
-+			gpio@24 {
-+				gpio-line-names =
-+					"RPDB_EAM2_PRSNT_MOS_N_R", "RPDB_EAM3_PRSNT_MOS_N_R",
-+					"RPDB_PWRGD_P50V_HSC4_SYS_R",
-+					"RPDB_PWRGD_P50V_STBY_SYS_BUF_R",
-+					"RPDB_P50V_FAN5_R2_PG", "RPDB_P50V_FAN6_R2_PG",
-+					"RPDB_P50V_FAN7_R2_PG", "RPDB_P50V_FAN8_R2_PG",
-+					"RPDB_SKU_ID0", "RPDB_FAN5_PRSNT_N_R",
-+					"", "RPDB_FAN6_PRSNT_N_R",
-+					"RPDB_FAN7_PRSNT_N_R", "RPDB_FAN8_PRSNT_N_R",
-+					"", "";
-+			};
-+
-+			gpio@38 {
-+				compatible = "nxp,pca9554";
-+				reg = <0x38>;
-+				#gpio-cells = <2>;
-+				gpio-controller;
-+
-+				gpio-line-names =
-+					"RPDB_P50V_FUSE2_TVS1", "RPDB_P50V_FUSE2_TVS2",
-+					"RPDB_P50V_FUSE3_TVS1", "RPDB_P50V_FUSE3_TVS2",
-+					"RPDB_P50V_FUSE4_TVS1", "",
-+					"", "";
-+
-+				interrupt-parent = <&sgpiom0>;
-+				interrupts = <174 IRQ_TYPE_LEVEL_LOW>;
-+			};
-+		};
-+
-+		i2c@1 {
-+			gpio@22 {
-+				gpio-line-names =
-+					"LPDB_FAN_FULL_SPEED_R_N", "LPDB_I2C_TEMP75_U8_ALERT_R_N",
-+					"LPDB_I2C_TMP432_U29_ALERT_R_N", "LPDB_GLOBAL_WP",
-+					"LPDB_FAN_CT_FAN_FAIL_R_N", "LPDB_VERID_A0",
-+					"LPDB_VERID_A1", "LPDB_VERID_A2",
-+					"LPDB_ALERT_P50V_HSC0_R_N", "LPDB_ALERT_P50V_HSC1_R_N",
-+					"LPDB_ALERT_P50V_HSC5_R_N", "LPDB_I2C_P12V_SW_VRM_ALERT_R_N",
-+					"LPDB_EAM0_PRSNT_MOS_N_R", "LPDB_EAM1_PRSNT_MOS_N_R",
-+					"LPDB_PWRGD_P50V_HSC5_SYS_R", "BARKLIP_PRSNT_N_R3";
-+			};
-+
-+			gpio@24 {
-+				gpio-line-names =
-+					"LPDB_P50V_FAN0_R2_PG", "LPDB_P50V_FAN1_R2_PG",
-+					"LPDB_P50V_FAN2_R2_PG", "LPDB_P50V_FAN3_R2_PG",
-+					"LPDB_P50V_FAN4_R2_PG", "LPDB_FAN0_PRSNT_N_R",
-+					"LPDB_FAN1_PRSNT_N_R", "LPDB_FAN2_PRSNT_N_R",
-+					"LPDB_FAN3_PRSNT_N_R", "LPDB_FAN4_PRSNT_N_R",
-+					"LPDB_SKU_ID0", "",
-+					"", "",
-+					"", "LPDB_PG_P3V3_R";
-+			};
-+
-+			gpio@38 {
-+				compatible = "nxp,pca9554";
-+				reg = <0x38>;
-+				#gpio-cells = <2>;
-+				gpio-controller;
-+
-+				gpio-line-names =
-+					"LPDB_P50V_FUSE0_TVS1", "LPDB_P50V_FUSE0_TVS2",
-+					"LPDB_P50V_FUSE1_TVS1", "LPDB_P50V_FUSE1_TVS2",
-+					"LPDB_P50V_FUSE5_TVS1", "",
-+					"", "";
-+
-+				interrupt-parent = <&sgpiom0>;
-+				interrupts = <174 IRQ_TYPE_LEVEL_LOW>;
-+			};
-+		};
-+	};
-+};
-+
- &sgpiom0 {
- 	bus-frequency = <2000000>;
- 	gpio-line-names =
-
--- 
-2.34.1
-
-
+> ---
+> Compile-tested only.
+> ---
+>  drivers/clk/ux500/clk-prcc.c    | 2 +-
+>  drivers/clk/ux500/clk-prcmu.c   | 4 ++--
+>  drivers/clk/ux500/clk-sysctrl.c | 2 +-
+>  3 files changed, 4 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/clk/ux500/clk-prcc.c b/drivers/clk/ux500/clk-prcc.c
+> index dce235df2576dfb2..dde72d2fd0ac67ae 100644
+> --- a/drivers/clk/ux500/clk-prcc.c
+> +++ b/drivers/clk/ux500/clk-prcc.c
+> @@ -97,8 +97,8 @@ static struct clk *clk_reg_prcc(const char *name,
+>                                 unsigned long flags,
+>                                 const struct clk_ops *clk_prcc_ops)
+>  {
+> +       struct clk_init_data clk_prcc_init =3D {};
+>         struct clk_prcc *clk;
+> -       struct clk_init_data clk_prcc_init;
+>         struct clk *clk_reg;
+>
+>         if (!name) {
+> diff --git a/drivers/clk/ux500/clk-prcmu.c b/drivers/clk/ux500/clk-prcmu.=
+c
+> index ac96c46bd1bbf76b..d89f3b634f8bbd26 100644
+> --- a/drivers/clk/ux500/clk-prcmu.c
+> +++ b/drivers/clk/ux500/clk-prcmu.c
+> @@ -200,8 +200,8 @@ static struct clk_hw *clk_reg_prcmu(const char *name,
+>                                     unsigned long flags,
+>                                     const struct clk_ops *clk_prcmu_ops)
+>  {
+> +       struct clk_init_data clk_prcmu_init =3D {};
+>         struct clk_prcmu *clk;
+> -       struct clk_init_data clk_prcmu_init;
+>         int ret;
+>
+>         if (!name) {
+> @@ -357,8 +357,8 @@ struct clk_hw *clk_reg_prcmu_clkout(const char *name,
+>                                     u8 source, u8 divider)
+>
+>  {
+> +       struct clk_init_data clk_prcmu_clkout_init =3D {};
+>         struct clk_prcmu_clkout *clk;
+> -       struct clk_init_data clk_prcmu_clkout_init;
+>         u8 clkout_id;
+>         int ret;
+>
+> diff --git a/drivers/clk/ux500/clk-sysctrl.c b/drivers/clk/ux500/clk-sysc=
+trl.c
+> index ba3258c88d28e101..2127a949e56ccf27 100644
+> --- a/drivers/clk/ux500/clk-sysctrl.c
+> +++ b/drivers/clk/ux500/clk-sysctrl.c
+> @@ -127,8 +127,8 @@ static struct clk *clk_reg_sysctrl(struct device *dev=
+,
+>                                 unsigned long flags,
+>                                 const struct clk_ops *clk_sysctrl_ops)
+>  {
+> +       struct clk_init_data clk_sysctrl_init =3D {};
+>         struct clk_sysctrl *clk;
+> -       struct clk_init_data clk_sysctrl_init;
+>         struct clk *clk_reg;
+>         int i;
+>
+> --
+> 2.43.0
+>
 
