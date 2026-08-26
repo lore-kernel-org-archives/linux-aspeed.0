@@ -1,56 +1,49 @@
-Return-Path: <linux-aspeed+bounces-4866-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4867-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0DFCC5DF97
-	for <linux-aspeed@archiver.kernel.org>; Wed, 26 Aug 2026 16:04:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85608C61DBE
+	for <linux-aspeed@archiver.kernel.org>; Wed, 26 Aug 2026 23:46:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hVTxX6fDHz2y32;
-	Thu, 27 Aug 2026 02:04:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787760288;
-	cv=none; b=L4vHnlCUE8TNWxYRQyqPJKVdedIMHZ3J5bQ7LoqY2cIiiU86plerqTtL1lo9nAH5zmKt+9mS9zlfkq5CxvU5XTdjBXM4V2YPb5xO+R/wgw1uem4LrGoXIychCT5o18Agbs+wP5gclbc7jYCiLoqyJIV0n06UCvTezM+WOeuelz8kgCqxOXtL04P1+bDYvHMauxnmHLW0yQwsaL1pGnwyWADt6RCeJY+IT6aD8W5G3g3OkOS/T7Ovw0AUbNSMf52iAxcuQwZm37bCkuZJQa0EGrHwD/ltTjj5DtQYEeAFOL0ZrTXSe4sFT2o4CC8tS0FGsMn9hmU3qdWcg30lRL4m2Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hVh9w2Bngz2xdb;
+	Thu, 27 Aug 2026 09:46:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787755945;
+	cv=none; b=Zik6J6xBB96hXAqAMvzwfiehHMJSCGCBGuRM/mXvsjqPcUxFp/+BVcHZR6fWY/BdccKkq+RJ3e6S2v8PUl2uZMwxB9AbGwZ9uiF1MiMQ6MfPIUpcB8CPZM5xRBzw2fco7KZosQNc6sJadvKspcg7IQlp9kfaOBjpPjZKZxEw2mqjJQ5xt/4pPPGghJcUfPH6BuFNC/kbPNLg3jy3PN9npwrqfPnFU3TmmegfBWBjmKxMNpItGbwxnd9m1J0LxyoDxmudSyaeUpB5kNYheRNia3NBIMK9BFn6MI3QcshbAqjq3MUNGtYEn/vMUS2cmJS8VipOOfvBSdTNU60zm8LLDA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787760288; c=relaxed/relaxed;
-	bh=Y8nG5Q59DmZU2W8YTNmb9FicIVaa2DhnYG0xPHeq4QM=;
+	t=1787755945; c=relaxed/relaxed;
+	bh=/plmD0PSM0fUMcQXuLscFbLM0Wi54enkrMFT/XaxeUY=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Sg4GfLKgFVYFMb95KNwjA1Ppp5HYz+8K2t6N2DJ3iCaATsVXJaHbSfzxITQmLtTQHWa1ChGWiCCyfomtUbkyWo73nZHKrcKuBuO27hnALux6cYcNuYOZ54Chc0DlHH/ApiHARKSwy7o91ZjWnLu3uzzHh8/Cu6tpWxuDYpSq8/JyClK8oLFSvuORw3aNn4wSKhUJp/LpxI9u162R0v+yAuorebh5w5N5uU3QBmDKYnc0kmXChVv9ZA0BtsLWzpHJGPXtYjs3B6Xz+FWShd1AaeNfT8AQCAFpqnFU++ikJ1YL9MFP544iJRCtwuxMiWb6Xl/G2qaTa2oCbMS3TOLy3g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=oXIEkoWy; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=MbgRffj1E/bSXbEWEpPNaqpI9zwDGF+2ZiFAozwNLWT1GK4HD/NNF+ZWAi5Xr9ng+oSytIe/fRuEu6WpDbGAKDOHbTw8eahaHI9UywABhR8uus7m1oDnZy5p3ttp5GPo/RJiICqWr74w/d1fNgzWE8bZ592AmxY7bQgr3tvITY8BBPffgd12EiPP+TjbDwqpC0pWQkHibpHjJbdboX+YYIHpZKP1wzJJ1S2k81IOyfmY1jKnSdM3okYDS0x9r3dNPETAQauwNVJ7qHejbzZnVg1fk+FYtJtKPUvE0vDi/QvMRfXNvDk11tvtYZ/EquHJFclR7R2TzryMZg7eG+uxZQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=YXQ1DnZP; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=leo.yan@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=oXIEkoWy;
+	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=YXQ1DnZP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hVTxW2p3Pz2xLG;
-	Thu, 27 Aug 2026 02:04:47 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id DAA1A41A53;
-	Wed, 26 Aug 2026 16:04:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 187B41F000E9;
-	Wed, 26 Aug 2026 16:04:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1787760282;
-	bh=Y8nG5Q59DmZU2W8YTNmb9FicIVaa2DhnYG0xPHeq4QM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=oXIEkoWyhVF9O0ycvD4nLcJ11qe08oUKMmfsiwjwiio2a2VH9xvNqubdjmcmWTP9Y
-	 Bht9x/Wh39srsO4PB1OUiOIMYnQJNw1rxz0UhlitqScVm4QP2xUmeqyFmxvbmD6H6M
-	 kt9kyXF+EC9RJcq8TMqglLQPNm6bdQ06SQqHx1Z9z3r8g8FxbaFGdkeBT5grkeoVpo
-	 Wjh0jIhz6u6ZhOyO3gaXtFcf/O1sDe316jbE8/QJ2LREUwww1zshVu3Tz7Y4W0Xi4Z
-	 4Ij1967veWkgHclJ/mMqCWTw7xLAV0C+J/wS/qReNpbtyGnhlW1ipRQRU3rbwe9iB3
-	 imPHWJcoQmQfw==
-Date: Wed, 26 Aug 2026 17:04:28 +0100
-From: Conor Dooley <conor@kernel.org>
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=leo.yan@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hVSKx4Dh3z2xGw;
+	Thu, 27 Aug 2026 00:52:19 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 15C231756;
+	Wed, 26 Aug 2026 07:51:43 -0700 (PDT)
+Received: from localhost (unknown [10.2.196.114])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 73BBD3F7D8;
+	Wed, 26 Aug 2026 07:51:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1787755906; bh=tOodu0VszRohRtMpFFB6dYKNtMAf7OMx0ItWyxqnr/k=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=YXQ1DnZPOLhXEtKbwELsDp94I7KPv6NJqCCc+P/ZvoSWmJ8KCcKahNh7+sQWL3CXe
+	 Epva2iw+zUipeNYduk/uateqT+WdNJ2g8p5ZxLII6bzY6QQhqe7ssRQ+Ghq+nqNteW
+	 f98Yr+78VjADUvqwt45aWv7UK+TBbIxawOLDtO68=
+Date: Wed, 26 Aug 2026 15:51:44 +0100
+From: Leo Yan <leo.yan@arm.com>
 To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 Cc: Suzuki K Poulose <suzuki.poulose@arm.com>,
 	Mike Leach <mike.leach@arm.com>,
-	James Clark <james.clark@linaro.org>, Leo Yan <leo.yan@arm.com>,
-	Rob Herring <robh@kernel.org>,
+	James Clark <james.clark@linaro.org>, Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
 	Conor Dooley <conor+dt@kernel.org>,
 	Andrzej Hajda <andrzej.hajda@intel.com>,
@@ -107,7 +100,7 @@ Cc: Suzuki K Poulose <suzuki.poulose@arm.com>,
 	linux-pm@vger.kernel.org
 Subject: Re: [PATCH] dt-bindings: Drop redundant white-space around values in
  <>
-Message-ID: <20260826-frequent-parchment-b8baeeafd583@spud>
+Message-ID: <20260826145144.GH8904@e132581.arm.com>
 References: <20260826102044.142986-2-krzysztof.kozlowski@oss.qualcomm.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
@@ -122,41 +115,27 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="P8HG2tUakdLhQuVM"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <20260826102044.142986-2-krzysztof.kozlowski@oss.qualcomm.com>
 
---P8HG2tUakdLhQuVM
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
 On Wed, Aug 26, 2026 at 12:20:45PM +0200, Krzysztof Kozlowski wrote:
-> Correct a few white-space issues around <>, which will be flagged by
-> dt-check-style.  No functional changes.
 
-Tool seems pretty useful!
+[...]
 
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
+> --- a/Documentation/devicetree/bindings/arm/arm,coresight-cti.yaml
+> +++ b/Documentation/devicetree/bindings/arm/arm,coresight-cti.yaml
+> @@ -308,7 +308,7 @@ examples:
+>              arm,trig-in-sigs = <0 1>;
+>              arm,trig-in-types = <PE_DBGTRIGGER
+>                                   PE_PMUIRQ>;
+> -            arm,trig-out-sigs = <0 1 2 >;
+> +            arm,trig-out-sigs = <0 1 2>;
+>              arm,trig-out-types = <PE_EDBGREQ
+>                                    PE_DBGRESTART
+>                                    PE_CTIIRQ>;
 
->=20
-> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
->=20
-> ---
->=20
-> Rob, Can you take it directly?
+For this CoreSight change:
 
---P8HG2tUakdLhQuVM
-Content-Type: application/pgp-signature; name=signature.asc
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCao8OjAAKCRB4tDGHoIJi
-0tqoAP9QAMmXPklodIMJgwkYAyiHY6wJXbsca2yegWqjDpaZ8gEAzCaVWA0HkeeD
-+jnyIqHP/qOtLch52tvPYIHhTjCRRQ8=
-=3be7
------END PGP SIGNATURE-----
-
---P8HG2tUakdLhQuVM--
+Reviewed-by: Leo Yan <leo.yan@arm.com>
 
