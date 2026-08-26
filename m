@@ -1,56 +1,114 @@
-Return-Path: <linux-aspeed+bounces-4861-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4862-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EAD56C61DBD
-	for <linux-aspeed@archiver.kernel.org>; Wed, 26 Aug 2026 00:16:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4E52C61DBE
+	for <linux-aspeed@archiver.kernel.org>; Wed, 26 Aug 2026 10:48:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hV4tk432sz2ygK;
-	Wed, 26 Aug 2026 10:15:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787654926;
-	cv=none; b=fI/psRtuK3Z2bwLfPWpjtKhdzipk5qCoC33O+GuTFJK0KnTTYwNKzUePyClI7FuySS/Mr6PcQfdTOyiMgebxSzCY7M9tzCpe7fRwZ+WksKRB402PDs337I75O574uWayzsdg2hszPXuuIa+nodIHXHBQ9JM2g16ElzpfydpxSRl0nC5KBZPQZfyw2H1MQcnPHMy2hPT/LeL+e4fyFwWX4Vmnv7VdDiZc8POnP1ORtr85S65u2pAzOvxBUWnGtj4n40PrFQU4ny20LbDnNBk73NxInMrSm08f+IuAfWRMGBWg5ZoTnxZiKLR9bGTR3r6a4+yakvl2Eix5gBD60rEItw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hVLwN5C9bz2y32;
+	Wed, 26 Aug 2026 20:48:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1787741300;
+	cv=none; b=GQzUydLLtUQyMC0pIH4OCJX2nlG6DznBbWCJholj9hO6EO/VX611sNURcz/g3TcxRRpnN+v/b3nU9/1HAETjjXJVOc6FzK7DVSgWraTf1YIafZz+gmLfEy83F1RZQIag6zrkGpNLfu1RFYk/CR6wU5y0yIcnRfuqlgizWGMfn6X855kiUhimpnyJHCN5hsoSiNnFt73YKrpj64eIJsHs4xouuivO5VQTRdPN1SrcC8/AfVwoaLuOTMOWJSZ7aF40fvge82xGneaDfb/TSPMoevwBCAqVCS30bxq4Z+Evv66+GCOp8hYdr4bUCfQMaRmp9hH5JBsLoiJxJpXhhdAAfA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1787654926; c=relaxed/relaxed;
-	bh=g4GD5tAd+3DQUnSfDKDsU0BWThEq3BCJxjpI8lKaAr0=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=TqWFb+WWBH8vIekWGdt8Tke0YbJpjQKzitkZ70trQg9516vetTMU55EHcLghUF/fpmDGCrUFCE1SstWEnE9ITWNa2D9tjWUL5h/1ceC1GtxSiQj98nMBihcCG3641XcDIRNU/IzeprAAP1B1M6g88Vy89PjSx0ArK/jmu4Deoa+91WOV5O66UqjP94Nk0U8NKy1Eroq61gP0QNDcJ0dWVyPuQZacisM9Q+c3d/+ibG1+KV7CN0+R9JlJpI2R85ugvRbLscVyY1GrT6zs4frLFOY+LwO2W1xbsNScEhxe2Z+uveLQIWqqiGWAU6I9Fm4qzfaQU4lionM1E1Ktw5kdnw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OSFvEz5o; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=devnull+u8813345.gmail.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1787741300; c=relaxed/relaxed;
+	bh=2PBENmYs6fiknMrazp/50bVkNc1sBGJoebvvjy0eKx4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Nv3YIrX2/JKTS7rXXRbUAjF7UUXlGVsp/DfvXmM8+0O+fiMppTIQHC80IOMK6FG4OXQRIJdoiEf13dpE0kUTm7BmrVZnA7KT902Q1lXv+ohs9whtjqPAppTEP6CspJrNDF/5olRDmuOsF0iKRwP0jsfRqbVxAURf9pjVJ+H2x6VT2UaxejXhWok0DA9SsSPZKa18T6bnSqGqZEPTQF3nL5YxpBvFzApmYOsVBqCERh9IhGKiUzv2N4Yw9zwbcY8bJo0JEpPz1YgpOTBW6CdU7zZhXDcMCqfHFRh9gnNe3ZpBEkjkUSqcrIp8sf6kpcYNCmqGINQqA3aXJwHW3PX9HA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CbC9eXOZ; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OSFvEz5o;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CbC9eXOZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=devnull+u8813345.gmail.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hTkzJ1W1wz2y1F
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 25 Aug 2026 20:48:43 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 86F2244EBA;
-	Tue, 25 Aug 2026 10:48:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 667DEC32781;
-	Tue, 25 Aug 2026 10:48:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1787654920;
-	bh=hOPf1LjDT4s/OsOzZ2OJtL3XdwwW4MxYaI4DYi2V2sU=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=OSFvEz5oV8Y3l/1TyLawkleLuvr2nBr89ZNKh22mbjevlimUgbpVaJyT6pqqVsLJd
-	 M01Q9d0g71TSoK8dSsPJM1jPbb0OAuajb3uGsRZeWTcvqGeYAnOH5TWMw7uvgmJDob
-	 Vt3CuHgZhSZ8+YYhYiRBl1jOik/3OZFxe2XsVTfI4aRcrgSqC1TQl1YfHXYdeiw3Ly
-	 cE9octPQldmxLD+Oi42p1gQGBVJsgYPZonl24wGEtTaAQhnKdD1hp4rp3Z5z1fP+mI
-	 byYu3FV16JO1ObHhH0asIs71U9+sm/tX+zF9dKwasqFsztlAfA7ncLrnmMVRdhF40O
-	 QV05thF2EWRtg==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 53F5BC61DB6;
-	Tue, 25 Aug 2026 10:48:40 +0000 (UTC)
-From: Colin Huang via B4 Relay <devnull+u8813345.gmail.com@kernel.org>
-Date: Tue, 25 Aug 2026 18:47:47 +0800
-Subject: [PATCH v6 06/12] ARM: dts: aspeed: anacapa: Add eeprom device node
- for NFC adaptor board
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hVLwM3NhBz2xLG;
+	Wed, 26 Aug 2026 20:48:19 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id A71E8600C4;
+	Wed, 26 Aug 2026 10:48:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 58DB71F000E9;
+	Wed, 26 Aug 2026 10:48:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1787741295;
+	bh=2PBENmYs6fiknMrazp/50bVkNc1sBGJoebvvjy0eKx4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=CbC9eXOZ2dL6OuBJ1bWchF5seeE8ifsrT8Yw/a4Qo3Y5Rs2etS57xSuEdgQns99ei
+	 QVPl74HmDPUGNZBf7+WL1hBpXywRwssYdENv9y3V+JkVXQ3w8kTmaN2R7sWY+TBwJt
+	 rpd+iGj4akwD2mqMk+XymnQmIxApZFfAWUutiB9ezEi8bwZpp00uztIbITa3g+1Fx7
+	 es9x6uOFAGNXG4NWRTnEbcER/UYbhW9caRHYj7iJhyEeIyDfIV9wtbDJ2QbkvyWlx0
+	 dpH+wik6piKWJNDJwpfLl9XKfDWmEHKEB04XxOxRSgTnJpeatCCyZiHCa7kSHWZp/A
+	 Z2tQRT+7IaTNA==
+Date: Wed, 26 Aug 2026 11:47:59 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Cc: Suzuki K Poulose <suzuki.poulose@arm.com>,
+	Mike Leach <mike.leach@arm.com>,
+	James Clark <james.clark@linaro.org>, Leo Yan <leo.yan@arm.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Andrzej Hajda <andrzej.hajda@intel.com>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	Robert Foss <rfoss@kernel.org>,
+	Laurent Pinchart <Laurent.pinchart@ideasonboard.com>,
+	Jonas Karlman <jonas@kwiboo.se>,
+	Jernej Skrabec <jernej.skrabec@gmail.com>,
+	Luca Ceresoli <luca.ceresoli@bootlin.com>,
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Maxime Ripard <mripard@kernel.org>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Michal Simek <michal.simek@amd.com>,
+	Andi Shyti <andi.shyti@kernel.org>,
+	Jonathan Cameron <jic23@kernel.org>,
+	David Lechner <dlechner@baylibre.com>,
+	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
+	Andy Shevchenko <andy@kernel.org>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	Mirela Rabulea <mirela.rabulea@nxp.com>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>, Lee Jones <lee@kernel.org>,
+	Xiaowei Song <songxiaowei@hisilicon.com>,
+	Binghui Wang <wangbinghui@hisilicon.com>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>,
+	Manivannan Sadhasivam <mani@kernel.org>,
+	Dvorkin Dmitry <dvorkin@tibbo.com>, Wells Lu <wellslutw@gmail.com>,
+	Linus Walleij <linusw@kernel.org>,
+	Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>,
+	=?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Ryan Chen <ryan_chen@aspeedtech.com>,
+	Billy Tsai <billy_tsai@aspeedtech.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>, Lukasz Luba <lukasz.luba@arm.com>,
+	Boris Brezillon <bbrezillon@kernel.org>, info@mocean-labs.com,
+	Olof Johansson <olof@lixom.net>,
+	Shree Ramamoorthy <s-ramamoorthy@ti.com>,
+	coresight@lists.linaro.org, linux-arm-kernel@lists.infradead.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	dri-devel@lists.freedesktop.org, linux-i2c@vger.kernel.org,
+	linux-iio@vger.kernel.org, linux-input@vger.kernel.org,
+	imx@lists.linux.dev, linux-media@vger.kernel.org,
+	mfd@lists.linux.dev, linux-pci@vger.kernel.org,
+	linux-gpio@vger.kernel.org, linux-aspeed@lists.ozlabs.org,
+	openbmc@lists.ozlabs.org, linux-spi@vger.kernel.org,
+	linux-pm@vger.kernel.org
+Subject: Re: [PATCH] dt-bindings: Drop redundant white-space around values in
+ <>
+Message-ID: <92dfaa64-18c6-4ac0-8b17-f0a202dcf737@sirena.org.uk>
+References: <20260826102044.142986-2-krzysztof.kozlowski@oss.qualcomm.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -64,67 +122,37 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260825-anacapa-devlop-phase-devicetree-v6-6-9059a2a279ce@gmail.com>
-References: <20260825-anacapa-devlop-phase-devicetree-v6-0-9059a2a279ce@gmail.com>
-In-Reply-To: <20260825-anacapa-devlop-phase-devicetree-v6-0-9059a2a279ce@gmail.com>
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- colin.huang2@amd.com, Colin Huang <u8813345@gmail.com>, 
- Carl Lee <carl.lee@amd.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1787654905; l=842;
- i=u8813345@gmail.com; s=20260202; h=from:subject:message-id;
- bh=W3IShAyxygRLxWChQBNmztwL/6A+5D13GAPOb/9nyvI=;
- b=5x1Obe8eZXfIFVi/XcjUmqoHbfzWEKr0Q2Ht3cV/i6rI0oARG/5URdCp987sJGxoggp4J2waU
- Fy/L2QvVoLqCe/2IXYU1hvkPrEWLB4L3HvsOWWn5V0E56PpgZEwEYKk
-X-Developer-Key: i=u8813345@gmail.com; a=ed25519;
- pk=Zlg0WqpCw4qbswOqamTBTXIchwR/3SnYZpy7rjaGMdQ=
-X-Endpoint-Received: by B4 Relay for u8813345@gmail.com/20260202 with
- auth_id=761
-X-Original-From: Colin Huang <u8813345@gmail.com>
-Reply-To: u8813345@gmail.com
-
-From: Carl Lee <carl.lee@amd.com>
-
-Add eeprom device node for NFC adaptor board FRU.
-
-Signed-off-by: Carl Lee <carl.lee@amd.com>
----
- .../boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt2.dts    | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
-
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt2.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt2.dts
-index d2b4855ff1ad..22f79a2c2639 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt2.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt2.dts
-@@ -22,6 +22,19 @@ eeprom@51 {
- 	};
- };
- 
-+// MB
-+&i2c13 {
-+	i2c-mux@70 {
-+		i2c@7 {
-+			// NFC adaptor board FRU
-+			eeprom@50 {
-+				compatible = "atmel,24c128";
-+				reg = <0x50>;
-+			};
-+		};
-+	};
-+};
-+
- &sgpiom0 {
- 	bus-frequency = <2000000>;
- 	gpio-line-names =
-
--- 
-2.34.1
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="hP4PYOBKxN+fM2z6"
+Content-Disposition: inline
+In-Reply-To: <20260826102044.142986-2-krzysztof.kozlowski@oss.qualcomm.com>
+X-Cookie: Obey all traffic laws.
 
 
+--hP4PYOBKxN+fM2z6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Wed, Aug 26, 2026 at 12:20:45PM +0200, Krzysztof Kozlowski wrote:
+> Correct a few white-space issues around <>, which will be flagged by
+> dt-check-style.  No functional changes.
+
+Acked-by: Mark Brown <broonie@kernel.org>
+
+--hP4PYOBKxN+fM2z6
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmqOxF4ACgkQJNaLcl1U
+h9Bdwwf+L6MG9Bumzzk/fUvAIBXVI/dikPCxxDKcuqi5O/yVCeQWiMHK4Kp/ca3l
+imB6hoNyz9NRQmnZ45EXJhpRnz1LbTO357uK3N4zx/bi7V88563ixNa8HQIJZiCi
+yBPtE5ToKgi349/KXca5/vSKWGfyCnD8DRL3icILcg9GwxUC14PEo2WFYcGR4/JP
+ZmD11XU7MLSAhan3AUqcBiK9d+baT2FfEwmxCk4tm3wswPG29CNeUWP8OU145Yuq
+YcOeBmOpgMeDFyqxfCLMwJTToaxX8FcAn5HDjE+mJ+/pTLge8S8d85cmy7dJrUoU
+IMs1ngofm5Q82f4e9E8pPeXEh4y1iQ==
+=ZN0I
+-----END PGP SIGNATURE-----
+
+--hP4PYOBKxN+fM2z6--
 
