@@ -1,69 +1,48 @@
-Return-Path: <linux-aspeed+bounces-4885-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4886-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BFF5AC624CF
-	for <linux-aspeed@archiver.kernel.org>; Mon, 31 Aug 2026 13:39:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E44FEC61DFD
+	for <linux-aspeed@archiver.kernel.org>; Mon, 31 Aug 2026 23:57:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hYVTs6kCzz2yCv;
-	Mon, 31 Aug 2026 23:39:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788183585;
-	cv=none; b=fDaCti1NU/+DCPgs3IYEjmJdglbl432CE30exRktldm3uKwTr9LY/eLoexhI2pypdfU9CtFpNixLw85VjqXcF4EkVE5Q3A/2LN5uY/6gzFMxThtfnYFp7/kbDlkTM8449LIgrFuPVfuz0jO7gVeCRP7F1mHmGLvnUQL4/b5AiDzqk78RDEBKa5V5Bb8ZQVRCoWrY+YHMYcI2smDyAVkBZbel148iCA2O8EkJlr7Oj19Bv9c47eYlRvFT/oOVDAUttvdsdtKyXS5DenfTlwO/0XBvYu/HjlKpcSPfCRIWd4Cxj+qSyRkibXNM6kc60KOQcqJkR4KKcnhChy/E7cXaPA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hYmBj0DgQz2y2h;
+	Tue, 01 Sep 2026 09:57:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788182346;
+	cv=none; b=EQthC/TYdplnASqFOYqhHdSawiH12WPs3LROTqDudaGadascga631Z6H6PzBr4Gxnvb87JNGX6RuBl906/04qzoOvr/KfHmkCp6iRjGK6mDUJfqydJElfXjWZZbzIVbiAezla/FjQKjP+maty6/f1zfd3TxOGEgXeM6J+pO1NC4sKSbcfq8LaXmdZ7xNXBAYhgP2msN7okqhFNJelF7u6QtH6LEjk9JLofauOqnNtk7nd3B3qYE4vmZjSSA9jhRh/nJNw4f5VOsMSxy8moBRa2xxsI/hfwFiNacO9hbAqxE0mHFIucJcaTDLsByRkpoNkbLGhf9S2MuaRG+UyiOxvw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788183585; c=relaxed/relaxed;
-	bh=jR1/wuPn/1SFN5+Sk8Tes+Wj3LOxpbIQR0arzMeFJgA=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=mlpC8E+XrmNrEdd8h6/FcWO4TDsk2eVC4FQahIVgOQImwGGfOeZSAZi59/oHYSaLS5D8vxIRyk5+tq1+0t1xFoTUBFVQ6aTwZtNMZyu9hhkSBvD4ARaTL5J99LCZh9gfmL6hffmekhbcwaDLVZJWYeQuTw7r+6aY4s/C0h7A8L0dSJJNuRdPW0l0STBqkmjWz1l+667+q8UZSpuXKm2lDWmzS1HLIw1wOkq/lC/yjSWS4NQAh04Pflc0o+up2JujG+FS51Z5CnPs/v5UqY5k8TqQ5zIb1yLp5MJmVbtIIjaJCKOW0B22tilI9PIU2OAdF8GXQ/gvnseu1D8bmOOCcA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iSkA1a6y; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iSkA1a6y;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	t=1788182346; c=relaxed/relaxed;
+	bh=P5ZhixbZZK68XnYWmJJNtDj0oXYUmqsiL6CAlg4bVCM=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=jOWKzytOc0cGBik5P1NA0BKB9b35W2O6KjMiMvEiZ0T0Mo+l2nG1fK2po9Bc1Khn8XimV65OwkOzBLM+96x9Ftzn57sFCPS/U/kJQiveRxL9Cq/SagijiaDtz58ksbaNWMhRAGI3pyMwiD7sbg3J1PcTnYLfHH94kZ0T3kW29232sgwGaXK9qTjl4D5/8UD/CBZY2fkTNyLlJI1mzYEo9XDeY5PNxf6FCyiX44aKq9Q8BVEoP7eI9u9M+tOjvsnV3VhIuUkJCDTLMrIYpf9oUYutx+ckXQgNrsViKdF4hJqWJBXQGdT+JdZ5/aOut9xPro6jYFm9rdJ6qunySe9z6w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=fail (p=reject dis=none) header.from=oss.qualcomm.com; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=srs0=fc1m=gy=oss.qualcomm.com=manivannan.sadhasivam@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=srs0=fc1m=gy=oss.qualcomm.com=manivannan.sadhasivam@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hYVTr5NHNz2xpn
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 31 Aug 2026 23:39:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hYV202Qcyz2xpn
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 31 Aug 2026 23:19:04 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 0E1A0418F8;
-	Mon, 31 Aug 2026 13:39:43 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4D6DB1F00ADB;
-	Mon, 31 Aug 2026 13:39:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1788183582;
-	bh=jR1/wuPn/1SFN5+Sk8Tes+Wj3LOxpbIQR0arzMeFJgA=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=iSkA1a6yEAhf2v0txq0yUIHWAX3NsVYW4KqZzWTY+U5OGGcTrjXpGtnu0zblrMyzU
-	 NS/vUq2HgpTwI2Rf6Dh3GIs70WihhZLJbRDnyAQUhAn5XSs3nhYIYcZ5cI4Shdc3af
-	 GcGN0BKVcM73QISzaT8JnKUr9b7lntloMvzI7rtwFJzrJpcakY/njynRKQMN6v7JGX
-	 MjkEBTsXENPMCJjQlR2GDeopvbBnl4OHpkAfa9wYcqTHD+tYJ8V/QuuO/Sxdjaomyk
-	 ypHdyU4s6lveNuE2wkQ7ZWJonFE3Biy9poZqbtw2XvcVaIgrDCBqj+ROREdYrRN4Q5
-	 kR2eIj2grBHpw==
-From: Sasha Levin <sashal@kernel.org>
-To: patches@lists.linux.dev,
-	stable@vger.kernel.org
-Cc: Maoyi Xie <maoyixie.tju@gmail.com>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Sasha Levin <sashal@kernel.org>,
-	neal_liu@aspeedtech.com,
-	joel@jms.id.au,
-	linux-aspeed@lists.ozlabs.org,
-	linux-usb@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.18-6.1] usb: gadget: aspeed_udc: avoid past-the-end iterator in dequeue
-Date: Mon, 31 Aug 2026 09:23:29 -0400
-Message-ID: <20260831133314.4125787-181-sashal@kernel.org>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260831133314.4125787-1-sashal@kernel.org>
-References: <20260831133314.4125787-1-sashal@kernel.org>
+	by tor.source.kernel.org (Postfix) with ESMTP id C4A2B6022C;
+	Mon, 31 Aug 2026 13:19:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CECAC1F00A3D;
+	Mon, 31 Aug 2026 13:18:56 +0000 (UTC)
+From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+To: linux-pci@vger.kernel.org, Liu Zhenlong <dragonliu2018@gmail.com>
+Cc: jacky_chou@aspeedtech.com, mani@kernel.org, bhelgaas@google.com, 
+ lpieralisi@kernel.org, kwilczynski@kernel.org, robh@kernel.org, 
+ linux-aspeed@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org
+In-Reply-To: <20260816171633.15025-1-dragonliu2018@gmail.com>
+References: <20260816171633.15025-1-dragonliu2018@gmail.com>
+Subject: Re: [PATCH] PCI: aspeed: fix clk and phy leak in
+ aspeed_pcie_port_init error paths
+Message-Id: <178818233640.33196.12707078026403586187.b4-ty@b4>
+Date: Mon, 31 Aug 2026 15:18:56 +0200
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -77,404 +56,29 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.18.48
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
+X-Mailer: b4 0.15.2
 
-From: Maoyi Xie <maoyixie.tju@gmail.com>
 
-[ Upstream commit e2ffaac1884b921b8ec2b3a964c6a8b5d610bf4b ]
+On Mon, 17 Aug 2026 01:16:33 +0800, Liu Zhenlong wrote:
+> aspeed_pcie_port_init() calls clk_prepare_enable() to enable the port
+> clock, but if phy_init() or phy_set_mode_ext() fails afterwards, the
+> function returns without calling clk_disable_unprepare(), leaking the
+> clock reference on every probe failure.  Additionally, when
+> phy_set_mode_ext() fails, phy_init() has already succeeded, so
+> phy_exit() is also missing, leaking the phy reference.
+> 
+> [...]
 
-ast_udc_ep_dequeue() declares the loop cursor `req` outside the
-list_for_each_entry(). After the loop it tests `&req->req != _req`
-to decide whether the request was found. If the queue holds no
-match, `req` is past-the-end. It then aliases
-container_of(&ep->queue, struct ast_udc_request, queue) via offset
-cancellation. Whether that synthetic address equals `_req` depends
-on heap layout. The function can return 0 without dequeueing
-anything.
+Applied, thanks!
 
-Default `rc` to -EINVAL and set it to 0 only inside the match
-branch. `req` is no longer read after the loop, so the past-the-end
-dereference goes away. No extra cursor variable or post-loop test
-is needed.
+[1/1] PCI: aspeed: fix clk and phy leak in aspeed_pcie_port_init error paths
+      commit: 6c566177fc8f728271bed8018ac77b0a8199200d
 
-Suggested-by: Alan Stern <stern@rowland.harvard.edu>
-Suggested-by: Andrew Jeffery <andrew@codeconstruct.com.au>
-Signed-off-by: Maoyi Xie <maoyixie.tju@gmail.com>
-Link: https://patch.msgid.link/20260521065428.3261238-1-maoyixie.tju@gmail.com
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
-
-LLM Generated explanations, may be completely bogus:
-
-# Stable Backport Analysis: `usb: gadget: aspeed_udc: avoid past-the-end
-iterator in dequeue`
-
-**Local tree:** `v6.18.44` (`stable/linux-6.18.y`, detached HEAD)
-**Fix commit on master:** `e2ffaac1884b9` (not present in this tree)
-
----
-
-## PHASE 1: COMMIT MESSAGE FORENSICS
-
-### Step 1.1: Subject line
-**Record:** `[usb: gadget: aspeed_udc]` **`avoid`** — fix incorrect
-post-loop use of a `list_for_each_entry()` cursor in
-`ast_udc_ep_dequeue()`.
-
-### Step 1.2: Tags
-**Record:**
-- **Suggested-by:** Alan Stern `<stern@rowland.harvard.edu>` (USB
-  maintainer)
-- **Suggested-by:** Andrew Jeffery `<andrew@codeconstruct.com.au>`
-  (Aspeed contributor)
-- **Signed-off-by:** Maoyi Xie, Greg Kroah-Hartman
-- **Link:** https://patch.msgid.link/20260521065428.3261238-1-
-  maoyixie.tju@gmail.com
-- No `Fixes:`, `Reported-by:`, `Cc: stable`, `Reviewed-by:`, or `Tested-
-  by:` tags
-- Notable: suggestions from core USB and Aspeed reviewers; patch went
-  through v1→v3 on list
-
-### Step 1.3: Body analysis
-**Record:**
-- **Bug:** After `list_for_each_entry()` finds no match, `req` is a
-  past-the-end sentinel. Post-loop `&req->req != _req` uses that invalid
-  cursor via `container_of()` offset arithmetic.
-- **Symptom:** `ast_udc_ep_dequeue()` can return `0` (success) without
-  dequeuing anything.
-- **Root cause:** `rc` defaults to `0`; the post-loop pointer comparison
-  is unreliable when the iterator is past-the-end.
-- **Version info:** None explicit; driver has been in-tree since 5.19.
-
-### Step 1.4: Hidden bug fix?
-**Record:** Yes — clearly a logic/correctness bug in the USB gadget
-dequeue API, not cosmetic cleanup. Matches the established idiom in
-sibling `aspeed-vhub` and `pch_udc` drivers.
-
----
-
-## PHASE 2: DIFF ANALYSIS
-
-### Step 2.1: Inventory
-**Record:**
-- **File:** `drivers/usb/gadget/udc/aspeed_udc.c` (+2 / −5 lines)
-- **Function:** `ast_udc_ep_dequeue()`
-- **Scope:** Single-file, surgical fix
-
-### Step 2.2: Code flow change
-**Record:**
-- **Before:** `rc = 0`; on match, dequeue and `break`; after loop, if
-  `&req->req != _req` then `rc = -EINVAL` (reads past-the-end `req`).
-- **After:** `rc = -EINVAL`; on match, dequeue, set `rc = 0`, `break`;
-  no post-loop read of `req`.
-- **Path affected:** Error/normal dequeue path when the requested
-  `usb_request` is not on the endpoint queue.
-
-### Step 2.3: Bug mechanism
-**Record:** **Category (g) logic/correctness fix** — violates
-`usb_ep_dequeue()` contract (must return negative error if request is
-not active on endpoint). The post-loop test uses an invalid list
-iterator, producing unreliable success/failure results.
-
-### Step 2.4: Fix quality
-**Record:** Obviously correct; matches `pch_udc_pcd_dequeue()` and
-`ast_vhub_epn_dequeue()` patterns. Minimal regression risk — only
-changes return value for the not-found path to the correct `-EINVAL`.
-
----
-
-## PHASE 3: GIT HISTORY INVESTIGATION
-
-### Step 3.1: Blame
-**Record:** Buggy code introduced in `055276c132056` (“usb: gadget: add
-Aspeed ast2600 udc driver”, May 2022, landed in 5.19). Present unchanged
-in this tree at lines 697–713.
-
-### Step 3.2: Fixes: tag
-**Record:** N/A — no `Fixes:` tag. Introducing commit is
-`055276c132056`, confirmed ancestor of HEAD.
-
-### Step 3.3: Related file history
-**Record:** Recent `aspeed_udc.c` changes are other small fixes
-(endpoint validation, DMA, spinlock). No duplicate fix for this issue.
-Standalone one-patch fix (v3 is final applied form).
-
-### Step 3.4: Author context
-**Record:** Maoyi Xie is not the driver author (Neal Liu) but submitted
-a focused fix with guidance from Alan Stern and Andrew Jeffery. Greg K-H
-committed to mainline.
-
-### Step 3.5: Dependencies
-**Record:** None. Self-contained; no prerequisite commits. Applies
-cleanly to current `6.18.y` file.
-
----
-
-## PHASE 4: MAILING LIST AND EXTERNAL RESEARCH
-
-### Step 4.1: Original discussion
-**Record:** `b4 dig -c e2ffaac1884b9` → [PATCH v3] thread at https://pat
-ch.msgid.link/20260521065428.3261238-1-maoyixie.tju@gmail.com. Series:
-v2 (2026-05-19), v3 (2026-05-21, applied version). Alan Stern reviewed
-v1 and suggested the correct loop/return-value idiom; Andrew Jeffery
-suggested v3’s `rc = -EINVAL` default shape.
-
-### Step 4.2: Reviewers
-**Record:** `b4 dig -w`: CC’d Greg Kroah-Hartman, Alan Stern, Andrew
-Jeffery, Neal Liu, linux-usb, linux-aspeed, linux-arm-kernel.
-Appropriate maintainer coverage.
-
-### Step 4.3: Bug report
-**Record:** No syzbot/bugzilla report. Bug identified via code review
-(Alan Stern). Severity: API contract violation with potential request-
-lifecycle confusion.
-
-### Step 4.4: Series context
-**Record:** Standalone fix; v3 is the committed version. No other
-patches required.
-
-### Step 4.5: Stable list history
-**Record:** No `Cc: stable` nominations found in thread (`grep -i
-stable` on saved mbox). Not a negative signal per instructions.
-
----
-
-## PHASE 5: CODE SEMANTIC ANALYSIS
-
-### Step 5.1: Key functions
-**Record:** `ast_udc_ep_dequeue()` modified; registered in
-`ast_udc_ep_ops.dequeue`.
-
-### Step 5.2: Callers
-**Record:** Called via `usb_ep_dequeue()` in
-`drivers/usb/gadget/udc/core.c`, which dispatches to `ep->ops->dequeue`.
-Gadget function drivers call this from disconnect/cancel paths:
-`composite.c`, `f_fs.c`, `u_audio.c`, `f_mass_storage.c`, `f_ecm.c`,
-`u_serial.c`, `raw_gadget.c`, etc. Callable from process or interrupt
-context per `core.c` documentation.
-
-### Step 5.3: Callees
-**Record:** On successful match: `list_del_init()`, `ast_udc_done()`
-(unmap + completion callback). Fix only changes behavior when no match
-is found.
-
-### Step 5.4: Reachability
-**Record:** Reachable whenever a USB gadget function cancels an in-
-flight request on an Aspeed UDC endpoint — common during teardown, error
-recovery, or userspace interrupt (e.g. FunctionFS). Requires
-`CONFIG_USB_ASPEED_UDC` on `ARCH_ASPEED` (AST260x BMC SoCs).
-
-### Step 5.5: Similar patterns
-**Record:** `aspeed-vhub` `ast_vhub_epn_dequeue()` already uses `rc =
--EINVAL` + separate iterator (`epn.c:472–488`). `pch_udc_pcd_dequeue()`
-uses same pattern (`pch_udc.c:1862–1878`). `aspeed_udc` was the outlier.
-
----
-
-## PHASE 6: CROSS-REFERENCING AGAINST LOCAL TREE
-
-### Step 6.1: Buggy code exists?
-**Record:** **Yes.** Current tree at
-`drivers/usb/gadget/udc/aspeed_udc.c:697–713` has `int rc = 0` and post-
-loop `if (&req->req != _req)`. Fix commit `e2ffaac1884b9` is **not** an
-ancestor of HEAD (`merge-base` check failed).
-
-### Step 6.2: Backport complications
-**Record:** Clean apply expected — 7-line hunk, no structural conflicts.
-File has had only minor unrelated changes since driver addition.
-
-### Step 6.3: Related fixes already present?
-**Record:** None found for this issue.
-
----
-
-## PHASE 7: SUBSYSTEM AND MAINTAINER CONTEXT
-
-### Step 7.1: Subsystem criticality
-**Record:** **drivers/usb/gadget** — IMPORTANT for Aspeed BMC/embedded
-platforms using USB gadget mode; peripheral globally but significant for
-OpenBMC/AST260x deployments.
-
-### Step 7.2: Subsystem activity
-**Record:** Driver actively maintained with several post-introduction
-fixes in this tree (DMA, spinlock, endpoint validation). Bug predates
-all of them.
-
----
-
-## PHASE 8: IMPACT AND RISK ASSESSMENT
-
-### Step 8.1: Who is affected
-**Record:** Users of AST260x SoCs with `CONFIG_USB_ASPEED_UDC` running
-USB gadget functions (mass storage, ECM, UAC, FunctionFS, etc.).
-
-### Step 8.2: Trigger conditions
-**Record:** `usb_ep_dequeue()` called with a `usb_request` not currently
-queued on that endpoint — happens during disconnect, I/O cancellation,
-or race between completion and cancel. Not every boot, but a normal
-operational path. Unprivileged users can trigger via gadget
-configfs/functionfs on systems exposing gadget to userspace.
-
-### Step 8.3: Failure mode severity
-**Record:** False success (`0` returned, nothing dequeued) → callers
-assume request canceled. Example in `u_audio.c:455–463`: on success,
-request is not freed but pointer is cleared; completion may still fire
-later → request lifecycle confusion, potential use-after-free or double-
-free depending on caller. **Severity: HIGH** (correctness bug with
-memory-safety consequences possible); not a guaranteed crash on every
-call.
-
-### Step 8.4: Risk-benefit
-**Record:**
-- **Benefit:** HIGH for affected hardware — restores correct
-  `usb_ep_dequeue()` semantics
-- **Risk:** VERY LOW — 5-line idiom change, well-reviewed, matches
-  sibling drivers
-- **Ratio:** Strongly favors backport
-
----
-
-## PHASE 9: FINAL SYNTHESIS
-
-### Step 9.1: Evidence summary
-
-**FOR backport:**
-- Real bug present since driver introduction (2022)
-- Buggy code confirmed in `v6.18.44`
-- Can return false success on dequeue failure — API contract violation
-- USB maintainers (Alan Stern) and Aspeed developers guided the fix
-- Tiny, surgical, obviously correct change
-- Sibling `aspeed-vhub` already uses correct pattern
-- Gadget callers depend on accurate dequeue return values
-
-**AGAINST backport:**
-- Limited to `CONFIG_USB_ASPEED_UDC` platforms (not universal)
-- No syzbot/CVE report; false-success case may be uncommon in practice
-- No explicit stable nomination in mailing list
-
-**Unresolved:** Exact frequency of spurious success in production
-(address-coincidence scenario); not needed to justify fix given clear
-API bug.
-
-### Step 9.2: Stable rules checklist
-1. Obviously correct and tested? **PASS** — standard UDC idiom; reviewed
-   by Alan Stern and Andrew Jeffery; committed by Greg K-H
-2. Fixes a real bug affecting users? **PASS** — incorrect dequeue return
-   value on Aspeed UDC
-3. Important issue? **PASS** — request lifecycle / potential UAF;
-   severity HIGH for affected configs
-4. Small and contained? **PASS** — 1 file, net −3 lines
-5. No new features or APIs? **PASS**
-6. Can apply to local tree? **PASS** — driver and buggy code both
-   present; clean apply
-
-### Step 9.3: Exception categories
-**Record:** N/A (not device ID, quirk, DT, build, or docs — standard
-driver bug fix).
-
-### Step 9.4: Decision rationale
-This tree (`6.18.y`) ships the Aspeed UDC driver with a dequeue bug that
-has existed since the driver was added. The fix restores correct
-`usb_ep_dequeue()` behavior using the same pattern as other UDC drivers
-in-tree. It is small, reviewed by USB subsystem experts, and prevents
-callers from mis-handling requests that were never dequeued. The
-hardware scope is narrow but the fix is trivial and the failure mode is
-serious enough for stable.
-
----
-
-## Verification
-
-- **[Phase 1]** Parsed commit message and tags from user query and `git
-  show e2ffaac1884b9`
-- **[Phase 2]** Read diff; confirmed changes in `ast_udc_ep_dequeue()`
-  at lines 691–716
-- **[Phase 3]** `git blame`: buggy code from `055276c132056` (May 2022,
-  5.19)
-- **[Phase 3]** `git merge-base --is-ancestor 055276c132056 HEAD`:
-  driver present in tree
-- **[Phase 3]** `git merge-base --is-ancestor e2ffaac1884b9 HEAD`: fix
-  **not** in tree (exit 1)
-- **[Phase 3]** `git log --oneline -20 --
-  drivers/usb/gadget/udc/aspeed_udc.c`: no duplicate fix
-- **[Phase 4]** `b4 dig -c e2ffaac1884b9`: found v3 thread URL
-- **[Phase 4]** `b4 dig -a`: v2 and v3 revisions listed
-- **[Phase 4]** `b4 dig -w`: Greg K-H, Alan Stern, Andrew Jeffery CC'd
-- **[Phase 4]** Saved mbox; read Alan Stern review suggesting correct
-  idiom
-- **[Phase 4]** `grep -i stable` on mbox: no stable nomination
-- **[Phase 5]** `grep usb_ep_dequeue`: multiple gadget function driver
-  call sites
-- **[Phase 5]** Read `core.c:331–338`: dispatch wrapper
-- **[Phase 5]** Read `aspeed-vhub/epn.c:472–488`: correct sibling
-  pattern
-- **[Phase 5]** Read `pch_udc.c:1862–1878`: correct peer pattern
-- **[Phase 5]** Read `u_audio.c:455–463`: caller behavior on dequeue
-  return value
-- **[Phase 6]** `git describe HEAD`: `v6.18.44`
-- **[Phase 6]** `make -s kernelversion`: `6.18.44`
-- **[Phase 6]** Confirmed buggy code at `aspeed_udc.c:697–713` in
-  working tree
-- **[Phase 6]** `git log master --oneline --grep past-the-end`: fix
-  exists on master only
-- **[Phase 7]** Read `Kconfig:407–418`: `CONFIG_USB_ASPEED_UDC` depends
-  on `ARCH_ASPEED`
-
-**YES**The commit should be backported to this tree (`v6.18.44` /
-`stable/linux-6.18.y`).
-
-`ast_udc_ep_dequeue()` in `aspeed_udc.c` can return success without
-actually dequeuing a request when the target isn’t on the endpoint
-queue, because it reads a past-the-end `list_for_each_entry()` cursor
-after the loop. The fix is small (default `rc` to `-EINVAL`, set `0`
-only on match) and matches the pattern already used in `aspeed-vhub` and
-`pch_udc`.
-
-The buggy code is present here; the fix (`e2ffaac1884b9`) is on master
-but not in this stable branch. It affects AST260x BMC systems using
-`CONFIG_USB_ASPEED_UDC` and can confuse gadget callers that rely on
-`usb_ep_dequeue()` return values during cancel/teardown.
-
-**YES**
-
- drivers/usb/gadget/udc/aspeed_udc.c | 7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/usb/gadget/udc/aspeed_udc.c b/drivers/usb/gadget/udc/aspeed_udc.c
-index 353bfb1ff0a12..0b994afab0478 100644
---- a/drivers/usb/gadget/udc/aspeed_udc.c
-+++ b/drivers/usb/gadget/udc/aspeed_udc.c
-@@ -694,7 +694,7 @@ static int ast_udc_ep_dequeue(struct usb_ep *_ep, struct usb_request *_req)
- 	struct ast_udc_dev *udc = ep->udc;
- 	struct ast_udc_request *req;
- 	unsigned long flags;
--	int rc = 0;
-+	int rc = -EINVAL;
- 
- 	spin_lock_irqsave(&udc->lock, flags);
- 
-@@ -704,14 +704,11 @@ static int ast_udc_ep_dequeue(struct usb_ep *_ep, struct usb_request *_req)
- 			list_del_init(&req->queue);
- 			ast_udc_done(ep, req, -ESHUTDOWN);
- 			_req->status = -ECONNRESET;
-+			rc = 0;
- 			break;
- 		}
- 	}
- 
--	/* dequeue request not found */
--	if (&req->req != _req)
--		rc = -EINVAL;
--
- 	spin_unlock_irqrestore(&udc->lock, flags);
- 
- 	return rc;
+Best regards,
 -- 
-2.53.0
+மணிவண்ணன் சதாசிவம்
+
 
 
