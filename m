@@ -1,30 +1,30 @@
-Return-Path: <linux-aspeed+bounces-4899-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4898-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6501C624D2
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA460C624D4
 	for <linux-aspeed@archiver.kernel.org>; Tue,  1 Sep 2026 11:36:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hZ3hp4X8Lz2y2S;
-	Tue, 01 Sep 2026 21:36:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hZ3hn3kjfz2y2P;
+	Tue, 01 Sep 2026 21:36:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788262570;
-	cv=none; b=mOMtal9lOEVD5/f93G13915fEBx1Ma80o+fg9ZgRmPoCUswnys91nd/snct74SnbPDYORig9FJlxxfK0/35XnMjC2HzpzdWTTJBZHvIjna+wowqRUDGX1rA6n+KYj6MhUFZ7qsAMtF9YRSAJaLp7r9QdrUi4HnpuUevm3LfPgAg62XW6AR8onSkaJrDWoG6XGIriWDGGAi6jm6X/oSFPXDdO9YA7o9JmTHPxEHRfps5ZeSsXzvhk9RZodHbUPB8v2db8YOLGkj8VKjFo+gf2zbnLrABStf3aI5SJGn38Ku4bHncR7FgeE8zIx4K0orb/FiBHrdeU1jNGnNk5Vv7bNA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788262569;
+	cv=none; b=UW9PZgL5TAV37a41CDopoPxqVOIJJdo3qmnyiHV4SqiYp7pnkSnYSsJzFD8Kgnl+MdBmGdcbpertJge2Ej9lIztuKvUou+iMBXl0GuDsu2FTM0PbPAAE0uiZH+UQcqxt7TPI8nDk6i4mam3vQskhU83WqsQ8tl+JKMMCJwvmEruVGhHPkbAXUeUZUeh2Z9OWEINh4Vwzc9YaYdKMaFpnzt2i3GiB1q/cROtG2CH59SPUn1gq918TbbWb3SOwZCVzjM4NuQ7KijUI1tV1M+y2tw4+VkqCKa2B37VHpX1rqkgiMQNaF6THySzDNg2B2RpDyg0aMvrwlYLh091p6occNw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788262570; c=relaxed/relaxed;
-	bh=g5YoS6hJGyxhwlaLCQYETQrNLpOjLD6ebCCi8hUMnNk=;
+	t=1788262569; c=relaxed/relaxed;
+	bh=HvhENcbTFKD+ZfCBC20Mjl7DiUZ+yAYyq+H59lr/Xt4=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
-	 In-Reply-To:To:CC; b=iZ2QKWIcA5uDAPfwkNYCZjzA7nS2CY1tnr9bN/SUgWG/bsgPiH1kgKM11pbr5RVJtKisfH5IXd29zSLz21H551Dh4LDG0MtJtjpQzsrYED970+RYs8g9dMm2yMDjL13/n1UX2XMS31pR/76TgqeFQhtRqjSiNy2TKQiDldCJ1bGPvHOWxGUYqaV/VEYHmLjWfdGy8SKuUqXOHneqhaSb/FxlzzkJsN/+ZuXgBwx6zpauENUeiKyjrN+OHcrTr1fHv4jGjPJqex6GpNZ/r4zjLSen1soleEdTLObY5inFaOYcpvQs1v+qgg5JJDJVLnBIlgeqDsYXEI5weLTuz8KxQw==
+	 In-Reply-To:To:CC; b=nyVrI6/479xjpJu8aQuj8drsIwK6kUNkz8KA2cFVinoU530CyTDHo80XvItEntvMaBUvwZXYTx3hJ9iVdHcu3JqQci6v/ozgJ98ou+1QxtZuSfapIfcw6YQzLTPqaLBChEyXZS0EYEdFhvdpsMIoZo27MxtTVG1U+VJY1DxTyla7D3yRE5GE3i3cdZ5n0VfTuOswImnQQdWdtL28YUIMCSUGqYeNyyhbe6oG2iQFgKnvqXgNWN0ObNbjFrENt06sQw8h2DR5/GmzqTkF98ypon7zVhLF4kGCL3PrQZ4aSct+xQxXlszpySLD80yeFPS2FRPRXZzLfHqU5gpi+1asBQ==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeedtech.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeedtech.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org)
 Received: from twmbx01.aspeedtech.com (mail.aspeedtech.com [211.20.114.72])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZ3hn5Kpjz2xBK
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 01 Sep 2026 21:36:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZ3hl6GqQz2xBK
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 01 Sep 2026 21:36:07 +1000 (AEST)
 Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Tue, 1 Sep
@@ -33,9 +33,9 @@ Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
  Transport; Tue, 1 Sep 2026 19:35:39 +0800
 From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Tue, 1 Sep 2026 19:35:33 +0800
-Subject: [PATCH 6/8] i3c: mipi-i3c-hci: Program AST2700 IBI termination
- threshold
+Date: Tue, 1 Sep 2026 19:35:32 +0800
+Subject: [PATCH 5/8] i3c: mipi-i3c-hci: Add support for the AST2700 I3C
+ controller
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -50,8 +50,8 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-ID: <20260901-b4-i3c-hci-ast2700-v1-6-19909e7cbd7e@aspeedtech.com>
+Content-Transfer-Encoding: 8bit
+Message-ID: <20260901-b4-i3c-hci-ast2700-v1-5-19909e7cbd7e@aspeedtech.com>
 References: <20260901-b4-i3c-hci-ast2700-v1-0-19909e7cbd7e@aspeedtech.com>
 In-Reply-To: <20260901-b4-i3c-hci-ast2700-v1-0-19909e7cbd7e@aspeedtech.com>
 To: Alexandre Belloni <alexandre.belloni@bootlin.com>, Frank Li
@@ -63,119 +63,871 @@ CC: <linux-i3c@lists.infradead.org>, <devicetree@vger.kernel.org>,
 	<linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
 	<linux-kernel@vger.kernel.org>, Billy Tsai <billy_tsai@aspeedtech.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1788262538; l=4578;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1788262538; l=32011;
  i=billy_tsai@aspeedtech.com; s=20251118; h=from:subject:message-id;
- bh=xOl9+Kul4dBwt8rxRnAINY0vnOHwaByTCuM9DbK+p3I=;
- b=qWtlv5VOUEegPE0YGyLI/BFbXn5JqLuelcacCgbJoGHuQrR+O8yF30Ewl63FfhKPpWughtyAl
- CyKmYJFamIQD4ibRMn+c7kGx+ZNZ05JfxmCg1tulc3aHN/RrVyURlUY
+ bh=JZN8eVya+rZGkGFlbIyjIdl7gDlt+jOZTjurXHCPG1g=;
+ b=ACV2ja0s6XQvi//NsSaN9wVoQV3sHwuu4XGopd5dhlVOQHUZ4dMG+u74OpoYgJSIBbNcbBT+L
+ CN2b07gqGgsALz2hyaqweAmeTBXyECypH+8lYVz9wtoUZywT6cnn/Aa
 X-Developer-Key: i=billy_tsai@aspeedtech.com; a=ed25519;
  pk=/A8qvgZ6CPfnwKgT6/+k+nvXOkN477MshEGJvVdzeeQ=
 
-For an IBI with payload, it's normally the device that decides when to
-stop sending payload bytes. A misbehaving device that never terminates
-can leave the controller stuck waiting on the transfer. AST2700 has an
-in-house IBI payload length threshold that, once enabled, forces
-termination once the received payload reaches it.
+The AST2700 I3C controller carries an ASPEED vendor extended
+capability describing an in-house control block and a PHY programming
+window. Recognize the ASPEED MIPI vendor ID in the extended capability
+parser and cache both register bases via the generic vendor_data
+pointer, which other vendors (e.g. NXP) also populate; add is_aspeed()
+to identify ASPEED specifically.
 
-When payload IBIs are requested, grow the AST2700 termination
-threshold to at least the requested payload length and enable
-termination on that value. The register is controller-wide while IBI
-requests for different devices can run in parallel, so the
-read-modify-write is serialized under the controller lock. Controllers
-without the vendor capability block keep the existing behavior.
+Bringing the controller up for transfers needs more than the generic
+HCI reset sequence: the vendor block has to be switched to master
+mode, PHY timing registers programmed from the selected bus rates
+(with aspeed,* device tree properties to override values derived under
+nominal bus loading), and all interrupts funneled through a vendor
+summary register whose handler dispatches to the same core and IO
+handlers as the generic path. Master clock stall is enabled alongside
+master-mode init so an underrun pauses and resumes the transfer
+instead of aborting it. Hook this initialization into bus setup and
+resume behind is_aspeed(), and acquire the core clock and reset-names
+resources the binding describes for it.
+
+During normal operation, the vendor DAA index registers must be told
+which DAT slot is being assigned during ENTDAA, and the PIO/IBI FIFOs
+need resetting after a DMA error or abort — which the core already
+implements behind HCI_QUIRK_DMA_ABORT_REQUIRES_PIO_RESET, so set that
+quirk rather than open-coding a separate recovery path.
+
+With the required support in place, make the "aspeed,ast2700-i3c-hci"
+compatible matchable with the DAT_INDEX_IS_ADDR, DMA_64BIT,
+DMA_ABORT_REQUIRES_PIO_RESET and TX_START_THLD quirks, and set
+is_aspeed() from the same compatible.
 
 Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 Assisted-by: Claude:claude-fable-5
 ---
- drivers/i3c/master/mipi-i3c-hci/core.c          | 14 ++++++++++----
- drivers/i3c/master/mipi-i3c-hci/vendor_aspeed.c | 20 ++++++++++++++++++++
- drivers/i3c/master/mipi-i3c-hci/vendor_aspeed.h |  5 +++++
- 3 files changed, 35 insertions(+), 4 deletions(-)
+ drivers/i3c/master/mipi-i3c-hci/Makefile        |   2 +-
+ drivers/i3c/master/mipi-i3c-hci/cmd_v1.c        |  21 +++
+ drivers/i3c/master/mipi-i3c-hci/core.c          | 175 ++++++++++++++++--
+ drivers/i3c/master/mipi-i3c-hci/ext_caps.c      |  15 ++
+ drivers/i3c/master/mipi-i3c-hci/ext_caps.h      |   1 +
+ drivers/i3c/master/mipi-i3c-hci/vendor_aspeed.c | 234 ++++++++++++++++++++++++
+ drivers/i3c/master/mipi-i3c-hci/vendor_aspeed.h | 174 ++++++++++++++++++
+ 7 files changed, 606 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/i3c/master/mipi-i3c-hci/core.c b/drivers/i3c/master/mipi-i3c-hci/core.c
-index e0ee8148aa2f..3d52d8f277ad 100644
---- a/drivers/i3c/master/mipi-i3c-hci/core.c
-+++ b/drivers/i3c/master/mipi-i3c-hci/core.c
-@@ -690,15 +690,21 @@ static void i3c_hci_detach_i2c_dev(struct i2c_dev_desc *dev)
- static int i3c_hci_request_ibi(struct i3c_dev_desc *dev,
- 			       const struct i3c_ibi_setup *req)
- {
--	struct i3c_master_controller *m = i3c_dev_get_master(dev);
--	struct i3c_hci *hci = to_i3c_hci(m);
- 	struct i3c_hci_dev_data *dev_data = i3c_dev_get_master_data(dev);
-+	struct i3c_master_controller *m = i3c_dev_get_master(dev);
-+	unsigned int ibi_max_len = req->max_payload_len;
- 	unsigned int dat_idx = dev_data->dat_idx;
-+	struct i3c_hci *hci = to_i3c_hci(m);
+diff --git a/drivers/i3c/master/mipi-i3c-hci/Makefile b/drivers/i3c/master/mipi-i3c-hci/Makefile
+index e3d3ef757035f..f4f048786c95b 100644
+--- a/drivers/i3c/master/mipi-i3c-hci/Makefile
++++ b/drivers/i3c/master/mipi-i3c-hci/Makefile
+@@ -4,5 +4,5 @@ obj-$(CONFIG_MIPI_I3C_HCI)		+= mipi-i3c-hci.o
+ mipi-i3c-hci-y				:= core.o ext_caps.o pio.o dma.o \
+ 					   cmd_v1.o cmd_v2.o \
+ 					   dat_v1.o dct_v1.o \
+-					   hci_quirks.o
++					   hci_quirks.o vendor_aspeed.o
+ obj-$(CONFIG_MIPI_I3C_HCI_PCI)		+= mipi-i3c-hci-pci.o
+diff --git a/drivers/i3c/master/mipi-i3c-hci/cmd_v1.c b/drivers/i3c/master/mipi-i3c-hci/cmd_v1.c
+index 9a11affb14bf6..bf097d55f18cf 100644
+--- a/drivers/i3c/master/mipi-i3c-hci/cmd_v1.c
++++ b/drivers/i3c/master/mipi-i3c-hci/cmd_v1.c
+@@ -14,6 +14,7 @@
+ #include "cmd.h"
+ #include "dat.h"
+ #include "dct.h"
++#include "vendor_aspeed.h"
  
--	if (req->max_payload_len != 0)
-+	if (req->max_payload_len != 0) {
- 		mipi_i3c_hci_dat_v1.set_flags(hci, dat_idx, DAT_0_IBI_PAYLOAD, 0);
--	else
-+
-+		if (is_aspeed(hci))
-+			aspeed_i3c_ibi_grow_threshold(hci, ibi_max_len);
-+	} else {
- 		mipi_i3c_hci_dat_v1.clear_flags(hci, dat_idx, DAT_0_IBI_PAYLOAD, 0);
-+	}
-+
- 	return hci->io->request_ibi(hci, dev, req);
+ /*
+  * Address Assignment Command
+@@ -293,6 +294,24 @@ static void hci_cmd_v1_prep_i2c_xfer(struct i3c_hci *hci,
+ 	}
  }
  
-diff --git a/drivers/i3c/master/mipi-i3c-hci/vendor_aspeed.c b/drivers/i3c/master/mipi-i3c-hci/vendor_aspeed.c
-index b521fce4c084..e32dea0d5fc3 100644
---- a/drivers/i3c/master/mipi-i3c-hci/vendor_aspeed.c
-+++ b/drivers/i3c/master/mipi-i3c-hci/vendor_aspeed.c
-@@ -25,6 +25,26 @@ void aspeed_i3c_write(struct i3c_hci *hci, u32 reg, u32 val)
- 	writel(val, to_aspeed_vendor_data(hci)->inhouse_regs + reg);
- }
- 
-+void aspeed_i3c_ibi_grow_threshold(struct i3c_hci *hci, unsigned int ibi_max_len)
++/*
++ * The DAA index registers name the DAT slot being assigned during ENTDAA;
++ * they live in the vendor capability block discovered at probe time.
++ */
++static void aspeed_i3c_set_daa_index(struct i3c_hci *hci, unsigned int dat_idx)
 +{
-+	u32 mrl, cur_len;
++	void __iomem *inhouse_regs = to_aspeed_vendor_data(hci)->inhouse_regs;
 +
-+	/*
-+	 * The termination threshold is controller-wide while IBI requests
-+	 * for different devices can run in parallel, so serialize the
-+	 * read-modify-write.
-+	 */
-+	guard(spinlock_irqsave)(&hci->lock);
-+
-+	mrl = aspeed_i3c_read(hci, ASPEED_I3C_MST_MRL);
-+	cur_len = FIELD_GET(ASPEED_I3C_IBI_TERMINATE_LEN, mrl);
-+
-+	ibi_max_len = max(ibi_max_len, cur_len);
-+	aspeed_i3c_write(hci, ASPEED_I3C_MST_MRL,
-+			 ASPEED_I3C_IBI_TERMINATE_EN |
-+			 FIELD_PREP(ASPEED_I3C_IBI_TERMINATE_LEN, ibi_max_len));
++	if (dat_idx < 32)
++		writel(BIT(dat_idx), inhouse_regs + ASPEED_I3C_DAA_INDEX0);
++	else if (dat_idx < 64)
++		writel(BIT(dat_idx - 32), inhouse_regs + ASPEED_I3C_DAA_INDEX1);
++	else if (dat_idx < 96)
++		writel(BIT(dat_idx - 64), inhouse_regs + ASPEED_I3C_DAA_INDEX2);
++	else
++		writel(BIT(dat_idx - 96), inhouse_regs + ASPEED_I3C_DAA_INDEX3);
 +}
 +
- static void aspeed_i3c_phy_write(struct i3c_hci *hci, u32 reg, u32 val)
+ static int hci_cmd_v1_daa(struct i3c_hci *hci)
  {
- 	writel(val, to_aspeed_vendor_data(hci)->phy_regs + reg);
-diff --git a/drivers/i3c/master/mipi-i3c-hci/vendor_aspeed.h b/drivers/i3c/master/mipi-i3c-hci/vendor_aspeed.h
-index 8760384d1c6f..84afb2bec956 100644
---- a/drivers/i3c/master/mipi-i3c-hci/vendor_aspeed.h
-+++ b/drivers/i3c/master/mipi-i3c-hci/vendor_aspeed.h
-@@ -51,6 +51,7 @@ static inline struct aspeed_i3c_vendor_data *to_aspeed_vendor_data(struct i3c_hc
- u32 aspeed_i3c_read(struct i3c_hci *hci, u32 reg);
- void aspeed_i3c_write(struct i3c_hci *hci, u32 reg, u32 val);
- int aspeed_i3c_phy_init(struct i3c_hci *hci);
-+void aspeed_i3c_ibi_grow_threshold(struct i3c_hci *hci, unsigned int ibi_max_len);
+ 	struct hci_xfer *xfer;
+@@ -322,6 +341,8 @@ static int hci_cmd_v1_daa(struct i3c_hci *hci)
+ 		if (ret < 0)
+ 			break;
+ 		dat_idx = ret;
++		if (is_aspeed(hci))
++			aspeed_i3c_set_daa_index(hci, dat_idx);
  
- #define ASPEED_I3C_CTRL				0x00
- #define ASPEED_I3C_CTRL_CLOCK_STALL_EN		BIT(14)
-@@ -58,6 +59,10 @@ int aspeed_i3c_phy_init(struct i3c_hci *hci);
- #define ASPEED_I3C_CTRL_INIT_MODE		GENMASK(1, 0)
- #define   ASPEED_I3C_INIT_MST_MODE		0
+ 		dev_dbg(&hci->master.dev,
+ 			"next_addr = 0x%02x, DAA using DAT %d",
+diff --git a/drivers/i3c/master/mipi-i3c-hci/core.c b/drivers/i3c/master/mipi-i3c-hci/core.c
+index 2290a889701cd..e0ee8148aa2f8 100644
+--- a/drivers/i3c/master/mipi-i3c-hci/core.c
++++ b/drivers/i3c/master/mipi-i3c-hci/core.c
+@@ -20,6 +20,7 @@
+ #include <linux/platform_data/mipi-i3c-hci.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm_runtime.h>
++#include <linux/reset.h>
  
-+#define ASPEED_I3C_MST_MRL			0x08
-+#define ASPEED_I3C_IBI_TERMINATE_EN		BIT(16)
-+#define ASPEED_I3C_IBI_TERMINATE_LEN		GENMASK(15, 0)
+ #include "hci.h"
+ #include "ext_caps.h"
+@@ -27,6 +28,7 @@
+ #include "dat.h"
+ #include "ibi.h"
+ #include "pio.h"
++#include "vendor_aspeed.h"
+ 
+ /*
+  * Host Controller Capabilities and Operation Registers
+@@ -136,6 +138,25 @@ struct device *i3c_hci_sysdev(struct device *dev)
+ 	return dev->parent && dev_is_pci(dev->parent) ? dev->parent : dev;
+ }
+ 
++static int aspeed_i3c_bus_setup(struct i3c_hci *hci)
++{
++	if (!to_aspeed_vendor_data(hci)->phy_regs)
++		return -ENODEV;
 +
- #define ASPEED_I3C_DAA_INDEX0			0x10
- #define ASPEED_I3C_DAA_INDEX1			0x14
- #define ASPEED_I3C_DAA_INDEX2			0x18
++	/*
++	 * Enable master clock stall: when the controller cannot keep the
++	 * data pipeline fed it holds SCL low instead of underrunning, so a
++	 * transfer pauses and resumes cleanly rather than aborting.
++	 */
++	aspeed_i3c_write(hci, ASPEED_I3C_CTRL,
++			 ASPEED_I3C_CTRL_CLOCK_STALL_EN |
++			 ASPEED_I3C_CTRL_INIT |
++			 FIELD_PREP(ASPEED_I3C_CTRL_INIT_MODE,
++				    ASPEED_I3C_INIT_MST_MODE));
++
++	return aspeed_i3c_phy_init(hci);
++}
++
+ static void i3c_hci_set_master_dyn_addr(struct i3c_hci *hci)
+ {
+ 	reg_write(MASTER_DEVICE_ADDR,
+@@ -149,6 +170,12 @@ static int i3c_hci_bus_init(struct i3c_master_controller *m)
+ 	struct i3c_device_info info;
+ 	int ret;
+ 
++	if (is_aspeed(hci)) {
++		ret = aspeed_i3c_bus_setup(hci);
++		if (ret)
++			return ret;
++	}
++
+ 	if (hci->cmd == &mipi_i3c_hci_cmd_v1) {
+ 		ret = mipi_i3c_hci_dat_v1.init(hci);
+ 		if (ret)
+@@ -766,22 +793,12 @@ static const struct i3c_master_controller_ops i3c_hci_ops = {
+ 	.disable_hotjoin	= i3c_hci_disable_hotjoin,
+ };
+ 
+-static irqreturn_t i3c_hci_irq_handler(int irq, void *dev_id)
++static irqreturn_t i3c_hci_core_irq(struct i3c_hci *hci)
++__must_hold(&hci->lock)
+ {
+-	struct i3c_hci *hci = dev_id;
+ 	irqreturn_t result = IRQ_NONE;
+ 	u32 val;
+ 
+-	guard(spinlock)(&hci->lock);
+-
+-	/*
+-	 * The IRQ can be shared, so the handler may be called when the IRQ is
+-	 * due to a different device. That could happen when runtime suspended,
+-	 * so exit immediately if IRQs are not expected for this device.
+-	 */
+-	if (hci->irq_inactive)
+-		return IRQ_NONE;
+-
+ 	val = reg_read(INTR_STATUS);
+ 	reg_write(INTR_STATUS, val);
+ 	dev_dbg(&hci->master.dev, "INTR_STATUS %#x", val);
+@@ -804,12 +821,73 @@ static irqreturn_t i3c_hci_irq_handler(int irq, void *dev_id)
+ 		dev_warn_once(&hci->master.dev,
+ 			      "unexpected INTR_STATUS %#x\n", val);
+ 
++	return result;
++}
++
++static irqreturn_t i3c_hci_irq_handler(int irq, void *dev_id)
++{
++	irqreturn_t result = IRQ_NONE;
++	struct i3c_hci *hci = dev_id;
++
++	guard(spinlock)(&hci->lock);
++
++	/*
++	 * The IRQ can be shared, so the handler may be called when the IRQ is
++	 * due to a different device. That could happen when runtime suspended,
++	 * so exit immediately if IRQs are not expected for this device.
++	 */
++	if (hci->irq_inactive)
++		return IRQ_NONE;
++
++	result = i3c_hci_core_irq(hci);
++
+ 	if (hci->io->irq_handler(hci))
+ 		result = IRQ_HANDLED;
+ 
+ 	return result;
+ }
+ 
++static irqreturn_t i3c_aspeed_irq_handler(int irq, void *dev_id)
++{
++	struct i3c_hci *hci = dev_id;
++	u32 status, inhouse_status;
++
++	guard(spinlock)(&hci->lock);
++
++	if (hci->irq_inactive)
++		return IRQ_NONE;
++
++	/*
++	 * The vendor summary register ORs together the core HCI status
++	 * (CAP), the PIO/DMA ring status (PIO/RHS) and the in-house block's
++	 * own status (INHOUSE) into single bits, so each source is
++	 * dispatched to the handler that knows how to service it.
++	 */
++	status = aspeed_i3c_read(hci, ASPEED_I3C_INTR_SUM_STATUS);
++	if (!status)
++		return IRQ_NONE;
++
++	if (status & ASPEED_INTR_SUM_CAP)
++		i3c_hci_core_irq(hci);
++	if (status & (ASPEED_INTR_SUM_PIO | ASPEED_INTR_SUM_RHS))
++		hci->io->irq_handler(hci);
++	if (status & ASPEED_INTR_SUM_INHOUSE) {
++		/*
++		 * The in-house block has no dedicated handler; just
++		 * acknowledge its status bits so the summary IRQ clears.
++		 */
++		inhouse_status = aspeed_i3c_read(hci, ASPEED_I3C_INTR_STATUS);
++		aspeed_i3c_write(hci, ASPEED_I3C_INTR_STATUS, inhouse_status);
++	}
++
++	/*
++	 * Unlike i3c_hci_irq_handler(), this IRQ is not shared
++	 * (IRQF_SHARED is not passed at request_irq() time), so a nonzero
++	 * summary status is always ours to handle.
++	 */
++	return IRQ_HANDLED;
++}
++
+ static inline bool is_version_1_1_or_newer(struct i3c_hci *hci)
+ {
+ 	return hci->version_major > 1 || (hci->version_major == 1 && hci->version_minor > 0);
+@@ -866,6 +944,11 @@ static int i3c_hci_reset_and_init(struct i3c_hci *hci)
+ 	 * Bit 0:5 are defined in IP version < 0.8 but not handled by PIO code
+ 	 */
+ 	reg_write(INTR_STATUS_ENABLE, GENMASK(31, 10));
++	if (is_aspeed(hci)) {
++		aspeed_i3c_write(hci, ASPEED_I3C_INTR_SIGNAL_ENABLE, 0);
++		aspeed_i3c_write(hci, ASPEED_I3C_INTR_STATUS_ENABLE,
++				 GENMASK(31, 0));
++	}
+ 
+ 	/* Make sure our data ordering fits the host's */
+ 	regval = reg_read(HC_CONTROL);
+@@ -949,6 +1032,12 @@ static int i3c_hci_do_reset_and_restore(struct i3c_hci *hci)
+ 	if (ret)
+ 		return -EIO;
+ 
++	if (is_aspeed(hci)) {
++		ret = aspeed_i3c_bus_setup(hci);
++		if (ret)
++			return ret;
++	}
++
+ 	i3c_hci_set_master_dyn_addr(hci);
+ 
+ 	mipi_i3c_hci_dat_v1.restore(hci);
+@@ -1146,10 +1235,17 @@ static int i3c_hci_init(struct i3c_hci *hci)
+ 	return i3c_hci_reset_and_init(hci);
+ }
+ 
++static void i3c_hci_dma_rst_assert(void *data)
++{
++	reset_control_assert(data);
++}
++
+ static int i3c_hci_probe(struct platform_device *pdev)
+ {
+ 	const struct mipi_i3c_hci_platform_data *pdata = pdev->dev.platform_data;
+ 	struct clk_bulk_data *clks;
++	irq_handler_t irq_handler;
++	unsigned long irq_flags;
+ 	struct i3c_hci *hci;
+ 	int irq, ret;
+ 
+@@ -1176,8 +1272,12 @@ static int i3c_hci_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	platform_set_drvdata(pdev, hci);
+-	/* temporary for dev_printk's, to be replaced in i3c_master_register */
++	/*
++	 * Temporary for dev_printk's and is_aspeed(), both replaced with
++	 * the real values by i3c_master_register().
++	 */
+ 	hci->master.dev.init_name = dev_name(&pdev->dev);
++	hci->master.dev.of_node = pdev->dev.of_node;
+ 
+ 	hci->quirks = (unsigned long)device_get_match_data(&pdev->dev);
+ 	if (!hci->quirks && platform_get_device_id(pdev))
+@@ -1189,6 +1289,40 @@ static int i3c_hci_probe(struct platform_device *pdev)
+ 					     "cannot set DMA mask\n");
+ 	}
+ 
++	if (is_aspeed(hci)) {
++		struct aspeed_i3c_vendor_data *vd;
++
++		vd = devm_kzalloc(&pdev->dev, sizeof(*vd), GFP_KERNEL);
++		if (!vd)
++			return -ENOMEM;
++		hci->vendor_data = vd;
++
++		vd->rst = devm_reset_control_get_optional_exclusive(&pdev->dev, "core");
++		if (IS_ERR(vd->rst))
++			return PTR_ERR(vd->rst);
++		ret = reset_control_deassert(vd->rst);
++		if (ret)
++			return ret;
++
++		vd->dma_rst = devm_reset_control_get_optional_shared(&pdev->dev, "dma");
++		if (IS_ERR(vd->dma_rst))
++			return PTR_ERR(vd->dma_rst);
++		if (vd->dma_rst) {
++			ret = reset_control_deassert(vd->dma_rst);
++			if (ret)
++				return ret;
++			ret = devm_add_action_or_reset(&pdev->dev,
++						       i3c_hci_dma_rst_assert,
++						       vd->dma_rst);
++			if (ret)
++				return ret;
++		}
++
++		vd->clk = devm_clk_get_optional(&pdev->dev, NULL);
++		if (IS_ERR(vd->clk))
++			return PTR_ERR(vd->clk);
++	}
++
+ 	ret = devm_clk_bulk_get_all_enabled(&pdev->dev, &clks);
+ 	if (ret < 0)
+ 		return dev_err_probe(&pdev->dev, ret,
+@@ -1200,9 +1334,15 @@ static int i3c_hci_probe(struct platform_device *pdev)
+ 
+ 	hci->irq_inactive = true;
+ 
++	irq_handler = i3c_hci_irq_handler;
++	irq_flags = IRQF_SHARED;
++	if (is_aspeed(hci)) {
++		irq_handler = i3c_aspeed_irq_handler;
++		irq_flags = 0;
++	}
++
+ 	irq = platform_get_irq(pdev, 0);
+-	ret = devm_request_irq(&pdev->dev, irq, i3c_hci_irq_handler,
+-			       IRQF_SHARED, NULL, hci);
++	ret = devm_request_irq(&pdev->dev, irq, irq_handler, irq_flags, NULL, hci);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -1230,6 +1370,11 @@ static const __maybe_unused struct of_device_id i3c_hci_of_match[] = {
+ 	{ .compatible = "microchip,sama7d65-i3c-hci",
+ 	  .data = (void *)(ulong)(HCI_QUIRK_PIO_MODE | HCI_QUIRK_OD_PP_TIMING |
+ 				  HCI_QUIRK_RESP_BUF_THLD) },
++	{ .compatible = "aspeed,ast2700-i3c-hci",
++	  .data = (void *)(ulong)(HCI_QUIRK_DAT_INDEX_IS_ADDR |
++				  HCI_QUIRK_DMA_64BIT |
++				  HCI_QUIRK_DMA_ABORT_REQUIRES_PIO_RESET |
++				  HCI_QUIRK_TX_START_THLD) },
+ 	{},
+ };
+ MODULE_DEVICE_TABLE(of, i3c_hci_of_match);
+diff --git a/drivers/i3c/master/mipi-i3c-hci/ext_caps.c b/drivers/i3c/master/mipi-i3c-hci/ext_caps.c
+index 77840fd4aa51f..b97306d498715 100644
+--- a/drivers/i3c/master/mipi-i3c-hci/ext_caps.c
++++ b/drivers/i3c/master/mipi-i3c-hci/ext_caps.c
+@@ -14,6 +14,7 @@
+ 
+ #include "hci.h"
+ #include "ext_caps.h"
++#include "vendor_aspeed.h"
+ #include "xfer_mode_rate.h"
+ 
+ /* Extended Capability Header */
+@@ -207,6 +208,19 @@ static int hci_extcap_vendor_NXP(struct i3c_hci *hci, void __iomem *base)
+ 	return 0;
+ }
+ 
++static int hci_extcap_vendor_ASPEED(struct i3c_hci *hci, void __iomem *base)
++{
++	struct aspeed_i3c_vendor_data *vd = to_aspeed_vendor_data(hci);
++
++	if (!vd)
++		return 0;
++
++	vd->inhouse_regs = hci->base_regs + readl(base + 0x04);
++	vd->phy_regs = hci->base_regs + readl(base + 0x08);
++
++	return 0;
++}
++
+ struct hci_ext_cap_vendor_specific {
+ 	u32 vendor;
+ 	u8  cap;
+@@ -221,6 +235,7 @@ struct hci_ext_cap_vendor_specific {
+ 
+ static const struct hci_ext_cap_vendor_specific vendor_ext_caps[] = {
+ 	EXT_CAP_VENDOR(NXP, 0xc0, 0x20),
++	EXT_CAP_VENDOR(ASPEED, 0xc0, 0x08),
+ };
+ 
+ static int hci_extcap_vendor_specific(struct i3c_hci *hci, void __iomem *base,
+diff --git a/drivers/i3c/master/mipi-i3c-hci/ext_caps.h b/drivers/i3c/master/mipi-i3c-hci/ext_caps.h
+index b15e629951f03..46dd83c0d4c54 100644
+--- a/drivers/i3c/master/mipi-i3c-hci/ext_caps.h
++++ b/drivers/i3c/master/mipi-i3c-hci/ext_caps.h
+@@ -12,6 +12,7 @@
+ 
+ /* MIPI vendor IDs */
+ #define MIPI_VENDOR_NXP			0x11b
++#define MIPI_VENDOR_ASPEED		0x3f6
+ 
+ int i3c_hci_parse_ext_caps(struct i3c_hci *hci);
+ 
+diff --git a/drivers/i3c/master/mipi-i3c-hci/vendor_aspeed.c b/drivers/i3c/master/mipi-i3c-hci/vendor_aspeed.c
+new file mode 100644
+index 0000000000000..b521fce4c084a
+--- /dev/null
++++ b/drivers/i3c/master/mipi-i3c-hci/vendor_aspeed.c
+@@ -0,0 +1,234 @@
++// SPDX-License-Identifier: BSD-3-Clause
++/*
++ * Copyright (c) 2026 ASPEED Technology Inc.
++ *
++ * AST2700 vendor register access and PHY timing initialization.
++ */
++
++#include <linux/bitfield.h>
++#include <linux/clk.h>
++#include <linux/device.h>
++#include <linux/i3c/master.h>
++#include <linux/io.h>
++#include <linux/of.h>
++
++#include "hci.h"
++#include "vendor_aspeed.h"
++
++u32 aspeed_i3c_read(struct i3c_hci *hci, u32 reg)
++{
++	return readl(to_aspeed_vendor_data(hci)->inhouse_regs + reg);
++}
++
++void aspeed_i3c_write(struct i3c_hci *hci, u32 reg, u32 val)
++{
++	writel(val, to_aspeed_vendor_data(hci)->inhouse_regs + reg);
++}
++
++static void aspeed_i3c_phy_write(struct i3c_hci *hci, u32 reg, u32 val)
++{
++	writel(val, to_aspeed_vendor_data(hci)->phy_regs + reg);
++}
++
++static u16 aspeed_i3c_ns_to_cnt(unsigned int ns, unsigned long period_ns)
++{
++	unsigned long cycles = DIV_ROUND_CLOSEST(ns, period_ns);
++
++	/* All PHY counter fields are 11 bits wide */
++	return min_t(unsigned long, max_t(unsigned long, cycles, 1) - 1,
++		     ASPEED_I3C_PHY_CNT_MAX);
++}
++
++static u32 aspeed_i3c_get_sdr_ctrl0_reg(struct i3c_hci *hci)
++{
++	struct i3c_bus *bus = i3c_master_get_bus(&hci->master);
++
++	if (bus->scl_rate.i3c > 8000000)
++		return ASPEED_I3C_PHY_I3C_SDR0_CTRL0;
++	if (bus->scl_rate.i3c > 6000000)
++		return ASPEED_I3C_PHY_I3C_SDR1_CTRL0;
++	if (bus->scl_rate.i3c > 4000000)
++		return ASPEED_I3C_PHY_I3C_SDR2_CTRL0;
++	if (bus->scl_rate.i3c > 2000000)
++		return ASPEED_I3C_PHY_I3C_SDR3_CTRL0;
++
++	return ASPEED_I3C_PHY_I3C_SDR4_CTRL0;
++}
++
++int aspeed_i3c_phy_init(struct i3c_hci *hci)
++{
++	u16 hcnt, lcnt, total_cnt, min_tbit_cnt, cas_lcnt, cas_cnt, cbp_cnt;
++	u32 sda_tx_hold = 0, cas_ns = 0, cbp_ns = 0, sr_p_low = 0;
++	struct i3c_bus *bus = i3c_master_get_bus(&hci->master);
++	u32 pp_high = 0, pp_low = 0, od_high = 0, od_low = 0;
++	struct device_node *np = hci->master.dev.of_node;
++	u32 sdr_ctrl0_reg, ctrl0, ctrl1, ctrl2;
++	unsigned long core_rate, period_ns;
++
++	core_rate = clk_get_rate(to_aspeed_vendor_data(hci)->clk);
++	if (!core_rate) {
++		dev_err(&hci->master.dev, "invalid core clock rate\n");
++		return -EINVAL;
++	}
++
++	period_ns = DIV_ROUND_UP(NSEC_PER_SEC, core_rate);
++
++	hcnt = aspeed_i3c_ns_to_cnt(ASPEED_I3C_PHY_I2C_FM_CAS_NS, period_ns);
++	lcnt = aspeed_i3c_ns_to_cnt(ASPEED_I3C_PHY_I2C_FM_SU_STO_NS, period_ns);
++	aspeed_i3c_phy_write(hci, ASPEED_I3C_PHY_I2C_FM_CTRL0,
++			     FIELD_PREP(ASPEED_I3C_PHY_I2C_FM_CTRL0_CAS, hcnt) |
++			     FIELD_PREP(ASPEED_I3C_PHY_I2C_FM_CTRL0_SU_STO, lcnt));
++
++	hcnt = aspeed_i3c_ns_to_cnt(ASPEED_I3C_PHY_I2C_FM_SCL_H_NS, period_ns);
++	lcnt = aspeed_i3c_ns_to_cnt(ASPEED_I3C_PHY_I2C_FM_SCL_L_NS, period_ns);
++	aspeed_i3c_phy_write(hci, ASPEED_I3C_PHY_I2C_FM_CTRL1,
++			     FIELD_PREP(ASPEED_I3C_PHY_I2C_FM_CTRL1_SCL_H, hcnt) |
++			     FIELD_PREP(ASPEED_I3C_PHY_I2C_FM_CTRL1_SCL_L, lcnt));
++	aspeed_i3c_phy_write(hci, ASPEED_I3C_PHY_I2C_FM_CTRL2,
++			     FIELD_PREP(ASPEED_I3C_PHY_I2C_FM_CTRL2_ACK_H, hcnt) |
++			     FIELD_PREP(ASPEED_I3C_PHY_I2C_FM_CTRL2_ACK_L, hcnt));
++
++	hcnt = aspeed_i3c_ns_to_cnt(ASPEED_I3C_PHY_I2C_FM_HD_DAT_NS, period_ns);
++	lcnt = aspeed_i3c_ns_to_cnt(ASPEED_I3C_PHY_I2C_FM_AHD_DAT_NS, period_ns);
++	aspeed_i3c_phy_write(hci, ASPEED_I3C_PHY_I2C_FM_CTRL3,
++			     FIELD_PREP(ASPEED_I3C_PHY_I2C_FM_CTRL3_HD_DAT, hcnt) |
++			     FIELD_PREP(ASPEED_I3C_PHY_I2C_FM_CTRL3_AHD_DAT, lcnt));
++
++	hcnt = aspeed_i3c_ns_to_cnt(ASPEED_I3C_PHY_I2C_FMP_CAS_NS, period_ns);
++	lcnt = aspeed_i3c_ns_to_cnt(ASPEED_I3C_PHY_I2C_FMP_SU_STO_NS, period_ns);
++	aspeed_i3c_phy_write(hci, ASPEED_I3C_PHY_I2C_FMP_CTRL0,
++			     FIELD_PREP(ASPEED_I3C_PHY_I2C_FMP_CTRL0_CAS, hcnt) |
++			     FIELD_PREP(ASPEED_I3C_PHY_I2C_FMP_CTRL0_SU_STO, lcnt));
++
++	hcnt = aspeed_i3c_ns_to_cnt(ASPEED_I3C_PHY_I2C_FMP_SCL_H_NS, period_ns);
++	lcnt = aspeed_i3c_ns_to_cnt(ASPEED_I3C_PHY_I2C_FMP_SCL_L_NS, period_ns);
++	aspeed_i3c_phy_write(hci, ASPEED_I3C_PHY_I2C_FMP_CTRL1,
++			     FIELD_PREP(ASPEED_I3C_PHY_I2C_FMP_CTRL1_SCL_H, hcnt) |
++			     FIELD_PREP(ASPEED_I3C_PHY_I2C_FMP_CTRL1_SCL_L, lcnt));
++	aspeed_i3c_phy_write(hci, ASPEED_I3C_PHY_I2C_FMP_CTRL2,
++			     FIELD_PREP(ASPEED_I3C_PHY_I2C_FMP_CTRL2_ACK_H, hcnt) |
++			     FIELD_PREP(ASPEED_I3C_PHY_I2C_FMP_CTRL2_ACK_L, hcnt));
++
++	hcnt = aspeed_i3c_ns_to_cnt(ASPEED_I3C_PHY_I2C_FMP_HD_DAT_NS, period_ns);
++	lcnt = aspeed_i3c_ns_to_cnt(ASPEED_I3C_PHY_I2C_FMP_AHD_DAT_NS, period_ns);
++	aspeed_i3c_phy_write(hci, ASPEED_I3C_PHY_I2C_FMP_CTRL3,
++			     FIELD_PREP(ASPEED_I3C_PHY_I2C_FMP_CTRL3_HD_DAT, hcnt) |
++			     FIELD_PREP(ASPEED_I3C_PHY_I2C_FMP_CTRL3_AHD_DAT, lcnt));
++
++	of_property_read_u32(np, "aspeed,pp-scl-high-ns", &pp_high);
++	of_property_read_u32(np, "aspeed,pp-scl-low-ns", &pp_low);
++	if (pp_high && pp_low) {
++		hcnt = aspeed_i3c_ns_to_cnt(pp_high, period_ns);
++		lcnt = aspeed_i3c_ns_to_cnt(pp_low, period_ns);
++	} else {
++		/*
++		 * Each of hcnt/lcnt is programmed as N-1 (the PHY counts N
++		 * cycles for a stored value of N-1), so pre-subtract 2 here
++		 * to cancel the two implicit +1s and match the requested SCL
++		 * period exactly. Clamp the pre-subtraction value so
++		 * total_cnt cannot underflow when an unrealistically high
++		 * scl_rate leaves less than 3 cycles per period.
++		 */
++		unsigned long cycles_per_scl = DIV_ROUND_UP(core_rate, bus->scl_rate.i3c);
++
++		total_cnt = max_t(unsigned long, cycles_per_scl, 3) - 2;
++		if (hci->master.bus.mode == I3C_BUS_MODE_PURE) {
++			hcnt = DIV_ROUND_DOWN_ULL(total_cnt * 2, 5);
++			lcnt = total_cnt - hcnt;
++		} else {
++			hcnt = DIV_ROUND_UP(I3C_BUS_THIGH_MIXED_MAX_NS,
++					    period_ns) - 1;
++			lcnt = total_cnt - hcnt;
++		}
++	}
++
++	ctrl0 = FIELD_PREP(ASPEED_I3C_PHY_I3C_CTRL0_SCL_H, hcnt) |
++		FIELD_PREP(ASPEED_I3C_PHY_I3C_CTRL0_SCL_L, lcnt);
++	sdr_ctrl0_reg = aspeed_i3c_get_sdr_ctrl0_reg(hci);
++	aspeed_i3c_phy_write(hci, sdr_ctrl0_reg, ctrl0);
++	aspeed_i3c_phy_write(hci, ASPEED_I3C_PHY_I3C_SDR0_CTRL0, ctrl0);
++	aspeed_i3c_phy_write(hci, ASPEED_I3C_PHY_I3C_DDR_CTRL0, ctrl0);
++
++	min_tbit_cnt = DIV_ROUND_UP(60, period_ns) - 1;
++	ctrl1 = FIELD_PREP(ASPEED_I3C_PHY_I3C_CTRL1_TBIT_H,
++			   max_t(u16, hcnt, min_tbit_cnt)) |
++		FIELD_PREP(ASPEED_I3C_PHY_I3C_CTRL1_TBIT_L,
++			   max_t(u16, lcnt, min_tbit_cnt));
++	aspeed_i3c_phy_write(hci, sdr_ctrl0_reg + ASPEED_I3C_PHY_CTRL1_OFFSET,
++			     ctrl1);
++	aspeed_i3c_phy_write(hci,
++			     ASPEED_I3C_PHY_I3C_SDR0_CTRL0 +
++			     ASPEED_I3C_PHY_CTRL1_OFFSET, ctrl1);
++	aspeed_i3c_phy_write(hci, ASPEED_I3C_PHY_I3C_DDR_CTRL1, ctrl1);
++
++	/*
++	 * tCAS and tCBP default to a value derived from the SCL low period
++	 * of the applicable bus context, clamped to the MIPI I3C minima
++	 * (tCAS >= 38.4 ns, tCBP >= 19.2 ns). Explicit device tree values
++	 * are used as-is; the binding carries the minima as constraints.
++	 */
++	if (hci->master.bus.mode == I3C_BUS_MODE_PURE)
++		cas_lcnt = lcnt;
++	else
++		cas_lcnt = aspeed_i3c_ns_to_cnt(ASPEED_I3C_PHY_I2C_FM_SCL_L_NS,
++						period_ns);
++	of_property_read_u32(np, "aspeed,cas-ns", &cas_ns);
++	of_property_read_u32(np, "aspeed,cbp-ns", &cbp_ns);
++	cas_cnt = cas_ns ? aspeed_i3c_ns_to_cnt(cas_ns, period_ns)
++			 : max_t(u16, cas_lcnt,
++				 DIV_ROUND_UP(ASPEED_I3C_PHY_OD_MIN_CAS_NS_X10,
++					      period_ns * 10) - 1);
++	cbp_cnt = cbp_ns ? aspeed_i3c_ns_to_cnt(cbp_ns, period_ns)
++			 : max_t(u16, cas_lcnt,
++				 DIV_ROUND_UP(ASPEED_I3C_PHY_OD_MIN_CBP_NS_X10,
++					      period_ns * 10) - 1);
++	aspeed_i3c_phy_write(hci, ASPEED_I3C_PHY_I3C_OD_CTRL0,
++			     FIELD_PREP(ASPEED_I3C_PHY_I3C_OD_CTRL0_CAS, cas_cnt) |
++			     FIELD_PREP(ASPEED_I3C_PHY_I3C_OD_CTRL0_CBP, cbp_cnt));
++
++	of_property_read_u32(np, "aspeed,od-scl-high-ns", &od_high);
++	of_property_read_u32(np, "aspeed,od-scl-low-ns", &od_low);
++	hcnt = aspeed_i3c_ns_to_cnt(od_high ?: ASPEED_I3C_PHY_OD_SCL_H_NS,
++				    period_ns);
++	lcnt = aspeed_i3c_ns_to_cnt(od_low ?: ASPEED_I3C_PHY_OD_SCL_L_NS,
++				    period_ns);
++	aspeed_i3c_phy_write(hci, ASPEED_I3C_PHY_I3C_OD_CTRL1,
++			     FIELD_PREP(ASPEED_I3C_PHY_I3C_OD_CTRL1_SCL_H, hcnt) |
++			     FIELD_PREP(ASPEED_I3C_PHY_I3C_OD_CTRL1_SCL_L, lcnt));
++	aspeed_i3c_phy_write(hci, ASPEED_I3C_PHY_I3C_OD_CTRL2,
++			     FIELD_PREP(ASPEED_I3C_PHY_I3C_OD_CTRL2_ACK_H, hcnt) |
++			     FIELD_PREP(ASPEED_I3C_PHY_I3C_OD_CTRL2_ACK_L, lcnt));
++
++	of_property_read_u32(np, "aspeed,sda-tx-hold-ns", &sda_tx_hold);
++	hcnt = aspeed_i3c_ns_to_cnt(sda_tx_hold ?: ASPEED_I3C_PHY_OD_HD_DAT_NS,
++				    period_ns);
++	lcnt = aspeed_i3c_ns_to_cnt(sda_tx_hold ?: ASPEED_I3C_PHY_OD_AHD_DAT_NS,
++				    period_ns);
++	aspeed_i3c_phy_write(hci, ASPEED_I3C_PHY_I3C_OD_CTRL3,
++			     FIELD_PREP(ASPEED_I3C_PHY_I3C_OD_CTRL3_HD_DAT, hcnt) |
++			     FIELD_PREP(ASPEED_I3C_PHY_I3C_OD_CTRL3_AHD_DAT, lcnt));
++	ctrl2 = FIELD_PREP(ASPEED_I3C_PHY_I3C_CTRL2_HD_PP, hcnt) |
++		FIELD_PREP(ASPEED_I3C_PHY_I3C_CTRL2_TBIT_HD_PP, lcnt);
++	aspeed_i3c_phy_write(hci, sdr_ctrl0_reg + ASPEED_I3C_PHY_CTRL2_OFFSET,
++			     ctrl2);
++	aspeed_i3c_phy_write(hci,
++			     ASPEED_I3C_PHY_I3C_SDR0_CTRL0 +
++			     ASPEED_I3C_PHY_CTRL2_OFFSET, ctrl2);
++	aspeed_i3c_phy_write(hci, ASPEED_I3C_PHY_I3C_DDR_CTRL2, ctrl2);
++
++	of_property_read_u32(np, "aspeed,sr-p-scl-low-ns", &sr_p_low);
++	hcnt = aspeed_i3c_ns_to_cnt(ASPEED_I3C_PHY_SR_P_HD_NS, period_ns);
++	lcnt = aspeed_i3c_ns_to_cnt(sr_p_low ?: ASPEED_I3C_PHY_SR_P_SCL_L_NS,
++				    period_ns);
++	aspeed_i3c_phy_write(hci, ASPEED_I3C_PHY_SR_P_PREPARE_CTRL,
++			     FIELD_PREP(ASPEED_I3C_PHY_SR_P_PREPARE_HD, hcnt) |
++			     FIELD_PREP(ASPEED_I3C_PHY_SR_P_PREPARE_SCL_L, lcnt));
++
++	aspeed_i3c_phy_write(hci, ASPEED_I3C_PHY_PULLUP_EN, 0);
++
++	hcnt = aspeed_i3c_ns_to_cnt(ASPEED_I3C_PHY_OD_DAP_NS, period_ns);
++	aspeed_i3c_phy_write(hci, ASPEED_I3C_PHY_I3C_OD_CTRL4,
++			     FIELD_PREP(ASPEED_I3C_PHY_I3C_OD_CTRL4_DAP, hcnt));
++
++	return 0;
++}
+diff --git a/drivers/i3c/master/mipi-i3c-hci/vendor_aspeed.h b/drivers/i3c/master/mipi-i3c-hci/vendor_aspeed.h
+new file mode 100644
+index 0000000000000..8760384d1c6f5
+--- /dev/null
++++ b/drivers/i3c/master/mipi-i3c-hci/vendor_aspeed.h
+@@ -0,0 +1,174 @@
++/* SPDX-License-Identifier: BSD-3-Clause */
++/*
++ * Copyright (c) 2026 ASPEED Technology Inc.
++ *
++ * AST2700 specific MIPI I3C HCI definitions
++ */
++
++#ifndef VENDOR_ASPEED_H
++#define VENDOR_ASPEED_H
++
++#include <linux/bitfield.h>
++#include <linux/of.h>
++
++#include "ext_caps.h"
++
++struct clk;
++struct reset_control;
++
++/*
++ * The AST2700 vendor extended capability points to an in-house control
++ * block and a PHY programming window inside the controller's register
++ * space. The core clock and reset lines are only specified in the
++ * AST2700 binding as well. All of it is ASPEED-specific, so it is kept
++ * out of the generic struct i3c_hci and reached instead through its
++ * vendor_data pointer.
++ */
++struct aspeed_i3c_vendor_data {
++	void __iomem *inhouse_regs;
++	void __iomem *phy_regs;
++	struct reset_control *rst;
++	struct reset_control *dma_rst;
++	struct clk *clk;
++};
++
++/*
++ * hci->master.dev.of_node is only valid once i3c_master_register() has
++ * run device_set_node() on it; probe() pre-populates it before that
++ * point (see i3c_hci_probe()) so this works from early init onward too.
++ */
++static inline bool is_aspeed(struct i3c_hci *hci)
++{
++	return of_device_is_compatible(hci->master.dev.of_node,
++					"aspeed,ast2700-i3c-hci");
++}
++
++static inline struct aspeed_i3c_vendor_data *to_aspeed_vendor_data(struct i3c_hci *hci)
++{
++	return hci->vendor_data;
++}
++
++u32 aspeed_i3c_read(struct i3c_hci *hci, u32 reg);
++void aspeed_i3c_write(struct i3c_hci *hci, u32 reg, u32 val);
++int aspeed_i3c_phy_init(struct i3c_hci *hci);
++
++#define ASPEED_I3C_CTRL				0x00
++#define ASPEED_I3C_CTRL_CLOCK_STALL_EN		BIT(14)
++#define ASPEED_I3C_CTRL_INIT			BIT(4)
++#define ASPEED_I3C_CTRL_INIT_MODE		GENMASK(1, 0)
++#define   ASPEED_I3C_INIT_MST_MODE		0
++
++#define ASPEED_I3C_DAA_INDEX0			0x10
++#define ASPEED_I3C_DAA_INDEX1			0x14
++#define ASPEED_I3C_DAA_INDEX2			0x18
++#define ASPEED_I3C_DAA_INDEX3			0x1c
++
++#define ASPEED_I3C_INTR_STATUS			0xe0
++#define ASPEED_I3C_INTR_STATUS_ENABLE		0xe4
++#define ASPEED_I3C_INTR_SIGNAL_ENABLE		0xe8
++#define ASPEED_I3C_INTR_SUM_STATUS		0xf0
++#define   ASPEED_INTR_SUM_INHOUSE		BIT(3)
++#define   ASPEED_INTR_SUM_RHS			BIT(2)
++#define   ASPEED_INTR_SUM_PIO			BIT(1)
++#define   ASPEED_INTR_SUM_CAP			BIT(0)
++
++#define ASPEED_I3C_PHY_I2C_FM_CTRL0		0x08
++#define   ASPEED_I3C_PHY_I2C_FM_CTRL0_CAS	GENMASK(26, 16)
++#define   ASPEED_I3C_PHY_I2C_FM_CTRL0_SU_STO	GENMASK(10, 0)
++#define ASPEED_I3C_PHY_I2C_FM_CTRL1		0x0c
++#define   ASPEED_I3C_PHY_I2C_FM_CTRL1_SCL_H	GENMASK(26, 16)
++#define   ASPEED_I3C_PHY_I2C_FM_CTRL1_SCL_L	GENMASK(10, 0)
++#define ASPEED_I3C_PHY_I2C_FM_CTRL2		0x10
++#define   ASPEED_I3C_PHY_I2C_FM_CTRL2_ACK_H	GENMASK(26, 16)
++#define   ASPEED_I3C_PHY_I2C_FM_CTRL2_ACK_L	GENMASK(10, 0)
++#define ASPEED_I3C_PHY_I2C_FM_CTRL3		0x14
++#define   ASPEED_I3C_PHY_I2C_FM_CTRL3_HD_DAT	GENMASK(26, 16)
++#define   ASPEED_I3C_PHY_I2C_FM_CTRL3_AHD_DAT	GENMASK(10, 0)
++
++#define ASPEED_I3C_PHY_I2C_FMP_CTRL0		0x18
++#define   ASPEED_I3C_PHY_I2C_FMP_CTRL0_CAS	GENMASK(26, 16)
++#define   ASPEED_I3C_PHY_I2C_FMP_CTRL0_SU_STO	GENMASK(10, 0)
++#define ASPEED_I3C_PHY_I2C_FMP_CTRL1		0x1c
++#define   ASPEED_I3C_PHY_I2C_FMP_CTRL1_SCL_H	GENMASK(26, 16)
++#define   ASPEED_I3C_PHY_I2C_FMP_CTRL1_SCL_L	GENMASK(10, 0)
++#define ASPEED_I3C_PHY_I2C_FMP_CTRL2		0x20
++#define   ASPEED_I3C_PHY_I2C_FMP_CTRL2_ACK_H	GENMASK(26, 16)
++#define   ASPEED_I3C_PHY_I2C_FMP_CTRL2_ACK_L	GENMASK(10, 0)
++#define ASPEED_I3C_PHY_I2C_FMP_CTRL3		0x24
++#define   ASPEED_I3C_PHY_I2C_FMP_CTRL3_HD_DAT	GENMASK(26, 16)
++#define   ASPEED_I3C_PHY_I2C_FMP_CTRL3_AHD_DAT	GENMASK(10, 0)
++
++#define ASPEED_I3C_PHY_I3C_OD_CTRL0		0x28
++#define   ASPEED_I3C_PHY_I3C_OD_CTRL0_CAS	GENMASK(26, 16)
++#define   ASPEED_I3C_PHY_I3C_OD_CTRL0_CBP	GENMASK(10, 0)
++#define ASPEED_I3C_PHY_I3C_OD_CTRL1		0x2c
++#define   ASPEED_I3C_PHY_I3C_OD_CTRL1_SCL_H	GENMASK(26, 16)
++#define   ASPEED_I3C_PHY_I3C_OD_CTRL1_SCL_L	GENMASK(10, 0)
++#define ASPEED_I3C_PHY_I3C_OD_CTRL2		0x30
++#define   ASPEED_I3C_PHY_I3C_OD_CTRL2_ACK_H	GENMASK(26, 16)
++#define   ASPEED_I3C_PHY_I3C_OD_CTRL2_ACK_L	GENMASK(10, 0)
++#define ASPEED_I3C_PHY_I3C_OD_CTRL3		0x34
++#define   ASPEED_I3C_PHY_I3C_OD_CTRL3_HD_DAT	GENMASK(26, 16)
++#define   ASPEED_I3C_PHY_I3C_OD_CTRL3_AHD_DAT	GENMASK(10, 0)
++#define ASPEED_I3C_PHY_I3C_OD_CTRL4		0xd8
++#define   ASPEED_I3C_PHY_I3C_OD_CTRL4_DAP	GENMASK(26, 16)
++
++#define ASPEED_I3C_PHY_I3C_SDR0_CTRL0		0x38
++#define ASPEED_I3C_PHY_I3C_SDR1_CTRL0		0x44
++#define ASPEED_I3C_PHY_I3C_SDR2_CTRL0		0x50
++#define ASPEED_I3C_PHY_I3C_SDR3_CTRL0		0x5c
++#define ASPEED_I3C_PHY_I3C_SDR4_CTRL0		0x68
++#define   ASPEED_I3C_PHY_I3C_CTRL0_SCL_H	GENMASK(26, 16)
++#define   ASPEED_I3C_PHY_I3C_CTRL0_SCL_L	GENMASK(10, 0)
++#define   ASPEED_I3C_PHY_I3C_CTRL1_TBIT_H	GENMASK(26, 16)
++#define   ASPEED_I3C_PHY_I3C_CTRL1_TBIT_L	GENMASK(10, 0)
++#define   ASPEED_I3C_PHY_I3C_CTRL2_HD_PP	GENMASK(26, 16)
++#define   ASPEED_I3C_PHY_I3C_CTRL2_TBIT_HD_PP	GENMASK(10, 0)
++
++#define ASPEED_I3C_PHY_I3C_DDR_CTRL0		0x74
++#define ASPEED_I3C_PHY_I3C_DDR_CTRL1		0x78
++#define ASPEED_I3C_PHY_I3C_DDR_CTRL2		0x7c
++
++#define ASPEED_I3C_PHY_SR_P_PREPARE_CTRL	0x80
++#define   ASPEED_I3C_PHY_SR_P_PREPARE_HD	GENMASK(26, 16)
++#define   ASPEED_I3C_PHY_SR_P_PREPARE_SCL_L	GENMASK(10, 0)
++
++#define ASPEED_I3C_PHY_PULLUP_EN		0x98
++
++#define ASPEED_I3C_PHY_CTRL1_OFFSET		0x04
++#define ASPEED_I3C_PHY_CTRL2_OFFSET		0x08
++
++#define ASPEED_I3C_PHY_CNT_MAX			GENMASK(10, 0)
++
++#define ASPEED_I3C_PHY_I2C_FM_CAS_NS		1130
++#define ASPEED_I3C_PHY_I2C_FM_SU_STO_NS		1370
++#define ASPEED_I3C_PHY_I2C_FM_SCL_H_NS		1130
++#define ASPEED_I3C_PHY_I2C_FM_SCL_L_NS		1370
++#define ASPEED_I3C_PHY_I2C_FM_HD_DAT_NS		10
++#define ASPEED_I3C_PHY_I2C_FM_AHD_DAT_NS	10
++
++#define ASPEED_I3C_PHY_I2C_FMP_CAS_NS		380
++#define ASPEED_I3C_PHY_I2C_FMP_SU_STO_NS	620
++#define ASPEED_I3C_PHY_I2C_FMP_SCL_H_NS		380
++#define ASPEED_I3C_PHY_I2C_FMP_SCL_L_NS		620
++#define ASPEED_I3C_PHY_I2C_FMP_HD_DAT_NS	10
++#define ASPEED_I3C_PHY_I2C_FMP_AHD_DAT_NS	10
++
++#define ASPEED_I3C_PHY_OD_SCL_H_NS		380
++#define ASPEED_I3C_PHY_OD_SCL_L_NS		620
++#define ASPEED_I3C_PHY_OD_HD_DAT_NS		10
++#define ASPEED_I3C_PHY_OD_AHD_DAT_NS		10
++#define ASPEED_I3C_PHY_OD_DAP_NS		12
++
++#define ASPEED_I3C_PHY_SR_P_HD_NS		16
++#define ASPEED_I3C_PHY_SR_P_SCL_L_NS		40
++
++/*
++ * MIPI I3C minimum timing for the open-drain start/stop, in tenths of a
++ * nanosecond to keep the fractional spec values (tCAS >= 38.4 ns,
++ * tCBP >= 19.2 ns) in integer arithmetic.
++ */
++#define ASPEED_I3C_PHY_OD_MIN_CAS_NS_X10	384
++#define ASPEED_I3C_PHY_OD_MIN_CBP_NS_X10	192
++
++#endif
 
 -- 
 2.34.1
