@@ -1,59 +1,59 @@
-Return-Path: <linux-aspeed+bounces-4936-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4937-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8E1BC624D6
-	for <linux-aspeed@archiver.kernel.org>; Thu,  3 Sep 2026 00:22:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E388C624D6
+	for <linux-aspeed@archiver.kernel.org>; Thu,  3 Sep 2026 00:22:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hb0fl3dLjz2yqT;
-	Thu, 03 Sep 2026 10:22:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c10d::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788344576;
-	cv=pass; b=M3KTLfQ83yp2fTY5K5fj6R7rspRE0H9U3U37HplO5MzCeP1brW3bqKy9RsjAhhz3rdeoYrNxOCiwPjT/8p7/yFxIDKUeh2IkrCxcwnmNffmLph/K1v1kxoLlWyAm6rPRqTsFhjncfTprmXqnSBKNPHn+3GDl54fjE/ERyaUDjB+dUBY69H5WeJtqdTDsm2M05iSdSv49QWeKWPLpSHGegFznwQ1+tEJO2Sq4orHSogGbmsw5pH9GyRe1GXYTMT/jSrggMIZeZzvPxfTaNtZpXRTQHfaso4n9cNXIU5WocuP7hP+trghG68QWCAfuSIiM5xy4UD1jXrgOZtCUduk72A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hb0fs5ydzz2yqq;
+	Thu, 03 Sep 2026 10:22:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c105::7" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788344572;
+	cv=pass; b=lpfnM0K/KuzdUT/tdY4DOYRbh2VXD1fZztxqLeYI/eYOao/YANUSV4noxZ/J7OgVHhox/ynJhEaLrQ9JiBquXWeHyIBF0Au4wBqzQs4zuqxx4JsrBHedW+vYvZhhcPRm3d5w4aWtoFyRj2hZ83ve82eLSwN91iz841anHaCqUx9agQWiXGikIN5Rwlc8QBxegFcmKSSNmi/woruPV51mjE+PSHTZ36Js2AndHXDAKpm0kzlUi8pFpMQrSDtmqN6wSjGFhSKvBlZ2BAELLQA+99aCw7Vgyy1lFKOuktKldzxd9fJIHyIc2aDRCs/jSLvD5QWNpqIcW15xZHDGoiBQAA==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788344576; c=relaxed/relaxed;
-	bh=EMgFVzONncenVzajSBplgoSS+5bazk53iesp/vegqe8=;
+	t=1788344572; c=relaxed/relaxed;
+	bh=8JHpVGvvc0BxDXqHE+ko9RQSlW/vc4sxkXIPPE0SgRE=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
-	 In-Reply-To:To:CC; b=f/uJgsrrQ6aamVN/9xUuPdCrtit+Kdu+AqhlWMVRAccshP4rX0g2h0Ll/t3SHVmI2ORpXmY7RaqL9r8lvAX+J2mke1GxojPA/eIpT09SdPvXrIshalIGhSUsc3bJLN9VicxOOOX9vBx1yfxlHqSwRey/0uNZXHyX0XztZzHMx7nHhQUzKOtCcZAsiVJ4xjtBWTMTzpiIMk5e0isJYxl4pNg+x7o0j6KctyXRlEyzFA5Dpy3hJMVw/1bIR54rHvjnNYwhWUoYKFhDIci+ruse6DLUZQuc+FGP/jckxQrQxouuAeaJhz6dSduajmRi3BqNTa4d21zZ8v/EOQmeAcnM8w==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=ovhOqfvL; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c10d::1; helo=sn4pr2101cu001.outbound.protection.outlook.com; envelope-from=colin.huang2@amd.com; receiver=lists.ozlabs.org) smtp.mailfrom=amd.com
+	 In-Reply-To:To:CC; b=cY3OK547hR+cynyFVqBx/TZ84cDLk/cNJ8hhVhnxFuMvMSPUA1CKjNwt/jPUhtFQHggSy4W2wMIKDjQnHnbEwso+/lL/Yeg0DC801DoFX3m3fFtqBifJxoH09PLtfrQCgegCSTtg9DgQN0RtGUx9kJznCUM0z7fllr6jwVSDATU+xx5q8AFgddLJ4KlH/8v6e6eoLer+x1zoVn9zvP9ruyfGoslaeVzxOnS3Ox0QfgZ4AEdn3KBKpDBP2/4czTc6ovEvdFCzSxEOlFzuisCEphCDT+75nYbtsEx6mk94Lw1sgUyBzs6OvpabgGqnDsKlVYGYD79Aa4huY40MnUv8hw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=BtCNmGGh; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c105::7; helo=ch4pr04cu002.outbound.protection.outlook.com; envelope-from=colin.huang2@amd.com; receiver=lists.ozlabs.org) smtp.mailfrom=amd.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=ovhOqfvL;
+	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=BtCNmGGh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f403:c10d::1; helo=sn4pr2101cu001.outbound.protection.outlook.com; envelope-from=colin.huang2@amd.com; receiver=lists.ozlabs.org)
-Received: from SN4PR2101CU001.outbound.protection.outlook.com (mail-southcentralusazlp170120001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c10d::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f403:c105::7; helo=ch4pr04cu002.outbound.protection.outlook.com; envelope-from=colin.huang2@amd.com; receiver=lists.ozlabs.org)
+Received: from CH4PR04CU002.outbound.protection.outlook.com (mail-northcentralusazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c105::7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZf1q5cblz2xBK
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 02 Sep 2026 20:22:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZf1l6MTSz2xBK
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 02 Sep 2026 20:22:51 +1000 (AEST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=SQZLYht0AQkBr1wyFS8CXxE8JU6aQLmIaQVIuSwuco2roasmzNSUc5SDApVvcZ7P7sxhSG7Gwlk33kUx3DDnqiYMC+N39B1Ub3A1auKImY8K7yKN1ulNKkPPctLzEY9nBLqLVvL7mB0oqq2xDpveU/7A1QlIQKDQFDfOCb5eknYHSYuNWKdmu5WoYshJyysTMpW0ryJjiiTy3V4v2Zped/6hN7AdZhv0QLoN/GmdCDwEY9UPWF36uBRRye0HLH7QKVi0Hc0p1HRa3rvegrcR4Vcu8Rx/AqPgN6ILoO7AIFGQUru/+wrUuKwjYL8xXIqrYOE6XqGVNTKsiTXBI7sGwQ==
+ b=kp5yawI3LhCvSH5mGUwYuzdAecoiodEaw6zGDEmOHKzZFdzMCCKLz7/urIb+JRUKyVGYIxZzVBQDPyBUqU9MBPn2Xm5/Hf8XxWK7DVlFdwMw0Gs4UqMMpBvX/bMJO8GLf3KYLZOyJJp7Kk+40zCZKSL3V4Z7zgktsSlOsSAJIVnenwHlrPHK14BdXq6wjihuC3etrx4hXGNChlqoBqvYvUUpBd0vvbhZedxblpRv8HtG6HJ7lJiCjIArXBfIrzXqfdwun6J/IRFTIxKcY/2LxjHft5+jlF/5e0cw+bDbuMq73C27RlucEm+th5yC4maFcZJDQzy5YeycRB3V29gKjQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=EMgFVzONncenVzajSBplgoSS+5bazk53iesp/vegqe8=;
- b=i6rhrn7vMLW66GkH5GcRG9YEEWsQa/MjFUGawSp62kQcI0xAI3I43NmDLoPU+FJpvAhniOErUOW8mZOahKSXnKxRUYXPTj8FmvYOo6xhXWZpoi/Ohc56PCg7XjVjJhZ4NzwEk74narvgtiEU5fLIuzCyhLebqHoI5+7J+QmaKL41LmxWzaAelr1GuIVqg6jUSM+4T15z7TVFPUu46sY4Kp2FV3Ep18IExL8pn2kAmmypF2L3oCeSEqhXc4WxFzzDfzMcsNfiCg/kxoalKRmSvB6dEbev7ox7mSR2al1ZO10uLPCHvkVkvmyiV9BwtmjbUlhBDExf7+c05CY5IfCiEA==
+ bh=8JHpVGvvc0BxDXqHE+ko9RQSlW/vc4sxkXIPPE0SgRE=;
+ b=Fb3N2jyrWp7az2g8IxVNlhe/IAmwGQkVu07vSGAlM98xdHX4wX17+A63VJbHF8ltdEAKNPji5ojZB+QKLMQzWIaocxq8oqe89Mxnsct5qel9/ehFYPF1lGLIGRywoMA/qIN9Jf0Dul12roxYXtUoSc5Q+ExmGW1JreHJrPI+Vk3O3ZE7FpeprtL9OWlM4x9melDESCFtiZ0s+PMGU022koKKE22UVtTgktQr0MJvARNz8FxgIW3uG4M5VmqhZKr26XpYDPcu9qMyDg4nHdBly3uybWd4nX6wJ0YMOP0Z5SCWEfsSDRmBaUj7/FbJ5Phs8CA9MveiHE7SDobfanY5HQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
  165.204.84.17) smtp.rcpttodomain=aspeedtech.com smtp.mailfrom=amd.com;
  dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
  header.from=amd.com; dkim=none (message not signed); arc=none (0)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=EMgFVzONncenVzajSBplgoSS+5bazk53iesp/vegqe8=;
- b=ovhOqfvLpN0j4vM9/zga+wiYiK/9DJMpv61a7463/rspjjjZ0fhxRG2IEhW02HEgmCd2/P0NuJK5B4DvuYG8eFy5dAw7fWJsPF3R7TCmB1tcIFDykGafU03lLseXh7VpHLTLE6Esou86sw3osIntaq+B9x7cR7BhWUj1oUDvIfI=
-Received: from BY3PR05CA0052.namprd05.prod.outlook.com (2603:10b6:a03:39b::27)
- by DS2PR12MB9711.namprd12.prod.outlook.com (2603:10b6:8:275::11) with
+ bh=8JHpVGvvc0BxDXqHE+ko9RQSlW/vc4sxkXIPPE0SgRE=;
+ b=BtCNmGGh9hwOfDHluCqcL14zRI8NgQuNFEiR0z2wRJ4ykyiGUXhUlh2un5QdCPb+rOkYgGI0nO4kh+pmCN/3/uIHM1FatwKLIsEjOU/ilxAqTs/SZZSQPWD9HZo3lMBVYVfLAmqDgVaOe01cnCnA8+zfqSWnYsfeKhMTZM74V7U=
+Received: from PH1PEPF000132E7.NAMP220.PROD.OUTLOOK.COM (2603:10b6:518:1::27)
+ by CHAPR12MB999248.namprd12.prod.outlook.com (2603:10b6:610:2ff::22) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.360.13; Wed, 2 Sep
- 2026 10:22:31 +0000
-Received: from SJ1PEPF000023CD.namprd02.prod.outlook.com
- (2603:10b6:a03:39b:cafe::41) by BY3PR05CA0052.outlook.office365.com
- (2603:10b6:a03:39b::27) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.382.10 via Frontend Transport; Wed, 2
- Sep 2026 10:22:31 +0000
+ 2026 10:22:27 +0000
+Received: from SJ1PEPF000023CE.namprd02.prod.outlook.com
+ (2a01:111:f403:c902::b) by PH1PEPF000132E7.outlook.office365.com
+ (2603:1036:903:47::3) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.382.11 via Frontend Transport; Wed, 2
+ Sep 2026 10:22:26 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
  smtp.mailfrom=amd.com; dkim=none (message not signed)
  header.d=none;dmarc=pass action=none header.from=amd.com;
@@ -61,20 +61,20 @@ Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
  165.204.84.17 as permitted sender) receiver=protection.outlook.com;
  client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
 Received: from satlexmb07.amd.com (165.204.84.17) by
- SJ1PEPF000023CD.mail.protection.outlook.com (10.167.244.8) with Microsoft
+ SJ1PEPF000023CE.mail.protection.outlook.com (10.167.244.10) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.382.8 via Frontend Transport; Wed, 2 Sep 2026 10:22:31 +0000
+ 15.21.382.8 via Frontend Transport; Wed, 2 Sep 2026 10:22:26 +0000
 Received: from satlexmb08.amd.com (10.181.42.217) by satlexmb07.amd.com
  (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.46; Wed, 2 Sep
- 2026 05:22:30 -0500
+ 2026 05:22:23 -0500
 Received: from [127.0.1.1] (10.180.168.240) by satlexmb08.amd.com
  (10.181.42.217) with Microsoft SMTP Server id 15.2.2562.46 via Frontend
- Transport; Wed, 2 Sep 2026 05:22:27 -0500
+ Transport; Wed, 2 Sep 2026 05:22:20 -0500
 From: Colin Huang <colin.huang2@amd.com>
-Date: Wed, 2 Sep 2026 18:21:21 +0800
-Subject: [PATCH v8 09/11] ARM: dts: aspeed: anacapa: Add LPDB fuse monitor
- GPIO expander
+Date: Wed, 2 Sep 2026 18:21:19 +0800
+Subject: [PATCH v8 07/11] ARM: dts: aspeed: anacapa: Enable MCTP and FRU
+ for NIC
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -90,7 +90,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-ID: <20260902-anacapa-devlop-phase-devicetree-v8-9-69c8eb2a7cda@gmail.com>
+Message-ID: <20260902-anacapa-devlop-phase-devicetree-v8-7-69c8eb2a7cda@gmail.com>
 References: <20260902-anacapa-devlop-phase-devicetree-v8-0-69c8eb2a7cda@gmail.com>
 In-Reply-To: <20260902-anacapa-devlop-phase-devicetree-v8-0-69c8eb2a7cda@gmail.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -99,160 +99,210 @@ To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
 	Billy Tsai <billy_tsai@aspeedtech.com>
 CC: <devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
 	<linux-aspeed@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
-	<colin.huang2@amd.com>, Colin Huang <u8813345@gmail.com>, Rex Fu
-	<rex.fu.amd@gmail.com>
+	<colin.huang2@amd.com>, Colin Huang <u8813345@gmail.com>, Andy Chung
+	<Andy.Chung@amd.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1788344509; l=3698;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1788344509; l=3254;
  i=u8813345@gmail.com; s=20260202; h=from:subject:message-id;
- bh=8kEAvGR4wHD+buKRoFqsooBUH7WFB3+NHrtadmWVUT0=;
- b=WB0w8QQWniqUwRCv/utf898ZGrIHJHPN7kbyXUXkvso5VJAzH1f/VWyz4yLtR3ceJcTDiqIcr
- FeifRUqFLtgBqCWvSfVRDednav6RLc5QxjrzAmoVgxjFlMSlzq5u+V0
+ bh=xSybis4WnZ0wCCi5yNlS7U3ZxSjvjItq7krEUM0miaU=;
+ b=CLqCcYJoPpX5GX/Qr80BeGDmPdzaN97aanRt2Txebmgy9U+kpFu/HT9Hl2IMKGzmbg1eFKHXr
+ WLHaKN45VTMDdnKXmkP/E+22ONMZBrh/5QOqwD8uxrgsIAZ73h8kTSc
 X-Developer-Key: i=u8813345@gmail.com; a=ed25519;
  pk=Zlg0WqpCw4qbswOqamTBTXIchwR/3SnYZpy7rjaGMdQ=
 X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SJ1PEPF000023CD:EE_|DS2PR12MB9711:EE_
-X-MS-Office365-Filtering-Correlation-Id: 9c767eef-a742-4249-f2a2-08df08dc18c1
+X-MS-TrafficTypeDiagnostic: SJ1PEPF000023CE:EE_|CHAPR12MB999248:EE_
+X-MS-Office365-Filtering-Correlation-Id: 07727b38-edb4-47b3-8971-08df08dc1642
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|7416014|23010399003|36860700016|82310400026|1800799024|11063799006|10067099003|18002099003|22082099003|56012099006;
+	BCL:0;ARA:13230040|376014|7416014|82310400026|1800799024|36860700016|23010399003|20046099003|10067099003|11063799006|56012099006|22082099003|18002099003;
 X-Microsoft-Antispam-Message-Info:
-	GznoEqso1lnsE6YMt2lLysH3/zMSw2MBR5vvX1G6wSley8Qmr3CN+WuSVoWP1j0ItJxmdoT60obK1m/oLOOn0v5BfC0v0gMmj2uxuJ62AW+k/N0TbeVLdqAGDMu7rClaqay0j0JF9llrvtfLZDSnqSVdgVCQVK3gngaFb52XOQOYBySVLU3q07q/6ZBEoX0Uf6yrOsUlMpbeBG9P8A86iKIVzGlKb3JVN73+vXy88kLaNphuTiw6upp3fH9Vo68Q/ZH9dI1XKYD9HxKV3sxE7bgbBtWhaV5K0cztMDHJfvWNnyWSoVYzewV0K30FvvHg135WVQXfktLHTO4tLsXAhELH0mFnfpEMhqmdeJydbWm86hd1UONk3HvrYp28f/IpnMxnGfbHRr/QF/At38/+nhCW92m+3PTVOKKL1YvQ2wwXu3DrDYBqQ6+KlMEQYXuCy0jIaoyFSXEY7Sj7slDOcit64iM0eVd8kC4eon2tntFErHVkljg4NaUfrMto8EH7s1h8DIA/OMUHGDOAzTGHRD9ozK44ueDfJRLgZzSzt4Xs8D+IudTBWVP+AZOi6TFRBEB26VnGpTK97PdC53ichBM/GQ20dngWgKZGIcnckU6ZIT7syH4cL/yrozXgZ8VK7CgBT/rleCowgI+a0ByuRUfkw6OucJidneTMtYyss4++a1yZfCi8tUl+3HZ9zh9+CasPo/xwpE9AxJfMG2rTqg==
+	6RkuuK6vgHtqM3H00fGnabh9MQpbLZm74P8qYVx8mrrolTEYrf93tGlm1p50C1WkVX6vDufJHFiRCgdFw2lhLOCnGMarLwdW0q2iFeKuV4WnJKjaoIatziw8u7LNOJ51T8VDqDaiyioXysj7XSwKZZFeY3g8uVfszeJJqRECb+SoSr2dAH6hd2Iua6KPFNT+d0cT1WemStL/KVy2jtqz3nAOST4MitufQKz7QfQo5B5EQ2htRhVGKCCp6FGAQv0GCsKWt2y3B8EEGlQ7zkyZhv3inBpbVdrHSNzLezKoyr6BhjVTcVCidlvurupNBVs/J8Bc6XcLKHgD+qhFQlx+W7wU0SJ0+yw87DsiH6v9MPHXkQBTJ6zQLuhfaC2+2QzGO8IJo7mUCx4H/Jdd3x+kfaaBY8zCymj0y1hHtUg30/1X4ED2tWEgEZOgBUNn/mFJnVtzoX9LsfvA3ZKAuTqnJnDvn+Q/ZlqbJTYpRu4fFgLMLGY1YeF7S7p+qtykiyORQ3P+lm4yTBdmnKqjuAMTPrsoIhHFeTdJgkSnLZcnBRsSpfQKWZm+aHLbB75khfM6K+d+PzsCBH082XDE7xbOP0oOJz8oxaoSZjpgX/pAkfZRglRO1ai0zRGQBebFteRdkqxm7N3HEy6T7SooDoK6AvP144dKL6ImlcocpBEM1s4UKVgW22Qp19ehlI9JbpY8fNXFGfWBhueteNrri/9g+g==
 X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(376014)(7416014)(23010399003)(36860700016)(82310400026)(1800799024)(11063799006)(10067099003)(18002099003)(22082099003)(56012099006);DIR:OUT;SFP:1101;
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(376014)(7416014)(82310400026)(1800799024)(36860700016)(23010399003)(20046099003)(10067099003)(11063799006)(56012099006)(22082099003)(18002099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	jI/xx4fEVr800gtHCUVfH5a3/tPpRA1FFkWCN4p/dtFSCKm8FkGJTKNqmQ7BBThI+3XP65NvsxFJGEXi+lmdRZNAHrb0/hrChE8zKi0B4eDb8KGQAoY7qdmWlgZ+ltelImwvC0YN0p4WtFy2C94Fpg8SbF1Q3eNiBlnDHPb8lKTTFM9FSYFjrl24siotzQaddbQklMyaw92hdcuFk/5tCr/G2IO1AhccKqYolwf4rIUUSQI/YYRHL3eM0kNxP5Y4tIXJkF25MDXBgSPO/ruhY2BB9q1Q8cZXl8vafQNTO8rvI/ah8zUwdEjYnvOrL+cyJvSVsEYHzszH1kDbbmtf5aoSTOEImE/9EiM8unN1/wh+vQ7jfuIOkesaz1AFZ/b/7VWate6amrP8VbBPYCDl1ubuNYFtuz+d9JQgulG2icPs5nrtRtwqWEXd0E7Xj5A7
+	ngOV+WqL5WthzR1wrtoOSXRttDL9eXmQSlB+dqkhtvRxGPIygf8RKRzJGcij/CmGhZFrImhgfrDaKcvcJWe81IfT7uBLC4jjI3ebW7muhTabyhqPdOQKOURYv00Q1KCevDDGSrBO/xqAZWyUrXvPOdau7DizvZO7hAguomlpisaUShFitP/7BswjBQ/MEhsKjfrR/JZ3NoKJIgwRUNdWqhKCtPQjJy/s3TSmN4rOZtg5Eqgnw8TcULLsxpKBFZ3/ngz6Tqhx+BzEZuP/TkZTywtFiH5GoXvpeXYYEg6akc49ikTISgcCaIwIPsdrQopVvbaqfsps5ldZ1tdgD/Lr/IuU0wTQO7LVMjIzgz39uVS+NQX41yvEhDiHLpwh1g9rLbuBATV3dDf1AM6uvr+EVlNt6otn+w8xLiRQ4GTkSkZe0d9gDgysYyOi5eHp/T6Y
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Sep 2026 10:22:31.0350
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Sep 2026 10:22:26.8168
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 9c767eef-a742-4249-f2a2-08df08dc18c1
+X-MS-Exchange-CrossTenant-Network-Message-Id: 07727b38-edb4-47b3-8971-08df08dc1642
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
 X-MS-Exchange-CrossTenant-AuthSource:
-	SJ1PEPF000023CD.namprd02.prod.outlook.com
+	SJ1PEPF000023CE.namprd02.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS2PR12MB9711
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CHAPR12MB999248
 
-From: Rex Fu <rex.fu.amd@gmail.com>
+From: Andy Chung <Andy.Chung@amd.com>
 
-Add PCA9554 GPIO expanders for PDB fuse monitor signals on the
-Anacapa DVT board.
+Add the mctp-controller property to enable frontend NIC management
+via PLDM over MCTP.
+Also add EEPROM device for NIC FRU and reorder the I2C virtual bus
+index accroding to the system silkscreen index.
 
-The patch adds GPIO expander definitions for both the left and
-right PDBs under the i2c8 multiplexer and updates the associated
-gpio-line-names to reflect the final signal assignments.
-
-Signed-off-by: Rex Fu <rex.fu.amd@gmail.com>
+Signed-off-by: Andy Chung <Andy.Chung@amd.com>
 ---
- .../aspeed/aspeed-bmc-facebook-anacapa-dvt.dtsi    | 92 ++++++++++++++++++++++
- 1 file changed, 92 insertions(+)
+ .../aspeed/aspeed-bmc-facebook-anacapa-evt2.dtsi   | 137 +++++++++++++++++++++
+ 1 file changed, 137 insertions(+)
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-dvt.dtsi b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-dvt.dtsi
-index 0509bc8bb9cd..2fd7e46daa63 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-dvt.dtsi
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-dvt.dtsi
-@@ -2,6 +2,98 @@
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt2.dtsi b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt2.dtsi
+index 3ea5d67865d4..ab16e5ad5871 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt2.dtsi
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt2.dtsi
+@@ -2,6 +2,25 @@
  
- #include "aspeed-bmc-facebook-anacapa-evt2.dtsi"
+ #include "aspeed-bmc-facebook-anacapa-evt1.dtsi"
  
-+// MB - PDB
-+&i2c8 {
-+	i2c-mux@72 {
-+		i2c@0 {
-+			gpio@22 {
-+				gpio-line-names =
-+					"RPDB_FAN_FULL_SPEED_R_N", "RPDB_I2C_TMP432_U8_ALERT_R_N",
-+					"RPDB_I2C_TMP432_U29_ALERT_R_N", "RPDB_GLOBAL_WP",
-+					"RPDB_FAN_CT_FAN_FAIL_R_N", "RPDB_VERID_A0",
-+					"RPDB_VERID_A1", "RPDB_VERID_A2",
-+					"RPDB_ALERT_P50V_HSC2_R_N", "RPDB_ALERT_P50V_HSC3_R_N",
-+					"RPDB_ALERT_P50V_HSC4_R_N", "RPDB_ALERT_P50V_STBY_R_N",
-+					"RPDB_P12V_MB_VRM_ALERT_R_N",
-+					"RPDB_P12V_STBY_VRM_ALERT_R_N",
-+					"RPDB_PGD_P3V3_STBY_PWRGD_R",
-+					"RPDB_P12V_STBY_VRM_PWRGD_BUF_R";
-+			};
++&{/aliases} {
++	i2c36 = &i2c11mux0ch5;
++	i2c37 = &i2c11mux0ch6;
++	i2c38 = &i2c11mux0ch7;
++	i2c39 = &i2c11mux0ch0;
++	i2c40 = &i2c11mux0ch1;
++	i2c41 = &i2c11mux0ch2;
++	i2c42 = &i2c11mux0ch3;
++	i2c43 = &i2c11mux0ch4;
++	i2c44 = &i2c10mux0ch1;
++	i2c45 = &i2c10mux0ch2;
++	i2c46 = &i2c10mux0ch3;
++	i2c47 = &i2c10mux0ch4;
++	i2c48 = &i2c10mux0ch5;
++	i2c49 = &i2c10mux0ch6;
++	i2c50 = &i2c10mux0ch7;
++	i2c51 = &i2c10mux0ch0;
++};
 +
-+			gpio@24 {
-+				gpio-line-names =
-+					"RPDB_EAM2_PRSNT_MOS_N_R", "RPDB_EAM3_PRSNT_MOS_N_R",
-+					"RPDB_PWRGD_P50V_HSC4_SYS_R",
-+					"RPDB_PWRGD_P50V_STBY_SYS_BUF_R",
-+					"RPDB_P50V_FAN5_R2_PG", "RPDB_P50V_FAN6_R2_PG",
-+					"RPDB_P50V_FAN7_R2_PG", "RPDB_P50V_FAN8_R2_PG",
-+					"RPDB_SKU_ID0", "RPDB_FAN5_PRSNT_N_R",
-+					"", "RPDB_FAN6_PRSNT_N_R",
-+					"RPDB_FAN7_PRSNT_N_R", "RPDB_FAN8_PRSNT_N_R",
-+					"", "";
-+			};
+ // MB - PDB
+ &i2c8 {
+ 	i2c-mux@72 {
+@@ -50,6 +69,124 @@ eeprom@51 {
+ 	};
+ };
+ 
++// R Bridge Board
++&i2c10 {
++	multi-master;
 +
-+			gpio@38 {
-+				compatible = "nxp,pca9554";
-+				reg = <0x38>;
-+				#gpio-cells = <2>;
-+				gpio-controller;
++	mctp@10 {
++		compatible = "mctp-i2c-controller";
++		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
++	};
 +
-+				gpio-line-names =
-+					"RPDB_P50V_FUSE2_TVS1", "RPDB_P50V_FUSE2_TVS2",
-+					"RPDB_P50V_FUSE3_TVS1", "RPDB_P50V_FUSE3_TVS2",
-+					"RPDB_P50V_FUSE4_TVS1", "",
-+					"", "";
++	i2c-mux@71 {
++		/delete-property/ i2c-mux-idle-disconnect;
 +
-+				interrupt-parent = <&sgpiom0>;
-+				interrupts = <174 IRQ_TYPE_LEVEL_LOW>;
++		i2c10mux0ch1: i2c@1 {
++			mctp-controller;
++			// BE NIC FRU
++
++			eeprom@50 {
++				compatible = "atmel,24c32";
++				reg = <0x50>;
 +			};
 +		};
 +
-+		i2c@1 {
-+			gpio@22 {
-+				gpio-line-names =
-+					"LPDB_FAN_FULL_SPEED_R_N", "LPDB_I2C_TEMP75_U8_ALERT_R_N",
-+					"LPDB_I2C_TMP432_U29_ALERT_R_N", "LPDB_GLOBAL_WP",
-+					"LPDB_FAN_CT_FAN_FAIL_R_N", "LPDB_VERID_A0",
-+					"LPDB_VERID_A1", "LPDB_VERID_A2",
-+					"LPDB_ALERT_P50V_HSC0_R_N", "LPDB_ALERT_P50V_HSC1_R_N",
-+					"LPDB_ALERT_P50V_HSC5_R_N", "LPDB_I2C_P12V_SW_VRM_ALERT_R_N",
-+					"LPDB_EAM0_PRSNT_MOS_N_R", "LPDB_EAM1_PRSNT_MOS_N_R",
-+					"LPDB_PWRGD_P50V_HSC5_SYS_R", "BARKLIP_PRSNT_N_R3";
++		i2c10mux0ch2: i2c@2 {
++			mctp-controller;
++			// BE NIC FRU
++
++			eeprom@50 {
++				compatible = "atmel,24c32";
++				reg = <0x50>;
 +			};
++		};
 +
-+			gpio@24 {
-+				gpio-line-names =
-+					"LPDB_P50V_FAN0_R2_PG", "LPDB_P50V_FAN1_R2_PG",
-+					"LPDB_P50V_FAN2_R2_PG", "LPDB_P50V_FAN3_R2_PG",
-+					"LPDB_P50V_FAN4_R2_PG", "LPDB_FAN0_PRSNT_N_R",
-+					"LPDB_FAN1_PRSNT_N_R", "LPDB_FAN2_PRSNT_N_R",
-+					"LPDB_FAN3_PRSNT_N_R", "LPDB_FAN4_PRSNT_N_R",
-+					"LPDB_SKU_ID0", "",
-+					"", "",
-+					"", "LPDB_PG_P3V3_R";
++		i2c10mux0ch3: i2c@3 {
++			mctp-controller;
++			// BE NIC FRU
++
++			eeprom@50 {
++				compatible = "atmel,24c32";
++				reg = <0x50>;
 +			};
++		};
 +
-+			gpio@38 {
-+				compatible = "nxp,pca9554";
-+				reg = <0x38>;
-+				#gpio-cells = <2>;
-+				gpio-controller;
++		i2c10mux0ch4: i2c@4 {
++			mctp-controller;
++			// BE NIC FRU
 +
-+				gpio-line-names =
-+					"LPDB_P50V_FUSE0_TVS1", "LPDB_P50V_FUSE0_TVS2",
-+					"LPDB_P50V_FUSE1_TVS1", "LPDB_P50V_FUSE1_TVS2",
-+					"LPDB_P50V_FUSE5_TVS1", "",
-+					"", "";
-+
-+				interrupt-parent = <&sgpiom0>;
-+				interrupts = <174 IRQ_TYPE_LEVEL_LOW>;
++			eeprom@50 {
++				compatible = "atmel,24c32";
++				reg = <0x50>;
 +			};
 +		};
 +	};
 +};
 +
- &sgpiom0 {
- 	gpio-line-names =
- 	/*in - out */
++// L Bridge Board
++&i2c11 {
++	multi-master;
++
++	mctp@10 {
++		compatible = "mctp-i2c-controller";
++		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
++	};
++
++	i2c-mux@71 {
++		/delete-property/ i2c-mux-idle-disconnect;
++
++		i2c11mux0ch0: i2c@0 {
++			mctp-controller;
++			// FE NIC FRU
++
++			eeprom@50 {
++				compatible = "atmel,24c32";
++				reg = <0x50>;
++			};
++		};
++
++		i2c11mux0ch1: i2c@1 {
++			mctp-controller;
++			// BE NIC FRU
++
++			eeprom@50 {
++				compatible = "atmel,24c32";
++				reg = <0x50>;
++			};
++		};
++
++		i2c11mux0ch2: i2c@2 {
++			mctp-controller;
++			// BE NIC FRU
++
++			eeprom@50 {
++				compatible = "atmel,24c32";
++				reg = <0x50>;
++			};
++		};
++
++		i2c11mux0ch3: i2c@3 {
++			mctp-controller;
++			// BE NIC FRU
++
++			eeprom@50 {
++				compatible = "atmel,24c32";
++				reg = <0x50>;
++			};
++		};
++
++		i2c11mux0ch4: i2c@4 {
++			mctp-controller;
++			// BE NIC FRU
++
++			eeprom@50 {
++				compatible = "atmel,24c32";
++				reg = <0x50>;
++			};
++		};
++	};
++};
++
+ // MB
+ &i2c13 {
+ 	i2c-mux@70 {
 
 -- 
 2.34.1
