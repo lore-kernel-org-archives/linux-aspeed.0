@@ -1,129 +1,80 @@
-Return-Path: <linux-aspeed+bounces-4952-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4953-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3060AC624D6
-	for <linux-aspeed@archiver.kernel.org>; Thu,  3 Sep 2026 00:29:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 514EBC624DA
+	for <linux-aspeed@archiver.kernel.org>; Thu,  3 Sep 2026 00:29:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hb0pK2nsjz2yrt;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hb0pK3y6lz2yrw;
 	Thu, 03 Sep 2026 10:29:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.168.131
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788379668;
-	cv=none; b=mwFFXZ1/wDjd9IA3j+nWqDhF20vOZmHhksIkOjiN6O3wLoWE2lAT5P3po9SfzE7SWQ6D2oE9QglO82sPFRIbNs3TrRadb7x5xEl3atZikbR0KKrq7ljJu89Uea9YJv26hGMHIB0Uha/bpYkJOh0gnr0JbeKwAqc0dYdJ8mo5OB3G4dGm9pqx6TRkb9bs8krqBYS7uUntvNwjK3Dq24HFHiDOyZBjMwCtzSfS3UmAjzExOHUpFoZDiGa5ngRdiMt9JfmLiqxJ6kseQNhBNbjA+LW9DYOcSTRAG0zFswmm+AyGL6ZX4QFv4v/d62EwZbDz5jc3mGMizBx9xyw8JyES5w==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788379668; c=relaxed/relaxed;
-	bh=J9W8P08UQPfJw5C78sAv5RWAvY1aWehRnRIhk1Qi+vw=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=kKzxIo5Gp+A1+n34u34bFlDZ4u8VQAP6mt55GU5WAJCKy+AoU1OzmZRcdw79jedwTF49LoGcGDWwQIMy4d0x93JvUeVsWh1y0mKmEv3r+9DIrN41TaJUM8XIUC5k0HaU2HvCOWQIy7X6ZLE1goLMGKifYUCRQkuHckhdqr24g76YSUpU933tSSfXLZ0ajrs5tlZAuZ2YDrelM+/I+RNTKi0ACmRDKIZEoqujydTcrkF6OiNTbbPZEbseUJV3nT15WDtEf1aIkUkYxV7nEk6yosiXleFcrucoo3jpSTd/IXmpoSWYF5M3Bx6oMS3sU4iwNrFlztKSTa9shoV0X1DqFQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=P64iHGeU; dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=SkQ7OBvp; dkim-atps=neutral; spf=pass (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=mukesh.ojha@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c101::7" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788344563;
+	cv=pass; b=guc9qpx8EsS3olW/yPmirsaYwuZMICgkTmg6Dba2yCy1S/S5extCs9THXoLDk7mXcKAfK0R3s1eTZIK1n4sbQMLH72rkZhT9ZtJqzu6KHjX71L9o1GkVXTMwgwnduh/uHwULyAeW7BkuajZhF1L01xIB128kwI7pJNrL2zeYvLd+zySLmLqSKC+AkECoprNLmYaN3djvM0dm5MxoOAo6v/6Q5yhVLZpdpnJ+jQmuQU1add0CzGD5Kig99qnzo9IHMrlCgL6yAfVOrRUP6WC9p98UFv1fChXZms1xn7dz2u+5B2grkLAGl1LO63HOUmiuUeFdqzzSNpHCMofLWJqP9Q==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1788344563; c=relaxed/relaxed;
+	bh=ncn6nEjTd/VSMpTYs+agV/Z974c9d5sxAMfBOFW/qiU=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
+	 In-Reply-To:To:CC; b=K+U3NM25dYcD6urwLlyUzk5cEYdG4oVpXdp/6Dvx5L1dN9n3g06whZG45SnbD9xlBynW2XAqvVyq+B8CwwgkRweBxKkZhum9J928UnvNrA1Phx0kh9QjYQWWR8wh8Rhy9Wihj+yOfObfcuBOPdJmBkWFirhsuIA4O0Un9UTcCI+lflq3azd0ub61nrkET0vcHv2iLtJjVtj7Ukun2MsM4HTcizdihY68RAHleVu5tVOII5/q7t2B1hF6tehBwbjqaPr1wfQ4ZAy+PUPI1V5IDzaCyzkdfTc02DaAzkDMKoVXxSXggfc8wChjppxtr0epcF/6Ct946rKEXD7Wr5nWFg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=A8NhcyhL; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c101::7; helo=bl0pr03cu003.outbound.protection.outlook.com; envelope-from=colin.huang2@amd.com; receiver=lists.ozlabs.org) smtp.mailfrom=amd.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=P64iHGeU;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=SkQ7OBvp;
+	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=A8NhcyhL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=mukesh.ojha@oss.qualcomm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f403:c101::7; helo=bl0pr03cu003.outbound.protection.outlook.com; envelope-from=colin.huang2@amd.com; receiver=lists.ozlabs.org)
+Received: from BL0PR03CU003.outbound.protection.outlook.com (mail-eastusazlp170120007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c101::7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZv0g0cXsz2ypW
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 03 Sep 2026 06:07:46 +1000 (AEST)
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 682HqmlZ2270341
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 2 Sep 2026 20:07:44 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=qcppdkim1; bh=J9W8P08UQPf
-	Jw5C78sAv5RWAvY1aWehRnRIhk1Qi+vw=; b=P64iHGeU+wqitnO2yOTz85CPPMC
-	Nh9EN3gs+0SkmrParjRLd3P0cOTDHlUIuwGLTuKjTJxj2CRNpFTYEG6MPoVkvEoN
-	KRHTCcUMHiCjR48T3RBTIkIlHfwEfHUJn8w9LZX6cIPl6V72APy3F7KN8w5EZhOh
-	JmIfKfn1M9o8qLLLslSCCHkih+JlFWsLs5eIut+RLMcZtwCohJ/vch0JdGhdKGlx
-	05ci71hJL1xR4/y/O1dq2OyMXjVfwO3NqnxZVBv4QnG1GPIFy2RU34XcrhpbqbY2
-	dqXpMxp8akRJCDdTl+S71BL///ZwoRsnXT5kuM5vJcaDjuDRWHNG9Ls4ndQ==
-Received: from mail-pj1-f70.google.com (mail-pj1-f70.google.com [209.85.216.70])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gej2cafy6-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 02 Sep 2026 20:07:44 +0000 (GMT)
-Received: by mail-pj1-f70.google.com with SMTP id 98e67ed59e1d1-38f97b3f853so2596587a91.3
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 02 Sep 2026 13:07:44 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1788379664; x=1788984464; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=J9W8P08UQPfJw5C78sAv5RWAvY1aWehRnRIhk1Qi+vw=;
-        b=SkQ7OBvpfrqc7OyHy5AsSkCYDNuvoY0X5RBhzxOLuqDNiafJDlAH3AyWtP1HVSMbvh
-         XMYaYfDPba4pyng5bGCKb1tU/KDIq3i5LfHUMNc9MH/xjy/IPE5tlC1QoQwTGWbFd2Tc
-         QnzFsedL9PHQ2kxu7qg35Ukf+yKD0rk4JmHLraCHy5JWuXFGDWs/VxniS6imY77e4w/K
-         4Z8HaO7s2ux4YbRFzmiPM0J6q9UaC3irq3Z6IMnRkGqw2ZSgGwwt2hFh+2A9KM9v00lQ
-         CilIqg0HfBhpKYC6LvF6FQjKx+gVwHeZwROBppD2dAuwCEm3TxJrRTSIUWImG7Cil1WM
-         0k0Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1788379664; x=1788984464;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=J9W8P08UQPfJw5C78sAv5RWAvY1aWehRnRIhk1Qi+vw=;
-        b=oUUdX5L5riYrH4SGCKZPjkYZweTMXGVBKMYtmNSuMD5veXKY5Vg5JdGeMOLYy1arvF
-         1ftkkmIsCP78JmEHMEPZcpIBhYKUE64TCFWUICgHklMplmWCZ9H7FYa7WdvMDT4BA/+o
-         fgM8Df+2mfR9z+89Zf8uiukleSlbPLoVRXUg4k5wJJcOt9GNLf+zVpPd917WjVTL5GwS
-         VcbpUhh062Z80acA4MMeYFE+YMR+BYazAlLz3zarAQnDJvaueGoMKcMQ9MAjljh4GRxQ
-         PFDvNuQVSHBghbEjRNVzNxPiqZILl7/WqQ88igT9DujNw24zenS6+XkUp+uAxyVNKIlZ
-         8alQ==
-X-Forwarded-Encrypted: i=1; AKwUvBw+d5rqMKYMqAyR9WCXzhrGO0WLjOoOu9IBi0obDu8vZy7dpGHrY2gx2Gx1LW3mvfk3g/O8H82kH6uaokU=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++mTVPo5483KTr6ZS51qW/VnaFHd4YpGZXW1VRJ5RRGuy5oKaH9Q
-	I4SKKK/cF9SjqJn7FDkwfkKts8kyHqJSIAPFTZEWR0HAeFD1x6ET7qsapUSPt5ESKyoJcj0is+F
-	AFyrf+zqmFFalOLDWGeOsE86wf6WSTZ+gj7HgiPIO9r/RHhJI3vLq9RXuHpbu4lyTLf+p
-X-Gm-Gg: AYBFou1nbuoWayf0n2ceEuoIC4rFVio0ErjhlUFLLN0accdf6nPongUY5eU3lKS0jpB
-	hdJhHmy4CuG8uFCDqbmXdHKyRtq/7J5eWI4HBynzUcERe6kZTtB71quaCtvXOxe1bqTVY8UN9Vy
-	iwwP0I6eH10PMoL8dW7Mx6e4lVqO6ixK3CcLHcZA90hwcCD+mxedborP/KnggCYUFO7p2AwFziR
-	ZJapILIU1zsWMgWcjR8XySrh+bb+nGZba5NmGJ5ERidy7uXS9KK0U6jdCun8wnWPl2OAA2WJ130
-	loBhXWdSqiP3KB0tAVLnUViC8m2aue4Uuy12QoiuuBcq4cWbcg3pp74RL2wVm86HWbR8p7Gpu0O
-	+cMfewW9xROWC/Vxe54XBEuNmBtM=
-X-Received: by 2002:a17:90b:2644:b0:38e:9045:babe with SMTP id 98e67ed59e1d1-39aedfbd99amr11639278a91.7.1788379663613;
-        Wed, 02 Sep 2026 13:07:43 -0700 (PDT)
-X-Received: by 2002:a17:90b:2644:b0:38e:9045:babe with SMTP id 98e67ed59e1d1-39aedfbd99amr11639151a91.7.1788379662903;
-        Wed, 02 Sep 2026 13:07:42 -0700 (PDT)
-Received: from hu-mojha-hyd.qualcomm.com ([202.46.23.25])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-33255f2981dsm434360eec.19.2026.09.02.13.07.33
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 02 Sep 2026 13:07:42 -0700 (PDT)
-From: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
-To: Daniel Scally <dan.scally@ideasonboard.com>,
-        Jacopo Mondi <jacopo.mondi@ideasonboard.com>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        Eddie James <eajames@linux.ibm.com>, Joel Stanley <joel@jms.id.au>,
-        Andrew Jeffery <andrew@codeconstruct.com.au>,
-        Minghsiu Tsai <minghsiu.tsai@mediatek.com>,
-        Houlong Wei <houlong.wei@mediatek.com>,
-        Andrew-CT Chen <andrew-ct.chen@mediatek.com>,
-        Tiffany Lin <tiffany.lin@mediatek.com>,
-        Yunfei Dong <yunfei.dong@mediatek.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-        Joseph Liu <kwliu@nuvoton.com>, Marvin Lin <kflin@nuvoton.com>,
-        Dmitry Osipenko <dmitry.osipenko@collabora.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Paul Kocialkowski <paulk@sys-base.io>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Chen-Yu Tsai <wens@kernel.org>,
-        Jernej Skrabec <jernej.skrabec@gmail.com>,
-        Samuel Holland <samuel@sholland.org>
-Cc: Ryan Chen <ryan_chen@aspeedtech.com>,
-        Billy Tsai <billy_tsai@aspeedtech.com>, linux-media@vger.kernel.org,
-        linux-kernel@vger.kernel.org, openbmc@lists.ozlabs.org,
-        linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
-        linux-mediatek@lists.infradead.org, kernel@collabora.com,
-        linux-staging@lists.linux.dev, linux-sunxi@lists.linux.dev,
-        Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
-Subject: [PATCH v2 2/6] media: aspeed: Use devm_of_reserved_mem_device_init()
-Date: Thu,  3 Sep 2026 01:36:59 +0530
-Message-ID: <20260902200703.2016410-3-mukesh.ojha@oss.qualcomm.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260902200703.2016410-1-mukesh.ojha@oss.qualcomm.com>
-References: <20260902200703.2016410-1-mukesh.ojha@oss.qualcomm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZf1Z2rNKz2y22
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 02 Sep 2026 20:22:42 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=Hkd32MqBRaloeESLwBAxkbxTa+KOx/ycZRWzBwdfSQBIKhxsMDthmu5HK33xLC/wkKAhnpIaq0TDdlPiqIQ+fJ9RNgLBRNdTx9/FSRpNjmfDHOthN4Zkm9rZdsNmD0OhVwoBEYR6Ki461MkJ4PoZFZejFytLl8vfdLc499aW3Ta0Wq3JsAk12wcUouCJPmKresLC7Ekx9g7+8PF/ncTsGA7SBmGTuDcjVcpKlHZB9Kgs0SU2cdhzYgIIoEfLnLcQMIvy6Z54qauO9p9ElDe77B4voyELrdsVDzEgmvED2sfZggAY7r91YLEm4qvJOKdGao0MGcCnjWKqBJt5Iv0zKA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=ncn6nEjTd/VSMpTYs+agV/Z974c9d5sxAMfBOFW/qiU=;
+ b=Lt3hq3Nu/ipdDnN47UEg937h1gDogdgY0hB+g7fdcKfckap2TvRLSU8/SqdTRi/9LRdt41VC9ZMaqvZiz3/KoxVbohHB2udfASm6o45k77Mbk1JT2tVFJptuH673XilI8X6/7TKkROTXlU304NZU6ZTey8O+KAG5mnewA7RRmyqyTTjn3a30pwzAZecgdEgt/H7TfbwzbAd46Swp6VXVzpPidndpaZMwmQQhHp6sb1ZrSLdqAcewnHrHIyfzPj245cj3UKGvyFyZGOJlKehE6wot/6iN3gGhwle+2oDgiR80xiELA0iy7dJHkXXs8P4X20ls3BBxryzs4Mi2+HE1rA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=aspeedtech.com smtp.mailfrom=amd.com;
+ dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
+ header.from=amd.com; dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=ncn6nEjTd/VSMpTYs+agV/Z974c9d5sxAMfBOFW/qiU=;
+ b=A8NhcyhLHSAUl6FgBOIpdcefyRitQe94pUcAEfqgUjjB35EdgMhc8AZxZRC1xDuOfuu/rSm7Xn1kM0WTenXg73OOPayZLHotIAXgGjav34S4qsO1Lo4in05CMlOvOcfph5oi1TGwUcsa5fp+dL6cDvbdNWYXSeVuvn50pc5GSTY=
+Received: from BN0PR02CA0038.namprd02.prod.outlook.com (2603:10b6:408:e5::13)
+ by DM3PR12MB9287.namprd12.prod.outlook.com (2603:10b6:8:1ac::18) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.360.13; Wed, 2 Sep
+ 2026 10:22:14 +0000
+Received: from BN2PEPF0000449D.namprd02.prod.outlook.com
+ (2603:10b6:408:e5:cafe::e) by BN0PR02CA0038.outlook.office365.com
+ (2603:10b6:408:e5::13) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.382.11 via Frontend Transport; Wed, 2
+ Sep 2026 10:22:14 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=satlexmb08.amd.com; pr=C
+Received: from satlexmb08.amd.com (165.204.84.17) by
+ BN2PEPF0000449D.mail.protection.outlook.com (10.167.243.148) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.382.8 via Frontend Transport; Wed, 2 Sep 2026 10:22:14 +0000
+Received: from satlexmb08.amd.com (10.181.42.217) by satlexmb08.amd.com
+ (10.181.42.217) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.46; Wed, 2 Sep
+ 2026 05:22:11 -0500
+Received: from [127.0.1.1] (10.180.168.240) by satlexmb08.amd.com
+ (10.181.42.217) with Microsoft SMTP Server id 15.2.2562.46 via Frontend
+ Transport; Wed, 2 Sep 2026 05:22:08 -0500
+From: Colin Huang <colin.huang2@amd.com>
+Date: Wed, 2 Sep 2026 18:21:15 +0800
+Subject: [PATCH v8 03/11] ARM: dts: aspeed: anacapa: Add DVT devicetree
+ inheriting EVT2
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -137,101 +88,250 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTAyMDE3OCBTYWx0ZWRfX1rQnKpOZH/8T
- kMXv7cjpuDnh6vwSzEp93gP/xDfJpSHH+GuLcMaRoYmy+G1ntEZPuHgBJPr8v3gpvz3GRg7Lcm7
- NFVS1rkUwjZEku8B/RfO6i5KlwCPfzw=
-X-Authority-Analysis: v=2.4 cv=G+ss1dk5 c=1 sm=1 tr=0 ts=6a988210 cx=c_pps
- a=0uOsjrqzRL749jD1oC5vDA==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
- a=VdqzKS8jKosA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22 a=EUspDBNiAAAA:8
- a=gFEuJ_os7HuwQwkCt6UA:9 a=0bXxn9q0MV6snEgNplNhOjQmxlI=:19
- a=mQ_c8vxmzFEMiUWkPHU9:22
-X-Proofpoint-GUID: ska3twP59ZCeK-pRc6jAPa0MslKmrZ8U
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTAyMDE3OCBTYWx0ZWRfX/Mi6oEvY9rzV
- /cD6Mu3MTFQ2achZuNXSyEzC1exbsP06HKkKxQW7FCQI1v+5BAcGImyAdsUtrKZIp5b117MY42x
- 8AqEwWpzQJYWD5KWqdlp2bqQVjlO4ThDE1DXXOPNwbpKVOrzTEUoih4xa7fWFQMVZrb2+ZIHdPe
- UDmFQXOMFBgT8VAHHv6PI8dXGSwhxKbnf7e9sekcnBTtinotLZpNFPiqafF4TDPLzBoJb1XWBZZ
- sOqw4KHrer3qQ5dlKQUrkmF2XnASNWvex+aUoVkW3k7W3bKhv55sdQsBJXw00+b/W2xl/aWfQ8/
- MEvWAWpcTN/SMBuI/vPMKQdOBJbU8ErqvX4Zu+VjiiZslQeIPrmRNPAG9vd44QE2zCLIjG6249+
- 4oOfOE5r5zA00a0OIB8JD6PZSvXhSP7Id9PEdkApzE7/cOyXoVqX2Hxa3ToUndTH4hauS+dvhqd
- JlzwUwk7CK3w+UR38hw==
-X-Proofpoint-ORIG-GUID: ska3twP59ZCeK-pRc6jAPa0MslKmrZ8U
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-02_04,2026-09-02_04,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 priorityscore=1501 malwarescore=0 suspectscore=0 bulkscore=0
- impostorscore=0 lowpriorityscore=0 phishscore=0 adultscore=0 clxscore=1015
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2606150000 definitions=main-2609020178
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-ID: <20260902-anacapa-devlop-phase-devicetree-v8-3-69c8eb2a7cda@gmail.com>
+References: <20260902-anacapa-devlop-phase-devicetree-v8-0-69c8eb2a7cda@gmail.com>
+In-Reply-To: <20260902-anacapa-devlop-phase-devicetree-v8-0-69c8eb2a7cda@gmail.com>
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, "Andrew
+ Jeffery" <andrew@codeconstruct.com.au>, Ryan Chen <ryan_chen@aspeedtech.com>,
+	Billy Tsai <billy_tsai@aspeedtech.com>
+CC: <devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-aspeed@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+	<colin.huang2@amd.com>, Colin Huang <u8813345@gmail.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1788344509; l=5821;
+ i=u8813345@gmail.com; s=20260202; h=from:subject:message-id;
+ bh=AQ5iLkgP6NLAtcRqZ6tcsMzjF1xEYDqVB0kQ/nuplqc=;
+ b=0cFc2zWeed6lqE3bWnjKswhvjdrE3pAqWHtwmDPmup3bUHwZ+IV4CG71VVhLXiMXOA+GkW4oK
+ Z8G4TbThBV3ChkPo77GgvRZED6hECQgZSNPJj4WDJUD9+wJslGDjLSa
+X-Developer-Key: i=u8813345@gmail.com; a=ed25519;
+ pk=Zlg0WqpCw4qbswOqamTBTXIchwR/3SnYZpy7rjaGMdQ=
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BN2PEPF0000449D:EE_|DM3PR12MB9287:EE_
+X-MS-Office365-Filtering-Correlation-Id: f0c15d0b-f8f2-4e18-14f5-08df08dc0ede
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|23010399003|36860700016|1800799024|82310400026|376014|7416014|6133799003|22082099003|18002099003|56012099006|11063799006|10067099003;
+X-Microsoft-Antispam-Message-Info:
+	ALzAp8TQbfyZkXllYzanNZ8xv/H8mSe4PDi7NteCCnn9V+FLPRmOFINSJFmw0efs/UnFlduO/p/ldvlJTwkNZzNYPaetW1zNjiZ7C1OmZXqlfEOC3FJAUMpnNoKrg3vA5KlZvpjzRwlh2oJtA8YPW9AFVnrn22ynjCJuUK39RFV2Pfnl2JSfFQ8BiExBw8asGenaIwVfJ65y1kBoe4+E7r/xGGQwHtmkDfOYuSP7p+487nTlNMzGoGW6V/B847KL+FZ9JKRdFPPlXZ67RU/lUXA8O+LeoYImtlZkk1v67opodlFA0VqOIoX941esUHLXSMV1uB9YbUVfxihkJvC2DjQbknejIMeUNwVGrbMnjbMbyItTyLvquAP7NsZT0PcIgnGEkrBZoY2BP2lbWJTiYpktbOYk+1jEUMTeeDugk9K7mckKSrpy3HBL6uNFtFm6E+sEDiCTttoHWRx8BfVSNkNWQP+UyYg1jDD8QrBgyMWRxRRvVvuNSJKTWzOwYorlEqIlxmtiAJExquGhNkuEXLh+9bvy7kngPsSJNfcf3E+6mK9/xlg7QRJ3LhtSlXn/FVtGZaW78iZDFJQWQQ7spdIrS9RpxQg1luDyXy/lwoTW5HKzBmCYoPxaw8V099w+1PQ9JohMapZG6gPG6BUi/9AHDELa6pVdkfD5f9fz23M8sNeAdjvxWrjhM27Hr98zihDF5SGF0ZBXqWKRUVYzFw==
+X-Forefront-Antispam-Report:
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb08.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(23010399003)(36860700016)(1800799024)(82310400026)(376014)(7416014)(6133799003)(22082099003)(18002099003)(56012099006)(11063799006)(10067099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	Dk36W93pWtW7drv4KCEQj0c6GSnMoSDYMTJ8usTYXwiYqjE1CymMQT1WkJNSHevvBW2uN+6PQx+Pfoeo9RrDpOhfqibZ1fb+8fpappyCFjyvO700JheJEQ+neYzIlb7cI3SDiGOeG8+nnYo+1zrqyz46zwOjtdbSsAKzvqhKxMHQ116iXPiaUlUkiCKLYsdF4fHGFKwail9qbfi1naqFJ4YVHECI8h1L1HoENzXStVs8EAkg7PEY0N4WuX667TN218pKpLD62pbSBRx3iXz33634EjC0/PKX2F08V/ukb+AmpLXIIyRiQbTeCkgTRS285QdT92PTT3Wt51suMX0o/t7aYndgBiUs+l8My3d6yc7FuUpY4M4AW3Yy6XjxYN8f6CD9AVuFnGo4nev2rgq1oUePp/8w2eA8XPMU45jmvqZy/cryCwk0mQqC9looZ5U6
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Sep 2026 10:22:14.4753
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: f0c15d0b-f8f2-4e18-14f5-08df08dc0ede
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb08.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	BN2PEPF0000449D.namprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM3PR12MB9287
 
-Switch to devm_of_reserved_mem_device_init() so the reserved memory
-region is released automatically on probe failure or device removal.
-Remove the three explicit of_reserved_mem_device_release() calls and
-rename the error label from err_release_reserved_mem to
-err_unprepare_vclk to reflect that it now only unwinds clock state.
+From: Colin Huang <u8813345@gmail.com>
 
-Signed-off-by: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
+Add a development-phase devicetree for the Facebook Anacapa BMC DVT
+hardware revision and update the Anacapa wrapper DTS to reference
+it.
+
+Signed-off-by: Colin Huang <u8813345@gmail.com>
 ---
- drivers/media/platform/aspeed/aspeed-video.c | 12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
+ .../aspeed/aspeed-bmc-facebook-anacapa-dvt.dtsi    | 167 +++++++++++++++++++++
+ .../dts/aspeed/aspeed-bmc-facebook-anacapa.dts     |   2 +-
+ 2 files changed, 168 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/media/platform/aspeed/aspeed-video.c b/drivers/media/platform/aspeed/aspeed-video.c
-index a292275f6b7b..7ba9314fdbd2 100644
---- a/drivers/media/platform/aspeed/aspeed-video.c
-+++ b/drivers/media/platform/aspeed/aspeed-video.c
-@@ -2267,19 +2267,19 @@ static int aspeed_video_init(struct aspeed_video *video)
- 	if (rc)
- 		goto err_unprepare_eclk;
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-dvt.dtsi b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-dvt.dtsi
+new file mode 100644
+index 000000000000..0509bc8bb9cd
+--- /dev/null
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-dvt.dtsi
+@@ -0,0 +1,167 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++
++#include "aspeed-bmc-facebook-anacapa-evt2.dtsi"
++
++&sgpiom0 {
++	gpio-line-names =
++	/*in - out */
++	/* A0-A7 line 0-15 */
++	"L_FNIC_FLT", "FM_CPU0_SYS_RESET_N",
++	"L_BNIC0_FLT", "CPU0_KBRST_N",
++	"L_BNIC1_FLT", "FM_CPU0_PROCHOT_trigger_N",
++	"L_BNIC2_FLT", "FM_CLR_CMOS_R_P0",
++	"L_BNIC3_FLT", "Force_I3C_SEL",
++	"L_RTM_SW_FLT", "SYSTEM_Force_Run_AC_Cycle",
++	"", "",
++	"", "",
++
++	/* B0-B7 line 16-31 */
++	"Channel0_leakage_EAM3", "FM_CPU_FPGA_JTAG_MUX_SEL",
++	"Channel1_leakage_EAM0", "FM_SCM_JTAG_MUX_SEL",
++	"Channel2_leakage_Manifold1", "FM_BRIDGE_JTAG_MUX_SEL",
++	"Channel5_leakage_present_EAM1", "FM_CPU0_NMI_SYNC_FLOOD_N",
++	"Channel4_leakage_Manifold2", "BMC_AINIC0_WP_R2_L",
++	"Channel5_leakage_EAM1", "BMC_AINIC1_WP_R2_L",
++	"Channel6_leakage_CPU_DIMM", "CPLD_BUF_R_AGPIO330",
++	"Channel7_leakage_EAM2", "CPLD_BUF_R_AGPIO331",
++
++	/* C0-C7 line 32-47 */
++	"RSVD_RMC_GPIO3", "RTM_MUX_L",
++	"LEAK_DETECT_RMC_N", "RTM_MUX_R",
++	"HDR_P0_NMI_BTN_BUF_R_N", "FPGA_JTAG_SCM_DBREQ_N",
++	"Channel6_leakage_present_CPU_DIMM", "whdt_sel",
++	"R_EAM0_NIC_CBL_PRSNT_L", "JTAG_CPLD_TRST_R_N",
++	"R_EAM1_NIC_CBL_PRSNT_L", "",
++	"L_EAM0_NIC_CBL_PRSNT_L", "",
++	"L_EAM1_NIC_CBL_PRSNT_L", "",
++
++	/* D0-D7 line 48-63 */
++	"Channel0_leakage_present_EAM3", "",
++	"Channel1_leakage_present_EAM0", "",
++	"Channel2_leakage_present_Manifold1", "",
++	"Channel4_leakage_present_Manifold2", "",
++	"AMC_BRD_PRSNT_CPLD_L", "",
++	"Channel7_leakage_present_EAM2", "",
++	"", "",
++	"", "",
++
++	/* E0-E7 line 64-79 */
++	"L_PRSNT_B_FENIC_R2_N", "",
++	"L_PRSNT_B_BENIC0_R2_N", "",
++	"L_PRSNT_B_BENIC1_R2_N", "",
++	"L_PRSNT_B_BENIC2_R2_N", "",
++	"L_PRSNT_B_BENIC3_R2_N", "",
++	"", "",
++	"", "",
++	"", "",
++
++	/* F0-F7 line 80-95 */
++	"R_PRSNT_B_FENIC_R2_N", "SGPIO_READY",
++	"R_PRSNT_B_BENIC0_R2_N", "",
++	"R_PRSNT_B_BENIC1_R2_N", "",
++	"R_PRSNT_B_BENIC2_R2_N", "",
++	"R_PRSNT_B_BENIC3_R2_N", "",
++	"", "",
++	"", "",
++	"", "",
++
++	/* G0-G7 line 96-111 */
++	"L_PRSNT_EDSFF0_N", "",
++	"L_PRSNT_EDSFF1_N", "",
++	"R_PRSNT_EDSFF2_N", "",
++	"R_PRSNT_EDSFF3_N", "",
++	"HPM_EDSFF_PG", "",
++	"", "",
++	"P12V_PWR_CABLE_PRSNT_L_R", "FM_BMC_READY_PLD",
++	"PRSNT_NFC_BOARD_R", "",
++
++	/* H0-H7 line 112-127 */
++	"R_FNIC_FLT", "",
++	"R_BNIC0_FLT", "",
++	"R_BNIC1_FLT", "",
++	"R_BNIC2_FLT", "",
++	"R_BNIC3_FLT", "",
++	"R_RTM_SW_FLT", "",
++	"RBB_Cable_Present", "",
++	"LBB_Cable_Present", "",
++
++	/* I0-I7 line 128-143 */
++	"EAM0_BRD_PRSNT_R_L", "",
++	"EAM1_BRD_PRSNT_R_L", "",
++	"EAM2_BRD_PRSNT_R_L", "",
++	"EAM3_BRD_PRSNT_R_L", "",
++	"FM_TPM_PRSNT_R_N", "",
++	"PDB_L_PRSNT_R_N", "",
++	"PRSNT_EDSFF_BOOT_N", "",
++	"PRSNT_CPU0_N", "",
++
++	/* J0-J7 line 144-159 */
++	"PRSNT_L_BRIDGE_R", "",
++	"PRSNT_R_BRIDGE_R", "",
++	"BRIDGE_L_MAIN_PG_R", "",
++	"BRIDGE_R_MAIN_PG_R", "",
++	"BRIDGE_L_STBY_PG_R", "",
++	"BRIDGE_R_STBY_PG_R", "",
++	"IRQ_NFC_BOARD_R", "",
++	"RSMRST_N", "",
++
++	/* K0-K7 line 160-175 */
++	"ADC_I2C_ALERT_N", "",
++	"TEMP_I2C_ALERT_R_L", "",
++	"CPU0_VR_SMB_ALERT_CPLD_N", "",
++	"COVER_INTRUDER_R_N", "",
++	"HANDLE_INTRUDER_CPLD_N", "",
++	"IRQ_MCIO_CPLD_WAKE_R_N", "",
++	"APML_CPU0_ALERT_R_N", "",
++	"PDB_ALERT_R_N", "",
++
++	/* L0-L7 line 176-191 */
++	"L_EDSFF0_PG", "",
++	"L_EDSFF1_PG", "",
++	"R_EDSFF2_PG", "",
++	"R_EDSFF3_PG", "",
++	"HPM_CPLD_HEART_BIT", "",
++	"RBB_CPLD_HEART_BIT", "",
++	"LBB_CPLD_HEART_BIT", "",
++	"FM_BIOS_POST_CMPLT_R_N", "",
++
++	/* M0-M7 line 192-207 */
++	"EAM0_SMERR_CPLD_R_L", "",
++	"EAM1_SMERR_CPLD_R_L", "",
++	"EAM2_SMERR_CPLD_R_L", "",
++	"EAM3_SMERR_CPLD_R_L", "",
++	"CPU0_SMERR_N_R", "",
++	"CPU0_NV_SAVE_N_R", "",
++	"PDB_PWR_LOSS_CPLD_N", "",
++	"IRQ_BMC_SMI_ACTIVE_R_N", "",
++
++	/* N0-N7 line 208-223 */
++	"AMCROT_BMC_S5_RDY_R", "",
++	"AMC_RDY_R", "",
++	"AMC_STBY_PGOOD_R", "",
++	"CPU_AMC_SLP_S5_R_L", "",
++	"AMC_CPU_EAMPG_R", "",
++	"DIMM_PMIC_PG_TIMEOUT", "",
++	"EAM_MOD_PWR_GD_TIMEOUT", "",
++	"CPLD_AMC_STBY_PWR_EN", "",
++
++	/* O0-O7 line 224-239 */
++	"HPM_PWR_FAIL", "Port80_b0",
++	"FM_DIMM_IP_FAIL", "Port80_b1",
++	"FM_DIMM_AH_FAIL", "Port80_b2",
++	"AMC_THERMTRIP_ASSERT", "Port80_b3",
++	"CPU_THERMTRIP_ASSERT", "Port80_b4",
++	"PVDDCR_SOC_P0_OCP_L", "Port80_b5",
++	"CPLD_SGPIO_RDY", "Port80_b6",
++	"FM_MAIN_PWREN_RMC_EN_ISO", "Port80_b7",
++
++	/* P0-P7 line 240-255 */
++	"CPU0_SLP_S5_N_R", "NFC_VEN",
++	"CPU0_SLP_S3_N_R", "",
++	"FM_CPU0_PWRGD", "",
++	"PWRGD_RMC", "",
++	"FM_RST_CPU0_RESET_N", "RBB_CPLD_RISCV_RST",
++	"FM_PWRGD_CPU0_PWROK", "LBB_CPLD_RISCV_RST",
++	"AMC_FAIL", "HPM_CPLD_RISCV_RST",
++	"S0_ON", "";
++};
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
+index 606dacb605c5..1eee0d84c0a8 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
+@@ -1,4 +1,4 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
  
--	of_reserved_mem_device_init(dev);
-+	devm_of_reserved_mem_device_init(dev);
- 
- 	rc = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(32));
- 	if (rc) {
- 		dev_err(dev, "Failed to set DMA mask\n");
--		goto err_release_reserved_mem;
-+		goto err_unprepare_vclk;
- 	}
- 
- 	if (!aspeed_video_alloc_buf(video, &video->jpeg,
- 				    VE_JPEG_HEADER_SIZE)) {
- 		dev_err(dev, "Failed to allocate DMA for JPEG header\n");
- 		rc = -ENOMEM;
--		goto err_release_reserved_mem;
-+		goto err_unprepare_vclk;
- 	}
- 	dev_info(video->dev, "alloc mem size(%d) at %pad for jpeg header\n",
- 		 VE_JPEG_HEADER_SIZE, &video->jpeg.dma);
-@@ -2288,8 +2288,7 @@ static int aspeed_video_init(struct aspeed_video *video)
- 
- 	return 0;
- 
--err_release_reserved_mem:
--	of_reserved_mem_device_release(dev);
-+err_unprepare_vclk:
- 	clk_unprepare(video->vclk);
- err_unprepare_eclk:
- 	clk_unprepare(video->eclk);
-@@ -2343,7 +2342,6 @@ static int aspeed_video_probe(struct platform_device *pdev)
- 	rc = aspeed_video_setup_video(video);
- 	if (rc) {
- 		aspeed_video_free_buf(video, &video->jpeg);
--		of_reserved_mem_device_release(&pdev->dev);
- 		clk_unprepare(video->vclk);
- 		clk_unprepare(video->eclk);
- 		return rc;
-@@ -2374,8 +2372,6 @@ static void aspeed_video_remove(struct platform_device *pdev)
- 	v4l2_device_unregister(v4l2_dev);
- 
- 	aspeed_video_free_buf(video, &video->jpeg);
--
--	of_reserved_mem_device_release(dev);
- }
- 
- static struct platform_driver aspeed_video_driver = {
+ /dts-v1/;
+-#include "aspeed-bmc-facebook-anacapa-evt2.dtsi"
++#include "aspeed-bmc-facebook-anacapa-dvt.dtsi"
+
 -- 
-2.55.0
+2.34.1
 
 
