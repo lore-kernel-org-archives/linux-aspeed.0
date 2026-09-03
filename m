@@ -1,80 +1,92 @@
-Return-Path: <linux-aspeed+bounces-4955-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4956-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CBB09C61DD6
-	for <linux-aspeed@archiver.kernel.org>; Thu,  3 Sep 2026 00:39:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97DCAC61DD6
+	for <linux-aspeed@archiver.kernel.org>; Thu,  3 Sep 2026 03:23:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hb11p6r95z2yqP;
-	Thu, 03 Sep 2026 10:39:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c007::2" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788344569;
-	cv=pass; b=KPXGrVCsm2ErlctfbE89vPtXxkXwDmYyfjeDcOXqmP9j80JsoFKtU9YU57l03Soxulo1MnlzehwrvGPzwqiUaHr2bkuX++tWSfm0Ai67w8MDvyXuKORcYckjHL4Ni9K3ccueO+91RtKsPbUwONsaydrozX1AOpJB5F2vhmOhLaS8BUXCZHHYOidsrSmVFlipczD6UCfze4iLxdcxR3JIchKBEwO+XzSNcZEDZH3fbAmhuzKgTn9atNXeUNJo4Q3gl758q0trd7cI5KPfFyaLHla/siPTTq+UmqXaVWX/3PivR/cupUj2fwFy16ZvuSsif1ww19X/wu2b+2hLo7kcXA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hb4gD4LB8z2y2W;
+	Thu, 03 Sep 2026 13:23:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::1131" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788404900;
+	cv=pass; b=SkGONylg8DrQn62x8IrK3ZiqnO3eCdPwZzCKdAKjVCtSGq2Mzh9KaTnITbq6Z7cFB8+1zBDs+UBD0FCPzDyETX7PpzkDri6u8pC7WX/B9ylDBF9xmdUeNivWJCTq/yBr7t1yeiM3o0HEK34FmMEHGNggLjzHUxaq5K5OqbxgPrJC+BhV4dQGtAPMXfMItZSYzUoIV6764ywxFllX4vOYyCzpBuPNKMyG3P7yWn+JRb7d2yh8Y544elra/k0fEMEhOT4r5riGEoY4i85rMCia4dj2fG4K9IJq7mgpibQiLDdHseWIFJhQQKR9IxKQSAyRC8HUsapc2+nay8PTTBulrA==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788344569; c=relaxed/relaxed;
-	bh=4/s6FlFwAKjgFLjZDZcFhJiBB4O4U8XepmrU/CXy4uk=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
-	 In-Reply-To:To:CC; b=GZMl0zesW5luL2pEwkck9f+fa/fLWreuMSYrafWYJD9WPWM0BtFFOTl2Lj7npl2FOEhHXxaQxX3577Gh9BCxAi48nrmMOSsJrKSMwUMWKLVzlslDrhoa8el+Kr9iqDIXolnaBae8Jg/18f8EWVX3Z9X500rtDeo9XZ6rKRk6681z4yGNgOyBnQr8Q2QD1dASzMuCJV7iq5J5iaucwm9rDoqL2k0rl4vEnUtU5/0zVvm37fsANJe8bALn8KEAVIuID7kAP7l8NtefttULqP6H9a+oA6gY2k5aZhQPolJjnjX0wr/Y7C/MKFRmcC84MgmlrSVGZx/nOSffHy5YuMNnOQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=M4PEEerx; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c007::2; helo=mw6pr02cu001.outbound.protection.outlook.com; envelope-from=colin.huang2@amd.com; receiver=lists.ozlabs.org) smtp.mailfrom=amd.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+	t=1788404900; c=relaxed/relaxed;
+	bh=SnzwBfRZpBf2cJeykyMmu4E583GVHfgU8A+PMrUbmFE=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=HbuzW7rcATz+vRiJW0wuAGBLo+arijNFX/HboUtddGKpwG74q2Hp7GYp9VTqY5lXL60y/msDzBJ5cLXryP1NjWna8PDtYtsn8pUaXqb65tIU47+iS1yEn/+iwbMDR+r5SKTpi+5XlR5Q6fzkSf+A++NKvD3iqOAd2BZ1PG7USc0YkbSi6b1sGIdOKjM1v17DtcwSQpVxfk6GFfYkLyULBnzb/GyiZdVrcSXXtddUmV5QW4c2KOr6YSUnQR74+LWuyHm4rF28/21/llcVjweUWaI+Y1O6HlFgqjHtaLXz3Onbn31a2oMksaFC1EVw+znxhFrlnthHj0buLFF9WCOXSA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=chromium.org; dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=fqY5s8o3; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1131; helo=mail-yw1-x1131.google.com; envelope-from=wenst@chromium.org; receiver=lists.ozlabs.org) smtp.mailfrom=chromium.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=M4PEEerx;
+	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=fqY5s8o3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f403:c007::2; helo=mw6pr02cu001.outbound.protection.outlook.com; envelope-from=colin.huang2@amd.com; receiver=lists.ozlabs.org)
-Received: from MW6PR02CU001.outbound.protection.outlook.com (mail-westus2azlp170120002.outbound.protection.outlook.com [IPv6:2a01:111:f403:c007::2])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::1131; helo=mail-yw1-x1131.google.com; envelope-from=wenst@chromium.org; receiver=lists.ozlabs.org)
+Received: from mail-yw1-x1131.google.com (mail-yw1-x1131.google.com [IPv6:2607:f8b0:4864:20::1131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hZf1h3g1nz2xBK
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 02 Sep 2026 20:22:48 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Gq80M/wzXUrXS6mJiA4ijHjKHDfpIrWIHeVisrflyFbcdb3vZgEM5JsGDtRdhf0rTyJYPO1SSRqWIeopgOSux2UcXDaYl4z3fSNk2mH53X/UcVwrD2wJcNss9U8eEM7re8aBvGo+OkaAZ/sFhmAAzBgFNFyTVGFX3XuRAkBPCWiQmMoehLd4xKAnnSNKtSvxez9tGkhiNxtYV7V4RCI+Br4jz9zW/OCDhlYcO3F+ujA+Ag9i4toyA4yeScMD0SXqred6dYyGeQQoZEjIqfQTHgub6eL7mAZiDn79iYSBwqzU68AIbYc5HyHwsTpNWoi4EuCfT5gtfgkRUQl0iZZ8QA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=4/s6FlFwAKjgFLjZDZcFhJiBB4O4U8XepmrU/CXy4uk=;
- b=rcv/SuqRzUKuaLNE0772mVJbsFuTKnU+KM86gp9IHMBvytEbyv7WUUmDAfSqZg9yvBWnxFTISXGyKoXkkJPxrOaBfNcj2N4e3MZUuAkceHcstv+LS7rEKz3m9tBTD5ilwpy8rO7YmQ0RrqlSHXQR8bEsEz7Q8n5KARqfoRFIFHQmCG4GdVXbF5uoOUncJDTgkzSzpm1Jumk/8LBQDFHfvdMdlRJB1fopTjnb1tGOEztvrQCiqBp36pTSk+3HobQUAIgqHWsUkYTmKZthCbIfY4vPdoFhtk9H2hGqHYCCXmeB6hrT5N0CedgW4KvqaAWCBY1Tw9+Iy5DDUITVoQxNTA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=aspeedtech.com smtp.mailfrom=amd.com;
- dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
- header.from=amd.com; dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=4/s6FlFwAKjgFLjZDZcFhJiBB4O4U8XepmrU/CXy4uk=;
- b=M4PEEerxm2s0WhAFnyU51aIqnJcCwmRBueiUrty6zFgrlf3SxIq4xIZpU9Y2JqR25I8I5tKwSeGvFqFkUvyu8nbGql78G5AqkYVvXBIrAjbrZFt1zmO1XUj9IThOBt521RUBs/gzuBQktof2Mqq9ggfP9uOiTS8/k/E1r3t9F9I=
-Received: from SJ0PR13CA0176.namprd13.prod.outlook.com (2603:10b6:a03:2c7::31)
- by SJ0PR12MB6806.namprd12.prod.outlook.com (2603:10b6:a03:478::7) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.360.13; Wed, 2 Sep
- 2026 10:22:24 +0000
-Received: from SJ1PEPF000023CC.namprd02.prod.outlook.com
- (2603:10b6:a03:2c7:cafe::1a) by SJ0PR13CA0176.outlook.office365.com
- (2603:10b6:a03:2c7::31) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.382.11 via Frontend Transport; Wed, 2
- Sep 2026 10:22:24 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
-Received: from satlexmb07.amd.com (165.204.84.17) by
- SJ1PEPF000023CC.mail.protection.outlook.com (10.167.244.6) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.382.8 via Frontend Transport; Wed, 2 Sep 2026 10:22:24 +0000
-Received: from satlexmb08.amd.com (10.181.42.217) by satlexmb07.amd.com
- (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.46; Wed, 2 Sep
- 2026 05:22:20 -0500
-Received: from [127.0.1.1] (10.180.168.240) by satlexmb08.amd.com
- (10.181.42.217) with Microsoft SMTP Server id 15.2.2562.46 via Frontend
- Transport; Wed, 2 Sep 2026 05:22:17 -0500
-From: Colin Huang <colin.huang2@amd.com>
-Date: Wed, 2 Sep 2026 18:21:18 +0800
-Subject: [PATCH v8 06/11] ARM: dts: aspeed: anacapa: Align PDB fan GPIO
- numbering
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hb4Kt3Ybgz2y2M
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 03 Sep 2026 13:08:17 +1000 (AEST)
+Received: by mail-yw1-x1131.google.com with SMTP id 00721157ae682-8588583a7c3so23665527b3.2
+        for <linux-aspeed@lists.ozlabs.org>; Wed, 02 Sep 2026 20:08:17 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1788404895; cv=none;
+        d=google.com; s=arc-20260327;
+        b=KXy7jtlwBmP2WDrqan8INX7hPheqYNIzuB/IUix9c1ZOYrWTRk4mCKi/YIrTFn2dU/
+         RgF3TNXAnwOZUXYqqqGI+0+Bojc4pazCVmChSHCBtnduZeC1+RAjGnalDZTXSFX4gfRf
+         v521VG/jI47kfFcaUN2LAUIhgY63hnHIc7nIoXckbW3wACBxcZVJRhE//ma0EHTmckHI
+         wAM92tAwRlbgNsIqejyLvD7aIhE/Q71TGm+F++tBqs1hhJKAU2mLHqq/cQFxrwLA2+S4
+         3USv2dDDXUps2df+fIpwcCcFFj4NODxP3aWjPcknk8ogbjz6HYMSPUzZFFAHFDuQN6Qy
+         KJTA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=SnzwBfRZpBf2cJeykyMmu4E583GVHfgU8A+PMrUbmFE=;
+        fh=8PP+0VV4N5qJJ8Ms/QX2mtOI8xDlEolGsefo+vLvAIY=;
+        b=sRdeWzYDGqVWJ4AsB3t9xs4zDjNvNagjmRJktakCgb89ICgLT0QvF5iFbyq6bJ+ekt
+         fkv8nIXfVzNwAqsj+BMJExxIVZsvTkr06LPhMHJwdo47jHPUvCnpn58EUmrI2CQT1RUy
+         lq/EMkvIFfVn+pUNrmn4fiEf6t1qZ3xgwj+Hr/OlXgnrHYfh/HZuKHZbABmJ3ibI8/q+
+         ZS2EbzY1RiF2kBb/kw+8Df0qMECRQX1xfqWtn2JTJ9AuCq4K8eMabEgli68ti8l7s/qt
+         R7fzatCWerV/fhFs7TVzp2U7rgYM7tHdVuhk1fiRf1lClbshSimNAluBR6ln6QW0yOVf
+         2xHw==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1788404895; x=1789009695; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=SnzwBfRZpBf2cJeykyMmu4E583GVHfgU8A+PMrUbmFE=;
+        b=fqY5s8o3HJD5ycu0UFJx0awULRq0IQIClEaaQixNTfW2/rARC/vqKMv0zv2b7bqoDM
+         EHTKgVLsUlrQScF2oIXKpFgM8VBiwrDzlpYhB5zGaei6sA4Tt+/2vlHk4X28407jjZbW
+         2MSc4UKi3t0d4E3p5Xli3k7ljxDBy5mgZ/FVI=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788404895; x=1789009695;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=SnzwBfRZpBf2cJeykyMmu4E583GVHfgU8A+PMrUbmFE=;
+        b=Z1/LMl3fYB8L7Dd4REfFSEJ0A/Lvtty8qGjsDwr9GJxFFU3vQ8L/UPXb8e6vzLJNiL
+         jPDjFUptkQFnskzQmyu9bRwuP6vQnl6DWruZyqjmZ2lU7PlISBtl1FtnJvWLrCrYNJzP
+         BDsWMeOGgkK1tQNPKSDa03cjtZSdQ1uka/3WvYfYGaWyUUvPKUnahP2kJHfrmGyKnIko
+         bkzWmxk+heoM84vV8lwdvuySyWGdghsi+4f63B3J+0W94ZMkx075qwwVH8Tjfyo5zsx0
+         weOTQvNoh3b54GFp87sPSLjuquo0NajY7ArSfHCZ00xhmD10Eesl24pUYK2yeTmKw146
+         Evog==
+X-Forwarded-Encrypted: i=1; AKwUvBw3CRa5wdPDhAP20DCeeuIkoj8DwqD0nsl4VhO47BX+IInCGT0koaBjE/mrVcL2ItQNzniZnXjTDnUN+iQ=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++lkqnQyEMlDsMMspF15qMyrKHpa4xCTJBMn3foph7+04kktWlni
+	sRxsB1Aof1Liq+BNYnHfjnjYJyxseUiQwDCujGcQZGhlyNW3YtlIWIw1eepAMWyxlsog1nFZVoV
+	oXjCJE81lhBWoFqkGJHV+wBgy8upsid5NGTbwB2df
+X-Gm-Gg: AYBFou0XU7uog5lbUo4YfVo+X82jA4HkJEBz3/k4JyfAQbxAx83pTQIU2NKq8fZ2WM9
+	h94iD4U3KleNYzdsjz+2a+nJvpPjGyI2PAIa6UcN9hO2Htp6mNv+4K405g+ySL0mRktO3/fCl+p
+	JUccu2nA1/J1AnZXd+WzEkAF3TyIVgtPFP/hzrnIpWFqcW0vzMZg7rp/X+1vncbzbR9ED6dAox3
+	+Qb0uDfEtabwQyhhPceNoBPMoa4fDDNGTm9azqU2yNwIeMhyKlFBhvr/Nq0w4IFNytuecKl+Fg6
+	R61FYHf2SsO9jTd4cGjER1x8PaHaeFeDpC+QiJ4Q5Yobma7FlvPM2j0z/2hBIjdOtS4+1W/3W7c
+	=
+X-Received: by 2002:a05:690e:400f:b0:66d:113a:3928 with SMTP id
+ 956f58d0204a3-66f9bb6f3famr3574226d50.12.1788404894746; Wed, 02 Sep 2026
+ 20:08:14 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -88,115 +100,82 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-ID: <20260902-anacapa-devlop-phase-devicetree-v8-6-69c8eb2a7cda@gmail.com>
-References: <20260902-anacapa-devlop-phase-devicetree-v8-0-69c8eb2a7cda@gmail.com>
-In-Reply-To: <20260902-anacapa-devlop-phase-devicetree-v8-0-69c8eb2a7cda@gmail.com>
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, "Andrew
- Jeffery" <andrew@codeconstruct.com.au>, Ryan Chen <ryan_chen@aspeedtech.com>,
-	Billy Tsai <billy_tsai@aspeedtech.com>
-CC: <devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-aspeed@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
-	<colin.huang2@amd.com>, Colin Huang <u8813345@gmail.com>, Rex Fu
-	<rex.fu.amd@gmail.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1788344509; l=1800;
- i=u8813345@gmail.com; s=20260202; h=from:subject:message-id;
- bh=BVJMmVa6hiP62Rq3KeFZsYo9O8NS8epFWSmQDw7StNA=;
- b=19KYW+tb7Jq/1yW828rKliESHo1QaZ/D5vkF4+OrPLVxZWwhMZLY7rYQKlMKUYwvyDbyGFAXY
- UsceVNxW7rYCeh3Ym2m/IW9g3z106ACKxFRKzkos8+4P8cSmIXz5K09
-X-Developer-Key: i=u8813345@gmail.com; a=ed25519;
- pk=Zlg0WqpCw4qbswOqamTBTXIchwR/3SnYZpy7rjaGMdQ=
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SJ1PEPF000023CC:EE_|SJ0PR12MB6806:EE_
-X-MS-Office365-Filtering-Correlation-Id: ad17f012-4c90-4e3a-355f-08df08dc14eb
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|82310400026|23010399003|376014|36860700016|1800799024|10067099003|22082099003|18002099003|11063799006|56012099006;
-X-Microsoft-Antispam-Message-Info:
-	opAVIFQhL0D+YBhQ5cj5rEC83+wtYNM0rTNDl9XeWM8Dv6aTrXyVkpyxc64ZFlhY5kU/kPXIl55a1yq9xJvulbHwWN/kZ1jIiEYS91mLbrjn8cXXUZzMs06OdXDVDv2XZnffPLhDja1VUAuBZUzAxef5d3Uqrj4ty2R6cXBu2ocPFQ1aqP3smmYC9s8/832IYedJ5IU+6GYzDolDxmtJWNL1nUXNQ8eYH4axrbgVpf0aXyHgtQCuwleUXLxl0a+hBfGDBzZs1dtpEQcGLc8DgmQbjHoJR9WcaEhD0YIl/LTf1AAwfvC49r263uyScu4wYjWryOcsFFkzcmS8HM5gxZmGnBKyDLfaWwoZTWLCJl+tp1dCtT/Yg4DTZAvQiG6b/leXtigHiGEsxLK7j7lI/X8HOq/ALpIpO7FNPD+FdoOfHj/2woQApJgY6ztAhxPgFkDkxv4YMEwD0YoLKqvwbemyr1ArTTgK1XyYg/BVBUy22oJbPiFgxj5XadjxlEvQVLbbzB3Tml86IEQDcmUZ92iS8VbjXSOoaZ0ajnm+6Qw2SY30VRZLGn7UhQLJ9F2l3mr6ZGdyLMsLaCJ2jP4YkcRf0WeUIOEqtkk5yR4/CMwAi/fx1NBhfIX9lu45r4ULeSa6d2QOtyeXD07vawPIH5zW4FdZ0Ffg8DaCKb9Hp0GEtHnQBGImOcvYBLs//uPYCNbPvMOIeyJn/vPn52mzEA==
-X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(7416014)(82310400026)(23010399003)(376014)(36860700016)(1800799024)(10067099003)(22082099003)(18002099003)(11063799006)(56012099006);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	sjzXCbgxUx5GIfuVY5ecDH4r+hpqvONP9eEoz0MIa9+l8ndOEpjpBEfpJmr3z33MFKZOynO7bP/nc1YLCmAMixqO1hZeQfMLIOywo3SpCR5PdHTJMU+JVEjm3tCB+0/1YzaxINUanSxM3cnIxOwnZ9OCbIzAfW4Fyi8BskLtmywQJl1UypXxXxbYHHSC950oKrvbfV5RDftIBuaMsCGGRurkoTDiHOam3GCyVl14Fo4YrNNMObRLUtIvbQSG1BZNSHXDdQPloEHnLIqV7A9x8EScHKJr/FNtHCeM6DWUZ37rtsVwWfTGVdXcFonwattb6uxeun7P7sJibRXweDsVHlDNJPupNUY5ku8voERP0AQQZJkl+7vWAprLOxGe7Fm7xzOciEcTx5Oa9vxWskh69+EFNtgvMTMrN7u9e8nHzT4Cz0XObBhTu1ELfNtSNcPt
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Sep 2026 10:22:24.5939
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: ad17f012-4c90-4e3a-355f-08df08dc14eb
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	SJ1PEPF000023CC.namprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR12MB6806
+References: <20260902200703.2016410-1-mukesh.ojha@oss.qualcomm.com> <20260902200703.2016410-6-mukesh.ojha@oss.qualcomm.com>
+In-Reply-To: <20260902200703.2016410-6-mukesh.ojha@oss.qualcomm.com>
+From: Chen-Yu Tsai <wenst@chromium.org>
+Date: Thu, 3 Sep 2026 11:08:02 +0800
+X-Gm-Features: AcwNN1Wn32BWTc7gvrI5NCynGubfvPlrWgUmvLkoMfGnpAB8yTnTJoIOOvbhgBM
+Message-ID: <CAGXv+5E9zs7LsK=d08NB6QcuHkaPw4GcifuDuMDz0CVB6gB=8A@mail.gmail.com>
+Subject: Re: [PATCH v2 5/6] media: mediatek: vpu: Use devm_of_reserved_mem_device_init()
+To: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
+Cc: Daniel Scally <dan.scally@ideasonboard.com>, 
+	Jacopo Mondi <jacopo.mondi@ideasonboard.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, 
+	Eddie James <eajames@linux.ibm.com>, Joel Stanley <joel@jms.id.au>, 
+	Andrew Jeffery <andrew@codeconstruct.com.au>, Minghsiu Tsai <minghsiu.tsai@mediatek.com>, 
+	Houlong Wei <houlong.wei@mediatek.com>, Andrew-CT Chen <andrew-ct.chen@mediatek.com>, 
+	Tiffany Lin <tiffany.lin@mediatek.com>, Yunfei Dong <yunfei.dong@mediatek.com>, 
+	Matthias Brugger <matthias.bgg@gmail.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Joseph Liu <kwliu@nuvoton.com>, 
+	Marvin Lin <kflin@nuvoton.com>, Dmitry Osipenko <dmitry.osipenko@collabora.com>, 
+	Maxime Ripard <mripard@kernel.org>, Paul Kocialkowski <paulk@sys-base.io>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Chen-Yu Tsai <wens@kernel.org>, 
+	Jernej Skrabec <jernej.skrabec@gmail.com>, Samuel Holland <samuel@sholland.org>, 
+	Ryan Chen <ryan_chen@aspeedtech.com>, Billy Tsai <billy_tsai@aspeedtech.com>, 
+	linux-media@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	openbmc@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
+	linux-aspeed@lists.ozlabs.org, linux-mediatek@lists.infradead.org, 
+	kernel@collabora.com, linux-staging@lists.linux.dev, 
+	linux-sunxi@lists.linux.dev
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-From: Rex Fu <rex.fu.amd@gmail.com>
+On Thu, Sep 3, 2026 at 4:08=E2=80=AFAM Mukesh Ojha <mukesh.ojha@oss.qualcom=
+m.com> wrote:
+>
+> Use the devres-managed devm_of_reserved_mem_device_init() instead of
+> the manual of_reserved_mem_device_init()/of_reserved_mem_device_release()
+> pair, letting the device resource manager handle cleanup automatically.
+>
+> Signed-off-by: Mukesh Ojha <mukesh.ojha@oss.qualcomm.com>
+> ---
+>  drivers/media/platform/mediatek/vpu/mtk_vpu.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+>
+> diff --git a/drivers/media/platform/mediatek/vpu/mtk_vpu.c b/drivers/medi=
+a/platform/mediatek/vpu/mtk_vpu.c
+> index 8d8319f0cd22..557bffb2c2f1 100644
+> --- a/drivers/media/platform/mediatek/vpu/mtk_vpu.c
+> +++ b/drivers/media/platform/mediatek/vpu/mtk_vpu.c
+> @@ -888,7 +888,7 @@ static int mtk_vpu_probe(struct platform_device *pdev=
+)
+>         dev_info(dev, "4GB mode %u\n", vpu->enable_4GB);
+>
+>         if (vpu->enable_4GB) {
+> -               ret =3D of_reserved_mem_device_init(dev);
+> +               ret =3D devm_of_reserved_mem_device_init(dev);
 
-Update the LPDB and RPDB fan GPIO line names to align with the platform
-fan numbering scheme.
+There are non-devm calls before this. Inserting a devm call in here
+messes up the unwind order and leads to confusion. In other words
+this is a bad idea.
 
-The LPDB fan GPIOs are named FAN0 through FAN4, while the RPDB fan GPIOs
-are named FAN5 through FAN8. This keeps the GPIO line names consistent
-with the fan inventory and platform-level fan numbering.
 
-Signed-off-by: Rex Fu <rex.fu.amd@gmail.com>
----
- .../aspeed/aspeed-bmc-facebook-anacapa-evt2.dtsi   | 34 ++++++++++++++++++++++
- 1 file changed, 34 insertions(+)
+OOTH, the remove function is missing a release call.
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt2.dtsi b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt2.dtsi
-index a2392f684b80..3ea5d67865d4 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt2.dtsi
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt2.dtsi
-@@ -2,6 +2,40 @@
- 
- #include "aspeed-bmc-facebook-anacapa-evt1.dtsi"
- 
-+// MB - PDB
-+&i2c8 {
-+	i2c-mux@72 {
-+		i2c@0 {
-+			gpio@24 {
-+				gpio-line-names =
-+					"RPDB_EAM2_PRSNT_MOS_N_R", "RPDB_EAM3_PRSNT_MOS_N_R",
-+					"RPDB_PWRGD_P50V_HSC4_SYS_R",
-+					"RPDB_PWRGD_P50V_STBY_SYS_BUF_R",
-+					"RPDB_P50V_FAN5_R2_PG", "RPDB_P50V_FAN6_R2_PG",
-+					"RPDB_P50V_FAN7_R2_PG", "RPDB_P50V_FAN8_R2_PG",
-+					"", "RPDB_FAN5_PRSNT_N_R",
-+					"", "RPDB_FAN6_PRSNT_N_R",
-+					"RPDB_FAN7_PRSNT_N_R", "RPDB_FAN8_PRSNT_N_R",
-+					"", "";
-+			};
-+		};
-+
-+		i2c@1 {
-+			gpio@24 {
-+				gpio-line-names =
-+					"LPDB_P50V_FAN0_R2_PG","LPDB_P50V_FAN1_R2_PG",
-+					"LPDB_P50V_FAN2_R2_PG","LPDB_P50V_FAN3_R2_PG",
-+					"LPDB_P50V_FAN4_R2_PG","LPDB_FAN0_PRSNT_N_R",
-+					"LPDB_FAN1_PRSNT_N_R","LPDB_FAN2_PRSNT_N_R",
-+					"LPDB_FAN3_PRSNT_N_R","LPDB_FAN4_PRSNT_N_R",
-+					"","",
-+					"","",
-+					"","";
-+			};
-+		};
-+	};
-+};
-+
- // SCM
- &i2c9 {
- 	// SCM FRU
-
--- 
-2.34.1
-
+>                 if (ret)
+>                         dev_info(dev, "init reserved memory failed\n");
+>                         /* continue to use dynamic allocation if failed *=
+/
+> @@ -930,7 +930,6 @@ static int mtk_vpu_probe(struct platform_device *pdev=
+)
+>  free_d_mem:
+>         vpu_free_ext_mem(vpu, D_FW);
+>  remove_debugfs:
+> -       of_reserved_mem_device_release(dev);
+>  #ifdef CONFIG_DEBUG_FS
+>         debugfs_remove(vpu_debugfs);
+>  #endif
+> --
+> 2.55.0
+>
+>
 
