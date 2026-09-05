@@ -1,89 +1,82 @@
-Return-Path: <linux-aspeed+bounces-4958-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4959-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 56464C624DE
-	for <linux-aspeed@archiver.kernel.org>; Fri,  4 Sep 2026 09:35:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 060C1C624DB
+	for <linux-aspeed@archiver.kernel.org>; Sat,  5 Sep 2026 12:31:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hbrt2513Lz2ytv;
-	Fri, 04 Sep 2026 19:35:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c105::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788514522;
-	cv=pass; b=Z4AmKrpjCxVJmNxqi3TGk3T4UuLFkvNaeU2nzQkMcEia2e/CFg8Fenj13Mhd4BJtSN/kiMGQV14LhcJ1RG6JkAHpr6bJKQE94Li7RP0XkItrKyCjCM2LWzAKSuSmI+xKNvx19/6UAFksAy/NJLeDbPzIBuB1b2l6XXTIkDxJnA5OfOsxXi4Qarw+1Z1xP6Qn/BDP1LmomWA/RNgPB13h4+LSL/oFsh7IwP8A0dNdvpBNxT9mbpkenocfUHdc+mE5v68Y0rhTUfpFM41yXMMblQLmaOOjHx3qC5uNuR6THaNxx7KzMqQNrRnEfmR4VL53APKAimrTrZ3u3x8jvIw7bA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1788514522; c=relaxed/relaxed;
-	bh=as+6DfHPYSqBEWE9i7602DvX8ane+SmNsUiq8qgBXro=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=h/mRekM9uAUGDR8T7AUvJZYxMjh7Bwp+CNP+SVaJJAEtCWPAZPX/622R6FIif2v5QNVxHNGh/+ZwlUaDn7jFaSbL26E9qmzU+5mAWcsasuzZeUhprUetHHaULThfcqhHCKV95d02bejxw+w3aZNXhXSDz6IiWqxVN7nHLtAOXhetF3n/y30VkQPFGFUIuruGBbxfT16Bla7HLZmLcEoZoCoTLauGuQAKokpu843b5X+7HWfXwXBZLeckQrObqIjRMxKb1Wvj1nS6uHKry1DJOY6NWUq8175pvlbgtiSQYN89XMSm6tkqROxzMoCm9jSCZRkFtl4t5tDTGBrgNi8dSw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=l+2xwl8G; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c105::1; helo=ch1pr05cu001.outbound.protection.outlook.com; envelope-from=andhsieh@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hcXkL2c7Bz2yv4;
+	Sat, 05 Sep 2026 22:31:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::432"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1788611466;
+	cv=none; b=VZ4G+Aq5HkkCVEdgOHMsgjVhQ8IBz0hWeOT/oDDhThfd5k747AIaBjMbvSH0zQwQ5oKZwc+8pteiPHjfiXGvFM2VPdxq4ezMgfXvO7iLToiwIgfN5YVPA18zH1R8CYDZSvIr06v54fyojSseMH5K1tE2FcE3L5h9wxZIay0Cn3AokgB0GL3yAGVM3DV3sGPGR2/4M8jVCJh6RmN6kyJGezab1hHUZBpcNQk/ma/x4X7i6ep1H6bepcvR3op4TZKRI7ODGB1PV0utDfUTRtMFEBFoywtq7LrkKRYj6S0qL/e7ySFY4yiGuSiUlMh1DO69Bl4EVnhsxDuplVkn9yVXhw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1788611466; c=relaxed/relaxed;
+	bh=nF28nbshD2BPWEClB77TT3QHqkwal9Tdd0g3hy+SqKw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=G50tm6TC7eVPo2vmWd7/B5LTCaqTkewvuc2oE6svzGX5ZqrayGzPoy8zCLZq3jnb2uOKbc5svQ1GrgeJpcKkJsNlyKXzEOjxQEaMLS58S/q+xbChy83KBTIQEG1WYH8CJMJuR0HfbPbx/Lxp5RJbr0/cC9RKXKzpZe8ESiY2UqDapPwESWqPg65//0rjz6WBxamO9AHI9Z6lxNOwHLztiy6JM9YQtFp0KNmSPDsnKtt85YuB61i5Z4D6NpEbkALtKDFd0mY10OlW/78H1P1Lcq3sVe0XHRDie23Xo9sScFI5AR5qNv/Mppj0wRSTqkLMgN84WBTiMe/GC46Zo1DLRA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Pzsjrlt8; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::432; helo=mail-wr1-x432.google.com; envelope-from=julianbraha@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=l+2xwl8G;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Pzsjrlt8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c105::1; helo=ch1pr05cu001.outbound.protection.outlook.com; envelope-from=andhsieh@nvidia.com; receiver=lists.ozlabs.org)
-Received: from CH1PR05CU001.outbound.protection.outlook.com (mail-northcentralusazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c105::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::432; helo=mail-wr1-x432.google.com; envelope-from=julianbraha@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com [IPv6:2a00:1450:4864:20::432])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hbrt02Hmgz2y2K
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 04 Sep 2026 19:35:19 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=PXayvenYu8S/N74tXmJPxX3Jvcmv4vbhH+E4jID6r2b4oxu2oObf8tRg8NCgH4myklmuPy16I4BEG6KnV8q/MY3+nXQV5JUvGrw6so+/mVcUfDwUeJu6ek3qWYXPKPxRppipnLcshIGlXBFlq81l0nQ1K3zLeFJIu6bZ6hyiRMU8LwsN+FImYqpU9PDigcqIbAve75PJNqu7oKnFQSrLKUqJMCKJWVwm/yq9Ee3WTBQJ2thRD3Tne8z3NzYObRboiVLWorqiw0NWdfLKxKxSGQaClbMxosQm2UaCgezEtZXqkgXc4KJ7BACet80mEf8fUgZB0vFoPHjdRR+1vqnahA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=as+6DfHPYSqBEWE9i7602DvX8ane+SmNsUiq8qgBXro=;
- b=g37ooTbQNp0OIFwU48JLj34Cty64yGVbLFDJ9mY3JHLYzxrk2pKfHQmtbH/PreqtyWvh9G0yFa8orCxyCYk0yPEAPP0jglP3IY3tqiFH8TVpCR/UkjtKHqwdO5mTwnyToAXJoR9WBiGPkmskzyFLCFnzsckIyBbV+ErkcBGAGv8jdYCHLb45u9PFY0XdvwluREGNbMjthgc5eSzYP0aPDiFCzrlS+3qVI3s7f17K1e4JDCBufW8yVSUMhcqOo41F/LtZ4cOPBvtebkZLiGcKU7oyOPj+ugQ19burhC8pQlslxUPnru+NNV32D+CPmMxlQKTiZ32RgAkRpI6NXZjpsA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 216.228.117.161) smtp.rcpttodomain=kernel.org smtp.mailfrom=nvidia.com;
- dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=as+6DfHPYSqBEWE9i7602DvX8ane+SmNsUiq8qgBXro=;
- b=l+2xwl8G4yU6wT8jPJAhicPOpTZ23SbasfWO++Fd/76eN5SUVHk89zYviUrGhDgQejzE574BIxT1tbOprMEd7kOfpEBPLjRUSpPJH4FFvX9BASWPDPgQC3GRC3WpaTgt/tczdlTmsS9nex4zcJjCYTLeqDyOhqzd+cs3+dovUjdZvGbw8KUTKrflKgSygMUmryWoUwsZqhw/5nEu29CrxA2f/0ZdeloZFmgOxNK2YdSrvQmiEzwJpxfMEAF2ZuyRIBmQ5jqAuhycHT0nr57hFMFbOFS3eDTijxCfKszmLyD2Bef2pnorqu29guU1HbbWzYfZ7zSA1bmwY19CJCRPXA==
-Received: from BN9P222CA0028.NAMP222.PROD.OUTLOOK.COM (2603:10b6:408:10c::33)
- by LV3PR12MB9412.namprd12.prod.outlook.com (2603:10b6:408:211::18) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.360.13; Fri, 4 Sep
- 2026 09:34:51 +0000
-Received: from BN3PEPF00022BD0.namprd03.prod.outlook.com
- (2603:10b6:408:10c:cafe::51) by BN9P222CA0028.outlook.office365.com
- (2603:10b6:408:10c::33) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.21.382.12 via Frontend Transport; Fri, 4
- Sep 2026 09:34:51 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 216.228.117.161)
- smtp.mailfrom=nvidia.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=nvidia.com;
-Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
- 216.228.117.161 as permitted sender) receiver=protection.outlook.com;
- client-ip=216.228.117.161; helo=mail.nvidia.com; pr=C
-Received: from mail.nvidia.com (216.228.117.161) by
- BN3PEPF00022BD0.mail.protection.outlook.com (10.167.248.166) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.21.382.8 via Frontend Transport; Fri, 4 Sep 2026 09:34:49 +0000
-Received: from rnnvmail201.nvidia.com (10.129.68.8) by mail.nvidia.com
- (10.129.200.67) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.46; Fri, 4 Sep
- 2026 02:34:33 -0700
-Received: from nvidia.com (10.126.231.37) by rnnvmail201.nvidia.com
- (10.129.68.8) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.46; Fri, 4 Sep
- 2026 02:34:31 -0700
-From: Ender Hsieh <andhsieh@nvidia.com>
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, "Andrew
- Jeffery" <andrew@codeconstruct.com.au>
-CC: Ryan Chen <ryan_chen@aspeedtech.com>, Billy Tsai
-	<billy_tsai@aspeedtech.com>, Marc Olberding <molberding@nvidia.com>,
-	<devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-aspeed@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2] ARM: dts: aspeed: msx4: describe the I2C5 mux tree
-Date: Fri, 4 Sep 2026 18:34:12 +0900
-Message-ID: <20260904093412.2188620-1-andhsieh@nvidia.com>
-X-Mailer: git-send-email 2.34.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hcXkJ2KvRz2yr4
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 05 Sep 2026 22:31:03 +1000 (AEST)
+Received: by mail-wr1-x432.google.com with SMTP id ffacd0b85a97d-485850cbac3so1231100f8f.3
+        for <linux-aspeed@lists.ozlabs.org>; Sat, 05 Sep 2026 05:31:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1788611455; x=1789216255; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:sender:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=nF28nbshD2BPWEClB77TT3QHqkwal9Tdd0g3hy+SqKw=;
+        b=Pzsjrlt8LJZs0HBTVQjfGVlcNwOhC1Ga1vOhBGZvg18drtblvTbKgF8UlIH9tvrXJD
+         pnbPq42m2yXMRMjgCtBcmyISWXCOK+I8i0in2K7OxInjwRRfHgKPnvVcXHruy1DnM9wb
+         PWlMPx1SqwWgXJPCqhhWk2PgMWhX2KCaNRSW26JE4WyKALUOsmj3CfZfROWiRjXi1xGK
+         7lzp1cpohS0WZOmoDQJwAjuyAtrw/vdET6agoOEKyMKZzJwvSDQY51AHAArbJdHynYuT
+         utZ5VKh3KCxpAW0sfQOe9ByhCMm0m3HJ8uiS090HZAJmABAFCRUfOwAJysGAI6DTtMEL
+         02kQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1788611455; x=1789216255;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:sender:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=nF28nbshD2BPWEClB77TT3QHqkwal9Tdd0g3hy+SqKw=;
+        b=WzRzp0EYvl+DkiVoBZxPSxYcg+gvANU2xDFACkEX8JSwbdidzph8kv1oS7vrvdaeSM
+         ZEUaEMkQSZaSbrAvJSUUQLP9M5YppUDYlhy6Ro4+UggpZIIkPI06pdxCkqRHRCnnmNiA
+         M5qxLIrwjjb2bf3JP9EuftDNcep+CR1Nv5cX4pyDNdYgJ0o4YF2+AiQp5nmPnSGll7tk
+         EyeeuxCFRIYscJTiZbsRT8rmzxF9opl8Doyrl9JZTHemOxFcUdjddY00PXJPunFDuXoj
+         eYbrylWGMtrgVJTawCJ67oCb0mDCQmOJICQCPYMCiw20WmQlyB7Qo0oGpaePrd/XgflK
+         SlIw==
+X-Forwarded-Encrypted: i=1; AKwUvBysNgpFgE/6ngeh0olKyXdBdZy2P+f2DhPXfh3oJd2HyMUuiGue81R5Cgc8AvzuwmxHUMBgwvXXMdOLGpI=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++mlzpIhbVDslz1gtiKoPSpGrpQRbV/mmXpu9X9GvYhhUb08sn1t
+	2hVxyEgqcwDleHql0j280Up/nH/S2kDEnsJF1JI0E+QfewFMmuaT9BpS
+X-Gm-Gg: AYBFou3nOz0LauADJbWNbDbHAB4EI/aoSNj3COyAkwpFH4tMoy3Az3EO4rSNSXpif8V
+	3bTMfmkRZWijmhLRYazOHO/w2DExPtkiCfztyufdJ4egj6oeTuyGaRL00SeD7A3NU/d8aOaY6sb
+	D6Gj2QcCMief1BhwAEHT57c2Rb85KntyJwUA7Wgu+11HBLXHv2MGtkLQd7JM6qELjjsRxczC0Lx
+	xvuclz2ZP+hUPsFiWG3tyskm39/fAcXm6gka1ifKNUMI1vJm5K6x98FZj/nkyVBOhK/tGbqqV9S
+	yINlJFwZYqEmuK5rMXCuBP23IbRg//M8iu97wXL3zDAk4Jg8aRNfVnWVutZLgHoMIuVgC0g2J/s
+	WnCQW7qSl4ScK2tYPepcbmNHN+6a+y0MdfpJ4ObIr1MsQsrcsAegOhjmkbbpj9EW/ohLz8rtF/h
+	kAREYfUyFEwyYMp2AWNtvwSAuPipbJcSu7U0N4VA/f6fsu+YF683rTA/CBkRrmor5oTvK41hDr2
+	35JDPIJeZzOkEjmoIJ+svHqWZ9NPQRn0khTHG5TBsYKasO9M3L5AUmd
+X-Received: by 2002:a05:600c:1d08:b0:49b:96a0:5c00 with SMTP id 5b1f17b1804b1-49cf825168cmr134783585e9.13.1788611455009;
+        Sat, 05 Sep 2026 05:30:55 -0700 (PDT)
+Received: from [10.128.10.232] (195-23-151-163.net.novis.pt. [195.23.151.163])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-485885be01bsm12862413f8f.31.2026.09.05.05.30.52
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 05 Sep 2026 05:30:54 -0700 (PDT)
+Sender: Julian Braha <julian.braha@gmail.com>
+Message-ID: <1a21d17b-686a-4efe-9d47-fb8a9e826b39@gmail.com>
+Date: Sat, 5 Sep 2026 13:30:50 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -97,516 +90,306 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.126.231.37]
-X-ClientProxiedBy: rnnvmail202.nvidia.com (10.129.68.7) To
- rnnvmail201.nvidia.com (10.129.68.8)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BN3PEPF00022BD0:EE_|LV3PR12MB9412:EE_
-X-MS-Office365-Filtering-Correlation-Id: 7de519b3-fa2c-460d-753f-08df0a67c44f
-X-LD-Processed: 43083d15-7273-40c1-b7db-39efd9ccc17a,ExtAddr
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
- BCL:0;ARA:13230040|30052699003|23010399003|36860700016|82310400026|1800799024|376014|7416014|11063799006|56012099006|10067099003|5023799004|6133799003|18002099003;
-X-Microsoft-Antispam-Message-Info:
- 7SaTuv0U56d5fw0TvZqqh+2oX2q1p6qDtkKNhLeO7/v430RXSbfTEmlu/raPLCJuuu1Nf1v+cJCFgNGBQ8+XCC4An4E/yEMk83ZYYvyhgSkiP/re/3Ak1+6uZX5KNaFyLuQ9Bui56uyRQ/zxKehT0zP4RpfCxMlqVrF4vAVTiyhNdtmj1BvXAJ7t94nfRV0jXjJFYCHN63bwgC43tdZt8LT65C1pxDRa2ioywvfWubk+suBdC3Py4leC7Hy8HD/fct36C8j8AwlW2Ye7vyJz++vSA/2/YKb+MBs8vjqGEe/nbyoWxZ0JY5HuYbQeSlwFW8xAJU51FJQuOYa5TwAAHPTfNAoCV9NIIaPeQfVLY+FDdDBO4LgZISSjqDYYFo68AqJrSi9djL4YWJjGV8gBnCTF/uEJ+hXSPbRTg4n1z8UFE6eMrwHgjR1vI+XOPYx7m89L01X2JRU9ZhqoMLwfLc5J/sMVfnKWC0Q+280PBv4aOcYvXMfMRMH1ShkCqBk8vOj4iixnUYHPMLD0GkA9cDyjrM41Gi0vK6wV6AUkHa7mdoBdh9DX4isNykDM/qV0WUSmq51c9e+cF2GxITl33zKWCLOgJblO6r87OrG8v/QpfozTGm0G7pU5DZKCQrn9jPsu3DtUduAOu9moeUmM16n1M1ZsqKN+wxUTPHRda1CKH1otTQWIZkh0t72bWKslpc/910jWcmuefjlmyhLKfA==
-X-Forefront-Antispam-Report:
- CIP:216.228.117.161;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:dc6edge2.nvidia.com;CAT:NONE;SFS:(13230040)(30052699003)(23010399003)(36860700016)(82310400026)(1800799024)(376014)(7416014)(11063799006)(56012099006)(10067099003)(5023799004)(6133799003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
- 4Vo8R3j1E0gwhic70RVTj4LB5rXJmpiKwm1dNQh84VTaINixYAJZWK8lk2lBTNsrShmCfynRwErlToGrLo5+NRSgX8fBcd6qEqpB7i0523KAo28TBpXGgCdWwVBzOUqDdlTSL3u9fQZF1f86T57DgqxXpCavbMiaDf91PXrjkcd6V5RBxXcufViupRWHZpCVY7nXmTYtN/GCZv7uaPh8btAVkOiN4zadUPXZL1uwD4dgWU8B7BghApls8AWTkPpmrN62cc9iDeGoCOQpFaYugijN1sSom/pnMdLIsc8bs02GK13pp2jLM7uTFgvnrZloubrgt+Y+olZHtwAV+XuIQwnDVzXEno1PLXQQFs6qSn6E+U8wY7tTX6DGyTqdo4Vc/vRvA4brKcIjQo/IotgMqzoBUE9lLNG2NvqgWqVTpC0OEv0x1nHvGa7GcfdHFoTC
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 04 Sep 2026 09:34:49.9585
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 7de519b3-fa2c-460d-753f-08df0a67c44f
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[216.228.117.161];Helo=[mail.nvidia.com]
-X-MS-Exchange-CrossTenant-AuthSource: BN3PEPF00022BD0.namprd03.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV3PR12MB9412
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 1/4] uart-routing: Add common UART routing framework
+To: Changhuang Liang <changhuang.liang@starfivetech.com>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
+ Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>,
+ Chia-Wei Wang <chiawei_wang@aspeedtech.com>, Oskar Senft <osk@google.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Shuah Khan <skhan@linuxfoundation.org>,
+ Jani Nikula <jani.nikula@intel.com>, Vitaly Lubart <lubvital@gmail.com>,
+ Hanjun Guo <guohanjun@huawei.com>, Andrew Morton
+ <akpm@linux-foundation.org>, Alexander Usyskin
+ <alexander.usyskin@intel.com>, Jason Gunthorpe <jgg@ziepe.ca>,
+ Breno Leitao <leitao@debian.org>, Philipp Zabel <p.zabel@pengutronix.de>,
+ James Morse <james.morse@arm.com>, Paolo Abeni <pabeni@redhat.com>,
+ Stephen Hemminger <stephen@networkplumber.org>,
+ Dave Penkler <dpenkler@gmail.com>, Jakub Kicinski <kuba@kernel.org>,
+ Jonathan Cameron <jic23@kernel.org>, Dan Williams <djbw@kernel.org>,
+ Mukesh Rathor <mrathor@linux.microsoft.com>,
+ Vladimir Oltean <vladimir.oltean@nxp.com>,
+ Alexandra Winter <wintera@linux.ibm.com>,
+ Karthikeyan KS <karthiproffesional@gmail.com>,
+ Pengpeng Hou <pengpeng@iscas.ac.cn>, openbmc@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-aspeed@lists.ozlabs.org
+References: <20260905102901.126035-1-changhuang.liang@starfivetech.com>
+ <20260905102901.126035-2-changhuang.liang@starfivetech.com>
+Content-Language: en-US
+From: Julian Braha <julianbraha@gmail.com>
+In-Reply-To: <20260905102901.126035-2-changhuang.liang@starfivetech.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-The MSX4 carries four PCA9548 8-channel muxes on I2C5, and a PCA9546
-4-channel mux behind channels 1 and 5 of the mux at 0x70 and channels 3
-and 7 of the mux at 0x73. None of that is described here, so the muxes
-are created from userspace and their channels are numbered in the order
-userspace happens to create them.
+On 9/5/26 11:28, Changhuang Liang wrote:
+> Several SoCs contain a serial crossbar, usually called UART routing,
+> that lets the RX line of any on-chip UART controller or physical serial
+> port be fed from any other endpoint. The Aspeed AST2400/2500/2600 and
+> the StarFive JHB100 both have one, and both expose it through the same
+> user space interface: one sysfs file per endpoint, listing the routing
+> targets with the current one in square brackets.
+> 
+> The two drivers implementing that interface duplicate the whole sysfs
+> plumbing and only really differ in the description of their register
+> layout, so factor the common part out into a framework.
+> 
+> An SoC driver now only describes each mux with a
+> struct uart_routing_selector - register offset, bit position, field mask
+> and the array of routing target names indexed by the raw field value -
+> gathers them in an attribute group and hands the group and a regmap to
+> devm_uart_routing_register(). The framework validates the description,
+> creates the files and implements the show()/store() handlers.
+> 
+> The framework keeps its state in a devres node rather than in the device
+> drvdata, so drivers stay free to use dev_set_drvdata() for their own
+> purposes, and the sysfs files are removed by devres, so drivers do not
+> need a remove() callback for them.
+> 
+> Signed-off-by: Changhuang Liang <changhuang.liang@starfivetech.com>
+> ---
+>  Documentation/driver-api/index.rst        |   1 +
+>  Documentation/driver-api/uart-routing.rst | 145 ++++++++++++++++
+>  MAINTAINERS                               |   7 +
+>  drivers/Kconfig                           |   2 +
+>  drivers/Makefile                          |   1 +
+>  drivers/uart-routing/Kconfig              |  16 ++
+>  drivers/uart-routing/Makefile             |   2 +
+>  drivers/uart-routing/uart-routing.c       | 200 ++++++++++++++++++++++
+>  drivers/uart-routing/uart-routing.h       |  84 +++++++++
+>  9 files changed, 458 insertions(+)
+>  create mode 100644 Documentation/driver-api/uart-routing.rst
+>  create mode 100644 drivers/uart-routing/Kconfig
+>  create mode 100644 drivers/uart-routing/Makefile
+>  create mode 100644 drivers/uart-routing/uart-routing.c
+>  create mode 100644 drivers/uart-routing/uart-routing.h
+> 
+> diff --git a/Documentation/driver-api/index.rst b/Documentation/driver-api/index.rst
+> index 6601a258690f..2a0f375cd206 100644
+> --- a/Documentation/driver-api/index.rst
+> +++ b/Documentation/driver-api/index.rst
+> @@ -146,6 +146,7 @@ Subsystem-specific APIs
+>     tee
+>     thermal/index
+>     tty/index
+> +   uart-routing
+>     wbrf
+>     wmi
+>     xilinx/index
+> diff --git a/Documentation/driver-api/uart-routing.rst b/Documentation/driver-api/uart-routing.rst
+> new file mode 100644
+> index 000000000000..67bb84958977
+> --- /dev/null
+> +++ b/Documentation/driver-api/uart-routing.rst
+> @@ -0,0 +1,145 @@
+> +.. SPDX-License-Identifier: GPL-2.0
+> +
+> +======================
+> +UART routing framework
+> +======================
+> +
+> +:Author: Changhuang Liang <changhuang.liang@starfivetech.com>
+> +
+> +Overview
+> +========
+> +
+> +Several SoCs contain a serial crossbar, usually called *UART routing*, that
+> +sits between the on-chip UART controllers and the physical serial ports
+> +exposed on the package pins. The crossbar lets the RX line of any endpoint be
+> +fed from any other endpoint, which makes it possible to, for example, snoop
+> +the traffic of a host serial console, or to loop two on-chip UARTs back into
+> +each other without any external wiring.
+> +
+> +Two endpoint families are involved:
+> +
+> +``uartN``
+> +	the RX line of the on-chip UART controller number N.
+> +
+> +``ioN``
+> +	the RX line of the physical serial port number N.
+> +
+> +The crossbar is programmed through bit fields, one per endpoint, spread over
+> +one or more registers. The value written into a field picks the endpoint the
+> +RX line is connected to; the meaning of a given value differs from field to
+> +field and from SoC to SoC.
+> +
+> +The framework in ``drivers/uart-routing/`` takes a static description of those
+> +fields and turns it into a set of sysfs files, one per endpoint, so that SoC
+> +drivers only have to describe their hardware.
+> +
+> +User space interface
+> +====================
+> +
+> +Every endpoint gets one read/write file in the device directory of the
+> +platform driver, named after the endpoint. Reading the file lists all the
+> +routing targets the endpoint can be connected to, with the current one
+> +enclosed in square brackets::
+> +
+> +	# cat /sys/bus/platform/drivers/aspeed-uart-routing/*.uart_routing/uart1
+> +	[io1] io2 io3 io4 uart2 uart3 uart4 io6
+> +
+> +Writing one of the listed names to the file changes the routing::
+> +
+> +	# echo uart2 > /sys/bus/platform/drivers/aspeed-uart-routing/*.uart_routing/uart1
+> +
+> +Writing a name that is not part of the list fails with ``-EINVAL``.
+> +
+> +The list is not necessarily the same for every file: it is ordered by the raw
+> +value programmed into the hardware, so the first entry is the target selected
+> +when the field reads back as 0. Some SoCs define fields that are wider than
+> +the number of documented targets. When such a field holds a value with no
+> +name attached, the read appends ``[unknown(N)]`` to the list instead of
+> +bracketing one of the names.
+> +
+> +Fields whose name is ``reserved`` are placeholders for values the hardware
+> +does not implement. They are listed so that the position of the following
+> +names stays correct, and writing ``reserved`` programs a value that has no
+> +defined behaviour, so do not do that.
+> +
+> +The exact set of files of a given SoC, together with the routing targets each
+> +of them accepts, is described in the corresponding
+> +``Documentation/ABI/testing/sysfs-driver-*-uart-routing`` file.
+> +
+> +Writing a driver
+> +================
+> +
+> +An SoC driver describes each mux with a ``struct uart_routing_selector``,
+> +defined with the ``UART_ROUTING_SELECTOR()`` helper::
+> +
+> +	static const char *const foo_uart1_options[] = {
+> +		"io1", "io2", "io3", "io4", "uart2", "uart3", NULL,
+> +	};
+> +	UART_ROUTING_SELECTOR(foo_uart1_sel, uart1, FOO_MUX_REG, 16, 0x7,
+> +			      foo_uart1_options);
+> +
+> +The arguments are, in order, the name of the variable to define, the name of
+> +the sysfs file, the offset of the register holding the field, the position of
+> +the least significant bit of the field, the field mask and the array of
+> +routing targets.
+> +
+> +The mask is given in field coordinates, that is, it is *not* shifted by the
+> +bit position: a three bit field is always described as ``0x7``, whatever its
+> +position in the register is.
+> +
+> +The array of routing targets is indexed by the raw field value, so
+> +``options[n]`` is the name of the target selected when the field holds n. It
+> +has to be NULL terminated, and it may be shared between several selectors
+> +that happen to have the same target order.
+> +
+> +The selectors are then gathered in an attribute group::
+> +
+> +	static struct attribute *foo_uart_routing_attrs[] = {
+> +		UART_ROUTING_SELECTOR_ATTR(foo_uart1_sel),
+> +		/* ... */
+> +		NULL,
+> +	};
+> +
+> +	static const struct attribute_group foo_uart_routing_attr_group = {
+> +		.attrs = foo_uart_routing_attrs,
+> +	};
+> +
+> +and handed over, along with a regmap covering the selector registers, in
+> +probe()::
+> +
+> +	static int foo_uart_routing_probe(struct platform_device *pdev)
+> +	{
+> +		struct device *dev = &pdev->dev;
+> +		struct regmap *regmap;
+> +
+> +		regmap = /* ... */;
+> +
+> +		return devm_uart_routing_register(dev, regmap,
+> +						  &foo_uart_routing_attr_group);
+> +	}
+> +
+> +The framework validates the description at registration time and rejects
+> +selectors whose target list cannot fit in the field, or whose field does not
+> +fit in a 32 bit register.
+> +
+> +The sysfs files are created and removed by devres, so a driver does not need
+> +a remove() callback for them. The framework keeps its own state in a devres
+> +node rather than in the device drvdata, so drivers are free to use
+> +``dev_set_drvdata()`` for their own purposes.
+> +
+> +Locking
+> +=======
+> +
+> +The framework does not serialise accesses itself. The read-modify-write of a
+> +selector field is done with ``regmap_update_bits()``, so concurrent writes to
+> +two endpoints sharing a register are made safe by the regmap lock. Reading a
+> +file always reports the current hardware state, which may have been changed
+> +by another writer in between.
+> +
+> +API reference
+> +=============
+> +
+> +.. kernel-doc:: drivers/uart-routing/uart-routing.h
+> +
+> +.. kernel-doc:: drivers/uart-routing/uart-routing.c
+> +   :export:
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 90919c672d4d..b7fa722755c6 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -27818,6 +27818,13 @@ F:	drivers/misc/uacce/
+>  F:	include/linux/uacce.h
+>  F:	include/uapi/misc/uacce/
+>  
+> +UART ROUTING FRAMEWORK
+> +M:	Changhuang Liang <changhuang.liang@starfivetech.com>
+> +L:	openbmc@lists.ozlabs.org (moderated for non-subscribers)
+> +S:	Maintained
+> +F:	Documentation/driver-api/uart-routing.rst
+> +F:	drivers/uart-routing/
+> +
+>  UBI FILE SYSTEM (UBIFS)
+>  M:	Richard Weinberger <richard@nod.at>
+>  R:	Zhihao Cheng <chengzhihao1@huawei.com>
+> diff --git a/drivers/Kconfig b/drivers/Kconfig
+> index f2bed2ddeb66..cb2b5c3b22b0 100644
+> --- a/drivers/Kconfig
+> +++ b/drivers/Kconfig
+> @@ -251,6 +251,8 @@ source "drivers/hte/Kconfig"
+>  
+>  source "drivers/cdx/Kconfig"
+>  
+> +source "drivers/uart-routing/Kconfig"
+> +
+>  source "drivers/resctrl/Kconfig"
+>  
+>  endmenu
+> diff --git a/drivers/Makefile b/drivers/Makefile
+> index 0841ea851847..fe4b11419496 100644
+> --- a/drivers/Makefile
+> +++ b/drivers/Makefile
+> @@ -195,6 +195,7 @@ obj-$(CONFIG_DRM_ACCEL)		+= accel/
+>  obj-$(CONFIG_CDX_BUS)		+= cdx/
+>  obj-$(CONFIG_DPLL)		+= dpll/
+>  obj-y				+= resctrl/
+> +obj-$(CONFIG_UART_ROUTING)	+= uart-routing/
+>  
+>  obj-$(CONFIG_DIBS)		+= dibs/
+>  obj-$(CONFIG_S390)		+= s390/
+> diff --git a/drivers/uart-routing/Kconfig b/drivers/uart-routing/Kconfig
+> new file mode 100644
+> index 000000000000..a0c45a7bba47
+> --- /dev/null
+> +++ b/drivers/uart-routing/Kconfig
+> @@ -0,0 +1,16 @@
+> +# SPDX-License-Identifier: GPL-2.0-only
+> +
+> +menu "UART routing drivers"
+> +
 
-That makes a channel's bus number a function of discovery order rather
-than of where the channel sits in the topology, so anything that wants
-to identify a device by its position has nothing stable to key on.
+Configuring the kernel can be an annoying process, and on platforms that
+can't use these options, this menu just appears empty, further
+complicating menuconfig...
 
-Describe the tree and give every channel an alias so the numbering comes
-from the description instead. The aliases reproduce the numbers the
-current userspace instantiation produces, so existing configuration
-keeps working.
+Maybe it makes sense to add a dependency to the menu like this?
+'depends on ARCH_ASPEED || ARCH_STARFIVE || COMPILE_TEST'
 
-The four PCA9546 all answer at 0x72, and two of them sit behind
-different PCA9548 on the same parent bus, so both can be exposed at once
-if their parents are left selected. i2c-mux-idle-disconnect prevents
-that.
-
-I2C5 is shared with the host, which configures the voltage regulators
-on it during POST, and a mux inside the CPLD decides which side reaches
-the segment. The BMC is handed the bus once POST completes, so the muxes
-described here do not necessarily answer when the kernel first probes
-them, and the platform binds them once the CPLD reports the buses ready.
-
-The reset line the four PCA9548 share is left out for the same reason.
-A driver asserting it has no way to tell whether the bus is currently
-the BMC's, and the reset cannot help at boot anyway: what fails there is
-reaching the muxes at all, not their state.
-
-Booted on an MSX4 from both a warm reboot and a cold power cycle. All
-eight muxes register, the channels come up as i2c-16 through i2c-63
-exactly as the aliases name them, and the eight FRU EEPROMs behind the
-second level read as before. On the cold power cycle the kernel's probe
-of the four PCA9548 fails at 1.7s, and they are bound once the CPLD
-reports the buses ready 2150s later.
-
-Cc: Marc Olberding <molberding@nvidia.com>
-Signed-off-by: Ender Hsieh <andhsieh@nvidia.com>
----
-Changes in v2:
-- Drop reset-gpios. Measured on an MSX4, that line is shared: pulsing it
-  clears the channel selection of the muxes at 0x70, 0x71, 0x73 and 0x75
-  together, and leaves the four PCA9546 behind them untouched. Naming it
-  on one mux alone was therefore wrong. Naming it on all four would
-  describe the hardware correctly, but I2C5 is arbitrated between the
-  host and the BMC by a mux inside the CPLD, and a driver asserting the
-  reset cannot tell whose the bus currently is, so the line is left out
-  of the description entirely.
-- Say in the commit message that the bus is shared with the host, so it
-  is clear why the muxes may not answer when the kernel first probes
-  them.
-
-v1: https://lore.kernel.org/all/20260903105956.1709114-1-andhsieh@nvidia.com/
- .../dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dts | 401 ++++++++++++++++++
- 1 file changed, 401 insertions(+)
-
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dts
-index 29f56176e2ca..a473bb2ccd0f 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dts
-@@ -15,6 +15,55 @@ aliases {
- 		serial2 = &uart3;
- 		serial3 = &uart4;
- 		serial4 = &uart5;
-+
-+		i2c16 = &i2c5mux0chn0;
-+		i2c17 = &i2c5mux0chn1;
-+		i2c18 = &i2c5mux0chn2;
-+		i2c19 = &i2c5mux0chn3;
-+		i2c20 = &i2c5mux0chn4;
-+		i2c21 = &i2c5mux0chn5;
-+		i2c22 = &i2c5mux0chn6;
-+		i2c23 = &i2c5mux0chn7;
-+		i2c24 = &i2c5mux1chn0;
-+		i2c25 = &i2c5mux1chn1;
-+		i2c26 = &i2c5mux1chn2;
-+		i2c27 = &i2c5mux1chn3;
-+		i2c28 = &i2c5mux1chn4;
-+		i2c29 = &i2c5mux1chn5;
-+		i2c30 = &i2c5mux1chn6;
-+		i2c31 = &i2c5mux1chn7;
-+		i2c32 = &i2c5mux2chn0;
-+		i2c33 = &i2c5mux2chn1;
-+		i2c34 = &i2c5mux2chn2;
-+		i2c35 = &i2c5mux2chn3;
-+		i2c36 = &i2c5mux2chn4;
-+		i2c37 = &i2c5mux2chn5;
-+		i2c38 = &i2c5mux2chn6;
-+		i2c39 = &i2c5mux2chn7;
-+		i2c40 = &i2c5mux3chn0;
-+		i2c41 = &i2c5mux3chn1;
-+		i2c42 = &i2c5mux3chn2;
-+		i2c43 = &i2c5mux3chn3;
-+		i2c44 = &i2c5mux3chn4;
-+		i2c45 = &i2c5mux3chn5;
-+		i2c46 = &i2c5mux3chn6;
-+		i2c47 = &i2c5mux3chn7;
-+		i2c48 = &i2c17mux0chn0;
-+		i2c49 = &i2c17mux0chn1;
-+		i2c50 = &i2c17mux0chn2;
-+		i2c51 = &i2c17mux0chn3;
-+		i2c52 = &i2c21mux0chn0;
-+		i2c53 = &i2c21mux0chn1;
-+		i2c54 = &i2c21mux0chn2;
-+		i2c55 = &i2c21mux0chn3;
-+		i2c56 = &i2c35mux0chn0;
-+		i2c57 = &i2c35mux0chn1;
-+		i2c58 = &i2c35mux0chn2;
-+		i2c59 = &i2c35mux0chn3;
-+		i2c60 = &i2c39mux0chn0;
-+		i2c61 = &i2c39mux0chn1;
-+		i2c62 = &i2c39mux0chn2;
-+		i2c63 = &i2c39mux0chn3;
- 	};
- 
- 	chosen {
-@@ -151,6 +200,358 @@ eeprom@51 {
- 
- &i2c5 {
- 	status = "okay";
-+
-+	i2c-mux@70 {
-+		compatible = "nxp,pca9548";
-+		reg = <0x70>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		i2c-mux-idle-disconnect;
-+
-+		i2c5mux0chn0: i2c@0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
-+		};
-+
-+		i2c5mux0chn1: i2c@1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
-+
-+			i2c-mux@72 {
-+				compatible = "nxp,pca9546";
-+				reg = <0x72>;
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				i2c-mux-idle-disconnect;
-+
-+				i2c17mux0chn0: i2c@0 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <0>;
-+				};
-+
-+				i2c17mux0chn1: i2c@1 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <1>;
-+				};
-+
-+				i2c17mux0chn2: i2c@2 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <2>;
-+				};
-+
-+				i2c17mux0chn3: i2c@3 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <3>;
-+				};
-+			};
-+		};
-+
-+		i2c5mux0chn2: i2c@2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2>;
-+		};
-+
-+		i2c5mux0chn3: i2c@3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3>;
-+		};
-+
-+		i2c5mux0chn4: i2c@4 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <4>;
-+		};
-+
-+		i2c5mux0chn5: i2c@5 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <5>;
-+
-+			i2c-mux@72 {
-+				compatible = "nxp,pca9546";
-+				reg = <0x72>;
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				i2c-mux-idle-disconnect;
-+
-+				i2c21mux0chn0: i2c@0 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <0>;
-+				};
-+
-+				i2c21mux0chn1: i2c@1 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <1>;
-+				};
-+
-+				i2c21mux0chn2: i2c@2 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <2>;
-+				};
-+
-+				i2c21mux0chn3: i2c@3 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <3>;
-+				};
-+			};
-+		};
-+
-+		i2c5mux0chn6: i2c@6 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <6>;
-+		};
-+
-+		i2c5mux0chn7: i2c@7 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <7>;
-+		};
-+	};
-+
-+	i2c-mux@71 {
-+		compatible = "nxp,pca9548";
-+		reg = <0x71>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		i2c-mux-idle-disconnect;
-+
-+		i2c5mux1chn0: i2c@0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
-+		};
-+
-+		i2c5mux1chn1: i2c@1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
-+		};
-+
-+		i2c5mux1chn2: i2c@2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2>;
-+		};
-+
-+		i2c5mux1chn3: i2c@3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3>;
-+		};
-+
-+		i2c5mux1chn4: i2c@4 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <4>;
-+		};
-+
-+		i2c5mux1chn5: i2c@5 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <5>;
-+		};
-+
-+		i2c5mux1chn6: i2c@6 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <6>;
-+		};
-+
-+		i2c5mux1chn7: i2c@7 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <7>;
-+		};
-+	};
-+
-+	i2c-mux@73 {
-+		compatible = "nxp,pca9548";
-+		reg = <0x73>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		i2c-mux-idle-disconnect;
-+
-+		i2c5mux2chn0: i2c@0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
-+		};
-+
-+		i2c5mux2chn1: i2c@1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
-+		};
-+
-+		i2c5mux2chn2: i2c@2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2>;
-+		};
-+
-+		i2c5mux2chn3: i2c@3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3>;
-+
-+			i2c-mux@72 {
-+				compatible = "nxp,pca9546";
-+				reg = <0x72>;
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				i2c-mux-idle-disconnect;
-+
-+				i2c35mux0chn0: i2c@0 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <0>;
-+				};
-+
-+				i2c35mux0chn1: i2c@1 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <1>;
-+				};
-+
-+				i2c35mux0chn2: i2c@2 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <2>;
-+				};
-+
-+				i2c35mux0chn3: i2c@3 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <3>;
-+				};
-+			};
-+		};
-+
-+		i2c5mux2chn4: i2c@4 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <4>;
-+		};
-+
-+		i2c5mux2chn5: i2c@5 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <5>;
-+		};
-+
-+		i2c5mux2chn6: i2c@6 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <6>;
-+		};
-+
-+		i2c5mux2chn7: i2c@7 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <7>;
-+
-+			i2c-mux@72 {
-+				compatible = "nxp,pca9546";
-+				reg = <0x72>;
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				i2c-mux-idle-disconnect;
-+
-+				i2c39mux0chn0: i2c@0 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <0>;
-+				};
-+
-+				i2c39mux0chn1: i2c@1 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <1>;
-+				};
-+
-+				i2c39mux0chn2: i2c@2 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <2>;
-+				};
-+
-+				i2c39mux0chn3: i2c@3 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <3>;
-+				};
-+			};
-+		};
-+	};
-+
-+	i2c-mux@75 {
-+		compatible = "nxp,pca9548";
-+		reg = <0x75>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		i2c-mux-idle-disconnect;
-+
-+		i2c5mux3chn0: i2c@0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
-+		};
-+
-+		i2c5mux3chn1: i2c@1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
-+		};
-+
-+		i2c5mux3chn2: i2c@2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2>;
-+		};
-+
-+		i2c5mux3chn3: i2c@3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3>;
-+		};
-+
-+		i2c5mux3chn4: i2c@4 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <4>;
-+		};
-+
-+		i2c5mux3chn5: i2c@5 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <5>;
-+		};
-+
-+		i2c5mux3chn6: i2c@6 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <6>;
-+		};
-+
-+		i2c5mux3chn7: i2c@7 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <7>;
-+		};
-+	};
- };
- 
- &i2c6 {
--- 
-2.34.1
+- Julian Braha
 
 
