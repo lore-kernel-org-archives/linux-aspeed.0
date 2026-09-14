@@ -1,94 +1,113 @@
-Return-Path: <linux-aspeed+bounces-4989-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4990-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFE4AC88E64
-	for <linux-aspeed@archiver.kernel.org>; Mon, 14 Sep 2026 12:04:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E3AEC88E75
+	for <linux-aspeed@archiver.kernel.org>; Tue, 15 Sep 2026 00:01:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hk3jK5Tj9z2yjw;
-	Mon, 14 Sep 2026 22:04:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789387461;
-	cv=none; b=jNDbkSoSd0ETEjOlBSwtwAC08Ejhf/MVpN7peNBGto2Tu649LK/UzZpMb44Pei0Ay/qqIOmiqrPgVQw9JzRvuyEqdvkKImEjiv2oTz65/fmH0uk5orrghZeXoo6sOgAdfs/CIpHQ4+w8NfKuCObWBv6SdFILyMEKqktNC4b6x2TWnbkJDz0m2fNeadUPVgbKY34vz17Pa4NwUeiUxF3yxpTuxh/3+zoCjkeEUsqHpG9uZqGK0ZYkcQdibZXQ3wXCVO33Xx8zkij0tqtt4JzlyLsKBkESxVn4O2Ql3t87n7oOAHuZ/iykYUdHGHV2BQI0n9fABFoBRfjzemCuzdEKNQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789387461; c=relaxed/relaxed;
-	bh=oGAjaTYW9+9pgn++AOoLz4Ni470k5ZTJydWoPlVjGtw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=SrQ8neZYJKEH5akCPmWgqQSVPgWESsIwExP6bC1p6L8LA3Nivoo+lb9BtsqtXsoOgea0q+lc8FTp2RvCwABOYJzjpvIbh6oJSoIUq91ptfuEbSdcCbK9rLt43cUjmg/g14DoDDkuXyUNfgCfG5IM4xzDVBiTt/y7Q1TdpOiAiUsXkTn9LQK4M8IsR2eiLs8D2xANqSReG9HU0Q1qD/WZAH9/kCO1jmsW/0kv+hgN98Qm0BGsSjIJwI9o84C6BPDb/y50cOWdmsLMBuu4uidf15XV/Qrr1nIBcnB2DyXbOck631o4LmbqLSTSuoN0ae9Fo6wl+6fLcNzsmNrKFyY1PQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=s/8xx6Ph; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=2aIGkYQw; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=Skls9UdH; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=VcjQ+Hdk; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hkMcc30b7z2y8G;
+	Tue, 15 Sep 2026 10:01:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=205.220.180.131 arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789380599;
+	cv=pass; b=Tdmh+Mi4ULw5h1Awk4nkfAdyqF++f7HJk1n7FMmusULVXfJh+qlkzx1yEAQorOfiJQCGnbFGzltsswwJ6aFMHLYg0qJr2EI78KhUTsvOvnpF2oxzEUzhm/WOJA3ED8tTQ63RiXjoJmGVHOVKI0Lm4NbG0Er4Ca68m4oEUL9clqkGMSnMKmTtN+uQZphiRqLeA3yb2Z+7mzWlAW18CiNdnbjPt9CKbgQG0uh2r0JyTqjlu3I6XXuFVM0e5RSqr67KeVwnYx7kKwH9ljLQdXQIXOpm6Hqzr6ZIBeNC22Yv5/iLnyPCU/6976FReX2ZwKP9SiYkhglbyNWXQ6yvYPS/Wg==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1789380599; c=relaxed/relaxed;
+	bh=M12Cwh3ZRT6ahFa1J+DXeT+ShEs3pxzKaObkmR8W2j4=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=gYK8ziC4n3LBnXvuAtFnzzLvlYEsKL6mko8/qXLGadJ26boMmgR8B3t85WNQYG1eXlIUtE6g21fpL0O/9AxSx1neG81zxmyQ3jZ1qbTiYaj8ApkpnCjwdNS57TanbOJX+oBNSKsGQL/2gMte7yxa65YosIyk2Y+fZ/Sb5o3yJJItcCO7EGkmWPHwePrstX4VSsYteOm7qb3WIjZyL0KJlaOpMUKBd55sjEfgldBWEoxP8dRWKKPpPlIY0VF8PQ84T/mT+GC6aqT5gB6Yq6ziWV8zJtiUF2KlMCix9sj/UN3iijkQaQVIlNsoyF0sQ0Tfw5ol7Xtyk+XSVV1NtmeJAw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=cd1MyXOo; dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=iC2TZ167; dkim-atps=neutral; spf=pass (client-ip=205.220.180.131; helo=mx0b-0031df01.pphosted.com; envelope-from=ulf.hansson@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=s/8xx6Ph;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=2aIGkYQw;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=Skls9UdH;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=VcjQ+Hdk;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=cd1MyXOo;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=iC2TZ167;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.180.131; helo=mx0b-0031df01.pphosted.com; envelope-from=ulf.hansson@oss.qualcomm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hk3jJ2PcXz2yFK
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 14 Sep 2026 22:04:20 +1000 (AEST)
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id C998C21CB3;
-	Mon, 14 Sep 2026 12:04:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1789387451; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=oGAjaTYW9+9pgn++AOoLz4Ni470k5ZTJydWoPlVjGtw=;
-	b=s/8xx6Phz3C7iM/cwG9s8JXgPeKzTtz4W6E9+Uhp6s9Gs/q4fMObgrEZD/4NxhHiFsdcf2
-	ZM6Qh/tVSkNxYVtWGvCqBcxrhMdAFYPiSEMCYMZJMlDj0tz/5VUQ+bZH8pksfb2JVTG+5w
-	FfgjqwkQnXAe+9Pxe4TxSaAh9X5JSww=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1789387451;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=oGAjaTYW9+9pgn++AOoLz4Ni470k5ZTJydWoPlVjGtw=;
-	b=2aIGkYQw+Hgr38Ip6uo267G6WZ91VP7Dxuxusffo6tKuVt3zNSusGXVLwZxJU/AZQyjlmC
-	6f5pD3OuLxnFrEAQ==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=Skls9UdH;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=VcjQ+Hdk
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1789387447; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=oGAjaTYW9+9pgn++AOoLz4Ni470k5ZTJydWoPlVjGtw=;
-	b=Skls9UdHYfdXyf1+XvkwS6SIvprCy3p2rJCF1FKee5E3K2ZBAldyVbo19v4UyM2suOo0hX
-	K1Un2SuqyTqASEvDn26RzJnN3TfWDLVGzrBodBbs+iYxanHJ5/zGZ4PWWdHYpkFSSMovwZ
-	Rfv6uXQrwIIC4TLWe35YbO0yxYhEw08=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1789387447;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=oGAjaTYW9+9pgn++AOoLz4Ni470k5ZTJydWoPlVjGtw=;
-	b=VcjQ+HdkXxscPpMhk3xwqyl+LRC6Nrunw9/MnWxAoModxunwDKnTQyOJaYV9MteRSadyKe
-	8Hi/lZQaLkSsc5Bw==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 220F513693;
-	Mon, 14 Sep 2026 12:04:06 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id 7pSXO7bip2ooAgAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Mon, 14 Sep 2026 12:04:06 +0000
-Message-ID: <b422004f-870c-4622-95c3-536798bb14ab@suse.de>
-Date: Mon, 14 Sep 2026 14:04:06 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hk19L39l7z2xBK
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 14 Sep 2026 20:09:56 +1000 (AEST)
+Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68E9naha773219
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 14 Sep 2026 10:09:52 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	M12Cwh3ZRT6ahFa1J+DXeT+ShEs3pxzKaObkmR8W2j4=; b=cd1MyXOoNTeupvMQ
+	1vlzwu5O9fxeTHN1l64x7hYxAujJXzKCr2fbv9EZX3jztY8QgA3bEZef7KsAMG0Y
+	TpweHent0/06oxXjwNiUy69cLhEs3kQa+1FH0mH6pmWttYiTZirymHZCQliftGJK
+	xD/mTq439qWXuH534GY9JYVWAu9ZMnjUpgL9Mfhbyful2WZqAvrC8uES+ZxUGAGE
+	Ns9w53JtZXdxDqMJwCIuhBgM/xW8vEWWGbQaDEjzKqx7a8UwaGrBeh0bD59fG0Wc
+	qmpoz10K8tCCzLSstgxH7TdoWJ4m2zAJerQpmC4T7IM94HQn3vHbZG9Hvrs6Dse9
+	3CyQTw==
+Received: from mail-pg1-f198.google.com (mail-pg1-f198.google.com [209.85.215.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gpdevrav9-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 14 Sep 2026 10:09:52 +0000 (GMT)
+Received: by mail-pg1-f198.google.com with SMTP id 41be03b00d2f7-cc1b8088203so3052098a12.3
+        for <linux-aspeed@lists.ozlabs.org>; Mon, 14 Sep 2026 03:09:52 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1789380591; cv=none;
+        d=google.com; s=arc-20260327;
+        b=XvEF1kMEgDURxZRC/eJ7zWiyQLuy/xuck6+0S0OGJijqrSnttOsb2BXs2jGK7A0ejM
+         DHRWFk2SmbLd8aJcRb9b+6fZ0OcGfTJumcRSnz5hpO84OuHjA4obGvd+/bU6Cb4/b9BR
+         H5CkX9IwHjZ3n27rgdv5mKXwOA2o95y5I5nsLdmAvvBMR+Ya1NhTX3DtkNHcjOgSUqMa
+         Le5BwAsbA5PLxYFhOJzEHetPnXpNNE3QP3zmGz0KXIx9rpSNxTegFng7xY/6FMpukzQI
+         95xnI7tWgj6uRcCOAYZIN6MGARevqBv4oZZKmRGkU7sFg8qHykScqXg9LHEg+lhZaUDm
+         62sw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=M12Cwh3ZRT6ahFa1J+DXeT+ShEs3pxzKaObkmR8W2j4=;
+        fh=OdFbA1bgpM2fxOCz4fCTPRYxyNuojancwXtOanrK5mo=;
+        b=IvDAWIK75ItCoWI/crEU9NmMp69kAgEZv7/oJ1uQWBloEIQEtqQvVkdDRoQTH0H3U6
+         Ywaxi3SzjBYSe2/CM0ZgsWF0erhzrwpVqBpBo3ka3n6mJQq4MLlQk14436l9u+vd+2Xa
+         ziSjthNKX5BvH9aPH61Ud38qTMHODGxA0o3gkvlow0LgIWUx7gt0wShMhahj4EiejLs1
+         kCTR7gMcC1herEhHec5qLfJatfqNK6coQtGd9ln6WerzQS156oToouKSNX8kYzOEQs3g
+         TkXaE7x1FD7qsLBnpn/o/bQksWEj352iBPlq0y/7u8an/hGjigpTxrvLCV3sYz2UIPjV
+         wJBg==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1789380591; x=1789985391; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=M12Cwh3ZRT6ahFa1J+DXeT+ShEs3pxzKaObkmR8W2j4=;
+        b=iC2TZ167ghO1gmrB/6K3Ar3UVmHw/GwQP7w+0TwaI4qeCbe3l1Rn/uwXbTLuitU1zA
+         LRZYhSIcyYefl5uHEFdPs6qgtOCCjqpT4hQNqUTpNgwi++A91BZ/DT435p9ne8BCiLH2
+         J2Q8oCDW1lZa5t82n+UvVtRZsTDySNxO++2yedCih8Go4kLIcjecazEn03nwm/6WrN2w
+         mvpIK8seH7MoIp22BjuW3j1pjGMQAcHAio+HJPXw0zqaZ2xw8O4rpGDHWigV1jYHqtYu
+         sXoSepRiskM/JRFrSLnN0HWEY9IphcLlQdds+p1RtDA5CZdQ7EPsJJU7s/d/HWXXwyWx
+         APoQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1789380591; x=1789985391;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=M12Cwh3ZRT6ahFa1J+DXeT+ShEs3pxzKaObkmR8W2j4=;
+        b=qS0UPOgANkFuGEtjvOMspEqnEPio6cK+2uB8ascUgvN0Ss5c7qijbDs75bS2TdP8PD
+         JJgysU6qKu/rmljzPIKxD7hgWSTZz01x8xiNkAqhr3vhgZ21xh6n3KZHFj0PtjGsgT+M
+         uD89uoL4NLKcntRAxD5R6jHa52DzWcHs5SYIc4jOJeI2ZYCehwPUg17DlsOI7XsRQyUy
+         h0RjZzD9trO21fYPkp3CuDaMsr+i9ExR5CEZcLU/AX0qi1kiKB3BFQnCPfbHIF85wSbQ
+         nqoLDbBZbB3KWMOCL9wVJIMoEA35bFKM8/sQBPxw8cZyRi2XDL2GLgBijDThfPlbDwcg
+         QHZQ==
+X-Forwarded-Encrypted: i=1; AKwUvBxzUyxK5n9xwpXlphn1XnoyAUGPRJXWZdhO6EgOyBkwRqzvVr9lUYVPzpp/UJU/sDzFlR/bemuaXRa7YOg=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++lW5OZjFSgWYTlkZN8om+wvMZR7mWEM98qdCoS3DrFcb6tfe98+
+	hhIjDV0zYqUy/ov4iqthRREnSrKupsb/zUEkB/RzVPgWtsJGyMB15TYcYezkWmUA4pVd6d8NdxA
+	j3Y7cfAKQUmT+DuB93nOXUtI6ncyBu+N36eFmIq7M6eddVUO+o45HTRHIqG/VLuG+4ofynkP5/J
+	bwwinLHZEaIOY9FgzWEly4PfK5CB6zcVHUXCW1UMKkLKw=
+X-Gm-Gg: AYBFou2yiPjirxbVHW2gopl/gd9gvCciTyX5PdLmMz+G4utiDOMSpPLP082pwXHXtMJ
+	T8GyVQjiZny6ziioSi8ckxvDHqhQ51Tm3T47FAAOWyd9zE4vyJXsT4j9DYnKUnbmlhoNMLnayaT
+	MXIjjth4LWIO+B2kpdnP+0j4Fw1LikX0UNM7pG6upKzOPm5/iZXw+r0XmlIQ==
+X-Received: by 2002:a17:903:b8e:b0:2d8:d4d3:3fbb with SMTP id d9443c01a7336-2dd6c73445amr40754535ad.15.1789380591349;
+        Mon, 14 Sep 2026 03:09:51 -0700 (PDT)
+X-Received: by 2002:a17:903:b8e:b0:2d8:d4d3:3fbb with SMTP id
+ d9443c01a7336-2dd6c73445amr40754055ad.15.1789380590927; Mon, 14 Sep 2026
+ 03:09:50 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -102,217 +121,120 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 0/8] drm: replace simple display pipe users with atomic
- helpers
-To: Ze Huang <ze.huang@oss.qualcomm.com>,
- Alexey Brodkin <abrodkin@synopsys.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, David Airlie <airlied@gmail.com>,
- Simona Vetter <simona@ffwll.ch>, Joel Stanley <joel@jms.id.au>,
- Andrew Jeffery <andrew@codeconstruct.com.au>, Frank Li <Frank.Li@nxp.com>,
- Sascha Hauer <s.hauer@pengutronix.de>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Fabio Estevam <festevam@gmail.com>, Linus Walleij <linusw@kernel.org>,
- Hans de Goede <hansg@kernel.org>, Alex Lanzano <lanzano.alex@gmail.com>,
- Oleksandr Andrushchenko <oleksandr_andrushchenko@epam.com>
-Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
- linux-aspeed@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- imx@lists.linux.dev, xen-devel@lists.xenproject.org
-References: <20260727-drm-simple-kms-removal-v3-0-cd5dc89858c6@oss.qualcomm.com>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <20260727-drm-simple-kms-removal-v3-0-cd5dc89858c6@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Rspamd-Queue-Id: C998C21CB3
-X-Spamd-Result: default: False [-3.01 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	SUSPICIOUS_RECIPS(1.50)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FREEMAIL_TO(0.00)[oss.qualcomm.com,synopsys.com,linux.intel.com,kernel.org,gmail.com,ffwll.ch,jms.id.au,codeconstruct.com.au,nxp.com,pengutronix.de,epam.com];
-	ARC_NA(0.00)[];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	RCPT_COUNT_TWELVE(0.00)[22];
-	MIME_TRACE(0.00)[0:+];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com];
-	RCVD_TLS_ALL(0.00)[];
-	DKIM_TRACE(0.00)[suse.de:+];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
-	MID_RHS_MATCH_FROM(0.00)[];
-	TAGGED_RCPT(0.00)[];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[qualcomm.com:email,suse.de:dkim,suse.de:email,suse.de:mid,suse.com:url,msgid.link:url,imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo]
+References: <20260913223538.91579-1-mhun512@gmail.com>
+In-Reply-To: <20260913223538.91579-1-mhun512@gmail.com>
+From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Date: Mon, 14 Sep 2026 12:09:39 +0200
+X-Gm-Features: AcwNN1UKvtuQqttQbqd993vkvprGXBb1M6WJsKdk_G31r2WFSme_tK7rANZaz_8
+Message-ID: <CAPx+jO-Vck8PzQjg4yn6ft4Rms2_9eSOLpbAQryMLChY87BPMA@mail.gmail.com>
+Subject: Re: [PATCH] mmc: sdhci-of-aspeed: Remove children before releasing
+ SDC resources
+To: Myeonghun Pak <mhun512@gmail.com>
+Cc: Andrew Jeffery <andrew@codeconstruct.com.au>,
+        Adrian Hunter <adrian.hunter@intel.com>, Ulf Hansson <ulfh@kernel.org>,
+        Joel Stanley <joel@jms.id.au>, Ryan Chen <ryan_chen@aspeedtech.com>,
+        Billy Tsai <billy_tsai@aspeedtech.com>, linux-aspeed@lists.ozlabs.org,
+        openbmc@lists.ozlabs.org, linux-mmc@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        Ijae Kim <ae878000@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Proofpoint-ORIG-GUID: Fqw_4iVibjeOK2d22TrhTJcNxy0LPw1h
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE0MDE0NSBTYWx0ZWRfXwFpZPfM4z/x7
+ jORIg0wF/7fm+xuWqCOrO0i85S9bAwcQlbTJmctzAwKbrjeJavb3/RV6wN/Llb9cCjhyKyR4HmK
+ OYq0JElYK3s0lllNlvlmgf7ZHqVLovk=
+X-Proofpoint-GUID: Fqw_4iVibjeOK2d22TrhTJcNxy0LPw1h
+X-Authority-Analysis: v=2.4 cv=ftpJ914f c=1 sm=1 tr=0 ts=6aa7c7f0 cx=c_pps
+ a=Qgeoaf8Lrialg5Z894R3/Q==:117 a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10
+ a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
+ a=3WHJM1ZQz_JShphwDgj5:22 a=pGLkceISAAAA:8 a=_cOgsa2NosUwn6K3uuEA:9
+ a=QEXdDO2ut3YA:10 a=x9snwWr2DeNwDh03kgHS:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE0MDE0NSBTYWx0ZWRfX/SnEhGfEzN02
+ 7TKMpjEH8PZcefgQE8YpjLqo+jNDsE0NIxzx4uekW/gwwWeMJz3AFzBKtrYRa8yUUOVfd5nA++v
+ L8JmAU3eEfis7oaEFdAxm+HbET91vFzyHUu3D7DnpEPakvSbTH9LA8YmkFBw2rD87PUoWSatxrA
+ aywTgtNAQze+sPkf/LsHGjN7qZNyj39L8UxjLNOnL+TjTO7sm4oTlYUh+HQFtIW0Hq0jpUlTvb+
+ bRZeCDM4RPiYRo4Ez9tyyXBrQ3ZHRn2ayWfgwDAgNAn/69Odw7/w0S29khmbxLoL/0dm6auY8G2
+ wQ5SefdiozSh2RdbukxbrIyc+L6i0fmNqq7HHXoOugveEO5e6/AF/kGSkdXWBxcdobGId48aBJf
+ ihPcFDVHcRsreXDAz4fXpxh2wKoDBLKQ32bxmtuwkVhsxXVrRzBfbTUYpIUf9K2354pgl+eU+tu
+ JerdZj/8pUIDvW9lndg==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
+ definitions=2026-09-14_03,2026-09-13_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 clxscore=1015 phishscore=0 adultscore=0 impostorscore=0
+ priorityscore=1501 malwarescore=0 spamscore=0 suspectscore=0
+ lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2609040000
+ definitions=main-2609140145
 
-Hi
-
-Am 26.07.26 um 21:45 schrieb Ze Huang:
-> struct drm_simple_display_pipe was meant to simplify simple DRM
-> drivers, but instead adds an extra wrapper around normal DRM atomic
-> helper setup. As noted in Documentation/gpu/todo.rst, remaining users
-> should be converted to regular atomic helpers and stop depending on the
-> simple-KMS interfaces.
+On Mon, Sep 14, 2026 at 12:35=E2=80=AFAM Myeonghun Pak <mhun512@gmail.com> =
+wrote:
 >
-> This series converts the following drivers:
+> Probe failure and removal leave SDHCI child devices registered after the
+> parent clock and managed resources are released.
 >
->    - arcpgu
->    - aspeed
->    - mcde
->    - repaper
->    - tve200
->    - xen frontend
+> Unregister the OF children in reverse order before disabling the parent
+> clock on both paths. Use of_platform_device_destroy() because manual
+> child creation does not set the flag required by of_platform_depopulate()=
+.
+>
+> This issue was identified during our ongoing static-analysis research
+> while reviewing kernel code.
+>
+> Fixes: bb7b8ec62dfb ("mmc: sdhci-of-aspeed: Add support for the ASPEED SD=
+ controller")
+> Co-developed-by: Ijae Kim <ae878000@gmail.com>
+> Signed-off-by: Ijae Kim <ae878000@gmail.com>
+> Signed-off-by: Myeonghun Pak <mhun512@gmail.com>
+> Assisted-by: OpenAI:GPT-5.6
 
-For these drivers:
+Applied for fixes and by adding a stable tag, thanks!
 
-Reviewed-by: Thomas Zimmermann <tzimmermann@suse.de>
-
-I've taken the rest of the series into drm-misc-next. We had 2 drivers 
-tested and the others are variants of the same.
-
-Best regards
-Thomas
+Kind regards
+Uffe
 
 
->
-> Each patch replaces drm_simple_display_pipe_init() with explicit
-> primary plane, CRTC and encoder setup, and moves the old simple-pipe
-> callbacks into regular plane and CRTC helper callbacks named according
-> to local driver conventions.
->
-> The conversions preserve helper behavior that used to be implicit in
-> drm_simple_kms_helper.c, including plane-state validation, CRTC
-> primary-plane checks, affected-plane propagation, framebuffer prepare
-> handling, and existing event/vblank flow where applicable.
->
-> Result is less helper indirection and more explicit driver-side atomic
-> wiring, with no remaining simple-KMS dependency in these drivers.
->
-> Except for gm12u320, no hardware testing was performed.
->
-> This series is based on drm-next-2026-06-27.
->
-> AI usage disclosure:
-> - I wrote the first two commits myself. The remaining patches were completed
->    with assistance from AI tools.
-> - AI tools were also used to review the code and suggest code changes for
->    the DRM atomic conversion.
->
-> Thanks,
-> Ze Huang
->
-> Signed-off-by: Ze Huang <ze.huang@oss.qualcomm.com>
 > ---
-> Changes in v3:
-> - Use atomic state from the commit path consistently in converted helpers:
->    fetch new CRTC/plane state from the commit in enable/update/flush paths, and
->    use drm_atomic_get_crtc_state() with PTR_ERR() handling in plane atomic_check
->    hooks before drm_atomic_helper_check_plane_state().
-> - Move MCDE one-shot flow start from plane atomic_update() to CRTC
->    atomic_flush(), after pending vblank event handling.
-> - Fix repaper damage update path to skip updates unless CRTC is active.
-> - Fix arcpgu missing remote encoder node handling and lock CRTC state access in
->    debugfs.
-> - Make container helpers static inline.
-> - Link to v2: https://lore.kernel.org/r/20260716-drm-simple-kms-removal-v2-0-1133a8fc3785@oss.qualcomm.com
+> Validated with an ARM64 W=3D1 object build and strict checkpatch.
+> No hardware runtime, probe-failure injection or unbind testing was done.
 >
-> Changes in v2:
-> - common changes:
-> - create upcast helpers
-> - use 'commit' as name of struct drm_atomic_commit in atomic helpers
-> - improve control flow in *_crtc_helper_atomic_check() and
->    *_plane_helper_atomic_check()
-> - Moved page-flip/vblank event handling out of plane update paths and into
->    CRTC atomic_flush(), using atomic_flush and disable paths for mcde,
->    pl111 and tve200
-> - arcpgu:
->      - remove reduntant mod_supported helper
->      - change obsolete mode field to crtc->state->mode
-> - mcde:
->      - drop attach of unused encoder
-> - tve200:
->      - reorder connector/bridge attach
-> - xen:
->      - change possible_crtcs mask to 0
-> - Link to v1: https://patch.msgid.link/20260705-drm-simple-kms-removal-v1-0-b4e1ca053623@oss.qualcomm.com
+>  drivers/mmc/host/sdhci-of-aspeed.c | 5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
 >
-> ---
-> Ze Huang (8):
->        drm/arcpgu: replace struct drm_simple_display_pipe with regular atomic helpers
->        drm/aspeed: replace struct drm_simple_display_pipe with regular atomic helpers
->        drm/mcde: replace struct drm_simple_display_pipe with regular atomic helpers
->        drm/pl111: replace struct drm_simple_display_pipe with regular atomic helpers
->        drm/gm12u320: replace struct drm_simple_display_pipe with regular atomic helpers
->        drm/repaper: replace struct drm_simple_display_pipe with regular atomic helpers
->        drm/tve200: replace struct drm_simple_display_pipe with regular atomic helpers
->        drm/xen: replace struct drm_simple_display_pipe with regular atomic helpers
+> diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-=
+of-aspeed.c
+> index f5d973783c..d317626feb 100644
+> --- a/drivers/mmc/host/sdhci-of-aspeed.c
+> +++ b/drivers/mmc/host/sdhci-of-aspeed.c
+> @@ -560,12 +560,14 @@ static int aspeed_sdc_probe(struct platform_device =
+*pdev)
+>                 cpdev =3D of_platform_device_create(child, NULL, &pdev->d=
+ev);
+>                 if (!cpdev) {
+>                         ret =3D -ENODEV;
+> -                       goto err_clk;
+> +                       goto err_children;
+>                 }
+>         }
 >
->   drivers/gpu/drm/aspeed/aspeed_gfx.h      |  11 +-
->   drivers/gpu/drm/aspeed/aspeed_gfx_crtc.c | 203 ++++++++++++++++++-------
->   drivers/gpu/drm/aspeed/aspeed_gfx_drv.c  |   3 +-
->   drivers/gpu/drm/mcde/mcde_display.c      | 248 ++++++++++++++++++++-----------
->   drivers/gpu/drm/mcde/mcde_drm.h          |  12 +-
->   drivers/gpu/drm/mcde/mcde_drv.c          |   3 +-
->   drivers/gpu/drm/pl111/pl111_display.c    | 199 ++++++++++++++++++-------
->   drivers/gpu/drm/pl111/pl111_drm.h        |   5 +-
->   drivers/gpu/drm/pl111/pl111_drv.c        |   3 +-
->   drivers/gpu/drm/tiny/arcpgu.c            | 201 +++++++++++++++++++------
->   drivers/gpu/drm/tiny/gm12u320.c          | 138 +++++++++++++----
->   drivers/gpu/drm/tiny/repaper.c           | 138 +++++++++++++----
->   drivers/gpu/drm/tve200/tve200_display.c  | 219 ++++++++++++++++++---------
->   drivers/gpu/drm/tve200/tve200_drm.h      |   6 +-
->   drivers/gpu/drm/tve200/tve200_drv.c      |  12 +-
->   drivers/gpu/drm/xen/xen_drm_front.h      |   6 +-
->   drivers/gpu/drm/xen/xen_drm_front_kms.c  | 188 ++++++++++++++++-------
->   17 files changed, 1155 insertions(+), 440 deletions(-)
-> ---
-> base-commit: 3696d07837d1df13a5603d77f667685e7dfb3c53
-> change-id: 20260704-drm-simple-kms-removal-01a031c6a129
+>         return 0;
 >
-> Best regards,
-
--- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Jochen Jaser, Andrew McDonald, (HRB 36809, AG Nürnberg)
-
-
+> +err_children:
+> +       device_for_each_child_reverse(&pdev->dev, NULL, of_platform_devic=
+e_destroy);
+>  err_clk:
+>         clk_disable_unprepare(sdc->clk);
+>         return ret;
+> @@ -575,6 +577,7 @@ static void aspeed_sdc_remove(struct platform_device =
+*pdev)
+>  {
+>         struct aspeed_sdc *sdc =3D dev_get_drvdata(&pdev->dev);
+>
+> +       device_for_each_child_reverse(&pdev->dev, NULL, of_platform_devic=
+e_destroy);
+>         clk_disable_unprepare(sdc->clk);
+>  }
+>
+> --
+> 2.50.1
 
