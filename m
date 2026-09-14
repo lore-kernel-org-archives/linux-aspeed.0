@@ -1,97 +1,94 @@
-Return-Path: <linux-aspeed+bounces-4986-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4987-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B964C88E64
-	for <linux-aspeed@archiver.kernel.org>; Mon, 14 Sep 2026 00:16:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74E7FC88E64
+	for <linux-aspeed@archiver.kernel.org>; Mon, 14 Sep 2026 06:33:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hjm0N1dKDz2yln;
-	Mon, 14 Sep 2026 10:16:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:33::10"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789338633;
-	cv=none; b=O7KJBhuVV9QzRbsBJSnqAMuhU501mfFI4TbTV6Iby/JPStt5puXk6xq/waQ/SWEuS4c2xEipwb8cxdS44iqsEKjGSL2DEPvnfmUuX2Lly353PsUwbnDSXp3vewIKOHiMo17z2d9d97p0yG43NgYgyGWB3EjPAjoWGIHvgdYjEE2fJGr79zjklnJ1k5g1O1iZTOsYI+jFVwKzfCKAFWFp29+8cKIrxclhmiGZfpLAdCVVjTuR4TC+VE42GU9rsOMlnY58VW11K/PB4KwXhBwSK9VDnmvsvxecPXff2rzjnTJixBf234RM/E1/yZL/z9gwGN6OM27AGWugH1q8ymJ6Jg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hjwMq5Tyfz2y7p;
+	Mon, 14 Sep 2026 16:33:43 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:2"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789367623;
+	cv=none; b=MCLW7zomNdwCgVQgpGtL5NEQQ9zl60totDDK3vCwxzqN0jvqZtto8rJ3LOTv6HQUpTNvvX1IgLafWjH2PwhUYl9WvdVwq6uq3FbmkSAgs0LaSickerl5cihqnT8qSKDaC9Cg6HjtYdczKOfQVg7g55igLKDXs0k9Yj0gtHu4TucHa1fMQmcZaSzE0KrCczOvKQ/xwO4b0EzPqLVDMIlGQBlz0Qh0PqVKstEoQE7nJ0F1v7FbLqInY3navfcTfXM73mW1myF7PpkDLS6h7a99rndNFX5S8lfajWUpcan7Thz4S+xuuODR5+C3lMafgmtpnvzQnPusYYpoj5Q1DrlGnQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789338633; c=relaxed/relaxed;
-	bh=0bAI9mmXm3rd1fs6JBz3Pfb/OV3Rxah7vPEmWuwzOx0=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=VPNeRfYcbnq9trW8gVggJ7O8GT2rBAZQrJUMfhpCJGsO9b0ZLhiVlI39tmOpnMRgztE16A6SHq22t7mWZ+14oZqS4lz61ZTNlNaQTsBS6E2iQbhNmkfQvEnYewOUCrRxf/BZpGaALX0iP81bRhe338ymrU/UNSL7pqYK5ZoKCLn4Bu5N6mqPD6sytdmUhlgsmA2a42Gh8P0NuXaZuCcHtoBDCcFDA9ECyQsn4su1OUuWmWtYAgrZtJFA4YyD8lwpo6TREbhWVHRlobr5nk8KL8I+1jkdzpIJbObwXzt/xL+ScMjx5OPivlMaoZNdBIqUBbsDAgOgguq+NzNfeA17rw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ie8Ilvti; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:33::10; helo=mail-qv2-x10.google.com; envelope-from=mhun512@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1789367623; c=relaxed/relaxed;
+	bh=ovBBaSgMLmlbSMqeNsjr5N8eDdz6l1RmmoDSShj29wE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Ib8rNHE8TYuqbL3LgQLdOR5AOywod7OmBbk8DZUucHEfRMDaiLqzpR7l6IZmoVasHlJVRDxqEBueYQsiH9f9QtoGjT8zpLr6SMQXJbOYK0Q7/VRfx9h5z/PWLpWrP8nNhJ3LCezlhqnO2agScwuAg+NpkCZuX3vmuBXBMloKl328FUdRSA1Hu4M/jR1ruKcOAKiUVR3hh8Ggo5W49Bs09H1JWz6U45aennDv/BcELDlsyU93+4kzKP5EWTETsBnNClFqVVdL4sLev+NQieY60TetawqMMWew4ycXqcQG+W+8Cd8oxIQ7n/HJuigQvfmsAS1Gd7SVg87DEtIIk8eTSg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=b16Odrj6; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=h6IyQ2X3; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=ov/teEO7; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=MuewFzNW; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ie8Ilvti;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=b16Odrj6;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=h6IyQ2X3;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=ov/teEO7;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=MuewFzNW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:33::10; helo=mail-qv2-x10.google.com; envelope-from=mhun512@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-qv2-x10.google.com (mail-qv2-x10.google.com [IPv6:2607:f8b0:4864:33::10])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2a07:de40:b251:101:10:150:64:2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hjjfH5Ljjz2xSV
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 14 Sep 2026 08:30:30 +1000 (AEST)
-Received: by mail-qv2-x10.google.com with SMTP id 6a1803df08f44-90ce6d5271dso10216376d6.1
-        for <linux-aspeed@lists.ozlabs.org>; Sun, 13 Sep 2026 15:30:30 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1789338626; x=1789943426; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=0bAI9mmXm3rd1fs6JBz3Pfb/OV3Rxah7vPEmWuwzOx0=;
-        b=ie8IlvtiZ+OgHP+zdfwGilwtm2HsV7AcwQVcGGgUNUhrvdS+tC1E8jeJBodm8WUnSG
-         MPu7EjUngRDQNrZZ57WNOaUP+TYovKABsV5m2xmrOgWHVKGN4jWDft9FMZ9ql43zz0WK
-         0p4C9f4rKLYYBtWaLq1Lzeg/E0JeY7WUDXJRWpT1jO58tqdCcZrZpLiuDIcyehOv14QV
-         NBarml3J/QsgHD6r+HxdYa+FeDKaSwqm7xTSE+u54LzqVBKnWStiSc5PwN0lVcjeAvaa
-         XuQVdeITLTCWfYWvqDui8uenJs0WCphcoD0HgF/y9rMaCTXRU3ADYSQa9bBuHctAOzLD
-         D9pw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1789338626; x=1789943426;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=0bAI9mmXm3rd1fs6JBz3Pfb/OV3Rxah7vPEmWuwzOx0=;
-        b=GfraRZ+psxFeogXeyS2/bRriM0o0kobrJwUc534bf7tNi0Xo5G4IP9XHmlCs4OnzAP
-         0azEHLaJAjwdn2nzu4hYB9V9sLQKRAh4aa1bw3cXzMbQYQ3YQq/v7b1XUmwlFFcdObh8
-         PLHtg/q9bagEg+5ta7y8eX9mfWYrKmnRlJRB4OCyBXgsEpO2MMmaGVfatd211nyABCAc
-         Ads+F/lsCSUfEek0kUiy4voAvkm9Rg7qBjVLrtGiCAxdFrRa2Vx1IrCxoWj/0JSRYN+E
-         vLFXhNhhFPhqjYqU22LZfCdIUoDcDc3uxeLRbscnNecNbj2dNCly47jbY0LGJW/GzsTA
-         fkiw==
-X-Forwarded-Encrypted: i=1; AKwUvBwyNjvZE41SELsnPXDamfvk1S5udwLxt5yx5t7qaQazuNJthklg5r2Xls2E31QYUYBLUNV8PFgGp4Zujbc=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++k4DHBvZdQ1Y0EMdf7YUGjt364S/IjXdAheHunHfS7Ad75IEPy6
-	koFkbXile7QuHCfFfujqBPc2yZUVm6ziHP+Kgd56Xi6yxbmL636xUbE=
-X-Gm-Gg: AYBFou2RU2TQxLlGB8yIK3PIDLqSHh54a1+vVM9VSDVjP2Lxn+eCbTKdUHx4+6jYhRZ
-	mK3G32O6ErrQbKDblf5wNuM34FkW+uhce7XKvyx8N5kJC1vP7nXt1P69YQWTaUDq34O3Rm6Yu3r
-	V+iK3gGCrhnKVbXVD9JaXHZUTHyDM0YYHqN99LaTGdAmiFTVswrZQwx220438LxCyEPEHS1zI4+
-	gzQK5epSTp3DrzyHg7MO4A7R01BFHS/I+mgLa2b+8mQjpR5wy/VHN6U89d2UhbAArFtfUenQ49e
-	l4AIfOqguozFv6jDfSYyNuA6RHDaYDRqD4RcSwvZw7zIXfFJIexxGL2qqQ0RUxBZ29F0W8Tn4fL
-	EI3qTVqhg3RpNF9yIE2mjLDIYXSfKRGwEb8I1RzsBK10pKoC1qHzxctKMAVfJaeOSbrAUaULnXC
-	Oci2m/oANUPo15MsAPgweIrW++18hUe8nvWJzsnt/b7cDk+N5HH9zuiGP50vJPHkoFBF5DnLVsj
-	zcjmX0W14qER2qxxbGLLrcuqCGDgzbMkkk2gaL14FW8Rgi4uy3OBZneCoKN4fTkZ/9PF9UijXLp
-	6voOecJ+2lQp6rBoD8jiXaufnFk3H6Rk4Odkp0u8andF
-X-Received: by 2002:ad4:4ea4:0:b0:911:2a7e:abbb with SMTP id 6a1803df08f44-91226b71087mr49832196d6.14.1789338626502;
-        Sun, 13 Sep 2026 15:30:26 -0700 (PDT)
-Received: from localhost.localdomain ([104.39.73.78])
-        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-9120ef650a6sm80587576d6.0.2026.09.13.15.30.24
-        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Sun, 13 Sep 2026 15:30:25 -0700 (PDT)
-From: Myeonghun Pak <mhun512@gmail.com>
-To: Joel Stanley <joel@jms.id.au>
-Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	David Airlie <airlied@gmail.com>,
-	Simona Vetter <simona@ffwll.ch>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Ryan Chen <ryan_chen@aspeedtech.com>,
-	Billy Tsai <billy_tsai@aspeedtech.com>,
-	Sam Ravnborg <sam@ravnborg.org>,
-	=?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>,
-	linux-aspeed@lists.ozlabs.org,
-	dri-devel@lists.freedesktop.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	Ijae Kim <ae878000@gmail.com>
-Subject: [PATCH] drm/aspeed: Balance the display clock enable on teardown
-Date: Sun, 13 Sep 2026 18:30:19 -0400
-Message-ID: <20260913223019.89651-1-mhun512@gmail.com>
-X-Mailer: git-send-email 2.47.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hjwMn3cWXz2y2R
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 14 Sep 2026 16:33:41 +1000 (AEST)
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id AF4E51F388;
+	Mon, 14 Sep 2026 06:33:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1789367612; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=ovBBaSgMLmlbSMqeNsjr5N8eDdz6l1RmmoDSShj29wE=;
+	b=b16Odrj6bv0wp8OuyHaqBtpbaOjGnP9oDUkPm+RnEC2D3gQBz58ZPlxWU/CttnYcihdRLB
+	W9ckoJDdVx6dO7vo2kVy82bj6PNrKQfv3GtcQ+ydcHEYIk1aK+5a1aeKXOtO+U3RRPmCCK
+	c75mgcfRyGTh09JACGkenPbWXqI+yOM=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1789367612;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=ovBBaSgMLmlbSMqeNsjr5N8eDdz6l1RmmoDSShj29wE=;
+	b=h6IyQ2X3/hGfWruBjt45Bpjm6R/rVrgm2ZI/TWGL/4k6lMvTM7+LcT+bkGZQQ9FfVt1/XJ
+	hDct8kTxT4gIkEAw==
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b="ov/teEO7";
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=MuewFzNW
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1789367608; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=ovBBaSgMLmlbSMqeNsjr5N8eDdz6l1RmmoDSShj29wE=;
+	b=ov/teEO7U6AxQHEQtbeVuit6+Esb59jvvHc1wnp8vKLnWpfaXRnJSRiSJXNbrsxGrERqD3
+	D0mM3mmD8XaIRjaEIHsJFOtRxdYqrJ3+DwrfaTqRiF+FmnHQR8cXA+Y7NE6h66cztla/pU
+	0BQtBNTOLhrKHZrOmvapY0G9AWkuTy8=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1789367608;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=ovBBaSgMLmlbSMqeNsjr5N8eDdz6l1RmmoDSShj29wE=;
+	b=MuewFzNWGNAVPk7ko9iJTbOoyxG+Ut0iz5lpJBigNxT3SjHYUKwlRHFh24JiMS5BoVGv5Q
+	1gdeuU5ohpB39OAQ==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 08DF813693;
+	Mon, 14 Sep 2026 06:33:27 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id OLQQMjeVp2qFEgAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Mon, 14 Sep 2026 06:33:27 +0000
+Message-ID: <bf9f900c-39d4-4571-ae4b-3896c5ce8610@suse.de>
+Date: Mon, 14 Sep 2026 08:33:27 +0200
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -105,48 +102,115 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 4/8] drm/pl111: replace struct drm_simple_display_pipe
+ with regular atomic helpers
+To: Linus Walleij <linusw@kernel.org>, Ze Huang <ze.huang@oss.qualcomm.com>
+Cc: Alexey Brodkin <abrodkin@synopsys.com>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, David Airlie <airlied@gmail.com>,
+ Simona Vetter <simona@ffwll.ch>, Joel Stanley <joel@jms.id.au>,
+ Andrew Jeffery <andrew@codeconstruct.com.au>, Frank Li <Frank.Li@nxp.com>,
+ Sascha Hauer <s.hauer@pengutronix.de>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Fabio Estevam <festevam@gmail.com>, Hans de Goede <hansg@kernel.org>,
+ Alex Lanzano <lanzano.alex@gmail.com>,
+ Oleksandr Andrushchenko <oleksandr_andrushchenko@epam.com>,
+ dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+ linux-aspeed@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ imx@lists.linux.dev, xen-devel@lists.xenproject.org
+References: <20260727-drm-simple-kms-removal-v3-0-cd5dc89858c6@oss.qualcomm.com>
+ <20260727-drm-simple-kms-removal-v3-4-cd5dc89858c6@oss.qualcomm.com>
+ <CAD++jLnN-dhwxWwgmWYVD7COhvVsTxbiexHwoFkzgv8ucGhxqw@mail.gmail.com>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <CAD++jLnN-dhwxWwgmWYVD7COhvVsTxbiexHwoFkzgv8ucGhxqw@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-Rspamd-Queue-Id: AF4E51F388
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Rspamd-Action: no action
+X-Spamd-Result: default: False [-3.01 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	RCVD_TLS_ALL(0.00)[];
+	TAGGED_RCPT(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[22];
+	MID_RHS_MATCH_FROM(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[synopsys.com,linux.intel.com,kernel.org,gmail.com,ffwll.ch,jms.id.au,codeconstruct.com.au,nxp.com,pengutronix.de,epam.com,lists.freedesktop.org,vger.kernel.org,lists.ozlabs.org,lists.infradead.org,lists.linux.dev,lists.xenproject.org];
+	TO_DN_SOME(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[qualcomm.com:email,suse.com:url,suse.de:dkim,suse.de:mid,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns];
+	RCVD_COUNT_TWO(0.00)[2];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	DKIM_TRACE(0.00)[suse.de:+]
 
-aspeed_gfx_load() enables the display clock without checking the return
-value and never disables it on probe failure or removal. devm_clk_get()
-only releases the clock reference, leaving the enable unbalanced.
+Hi
 
-Use devm_clk_get_enabled() to handle enable failures and automatically
-disable and unprepare the clock on probe failure or removal.
+Am 14.09.26 um 01:33 schrieb Linus Walleij:
+> On Sun, Jul 26, 2026 at 9:46 PM Ze Huang <ze.huang@oss.qualcomm.com> wrote:
+>
+>> Replace the PL111 simple display pipe with explicit plane, CRTC and
+>> encoder objects.
+>>
+>> Move the existing timing, format and pitch validation into explicit
+>> atomic check paths. Use commit-local plane state in the CRTC enable path
+>> when reading framebuffer format state.
+>>
+>> Move page-flip event handling to the CRTC commit path.
+>>
+>> Signed-off-by: Ze Huang <ze.huang@oss.qualcomm.com>
+> This patch 4/8 applied for next.
 
-This issue was identified during our ongoing static-analysis research
-while reviewing kernel code.
+Great, thanks a lot!
 
-Fixes: 4f2a8f5898ec ("drm: Add ASPEED GFX driver")
-Co-developed-by: Ijae Kim <ae878000@gmail.com>
-Signed-off-by: Ijae Kim <ae878000@gmail.com>
-Signed-off-by: Myeonghun Pak <mhun512@gmail.com>
-Assisted-by: OpenAI:GPT-5.6
----
-Validated with an ARM64 W=1 object build and strict checkpatch.
-No hardware runtime, clock-failure injection or unbind testing was done.
+>
+> Yours,
+> Linus Walleij
 
- drivers/gpu/drm/aspeed/aspeed_gfx_drv.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+-- 
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
+GF: Jochen Jaser, Andrew McDonald, (HRB 36809, AG Nürnberg)
 
-diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-index d4577663a..aa36b79d0 100644
---- a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-+++ b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
-@@ -189,13 +189,12 @@ static int aspeed_gfx_load(struct drm_device *drm)
- 	}
- 	reset_control_deassert(priv->rst);
- 
--	priv->clk = devm_clk_get(drm->dev, NULL);
-+	priv->clk = devm_clk_get_enabled(drm->dev, NULL);
- 	if (IS_ERR(priv->clk)) {
- 		dev_err(&pdev->dev,
--			"missing or invalid clk device tree entry");
-+			"failed to get and enable clock\n");
- 		return PTR_ERR(priv->clk);
- 	}
--	clk_prepare_enable(priv->clk);
- 
- 	/* Sanitize control registers */
- 	writel(0, priv->base + CRT_CTRL1);
+
 
