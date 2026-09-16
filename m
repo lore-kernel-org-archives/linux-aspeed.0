@@ -1,69 +1,94 @@
-Return-Path: <linux-aspeed+bounces-5011-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-5012-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 319F7C88E5C
-	for <linux-aspeed@archiver.kernel.org>; Wed, 16 Sep 2026 07:47:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 211E8C88E77
+	for <linux-aspeed@archiver.kernel.org>; Wed, 16 Sep 2026 07:51:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hl9vY2X5Hz2yGT;
-	Wed, 16 Sep 2026 17:47:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789544825;
-	cv=none; b=SGSucYDydE0yjijOBPtkwEw5RxSkoUGyI6cdr/E3MvwfxuzpwFbjoh2TodFYbCBDr2tuoFnZIR24HXPvRBkGuvWCm/tIGh7Sil1MrXzxmUVgwIAKUJ223yIoeuWW8Q35iZAFIMfwru5ECQosiWUgCJzTtwIh4rccnon3NPifBQDx4EFm79kICIKOEtxT6ASTNuN/GZWF9HCey3Bx0ORJi5UK6Q3vtb7xMQywI96RJhL1foPR4CZpMLeCorQn0AoO7KElxyZrSbQHN9gz+tSf2b9SB/QLiUWURaIWmQJ1URAbdcd0kVOXJbZQ85N1yTeKhZ4JLEyF8BLKfwB+QnBmwA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hlB0f1jgMz2y2Q;
+	Wed, 16 Sep 2026 17:51:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:2"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789545090;
+	cv=none; b=iXbSvfj5wNxMlC12CSQmC0hiO0omsjSryMhStt1jXSQJ7Y6mdgH/D9kyoBvywk30TQdICun3VNabHp80IOx5nmK0QkyHvBpv2aZhIZZK0NSCBAG7w2CD8v1cOrwVUKmdXZAPH91bEArJ1CCabd9o0UN1o60Tva+cJcHg/KT87SqPNeAdR1kjkN1CDwj+TS3VDVV8zHAVIOsiIbIAlJiD4UDbKH6hk07aDnuNIOpayNZGvVKqgRDOW7U8SWHsxPI6kup0uAFIyxi0s0Y2ZCEGudmkEHyMG0+th43Qkv9ZBD83rMwTTNZYAXWfDnUan8Ez1nUl/dRpHkupLwl1FenM2Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789544825; c=relaxed/relaxed;
-	bh=0joaZXkFzvHsMPXxvnQrk/bZSSnjHuyjzDW4e7lSU7g=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=X3QVkoNcoqr82WbV/t3hM5cmSo4b59v48AYgdgdXwwNl8tEedibk1/ko9gXgeN1zVh9f+LWTkepCL8jKCNWbwXbeN4wTruBRiEMroj4QjAIQywfmwzWQ1qJ1MdCPOWhaxLK+dTBZ+uSnABHd25Kdd9mfkDACtvu8mqaM563sTKOUrFROyMNk1r3hG9cxY3/p0Klv3dRGWzPa1VpTjRv7BVuNsFI8aG3kOhW/G2SNx/rCG4BtND3m1a0OPHuSMEljD9NIzQjRzFCctevRfrDQC/6bvHu6EZ71Ehc78+FEciplvWBtAOf2UNyNIXDlZ7kaqIR6T/AoYKnJCcCvi59ILw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Nc+M2tZw; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=mripard@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1789545090; c=relaxed/relaxed;
+	bh=XBhtVBTat+R1KWkqHRDVuXf9g4iyat+P91M6XkPAv2w=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=iiyfXphsk3+7Qhp95eUgRldDffyO6uu6fZx8kEFWfukpunQNRL+DGbGDVYpjYsbImCPOfSfmGjEqB6Sy5vbT/HPjwTpoHOlDBjXYQ+DXoCesbkPiquw9fTp0xQz3bq7ScK56h3hE38STKnYNLZobW5qHlbkSkrtWffnjMgibp/do5X13Ry8fvvENuKX9qJy0xKi8LQUxG+I0UMmj0FJBVvLKyb7p2ZMRToRYVqZpLuYfVsFmiKa3jDyMNUQoSN6EGqYY260vZB/zeKK4t61LmglvJas15SdSArs0uMYL6gbih2g+XAAaEOUSrJMomJcWDVC0nZc2hp0ivrg+4aH3Ew==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=BxQzUfzo; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=lCBuT9Ou; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=II3l/jzB; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=ucPKXdWy; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Nc+M2tZw;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=BxQzUfzo;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=lCBuT9Ou;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=II3l/jzB;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=ucPKXdWy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=mripard@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2a07:de40:b251:101:10:150:64:2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hl9vX4F16z2xlY
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 16 Sep 2026 17:47:04 +1000 (AEST)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 685B66020C;
-	Wed, 16 Sep 2026 07:47:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8BAF61F000FF;
-	Wed, 16 Sep 2026 07:47:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789544821;
-	bh=0joaZXkFzvHsMPXxvnQrk/bZSSnjHuyjzDW4e7lSU7g=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=Nc+M2tZwVJsixOM56NLEFYEzQkaMNDIiByci6H3lph5WSy/sEnP/SvbP6NTlniikG
-	 Ewmocn8mbkhzZl9xv2kVMDBr9tzV6fTxVdxlVlUs7jGzcaKO2mFJVVhpduKi44oong
-	 sHtZYmooyLnIcMDIU55vEXNcmGKmkaxT2821zwOmgb3Efs5H3NrjmHxgoHWATRdia5
-	 KNsXvB16dSqeGTjIGJunLyXRJRAL3W18yGfPBId94h5QLA//ndBGRfh3HO0XR5ZLsF
-	 ZZfrrn52BOrmvfzleaLFXxmfmxJIZnjEVpiunf5J+VIySiejvQLBNbUK5GOMjqX3Eh
-	 +6UMsYsqAvK1w==
-Date: Wed, 16 Sep 2026 09:46:56 +0200
-From: Maxime Ripard <mripard@kernel.org>
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Ze Huang <ze.huang@oss.qualcomm.com>, 
-	Alexey Brodkin <abrodkin@synopsys.com>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Joel Stanley <joel@jms.id.au>, 
-	Andrew Jeffery <andrew@codeconstruct.com.au>, Frank Li <Frank.Li@nxp.com>, 
-	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
-	Fabio Estevam <festevam@gmail.com>, Linus Walleij <linusw@kernel.org>, 
-	Hans de Goede <hansg@kernel.org>, Alex Lanzano <lanzano.alex@gmail.com>, 
-	Oleksandr Andrushchenko <oleksandr_andrushchenko@epam.com>, Philipp Zabel <p.zabel@pengutronix.de>, 
-	Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Marian Cichy <m.cichy@pengutronix.de>, 
-	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-aspeed@lists.ozlabs.org, 
-	linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev, xen-devel@lists.xenproject.org
-Subject: Re: [PATCH v3 2/2] drm/imx: replace struct drm_simple_display_pipe
- with regular atomic helpers
-Message-ID: <aqpJKSSKunElnQ3o@houat>
-References: <20260727-drm-simple-kms-removal-v3-0-de36e534f7a1@oss.qualcomm.com>
- <20260727-drm-simple-kms-removal-v3-2-de36e534f7a1@oss.qualcomm.com>
- <8e4c84be-5c89-4d84-adda-aad4c7de0c8a@suse.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hlB0c4Hmdz2xlY
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 16 Sep 2026 17:51:28 +1000 (AEST)
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 404C41FD86;
+	Wed, 16 Sep 2026 07:51:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1789545080; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=XBhtVBTat+R1KWkqHRDVuXf9g4iyat+P91M6XkPAv2w=;
+	b=BxQzUfzoqAIHFY0Ykr5vgXzbVKLviRIY7hccIBoiF0VOwuulTxGuADWpvUhUQGE+dtvh6x
+	3vN3THPQlyMTgaSmtlFC8E/xSCtAvNR4pl0Y78zwc64vtFl+S/JL6W18IKobHCawM233/6
+	sqXYRyZdz9GCSXrRWvGRYHQ1PVG3uV8=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1789545080;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=XBhtVBTat+R1KWkqHRDVuXf9g4iyat+P91M6XkPAv2w=;
+	b=lCBuT9OuoBHAwbbbQn7B51DQOeRuFn6J7gbvd5edmEp/evS0eeAuQT8S9jVqh8UkB94o8U
+	qjgOLhXNZcO2jyAQ==
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b="II3l/jzB";
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=ucPKXdWy
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1789545076; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=XBhtVBTat+R1KWkqHRDVuXf9g4iyat+P91M6XkPAv2w=;
+	b=II3l/jzBRy236VBKXLz7gLYqUZsYcddfazBTpq8CVwqWHn3k4en4Tv5GHhIazbrHUJIGwK
+	vm8f28e1ZkgsVFsf4uANGqPfeKkzJpof49bKphUnOo3yLSjwWLCS30PmEyIeuJehsiTG8+
+	CnPVBO8r96Y8mAYMuU0iAqn7oPc5BaA=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1789545076;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=XBhtVBTat+R1KWkqHRDVuXf9g4iyat+P91M6XkPAv2w=;
+	b=ucPKXdWyMHsByG8+jpc4ABTYOK6OpiDIOhFzz69x9AXbFTAGbG/3PxJQtkShM3fc5d7X5h
+	7Z4Ia2cIthQ1fwAA==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 51DDA136A5;
+	Wed, 16 Sep 2026 07:51:15 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id Kr1lAXNKqmpDJwAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Wed, 16 Sep 2026 07:51:15 +0000
+Message-ID: <9a248432-31df-484d-abc3-3fc73b42a43c@suse.de>
+Date: Wed, 16 Sep 2026 09:51:14 +0200
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -77,46 +102,120 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha384;
-	protocol="application/pgp-signature"; boundary="3s4tplx46ij6zcs2"
-Content-Disposition: inline
-In-Reply-To: <8e4c84be-5c89-4d84-adda-aad4c7de0c8a@suse.de>
-
-
---3s4tplx46ij6zcs2
-Content-Type: text/plain; protected-headers=v1; charset=us-ascii
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v3 2/2] drm/imx: replace struct drm_simple_display_pipe
  with regular atomic helpers
-MIME-Version: 1.0
+To: Maxime Ripard <mripard@kernel.org>
+Cc: Ze Huang <ze.huang@oss.qualcomm.com>,
+ Alexey Brodkin <abrodkin@synopsys.com>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+ Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>,
+ Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Fabio Estevam <festevam@gmail.com>, Linus Walleij <linusw@kernel.org>,
+ Hans de Goede <hansg@kernel.org>, Alex Lanzano <lanzano.alex@gmail.com>,
+ Oleksandr Andrushchenko <oleksandr_andrushchenko@epam.com>,
+ Philipp Zabel <p.zabel@pengutronix.de>,
+ =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
+ Marian Cichy <m.cichy@pengutronix.de>, dri-devel@lists.freedesktop.org,
+ linux-kernel@vger.kernel.org, linux-aspeed@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev,
+ xen-devel@lists.xenproject.org
+References: <20260727-drm-simple-kms-removal-v3-0-de36e534f7a1@oss.qualcomm.com>
+ <20260727-drm-simple-kms-removal-v3-2-de36e534f7a1@oss.qualcomm.com>
+ <8e4c84be-5c89-4d84-adda-aad4c7de0c8a@suse.de> <aqpJKSSKunElnQ3o@houat>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <aqpJKSSKunElnQ3o@houat>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Rspamd-Action: no action
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Rspamd-Queue-Id: 404C41FD86
+X-Spamd-Result: default: False [-3.01 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	ARC_NA(0.00)[];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	RCPT_COUNT_TWELVE(0.00)[25];
+	MIME_TRACE(0.00)[0:+];
+	FREEMAIL_CC(0.00)[oss.qualcomm.com,synopsys.com,linux.intel.com,gmail.com,ffwll.ch,jms.id.au,codeconstruct.com.au,nxp.com,pengutronix.de,kernel.org,epam.com,lists.freedesktop.org,vger.kernel.org,lists.ozlabs.org,lists.infradead.org,lists.linux.dev,lists.xenproject.org];
+	RCVD_TLS_ALL(0.00)[];
+	DKIM_TRACE(0.00)[suse.de:+];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	DNSWL_BLOCKED(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	MID_RHS_MATCH_FROM(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	TAGGED_RCPT(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,suse.com:url,suse.de:dkim,suse.de:mid]
 
-On Wed, Sep 16, 2026 at 08:50:21AM +0200, Thomas Zimmermann wrote:
-> > +static const struct drm_plane_funcs imx_lcdc_plane_funcs = {
-> > +	.update_plane		= drm_atomic_helper_update_plane,
-> > +	.disable_plane		= drm_atomic_helper_disable_plane,
-> > +	.destroy		= drm_plane_cleanup,
-> > +	.reset			= drm_atomic_helper_plane_reset,
+Hi
 
-Also, this needs to be drm_atomic_helper_plane_create_state
+Am 16.09.26 um 09:46 schrieb Maxime Ripard:
+> On Wed, Sep 16, 2026 at 08:50:21AM +0200, Thomas Zimmermann wrote:
+>>> +static const struct drm_plane_funcs imx_lcdc_plane_funcs = {
+>>> +	.update_plane		= drm_atomic_helper_update_plane,
+>>> +	.disable_plane		= drm_atomic_helper_disable_plane,
+>>> +	.destroy		= drm_plane_cleanup,
+>>> +	.reset			= drm_atomic_helper_plane_reset,
+> Also, this needs to be drm_atomic_helper_plane_create_state
+>
+>>> +static const struct drm_crtc_funcs imx_lcdc_crtc_funcs = {
+>>> +	.reset			= drm_atomic_helper_crtc_reset,
+>   and drm_atomic_helper_crtc_create_state
 
-> > +static const struct drm_crtc_funcs imx_lcdc_crtc_funcs = {
-> > +	.reset			= drm_atomic_helper_crtc_reset,
+Right. I forgot that create_state is available already.
 
- and drm_atomic_helper_crtc_create_state
+Best regards
+Thomas
 
-Maxime
+>
+> Maxime
 
---3s4tplx46ij6zcs2
-Content-Type: application/pgp-signature; name="signature.asc"
+-- 
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
+GF: Jochen Jaser, Andrew McDonald, (HRB 36809, AG Nürnberg)
 
------BEGIN PGP SIGNATURE-----
 
-iJUEABMJAB0WIQTkHFbLp4ejekA/qfgnX84Zoj2+dgUCaqpJcAAKCRAnX84Zoj2+
-doCwAXoC9/rqP3SJq9eA3TmbsgUL1dNQBlXU005d6LFRuERn952eYKYsEdnw0oH7
-sS3Ms8EBfiZnSTC8Whf1zsDguMj/m/bcSyfEzHV6wM8Ix8qPXjNRdKfvP1twZo2V
-tHED8pYuFg==
-=LKtN
------END PGP SIGNATURE-----
-
---3s4tplx46ij6zcs2--
 
