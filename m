@@ -1,94 +1,78 @@
-Return-Path: <linux-aspeed+bounces-5012-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-5013-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 211E8C88E77
-	for <linux-aspeed@archiver.kernel.org>; Wed, 16 Sep 2026 07:51:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43C15C88E77
+	for <linux-aspeed@archiver.kernel.org>; Wed, 16 Sep 2026 09:13:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hlB0f1jgMz2y2Q;
-	Wed, 16 Sep 2026 17:51:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:2"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789545090;
-	cv=none; b=iXbSvfj5wNxMlC12CSQmC0hiO0omsjSryMhStt1jXSQJ7Y6mdgH/D9kyoBvywk30TQdICun3VNabHp80IOx5nmK0QkyHvBpv2aZhIZZK0NSCBAG7w2CD8v1cOrwVUKmdXZAPH91bEArJ1CCabd9o0UN1o60Tva+cJcHg/KT87SqPNeAdR1kjkN1CDwj+TS3VDVV8zHAVIOsiIbIAlJiD4UDbKH6hk07aDnuNIOpayNZGvVKqgRDOW7U8SWHsxPI6kup0uAFIyxi0s0Y2ZCEGudmkEHyMG0+th43Qkv9ZBD83rMwTTNZYAXWfDnUan8Ez1nUl/dRpHkupLwl1FenM2Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hlCqH360Cz2xbQ;
+	Wed, 16 Sep 2026 19:13:31 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:33::10"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789550011;
+	cv=none; b=YcHtvMMztIJIe1F6nqyC4TrUFV2L7KvBnDf7Hdc/A9nrPcggNn36jZv4Bxef0wGwXwLuK+bCud2en4L8ZtZxRN7r9nU33LpmbyP/QcYLPL80apFjRrYqrOwHucrYaS84tfWHpf7/eCCF2r5PUwFvYJWJTmj/seWrapJiJ0DgEPr9MhGJN5BsV1NPbhGcY/f6NyOoxkC4pbwDyf37Ez9YZ9/YFBcilGNjgQNitu8jXgx+BgQWHu28qF/AwNSOiZyIUjXT58BQTualSRPou0L0MP/+htVxaiQOMfUKWHHI8rzGc6XOBJTTUVCv9t6oEwNGu8Lo5NDXSUPLaeLLxKYxqg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789545090; c=relaxed/relaxed;
-	bh=XBhtVBTat+R1KWkqHRDVuXf9g4iyat+P91M6XkPAv2w=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=iiyfXphsk3+7Qhp95eUgRldDffyO6uu6fZx8kEFWfukpunQNRL+DGbGDVYpjYsbImCPOfSfmGjEqB6Sy5vbT/HPjwTpoHOlDBjXYQ+DXoCesbkPiquw9fTp0xQz3bq7ScK56h3hE38STKnYNLZobW5qHlbkSkrtWffnjMgibp/do5X13Ry8fvvENuKX9qJy0xKi8LQUxG+I0UMmj0FJBVvLKyb7p2ZMRToRYVqZpLuYfVsFmiKa3jDyMNUQoSN6EGqYY260vZB/zeKK4t61LmglvJas15SdSArs0uMYL6gbih2g+XAAaEOUSrJMomJcWDVC0nZc2hp0ivrg+4aH3Ew==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=BxQzUfzo; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=lCBuT9Ou; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=II3l/jzB; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=ucPKXdWy; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	t=1789550011; c=relaxed/relaxed;
+	bh=2pxFKi7xaeFBiwVmmMG7qzY7jC7mdLidUrnKaVS0TrY=;
+	h=MIME-Version:Content-Type:Subject:From:To:Cc:In-Reply-To:
+	 References:Date:Message-Id; b=I/vuXZtw8FcrEqS3ySBzVOe2xyTThjOAaolVG3RqGvCTiOw26eA4tDdhNCgi5NiR6pSh9B/4plor2eVGNze77Nwl31/a6nzT/sJzMCEmIOSJ2+QqpvgRAcflA9V3hh0num4pQeDpWdBVFQ2pc2rcNYMMvwJw+6L/H/+bcT2WZhTmE5PHuQ6xatRBRDa7PrmjRZlP/ehlop8Bg469afpLfs4seeZui5m6EcDjTrO/oExRTuvysFzdlxJNKrQbI7eMi7ICTQeiJZDWwJfYo6W8RewDtn2p9loXUt4EmTVDv/aaP7Dkx+Hfd/xxN2y7BgbnDnBhfvwLuFUzyCBwi0548w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=9elements.com; dkim=pass (2048-bit key; secure) header.d=9elements.com header.i=@9elements.com header.a=rsa-sha256 header.s=google header.b=NTimDAHR; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:33::10; helo=mail-ed2-x10.google.com; envelope-from=tan.siewert@9elements.com; receiver=lists.ozlabs.org) smtp.mailfrom=9elements.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=9elements.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=BxQzUfzo;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=lCBuT9Ou;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=II3l/jzB;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=ucPKXdWy;
+	dkim=pass (2048-bit key; secure) header.d=9elements.com header.i=@9elements.com header.a=rsa-sha256 header.s=google header.b=NTimDAHR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2a07:de40:b251:101:10:150:64:2])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=9elements.com (client-ip=2a00:1450:4864:33::10; helo=mail-ed2-x10.google.com; envelope-from=tan.siewert@9elements.com; receiver=lists.ozlabs.org)
+Received: from mail-ed2-x10.google.com (mail-ed2-x10.google.com [IPv6:2a00:1450:4864:33::10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hlB0c4Hmdz2xlY
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 16 Sep 2026 17:51:28 +1000 (AEST)
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 404C41FD86;
-	Wed, 16 Sep 2026 07:51:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1789545080; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=XBhtVBTat+R1KWkqHRDVuXf9g4iyat+P91M6XkPAv2w=;
-	b=BxQzUfzoqAIHFY0Ykr5vgXzbVKLviRIY7hccIBoiF0VOwuulTxGuADWpvUhUQGE+dtvh6x
-	3vN3THPQlyMTgaSmtlFC8E/xSCtAvNR4pl0Y78zwc64vtFl+S/JL6W18IKobHCawM233/6
-	sqXYRyZdz9GCSXrRWvGRYHQ1PVG3uV8=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1789545080;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=XBhtVBTat+R1KWkqHRDVuXf9g4iyat+P91M6XkPAv2w=;
-	b=lCBuT9OuoBHAwbbbQn7B51DQOeRuFn6J7gbvd5edmEp/evS0eeAuQT8S9jVqh8UkB94o8U
-	qjgOLhXNZcO2jyAQ==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b="II3l/jzB";
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=ucPKXdWy
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1789545076; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=XBhtVBTat+R1KWkqHRDVuXf9g4iyat+P91M6XkPAv2w=;
-	b=II3l/jzBRy236VBKXLz7gLYqUZsYcddfazBTpq8CVwqWHn3k4en4Tv5GHhIazbrHUJIGwK
-	vm8f28e1ZkgsVFsf4uANGqPfeKkzJpof49bKphUnOo3yLSjwWLCS30PmEyIeuJehsiTG8+
-	CnPVBO8r96Y8mAYMuU0iAqn7oPc5BaA=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1789545076;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=XBhtVBTat+R1KWkqHRDVuXf9g4iyat+P91M6XkPAv2w=;
-	b=ucPKXdWyMHsByG8+jpc4ABTYOK6OpiDIOhFzz69x9AXbFTAGbG/3PxJQtkShM3fc5d7X5h
-	7Z4Ia2cIthQ1fwAA==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 51DDA136A5;
-	Wed, 16 Sep 2026 07:51:15 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id Kr1lAXNKqmpDJwAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Wed, 16 Sep 2026 07:51:15 +0000
-Message-ID: <9a248432-31df-484d-abc3-3fc73b42a43c@suse.de>
-Date: Wed, 16 Sep 2026 09:51:14 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hlCqF3Xntz2y2W
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 16 Sep 2026 19:13:28 +1000 (AEST)
+Received: by mail-ed2-x10.google.com with SMTP id 4fb4d7f45d1cf-6a99c5de614so946001a12.2
+        for <linux-aspeed@lists.ozlabs.org>; Wed, 16 Sep 2026 02:13:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=9elements.com; s=google; t=1789550004; x=1790154804; darn=lists.ozlabs.org;
+        h=message-id:date:references:in-reply-to:cc:to:from:subject
+         :content-transfer-encoding:content-type:mime-version:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=2pxFKi7xaeFBiwVmmMG7qzY7jC7mdLidUrnKaVS0TrY=;
+        b=NTimDAHROp+9PQQKmzvJjtjL0EPlQC+DRlTbwNyWG8uieEXndB+fG8zdYu7haPD/Pt
+         oQQfA93ZXweTDCziMVyHOMUYZdjgMhTCK5fDbaVqZSjv5cAhdl6W20ZitTDGm5Mvrc4d
+         4TFDHT8r1800mseVL2Y2Is5OvSeCdbeq6Sg9eywR9hHzVLISZ4UiVNghj29J/RQxKEPS
+         r38Z0uTK4VGdK72JT7qZf8nu7VfQvueZEx5a3jCFoCRy981v5eZ+P9WSuwKUbE5IuCe8
+         z/ewQUsiTDH7XUtuBII3NEYLHqMuHjD5EeTk8nzuu57wBchgDQa4fB2SoEkqS6UF+Fzr
+         uniQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1789550004; x=1790154804;
+        h=message-id:date:references:in-reply-to:cc:to:from:subject
+         :content-transfer-encoding:content-type:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=2pxFKi7xaeFBiwVmmMG7qzY7jC7mdLidUrnKaVS0TrY=;
+        b=0O7yzxVr0kz+NOmK29Ro0440NyC1mE9axbA3z2QKcpF68FV13emWKFrYf1ZKXHFypH
+         h+o7lQ64H8bTJPLaWFs4+TahkKdwwcFVFs6qh0gkwpYt2EztzHY3qC5xb0x6louW1KMa
+         z4VtHY0axabbW668giXrKbXya8SCb+IcJrsGZPV5jaY8SxHUoOqZ6f3maDworM+1lxrY
+         tVYIbJr5P7uffwwBxEtY+XqT+1Ox0EOlGszshda0I1csRfTRp98+eJgEuBSYyZDglXa1
+         bUpFEpitIPisi/jaNbsbGIuF21jfr+zH9fJ29T45E2dioQeo11By5ph49QO9p7mqSFxr
+         2tEQ==
+X-Forwarded-Encrypted: i=1; AKwUvBwPVHHkXH9UoVFcx6yLiTl/Z09tbnyKFM1THT1Y4JcJ5trKs8qlVhG+hFOlsvTgnH5vrTU4vnlzBN6l/EY=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++lnhlbmA978BcBY4BwLEy1y1IxOWzLCIlcrA4dnBImKhF0UTKKX
+	EYe+c4pL75QoxAb15AQaMpkbUa6BbIcoH1tDJRql0aJOKgaTFx4yIvRb37Sf+PnSsRA=
+X-Gm-Gg: AYBFou33GNgcN5py+AGXfk9xm7Sb6TRoJdSfs410JnJn8q0evO0jaHyubqk3Qy+G88T
+	85Liy95JApK2prnYvi7Y09ylJQ9+/5/MtiLaee/25zlrriPOzW9BpYGzcmCTCAd5nqRmPZu7NRr
+	vdFtCwtY1XXvgHQHpdagrzyNjAu4wtc8OiKXfUaqtF1A9Fa7d8zqq/j86xT5Jb+Aitekuh8XxRT
+	9cxc5icLufi4J24Y8HDFFbTl+hwewi0+lhkDBzEapJ6tKs4VpBukc6g26fLkhpSjX5GN2ugprmJ
+	ym4YTUq3y81iPsSlS4xehSmLi8PiGxMN7lRMIdb7uiRhsC0gZq5y9d8Z98wopnDn6bRXjVtj6jy
+	J/3FwAhyq//Co7VHM6RMQB3xGIV2g/fFZ6Cx2LTUuE6Nm2f4T2JCfRfqornkbTsRuOuOrIyq8j+
+	qgbMAyyV8lDlfcIF1RzeIW6ORywh2buY81bFwWHq7lE4uOCycmS9voD2oocHCYjrfyDnTZHMc2n
+	4Sxqz+hO8tgyCBs
+X-Received: by 2002:a05:6402:46c8:b0:6a7:f25d:b59e with SMTP id 4fb4d7f45d1cf-6aa2241eb47mr2356354a12.18.1789550004367;
+        Wed, 16 Sep 2026 02:13:24 -0700 (PDT)
+Received: from white-mocha.local ([195.169.148.30])
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-6aa1d2a874esm1148454a12.29.2026.09.16.02.13.23
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 16 Sep 2026 02:13:24 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -102,120 +86,52 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 2/2] drm/imx: replace struct drm_simple_display_pipe
- with regular atomic helpers
-To: Maxime Ripard <mripard@kernel.org>
-Cc: Ze Huang <ze.huang@oss.qualcomm.com>,
- Alexey Brodkin <abrodkin@synopsys.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
- Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>,
- Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Fabio Estevam <festevam@gmail.com>, Linus Walleij <linusw@kernel.org>,
- Hans de Goede <hansg@kernel.org>, Alex Lanzano <lanzano.alex@gmail.com>,
- Oleksandr Andrushchenko <oleksandr_andrushchenko@epam.com>,
- Philipp Zabel <p.zabel@pengutronix.de>,
- =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
- Marian Cichy <m.cichy@pengutronix.de>, dri-devel@lists.freedesktop.org,
- linux-kernel@vger.kernel.org, linux-aspeed@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev,
- xen-devel@lists.xenproject.org
-References: <20260727-drm-simple-kms-removal-v3-0-de36e534f7a1@oss.qualcomm.com>
- <20260727-drm-simple-kms-removal-v3-2-de36e534f7a1@oss.qualcomm.com>
- <8e4c84be-5c89-4d84-adda-aad4c7de0c8a@suse.de> <aqpJKSSKunElnQ3o@houat>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <aqpJKSSKunElnQ3o@houat>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Rspamd-Queue-Id: 404C41FD86
-X-Spamd-Result: default: False [-3.01 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	SUSPICIOUS_RECIPS(1.50)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	ARC_NA(0.00)[];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	RCPT_COUNT_TWELVE(0.00)[25];
-	MIME_TRACE(0.00)[0:+];
-	FREEMAIL_CC(0.00)[oss.qualcomm.com,synopsys.com,linux.intel.com,gmail.com,ffwll.ch,jms.id.au,codeconstruct.com.au,nxp.com,pengutronix.de,kernel.org,epam.com,lists.freedesktop.org,vger.kernel.org,lists.ozlabs.org,lists.infradead.org,lists.linux.dev,lists.xenproject.org];
-	RCVD_TLS_ALL(0.00)[];
-	DKIM_TRACE(0.00)[suse.de:+];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	MID_RHS_MATCH_FROM(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	TAGGED_RCPT(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,suse.com:url,suse.de:dkim,suse.de:mid]
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH v5 0/2] ARM: dts: aspeed: Add ASRock Rack B650D4U BMC
+From: Tan Siewert <tan.siewert@9elements.com>
+To: Prasanth Kumar Padarthi <prasanth.padarthi10@gmail.com>
+Cc: Joel Stanley <joel@jms.id.au>, 
+ Andrew Jeffery <andrew@codeconstruct.com.au>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Ryan Chen <ryan_chen@aspeedtech.com>, 
+ Billy Tsai <billy_tsai@aspeedtech.com>, Andrew Lunn <andrew+netdev@lunn.ch>, 
+ devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20260915013110.4780-1-prasanth.padarthi10@gmail.com>
+References: <20260830182036.284736-1-prasanth.padarthi10@gmail.com>
+ <20260915013110.4780-1-prasanth.padarthi10@gmail.com>
+Date: Wed, 16 Sep 2026 11:13:14 +0200
+Message-Id: <178954999458.14468.16283512434120694140.b4-review@b4>
+X-Mailer: b4 0.17-dev
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1789549994; l=811;
+ i=tan.siewert@9elements.com; s=20260527; h=from:subject:message-id;
+ bh=eS2AzTpmwl/LU2/GTCNcYSrf1v77Kr4VQXRZMQWSnOg=;
+ b=Kigj35XJyk3oqfYrmSrVTzDtZozWXiL3A2jZ1GDFn47XUDoi1sADnSqsFWAfD5moYuTYt2g/1
+ YmIW7BejVRPDZg8+rwZ2qOhCgmhCmtFAgIIt7xSS0+t7SJFtsr9bmbA
+X-Developer-Key: i=tan.siewert@9elements.com; a=ed25519;
+ pk=ORQd/zQf+LsAvJGXP1CjQwVO6t6iEOGq/eGUsmRVTG4=
 
-Hi
+> Add device tree support for the ASRock Rack B650D4U BMC, which is
+> based on the ASPEED AST2600 SoC.
+> 
+> The series adds the board compatible and describes the BMC memory,
+> SPI NOR flash layout, UART console, GPIO line names, graphics
+> reserved memory, I2C EEPROM, and MAC0 connected to an RTL8211F
+> Ethernet PHY.
+> 
+> MAC0 uses the EEPROM on I2C7 as the NVMEM provider for its MAC
+> address and is configured to use the RTL8211F in RGMII-ID mode.
+> 
 
-Am 16.09.26 um 09:46 schrieb Maxime Ripard:
-> On Wed, Sep 16, 2026 at 08:50:21AM +0200, Thomas Zimmermann wrote:
->>> +static const struct drm_plane_funcs imx_lcdc_plane_funcs = {
->>> +	.update_plane		= drm_atomic_helper_update_plane,
->>> +	.disable_plane		= drm_atomic_helper_disable_plane,
->>> +	.destroy		= drm_plane_cleanup,
->>> +	.reset			= drm_atomic_helper_plane_reset,
-> Also, this needs to be drm_atomic_helper_plane_create_state
->
->>> +static const struct drm_crtc_funcs imx_lcdc_crtc_funcs = {
->>> +	.reset			= drm_atomic_helper_crtc_reset,
->   and drm_atomic_helper_crtc_create_state
+Your threading seems to be broken (`In-reply-to` + `References` are set to the
+previous version). Please keep that in mind for the next revision. See [0] for
+more information.
 
-Right. I forgot that create_state is available already.
+[0] https://www.kernel.org/doc/html/latest/process/submitting-patches.html#explicit-in-reply-to-headers
 
-Best regards
-Thomas
-
->
-> Maxime
+Tan
 
 -- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Jochen Jaser, Andrew McDonald, (HRB 36809, AG Nürnberg)
-
-
+Tan Siewert <tan.siewert@9elements.com>
 
