@@ -1,108 +1,68 @@
-Return-Path: <linux-aspeed+bounces-5018-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-5019-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2D1CC982D6
-	for <linux-aspeed@archiver.kernel.org>; Thu, 17 Sep 2026 15:18:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5097CC88E72
+	for <linux-aspeed@archiver.kernel.org>; Thu, 17 Sep 2026 15:53:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hlzst4YzPz2y2W;
-	Fri, 18 Sep 2026 01:18:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789658306;
-	cv=none; b=SQAEG3lzF26/qHYLNlObUd/EOzuLXzVLykxgDGPC5/pKJV8fIK1NIoRgGfS3evMZj7SBcvCnstkKY2YARlt3X8TgmlCoUb4mm1cPcYvQzoo8WRxm1ez4zs8i581cnigWGYpNwHPAu1QSqW1iGT0MIWpvGz2B8frBK5P6RVpvOfG1g4RNI8LFJeqOmLlk68eiShPV7UHyNtCAY36SN8C0XY1XjC0gjBDMIzX34sjcWJHV90qMPa2glzrvMX+3jwLNpS9BHoo0IqHG8vXlGObqSUrOC2uKp1PoSVmGX/mcTnyNVWX7ixXevuyQOyx8XNdz5ws/7qzcjTSJyEAA71omdA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hm0fp5YWnz2xbQ;
+	Fri, 18 Sep 2026 01:53:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.171.202.116
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789660434;
+	cv=none; b=oB6c2DlGBGmrIMSkBYyZSnIcJRgkLFXcWk4sPecmNMzGGwwPhbAibbF0nbbIEeBHK5zvLIw3NvZCkSXYGiErVVe06SGex5WoyNGzHpbEJwpjl2YqJ67HHbi7MqsQ7mghDUClKwg10vX0/Qe50tVxbS+pZgNqhJV7w0d3JoT+K12bvQSg9mo7BVO7ipkTO4tjgxNAmmZRqAbWTWwft3zJcYrFMoLMCvtrQQFlg1NDzJo8rXPaGzKB23xYXeEWidAQbnmRadFLgZK/57wi6MJOX/JsXV0xYRx/UO/L6U8xbfWIdXvJyATJTNpAnBgV+QWtEzrRxIg0uEY5ofp+JVSbbQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789658306; c=relaxed/relaxed;
-	bh=OziTzy4SV0rdP7QT5/3o4LU2t6LnQ939r26ChBP3tKc=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=kP10BzApH0hmtPuiH4m+/5Tv7VSXJKohifmZzdZjU2dA5Mw+syrYLUojZwn1L59BFdwUHFjkjy7FEkZ8kzqFRp/ouUC/tGB5NJy7cl9Mc8a+TOD78JRBSTzyLsk56csySkyUvXUcfjrZdcImFDDfVU7XOUYOmcDZ9bSiXBSi4Yp7D9blElUCXTgJXpPp3g7I6yCitJN7Wkws6/uISVtueMFZBZ1DARnYDv7tUNCCzree0DyqBGB2fXFQH+QddkNMgvQhJFAMSgdjGT7Qn4qXVaGHXlgaqZ6ZXV0P7f83fHnTFp6Phz3t7WIjpS40W2sRQ57plJ0xJLTEdqQjQBV+4Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=RY09ORei; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=CvR2SWYf; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bmasney@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	t=1789660434; c=relaxed/relaxed;
+	bh=ssfsPCsBLCz35Jf8lbYJnVGRPUluymWTo2E6cM1OV8Y=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=OtlN024JQzjbEzwU1ngDt2L3TnXHrfr6LYr7Q6oBy+Zq30kPefxrgzPKWZdiu96HTa+mZvQC58s2rgyARmnGIpfbnsgvk4uVLFmKF/KLyGC2J8mxV4oYf6Ru/VuBgB6YeI2BR4PNplA6yKgnenViuajD+RNbGyRYK6TbRl2Zvn2Ay33CC8pwe8FqlNJavK0ReOzL/yd5m+GjikYHCsMIcCzLBTeZ4A0zHu+Qyia3Ar/P4lJZ8agulK5AMnaqjq0yEzJv5lp6LsG9+hjzDVaW06s8zLi1oWhDy/sErjxMu4aghgc0Rn0idNseEV8qS8HcBT4JAvQAqpOOVSDf2ClqvQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=e3X8JRPf; dkim-atps=neutral; spf=pass (client-ip=185.171.202.116; helo=smtpout-04.galae.net; envelope-from=alexandre.belloni@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=RY09ORei;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=CvR2SWYf;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=e3X8JRPf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bmasney@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=185.171.202.116; helo=smtpout-04.galae.net; envelope-from=alexandre.belloni@bootlin.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 339 seconds by postgrey-1.37 at boromir; Fri, 18 Sep 2026 01:53:53 AEST
+Received: from smtpout-04.galae.net (smtpout-04.galae.net [185.171.202.116])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hlzsr4x8xz2xfB
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 18 Sep 2026 01:18:21 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1789658296;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=OziTzy4SV0rdP7QT5/3o4LU2t6LnQ939r26ChBP3tKc=;
-	b=RY09OReiAcYr4Db/Hsyzm0Y2unMJRSNf4hcZVhkmoDSaCwlGZbITj5h02wBi5kNzDwgE9P
-	rBGAL10Dt4+Jr8t7tYlXIoULTvmnSlBFoYqGuPaNnx60HcsgMrUNpYMzVrEs2t49KDGdR8
-	r7mJiRzcHxnHYzV0DTVXbN68/7wn7V4=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1789658297;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=OziTzy4SV0rdP7QT5/3o4LU2t6LnQ939r26ChBP3tKc=;
-	b=CvR2SWYfXd7l7Utd9ZyeAcuuRWD+UkT9aO4uvz6UHMGqbrmzPufGTJcDeYzlyDZvz0kaIH
-	YbnQnCtqrO4XW20Va9Sc55GI4x5YPE8mnKU41ociS0uVkDAypOzFdI8Uzd7aQlvaWllGzP
-	v+/8tVMlWwbSbaEDuNzes3pl4Q8mbRA=
-Received: from mail-qt1-f200.google.com (mail-qt1-f200.google.com
- [209.85.160.200]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-593-Wua5G0nfPte3W6kPxoUv1w-1; Thu, 17 Sep 2026 11:18:15 -0400
-X-MC-Unique: Wua5G0nfPte3W6kPxoUv1w-1
-X-Mimecast-MFC-AGG-ID: Wua5G0nfPte3W6kPxoUv1w_1789658295
-Received: by mail-qt1-f200.google.com with SMTP id d75a77b69052e-52fc0097865so26630791cf.2
-        for <linux-aspeed@lists.ozlabs.org>; Thu, 17 Sep 2026 08:18:15 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789658295; x=1790263095;
-        h=content-transfer-encoding:content-type:mime-version:date:message-id
-         :subject:references:in-reply-to:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=OziTzy4SV0rdP7QT5/3o4LU2t6LnQ939r26ChBP3tKc=;
-        b=l/7uuwxSB/Za914J/jusJFa63aakZC+Vn7j6+2sRsbwz2/18aE9mICiwYxA01AQGpg
-         KunevN5g9VaCzUzbZGo3d+lxJPBmlc1p4VmIvnmo1Dd9PxK5/X/V7sTzBFSDbQLUlZ/T
-         vjZGrzcEB4Gg+UkOLu411rvpdF7UsOtlvm07yUKGq6nYwMwAuEnMDf1ILIU98tydZ2dx
-         iqeCyVwbt7YIEhKvRYmlJHrXYHuhJaAVm+m+Z5taGopPjjYz507CRXjFs7kkSRMMpi0c
-         BXECC2igIMd8QCh/A0S5/WgjheLnpS8xFMmhoIqJqIkCaNvXl91kb0yPJklVy12nvA2A
-         c/HA==
-X-Forwarded-Encrypted: i=1; AKwUvBx0RR8irSzPNtIawXVVQJAq7LcMXvAM6f9VEzjvFum3noW2GIu0AydYWo9wB4l0toC2uqjAjIvhsXmJWw4=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++mNvW/Ts51FmZDE6U3ViAf0xb7UZ3BsklD+Jo5n5go/cCi1ha+4
-	lmoMsIdHHHUnKnjOhvRbQgbH8r2uf992cu5lgTbx5KkgH1JqxsJ/BbfPPpCpiFbbowwgm2h82k1
-	HbodV7/em+NsKBCDWoS2MwFGYbUmVz+Bf1K8rsIXmrCRULvnjJPbIXHcNqApoPsvnsJA=
-X-Gm-Gg: AYBFou0bnTzYr93T2+Zi2TMMR8CuKWfRww3WPDpUt8Nd5n/8KkSI+s/wfkECW89jX7d
-	K/nKcxWzelTAE2iL+R6+btX1xTeahF+g4jiIGc1iLgoPwlm1FKGMT2YTvIfiN2hIEOQNk64HbGU
-	Q1cX6EKygualaHJ2FVl44eYVORrF2JSbCAH4M7SDvpdmtIlKWeyrforDilky5Nqgf2+IUTZB3xt
-	G04fkt4txf61hjyNvqo3RZskXlNSqWUxcvSsgYLtY3A13gI3Q5aPKcAATdGyXYEzF+1bZcEpv9t
-	b1Z/0RMn/6RhDSPJjQLBVaTDlSVuOawbxTlsELA23h+gZa+xF3lSanvPFjC098CP4WFnwGOhUAj
-	1r/RcoMfXK/dOtEEggd8hqIXAAYzGEy36l5jpybE=
-X-Received: by 2002:a05:622a:134d:b0:530:98bc:3974 with SMTP id d75a77b69052e-5327f260d6bmr122394231cf.22.1789658294546;
-        Thu, 17 Sep 2026 08:18:14 -0700 (PDT)
-X-Received: by 2002:a05:622a:134d:b0:530:98bc:3974 with SMTP id d75a77b69052e-5327f260d6bmr122393851cf.22.1789658294117;
-        Thu, 17 Sep 2026 08:18:14 -0700 (PDT)
-Received: from [192.168.1.3] (c-73-183-53-213.hsd1.pa.comcast.net. [73.183.53.213])
-        by smtp.gmail.com with ESMTPSA id d75a77b69052e-53261fda5a7sm54054561cf.8.2026.09.17.08.18.12
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 17 Sep 2026 08:18:12 -0700 (PDT)
-From: Brian Masney <bmasney@redhat.com>
-To: Stephen Boyd <sboyd@kernel.org>, 
- Michael Turquette <mturquette@baylibre.com>, 
- Ryan Chen <ryan_chen@aspeedtech.com>, 
- Karl Mehltretter <kmehltretter@gmail.com>
-Cc: Joel Stanley <joel@jms.id.au>, 
- Andrew Jeffery <andrew@codeconstruct.com.au>, linux-clk@vger.kernel.org, 
- linux-aspeed@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
- linux-kernel@vger.kernel.org
-In-Reply-To: <20260712160301.98941-1-kmehltretter@gmail.com>
-References: <20260712160301.98941-1-kmehltretter@gmail.com>
-Subject: Re: [PATCH] clk: aspeed: ast2700: select AUXILIARY_BUS
-Message-Id: <178965828458.360090.13517236488404002811.b4-ty@b4>
-Date: Thu, 17 Sep 2026 11:18:04 -0400
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hm0fn107fz2xCC
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 18 Sep 2026 01:53:50 +1000 (AEST)
+Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
+	by smtpout-04.galae.net (Postfix) with ESMTPS id 6F81BC5CD7B;
+	Thu, 17 Sep 2026 15:48:51 +0000 (UTC)
+Received: from mail.galae.net (mail.galae.net [212.83.136.155])
+	by smtpout-01.galae.net (Postfix) with ESMTPS id DC43F60580;
+	Thu, 17 Sep 2026 15:48:06 +0000 (UTC)
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id C4ECC11C7B08E;
+	Thu, 17 Sep 2026 17:47:54 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
+	t=1789660082; h=from:subject:date:message-id:to:cc:mime-version:content-type:
+	 in-reply-to:references; bh=ssfsPCsBLCz35Jf8lbYJnVGRPUluymWTo2E6cM1OV8Y=;
+	b=e3X8JRPfeqvC+gDpr+zTPo8isxTF9b0OLruJXI9mZfMKdVyPBYF68RVHFsFy4BgBFdrEZ5
+	WtmEnxOheTyoUCd+nBey/jwRV1ZTLUnTeYleDoYgQEgsucKqzY9lCdC0iSWjemCajZv9z9
+	5CYFMqOUI3TH8Fouexr4RgHre93Vqp1q5M6lJcpAlLAcR5Tn8b/3glXkZuiJlITOmBgKqV
+	RttkBZHdPtc/FnQ8wmjaqRaqCGT7tGR8kxdoKz5RhPNaGr20RaNkBW/b7bo8dSVPGHgM8W
+	L9PE2zfpwn6UOgN5ZSzgZYCJtZ6i3k4uGG1q7XTJaeXsKV7ggUusyTVUHO0/WA==
+Date: Thu, 17 Sep 2026 17:47:54 +0200
+From: Alexandre Belloni <alexandre.belloni@bootlin.com>
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Billy Tsai <billy_tsai@aspeedtech.com>, Frank Li <Frank.Li@nxp.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	linux-i3c@lists.infradead.org, devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/8] dt-bindings: i3c: Document the AST2700 I3C controller
+Message-ID: <20260917154754dd1eefbe@mail.local>
+References: <20260901-b4-i3c-hci-ast2700-v1-0-19909e7cbd7e@aspeedtech.com>
+ <20260901-b4-i3c-hci-ast2700-v1-1-19909e7cbd7e@aspeedtech.com>
+ <20260907-imaginary-economic-oyster-57cdd6@quoll>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -116,33 +76,174 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=292; i=bmasney@redhat.com;
- s=20250903; h=from:subject:message-id;
- bh=QSpex/un9vsD7Byia08Y7HUcWbITtTxNA+HFXAQOZec=;
- b=owGbwMvMwCW2/dJd9di6A+2Mp9WSGLLWsGyqkZNmczfufBfb+779J5fQtPJpbRs2ss5YGT/78
- Ot304+t6yhlYRDjYpAVU2RZkmtUEJG6yvbeHU0WmDmsTCBDGLg4BWAilUkM//PiL7I03vIUk2W6
- Fvyzfs+Sm7k/ln06lrqO50joxeuJffsYGU6wTCzReuWhmr77YdxKz1V+F1qlndQsDed9uuVbu8e
- 6nhcA
-X-Developer-Key: i=bmasney@redhat.com; a=openpgp;
- fpr=A46D32705865AA3DDEDC2904B7D2DD275D7EC087
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: 8UbgQwPjXsexAcj_gGNqKhJkevOP3KBgwuCSWYHWqM4_1789658295
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260907-imaginary-economic-oyster-57cdd6@quoll>
+X-Last-TLS-Session-Version: TLSv1.3
+
+On 07/09/2026 08:28:38+0200, Krzysztof Kozlowski wrote:
+> On Tue, Sep 01, 2026 at 07:35:28PM +0800, Billy Tsai wrote:
+> > The AST2700 I3C controller implements the MIPI I3C HCI programming
+> > model, extended with an ASPEED in-house control block and a PHY
+> > programming window advertised through an HCI vendor extended
+> > capability. Follow the existing aspeed,ast2600-i3c precedent of
+> > describing SoC integrations of a common I3C IP in their own schema.
+> 
+> What precedent exactly?
+> 
+> Are you now bringing some LLM slop arguments here?
+> 
+> > 
+> > The controller takes a core clock for PHY timing and two reset-names
+> > lines: its own reset and a DMA engine reset shared by all I3C
+> > controllers on the SoC.
+> > 
+> > The PHY timings derived from the core clock and bus rate assume
+> > nominal bus loading. Boards with long traces, weak pull-ups, or
+> > capacitive loading need different ratios and setup periods, so
+> > document properties to override the push-pull and open-drain SCL
+> > periods, the SDA TX hold time, the tCAS/tCBP periods, and the SCL low
+> > period used for a repeated START or STOP.
+> > 
+> > Boards without external I3C pull-up resistors can use the PHY's
+> > built-in pull-ups instead. The achievable resistance depends on the
+> > voltage domain of the pins (high-voltage vs low-voltage), which can be
+> > determined from the pin group assigned to the bus. Reuse bias-pull-up
+> > (pincfg-node.yaml) for the strength in Ohms; it is declared on this
+> > node rather than a pin-config node since the pull-up switch is part of
+> > the I3C PHY, not the broader SoC pin control IPs.
+> > 
+> > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+> > Assisted-by: Claude:claude-fable-5
+> > 
+> > ---
+> > We considered formally expressing bias-pull-up's dependency on a
+> > pinctrl state in the schema, but couldn't find a clean way to say
+> > "depends on whichever pinctrl-N is active" without hard-coding
+> > pinctrl-0 specifically, which would be wrong in general (a node's
+> > active pin state doesn't have to sit at index 0). We've added
+> > pinctrl-0 to the example to illustrate the typical usage instead,
+> > without a formal schema-level dependency.
+> > ---
+> >  .../bindings/i3c/aspeed,ast2700-i3c-hci.yaml       | 133 +++++++++++++++++++++
+> >  1 file changed, 133 insertions(+)
+> > 
+> > diff --git a/Documentation/devicetree/bindings/i3c/aspeed,ast2700-i3c-hci.yaml b/Documentation/devicetree/bindings/i3c/aspeed,ast2700-i3c-hci.yaml
+> > new file mode 100644
+> > index 000000000000..19ecb5b15038
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/i3c/aspeed,ast2700-i3c-hci.yaml
+> > @@ -0,0 +1,133 @@
+> > +# SPDX-License-Identifier: GPL-2.0 OR BSD-2-Clause
+> > +%YAML 1.2
+> > +---
+> > +$id: http://devicetree.org/schemas/i3c/aspeed,ast2700-i3c-hci.yaml#
+> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> > +
+> > +title: ASPEED AST2700 I3C controller
+> > +
+> > +maintainers:
+> > +  - Billy Tsai <billy_tsai@aspeedtech.com>
+> > +
+> > +description:
+> > +  The AST2700 I3C controller implements the MIPI I3C HCI programming model,
+> > +  extended with an ASPEED in-house control block and a PHY programming window
+> > +  that are advertised through an HCI vendor extended capability.
+> > +
+> > +properties:
+> > +  compatible:
+> > +    const: aspeed,ast2700-i3c-hci
+> > +
+> > +  reg:
+> > +    maxItems: 1
+> > +
+> > +  interrupts:
+> > +    maxItems: 1
+> > +
+> > +  clocks:
+> > +    maxItems: 1
+> > +
+> > +  resets:
+> > +    items:
+> > +      - description: Core controller reset.
+> > +      - description: DMA engine reset shared by all I3C controllers.
+> > +
+> > +  reset-names:
+> > +    items:
+> > +      - const: core
+> > +      - const: dma
+> > +
+> > +  bias-pull-up:
+> > +    $ref: /schemas/pinctrl/pincfg-node.yaml#/properties/bias-pull-up
+> > +    enum: [177, 231, 261, 317, 400, 470, 550, 600, 750]
+> > +    description:
+> > +      Enable the PHY-internal pull-ups on SCL and SDA and select their
+> > +      strength, in Ohms. High-voltage pins support 400, 470 or 600 Ohms,
+> > +      and low-voltage pins support 177, 231, 261, 317, 400, 550 or 750
+> > +      Ohms. When absent the internal pull-ups stay disabled and the bus
+> > +      relies on external pull-ups.
+> > +
+> > +  aspeed,pp-scl-high-ns:
+> > +    description:
+> > +      Push-pull SCL high period. Overrides the value derived from the
+> > +      i3c-scl-hz bus rate.
+> > +
+> > +  aspeed,pp-scl-low-ns:
+> > +    description:
+> > +      Push-pull SCL low period. Overrides the value derived from the
+> > +      i3c-scl-hz bus rate.
+> > +
+> > +  aspeed,od-scl-high-ns:
+> > +    default: 380
+> > +    description:
+> > +      Open-drain SCL high period.
+> > +
+> > +  aspeed,od-scl-low-ns:
+> > +    default: 620
+> > +    description:
+> > +      Open-drain SCL low period.
+> > +
+> > +  aspeed,sda-tx-hold-ns:
+> > +    default: 10
+> > +    description:
+> > +      SDA output hold time relative to the SCL edge.
+> > +
+> > +  aspeed,cas-ns:
+> > +    minimum: 39
+> > +    description:
+> > +      Clock-after-start (tCAS) period driven after a START condition.
+> > +      When absent it is derived from the SCL low period of the
+> > +      applicable bus context, clamped to the protocol minimum.
+> > +
+> > +  aspeed,cbp-ns:
+> > +    minimum: 20
+> > +    description:
+> > +      Clock-before-stop (tCBP) period driven before a STOP condition.
+> > +      When absent it is derived from the SCL low period of the
+> > +      applicable bus context, clamped to the protocol minimum.
+> > +
+> > +  aspeed,sr-p-scl-low-ns:
+> > +    default: 40
+> > +    description:
+> > +      SCL low period used while preparing a repeated START or STOP
+> > +      condition, kept separate from the push-pull SCL low period to
+> > +      satisfy the MIPI I3C clock stalling requirements.
+> 
+> Probably I3C maintainers should weight in here and help - should these
+> be made generic for all I3C controllers? I am surprised some "standard"
+> I3C controller needs to configure this as the single one. No other ever
+> needed...
+> 
+
+I guess we need to make them generic. Probably nobody needed them yet
+and not all the controllers will have support anyway.
+However, I would like to make sure we get enough commonality between
+controllers that support setting the timings individually, can you
+check?
 
 
-On Sun, 12 Jul 2026 18:03:01 +0200, Karl Mehltretter wrote:
-> clk: aspeed: ast2700: select AUXILIARY_BUS
-
-Applied, thanks!
-
-[1/1] clk: aspeed: ast2700: select AUXILIARY_BUS
-      commit: 8932b4283488ea91b1a67fae7a29a505f1d6e965
-
-Best regards,
 -- 
-Brian Masney <bmasney@redhat.com>
-
+Alexandre Belloni, co-owner and COO, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com
 
