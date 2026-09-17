@@ -1,50 +1,50 @@
-Return-Path: <linux-aspeed+bounces-5022-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-5023-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37634C88E72
-	for <linux-aspeed@archiver.kernel.org>; Thu, 17 Sep 2026 22:26:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B72EC88E72
+	for <linux-aspeed@archiver.kernel.org>; Thu, 17 Sep 2026 22:27:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hm9Mn24c6z2xbQ;
-	Fri, 18 Sep 2026 08:26:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789683989;
-	cv=none; b=JEnAG5ZAeyu1CR1AYRIx6C/AGsy/bzUmDu1DClyP90cDsm1YOG25NqrzgCrQB6gQrACCnOOvhD7PiEllSAq7vuPTN6L2gPKATIogU87i/X7A7YK1BFa7Js0hr/gl882OJrpBQVvGRR/asHMis9LB25YrAN34vk+dqWb0acLr7NSalUU1UPT6jVfrg7+1Ot+VeqQGoMlwg/IUTVe1SSbyCkPIRfkThYiMFYbv0GIdA3S2S3bzYGPeDrExAHgI751/okFTZfzzCbsBAAFV5eNBztKhDbUigttRSk+v+QPGNQIoLWINV0pBluVGHs/pUGMgqOEd43NV3+NcJpZLldk3Qg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hm9Nl6cLHz2xfB;
+	Fri, 18 Sep 2026 08:27:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789684039;
+	cv=none; b=nccmnFVbqk/JC3mE3CkvB/p4JLPSfSctPJSMivQCvo+sevF8L/LDTViBpfDDkpeWhK4mxhRWJZ2VARrmiyk+Py6O/vQiv33QIg5IeVIXAFQXPtmqTEk3qAjBGt69QaJ5kw6mW6rNbBpHaqzItVR28MPw7Gk06sZojk2zt43HRlK+Y93XEHy8RfpLcc46q8W2hn49qafoWVHJhcWDtBfNkqgelzthUulyNlRgWFJdmnzozZpvcJraZYK8sovA0E5unpFoStB5Pmw9IvcypyjLa6UgSZEGfjqCKtOBThUaZ/lrQS+AZ1RW8O4hUioM4JjlJWzwa6iFrD+9Y6xs2UxXCg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789683989; c=relaxed/relaxed;
-	bh=Hp9mrowOiBNinPIkdPwJdxIaRmTewvkis1qNuqUG7eM=;
+	t=1789684039; c=relaxed/relaxed;
+	bh=yqZXwnT4sTbfdvOMcGPrEviywWtc9S3DZ3O1HarHNx0=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=FUGUDSj2N6BmIFOibtcOMxTFjaGstVhg9NZOxyH+BgmqL85mVtm5ftj8+0vdw/Vtt0VFYK3F4E/+EkdAh6Zg98B8GgxPVbX6s0ucWkerNxm9SiwMHxSJSKrV7D+RcuFM48g/3vj9QrLX2YbBrYIKsdgZ4NI2SnsQKSyoX9xfl9yysgOaQTdLFqHP+xkXNcqODgghxMzM0DH05ORoRHZzqu7ZlqcY130ZsOD+MFuo76s2IZ16e5wSVqarVWi9QWFNWJhlYik1CgwK7RWuRYL91Cva744wsCDm7lU4avkCKtoesFyGfGdw2oruXCilLGVepvAohkXtZhct/anX3lFhNA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ejn0xVuO; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=FiCJGQSN8ET5YwfwUud8fgdX4STceZO6DmzAOmj2lKKColP7l37cE9561Wnr/uOgkFXfNNcTCFEirV/TbGoeiTMLpJBO0JBimn8hb8QJiGiWhflctUSfqQGjSIXgxRq2WIZ9HIuDnWhrZL+0wtUBFGkK2hVWouUJYoN8WNt0THUQJei22pbwxUR2svIIK0ZeizLzApVv5e26pJLR50PRRLg3+ki7iLp7qvWIPQUCR5Nh1ZXq+KdUIgSzbVjKu0gyw4YHid0003wex+z6aUKIx7xVGhQcLlsjLFetu31c49CwTfg1iD9LIwj3EB610nKmHjrr8bURue960FJWi8gx8A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=T1Ch8FmE; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ejn0xVuO;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=T1Ch8FmE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hm9Mm0RwXz2xYh;
-	Fri, 18 Sep 2026 08:26:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hm9Nl1vxVz2xYh;
+	Fri, 18 Sep 2026 08:27:19 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 8FCE6600AA;
-	Thu, 17 Sep 2026 22:26:24 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A49BF1F000FF;
-	Thu, 17 Sep 2026 22:26:23 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 5D54141B0A;
+	Thu, 17 Sep 2026 22:27:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F36F21F000FF;
+	Thu, 17 Sep 2026 22:27:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1789683984;
-	bh=Hp9mrowOiBNinPIkdPwJdxIaRmTewvkis1qNuqUG7eM=;
+	s=k20260515; t=1789684036;
+	bh=yqZXwnT4sTbfdvOMcGPrEviywWtc9S3DZ3O1HarHNx0=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=ejn0xVuOyE+Vjz9cxODd86WSyGTH7DjSP+tiPmxvVfp3sUqvcH1kOniuNb1xbDSjD
-	 5HdcNGpclFt0/eOx0jd9AkCTvArwlTvroEscLXOKMRoj+xO8Fth5cg7fHbeG22rRc3
-	 xAGY4DuGok7eTUetwkTMCSlh5z/GLBokLpadygR0iQG8AtUCkJBHMEN4wyAyOqqvO8
-	 uvX/hHTd8EYQ0kNOBsVACcx/eed89Xnn6LT2d98PROCcZEUSS+LhafZa8oR5iqxBY5
-	 g3YM583evaItELWO3nw8+9REvSosKJQj0tMeuW65Z7S11f1D9yYjFx8BLUo9ucoVgP
-	 GFo+IG8OtranQ==
-Date: Thu, 17 Sep 2026 17:26:21 -0500
+	b=T1Ch8FmEiDOu1G4fnoJuLj1rEhyz4E/ziyDrsJZ9x4LQWGIVRxnAKXftZ6pOkq0cV
+	 k/B8IdIfBNledOY1f9g38IVV8BrpBoSMSIu+lh+YHvym5y1Z1NQRJNtF6S3Q7bMBRF
+	 dMsU5FV1q4t4A4hIwC7E5PLIF2cNGkC3wolLzWWODHyQxwtkpaLmKs7/zJJlIncvx8
+	 NZBsWZICRa0Iq9VByDkAUgeriSBjwz6lhGxW4iCWDZik9l+a1vkX5lWbfhMvYRL82i
+	 nbN0PhtXBdsgAigUJoqR4xGqxnL7FxhSzWTFywmuGVz5Pll1HxEfm1SYpAtypTB4wm
+	 Nes7zqLQvzOLg==
+Date: Thu, 17 Sep 2026 17:27:14 -0500
 From: Rob Herring <robh@kernel.org>
 To: Changhuang Liang <changhuang.liang@starfivetech.com>
 Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -77,7 +77,7 @@ Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>,
 	linux-aspeed@lists.ozlabs.org
 Subject: Re: [PATCH v2 3/4] dt-bindings: uart-routing: Add binding for
  StarFive JHB100 UART routing
-Message-ID: <20260917222621.GA4081995-robh@kernel.org>
+Message-ID: <20260917222714.GB4081995-robh@kernel.org>
 References: <20260905102901.126035-1-changhuang.liang@starfivetech.com>
  <20260905102901.126035-4-changhuang.liang@starfivetech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
@@ -102,26 +102,9 @@ On Sat, Sep 05, 2026 at 03:29:00AM -0700, Changhuang Liang wrote:
 > This controller allows dynamic routing of inputs between built-in UARTs
 > and physical serial I/O ports, enabling use cases such as Host <-> BMC
 > communication via UARTs.
-> 
-> The clocks property exists in the hardware, but the driver does not use
-> it.
-> 
-> Signed-off-by: Changhuang Liang <changhuang.liang@starfivetech.com>
-> ---
->  .../uart-routing/starfive,uart-routing.yaml   | 46 +++++++++++++++++++
->  1 file changed, 46 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/uart-routing/starfive,uart-routing.yaml
-> 
-> diff --git a/Documentation/devicetree/bindings/uart-routing/starfive,uart-routing.yaml b/Documentation/devicetree/bindings/uart-routing/starfive,uart-routing.yaml
-> new file mode 100644
-> index 000000000000..1977f2ed20a6
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/uart-routing/starfive,uart-routing.yaml
 
-Unlikely to have another "uart-routing" binding, so move this to 
-bindings/soc/starfive/.
-
-Otherwise, looks fine.
+Also, drop 'binding for ' in the subject. The subject already said 
+binding once.
 
 Rob
 
