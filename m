@@ -1,97 +1,97 @@
-Return-Path: <linux-aspeed+bounces-5029-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-5030-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D019C982D0
-	for <linux-aspeed@archiver.kernel.org>; Sun, 20 Sep 2026 07:46:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BFDD3C982D0
+	for <linux-aspeed@archiver.kernel.org>; Sun, 20 Sep 2026 07:53:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hndjT1hzYz2yK7;
-	Sun, 20 Sep 2026 17:46:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.168.131
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789750728;
-	cv=none; b=fW7sIWKQABrCkCgNGYCH7aqm7wPhwPXjyMdzy+sAXT1JWhOCLKqGApCcL1ptxlhrbf5SLLgMJkUwg/vhWUmFsVSzML2oaGwQ7Xd3jrotGT2eaIEBT+u4ggL5WkRrcB7EA8ora0Pv3O8vEzSJjFMlyNvy1MCBWCH0wjB5LlTrsNUxBWY7WMMQRAnS9O5idS6tXxjT/MKaGFSmjNTDrz+ueEmm3CyA3N1ySXP7af0uAONltvMBZGeISUN/Cldacdfr4Yg8sMQmu4jfZZBGhvulWUeocJ0UumqR3XPYHsxOFKpxRc6xCGZa8HK0sHHybIgQzg5QWKQMI29O40LME4QtWQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hnds71PDkz2y8c;
+	Sun, 20 Sep 2026 17:53:31 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.180.131
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1789744510;
+	cv=none; b=bx8pvNk2YKO+slLjGA/AT7rd5yAJ3JFsXhQeWHyXJ7edbXHMHPOz8TPJvSD8wWtnEUmBj5phP1BN3pO8cAv5F9g6Zpu8wgbgaEa9DcHOyBuXcH36A6xu9XsXdvjnBT3M+T4YQ3p0DNY8EYaCDZoNaxXKH94aLj7qabvMa58cS6pHdHfBGzaX8PLKvnCj/p1VBGIZGxYA4SnGFJJs1k5kWCgbxy/vC13EC+fzRCzN1BGT2At2h2MZREqZvtVvD8jZ+ekgK0bCyopg4r5uxDQ2GXe8BRujHq2nTMPnxGnwDRFWLwqr55LDeBBFOWgqTwvKm7NqKetqaqQGH8rdI3U8Pg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1789750728; c=relaxed/relaxed;
-	bh=FmJ9l5QFBMMe48wI+FnvFQSDXsCaB79a0WihlyuJstA=;
+	t=1789744510; c=relaxed/relaxed;
+	bh=klACuV7fdAYuSy7gHXP/AwNMnEDjRFePgshatLjHrOQ=;
 	h=Mime-Version:Content-Type:Date:Message-Id:Cc:Subject:From:To:
-	 References:In-Reply-To; b=WPsXfFqEjjSLCdwOJxvlyrLc6S+/t9pENX62My+IrIfEtjIyefmOh9xin0p8MBMaSfCwTRY18C6DavYzdd01US2ZxblHE2smwE3OGdzDRItN7hwCu+fRmLsOtNNIVmbMxp2565mvrSpILjyKkVXbPzxDZTbHtA5tgA1c80b0KO0aKkexVcnjEFHMPXrq3I31ZgId1AyleXH4v/h3sg0e54G09wKeDn8yz4Zclzpj+R8Ui0ZwyDfz1F5Pt7SSvlskM45lcaV+c7LamzBjyFU13bV9RKp8ieVYiy17de1UUFx1MhW5nloyBHRon4s0GOFZJxdRkvtg3fQVCPPDun62VA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=F862iJkl; dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=HPoZ11UW; dkim-atps=neutral; spf=pass (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=ze.huang@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
+	 References:In-Reply-To; b=g0tOnM0r8dbk96ywH0/gg2P9pEK2q3Nw4j0mlbAraUx/6VjC3PMdIjz6GJCpMf4zuWTVHJcaaJ5Cz6xGSdV2EHwSlQfjIksoG+P1gG3j5KfR7WDIIFsDoo1Qg49VjG4Cg65DjRnLXl/uJA2b6WrFbXSIPL7o+XF9U6brAewr/0gBPw5wiwRNR5+NIk9LCCcAorYsWYSiFL+p+qhZ7I9OwXDDhns5lPlw3bz3rxF58RylN/z/WeswMLP4+cJWBaW2LzpFzp5dqdY3kmZl5NG4vkGyNoTjP4TcXLmalj33LKsj3JCzOCxHlf/283+cCKZNWBc6WnWPf3BEYDpbJbXTsQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=DTqEyIFw; dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=caDWhMiZ; dkim-atps=neutral; spf=pass (client-ip=205.220.180.131; helo=mx0b-0031df01.pphosted.com; envelope-from=ze.huang@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=F862iJkl;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=HPoZ11UW;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=DTqEyIFw;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=caDWhMiZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=ze.huang@oss.qualcomm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.180.131; helo=mx0b-0031df01.pphosted.com; envelope-from=ze.huang@oss.qualcomm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmf3C4bR8z2xYg
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 19 Sep 2026 02:58:46 +1000 (AEST)
-Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68IGo1Z92178318
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 18 Sep 2026 16:58:44 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hmblc43Wwz2xCC
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 19 Sep 2026 01:15:07 +1000 (AEST)
+Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 68IDOcS2636217
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 18 Sep 2026 15:15:03 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	FmJ9l5QFBMMe48wI+FnvFQSDXsCaB79a0WihlyuJstA=; b=F862iJklfTEspXfc
-	UjvRsNylWUiwop35P1muhLn10HTOL/M7stdoCV5Frgx1dJJyqJCtb9FvturdV8sv
-	z3alBIEzMWiVlVthfKBVozYtF7rTFVwi4etMJQaCL3Xb1OMzWcr3mo94SqS0NKef
-	R2spGU2cf3Z4YDgyNC0YvETba6iLNRQtX+MmCmDbez6Y2pZzcL6/1A49LPfbZR3+
-	EwSgfygJ0q8qQ9GphKHYvddiZI3X3ZqEQSOuyLKfi60D+5Gm3ZpMKc/Bkp7QtCxC
-	19jlA5mLGS4eEQmM2YLhernOpYqFKGMWVlTYHqEyqO4snc1SdLMMuu7ckn2KAGe8
-	b6XcSg==
-Received: from mail-pg1-f198.google.com (mail-pg1-f198.google.com [209.85.215.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gs8gyg87e-1
+	klACuV7fdAYuSy7gHXP/AwNMnEDjRFePgshatLjHrOQ=; b=DTqEyIFwhXRJLNu9
+	IeYZsHOrKbXijwmdqq+ZxiPvyfet/fCUB0waQ1XFZArweh0RjYYUmoxq7nl/JEN1
+	Uy5NmhOd1qusEnfpTpqRg8agzbrAvS7pZSvHR/ylobOfF2XYjSV1/YXA1xxh8us/
+	0WSRuT7kO6kdLHoxx0I2EyTlfaVrjEBLOT5OPcRGUnOIkfZCR1Q/Gs7QFtUyIHF/
+	pYQtElGkrqyBwxzixxweaHTo1wj2rjXG06RAMMI+IEvfVga5JiRCPKr59GAZzH1x
+	JMF+HWQl287jMZVbazg42u8QTxVQ95BPg7psGMdFhgyAH+3PsFf8v+fRdN7V6mJV
+	VeUpRg==
+Received: from mail-pl1-f199.google.com (mail-pl1-f199.google.com [209.85.214.199])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4gry2btas2-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 18 Sep 2026 16:58:44 +0000 (GMT)
-Received: by mail-pg1-f198.google.com with SMTP id 41be03b00d2f7-cc72777faa2so232784a12.1
-        for <linux-aspeed@lists.ozlabs.org>; Fri, 18 Sep 2026 09:58:44 -0700 (PDT)
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 18 Sep 2026 15:15:02 +0000 (GMT)
+Received: by mail-pl1-f199.google.com with SMTP id d9443c01a7336-2d6f80c76e6so17559495ad.3
+        for <linux-aspeed@lists.ozlabs.org>; Fri, 18 Sep 2026 08:15:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1789750724; x=1790355524; darn=lists.ozlabs.org;
+        d=oss.qualcomm.com; s=google; t=1789744502; x=1790349302; darn=lists.ozlabs.org;
         h=in-reply-to:references:to:from:subject:cc:message-id:date
          :content-type:content-transfer-encoding:mime-version:from:to:cc
          :subject:date:message-id:reply-to:content-type;
-        bh=FmJ9l5QFBMMe48wI+FnvFQSDXsCaB79a0WihlyuJstA=;
-        b=HPoZ11UWvtpVB6jNVmmGunlzaFqd4XJYpptC24vahymieO69eEKqGVW7xYtZGoi3Ai
-         8VM1JOkd/FE77iY89UWYj3vAIGi8KudEtuD82GTlwHVIRjmr0Se8lzudbxRbooaanNtb
-         GZlgLhPiUB7WqCbC3jVAUyNNP9L885TGqGLINkx6/t8TyzxZzNAfj5O4yt5RMjgoFJRH
-         /25NKN1/thdCC/EdjyfGq6aIlzVkJwDm+eNKZQh1HL6bA21Q/oqIzrJh8okSl4zRLS4m
-         /vn87q76QNduVfiMaAF+WEY0KvCxcfw9xnM8SlKdGQOeCoIQjZ7B40dVP8J3TkoJDxTI
-         JCRg==
+        bh=klACuV7fdAYuSy7gHXP/AwNMnEDjRFePgshatLjHrOQ=;
+        b=caDWhMiZATrfSlKzHl+6hfxrnvCMLea5ZUVupdYe3JWtyTnBidwGym+3ZvieibQRCW
+         hHMehgkBo9Cy521icnPhRao4MdJm8rsZANXpPNqu3FLT+rxCKcqLPPEnl90B9/wTLzv+
+         mLW59kgoxzsskyoSJF2JJAgjx3d0PuNLBDMWgp+yyqd7998RKJ7NT97TQ+AF3hMcqHyw
+         0QjDy4+iqg9TWTkeZdpF8yyrNlQcqAXbrYp78CjaMo0SWYpNPb0KDqqD9GocSDeRT5Cc
+         cK4OYHPcQMlCxRdn4tJ750yPzfyX8E7f3jYtbaPXrDx2toJgxzB64mEFFKAA63H2KyZA
+         aZwg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1789750724; x=1790355524;
+        d=1e100.net; s=20260707; t=1789744502; x=1790349302;
         h=in-reply-to:references:to:from:subject:cc:message-id:date
          :content-type:content-transfer-encoding:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=FmJ9l5QFBMMe48wI+FnvFQSDXsCaB79a0WihlyuJstA=;
-        b=g3smlbxqqThbzVE4UZv0Dp1SgHoyachsrJUqKsvTyO6GC7BM4CycdQ4RmNARRd+qKf
-         PrUbbCSOLF9XyaxubZg4l7M5n3eiP++/7067maEPUwslKFja8EVuRJdGJOHqtR3ql+S5
-         /67EixLyWHOk6MYeUlf6xIC5IUWlQfkBdFTiPG6aytDLuxAaIIuJMtXAFs7hJeT9Sb6D
-         0/3WQQi4lPUZFX8IjSuhpqwYRAa+tmlhD0wjJkcJNAPJI8Fy5tolhgWASgfUuZLxAL4+
-         Sma/7efOVCX8GiNaJ5vYsRIugdqnRCWmrHyMStdgMHGSLxfBt0ixTaNQuE2fYDyTAhVz
-         ctpg==
-X-Forwarded-Encrypted: i=1; AKwUvBw9AxkjWqFAShr9a6GVv5aRuB5zPuqxscMcB++iIb2bOdSmZfjtR1LKAPs91KEo/cSS9VF0lkZyzh56qKA=@lists.ozlabs.org
-X-Gm-Message-State: AFuF++lvqK7slEK/CfADF1qYzw/Op/F7WdiSdXZ35/AiAVluoCH9krUy
-	3Ybg6c4th17NYjJtolWay8FFBfHW0K7SxPqtOEBXjM+cUUgW35vLbpwZVdGMG2OVP3wjtPgicNn
-	cS07gx5QS6dvF+G+nj5iUTJKYwOEbe4BoyMDxuIAawRvaxGMCozOp5GBkDHMo4g7sMCVM
-X-Gm-Gg: AYBFou1PL76bAdSdEabdexQklr+LnBHYXxIQ3YkpnAB0vyAnwyWC+Om1HfIFV/s4gGI
-	ZkE+D2OWeglKNF7cFNLRERjmEdE7IJj14kvux2i0OeQksd9nuKDKopkQI5UbEOkFVs3nlgXtvwu
-	M49Tn/n/wnfzjF0+xlKs1pYrhsdEVqgCx6sC0Vi4xhiJxOlJHoT4yfYjDnnJoFfUjoo1QSINH7O
-	io08WqS83W6a3P4/Zw844bRaLd0Gnm+jjlqgWWQB+lI3Vk8fOSVKxnQizjA/giNrqyRtBLyVVAp
-	SF0FDSad/DyOWHy51AOsAdtD0WbL5wNfHKQIBx8UNGaw+eL8mHERd1fGLFezwAEJ1qYNUYlkv9D
-	kaEzm2A==
-X-Received: by 2002:a05:6a20:d707:b0:3dd:a195:fa0e with SMTP id adf61e73a8af0-3dda195fd95mr361312637.51.1789750723378;
-        Fri, 18 Sep 2026 09:58:43 -0700 (PDT)
-X-Received: by 2002:a05:6a20:d707:b0:3dd:a195:fa0e with SMTP id adf61e73a8af0-3dda195fd95mr361267637.51.1789750722830;
-        Fri, 18 Sep 2026 09:58:42 -0700 (PDT)
+        bh=klACuV7fdAYuSy7gHXP/AwNMnEDjRFePgshatLjHrOQ=;
+        b=1dBM9SoqD1dfLyJ5uccdpZrTGRT1DZZhDnJ4aLn4pjzY55RjUIYG1pvIwzZ8XD+bNa
+         CoqHjhdlVZvI5uMuqyJF4/yPqMIIPJxebIYKbIQGAlkIzCe2EFKUSuDsAORjgSjw6+5K
+         ieY3cchUB5FVaL0HM9ldF/PyaPCa31QqLPAaIxkqhls2+NugAyB78YoIXHwh49C5AHqk
+         sDtjWLo1hwPsvLrN4VC1AfhjZwO2lenC0tHhPkvXPvGeVhZVKaq0YlyCWAxmbehb/R0x
+         rLabLHedNPH9xkFfMpGp72pObV2Nq9cTejIBTzTLkqYWP5efBpTbgHUtShYNwXPzDoVe
+         2woA==
+X-Forwarded-Encrypted: i=1; AKwUvBwFiUMsVHg2sWEI6uHt5l91juuvsSgQmz77589GUQF/lSqbmle8WaMGUenQbEVK42V8tTr0yhCfETrwUyI=@lists.ozlabs.org
+X-Gm-Message-State: AFuF++lGFgmmrWSRt9o+h4cyDjxPdaB/voqc7KlAttd+utx8sfzSTFn1
+	/rDhXX3DNecurYo+NCkjNxwyTQpqVmJ+cZ+J7uM8xWVXruI7F/nV9CU4rPsGT72JFo+0rgeCB1B
+	Ikqu33840np+x3SB1pi8BvT0MZsGTLl3NwenSZtN0ue31rUUO5LH/d9caTLyyFFjohQq/
+X-Gm-Gg: AYBFou3TFdqI60+NRUADe6b2W4TZRZBzaZtjAXdtmoznK74ZOrxBYBDArCxnE1+rT4s
+	D+qCLrJ8SnAUoT4D4g44HbwVcVqOs4R23j3nEspafWHjb1SVfUtfn/6PX6OsN0jn9tlmtmwCDGF
+	qvScLCY+hrL6uIVy5/isAJuf2tAGp8IasbHAwKXmiHNGPRVJqMCnVJno27bLfjd0INqgkt57YvA
+	R/HQ90hSH91lJl78AGKuJRHeH8O4DvxnTvCPa6v6Ruv4zAQ9SU8xZkOGXKikwzBDKgl56zkp00I
+	eFFkuBlJot6ifWIN6V3TMgK/yHXLsL6qpCU1PVOflg09p6Mym1p5D8xxrUcKB6e4ocF1aI5TPN1
+	GWJaqmQ==
+X-Received: by 2002:a17:903:906:b0:2dd:c053:e669 with SMTP id d9443c01a7336-2ddc053e6a2mr4635005ad.47.1789744501633;
+        Fri, 18 Sep 2026 08:15:01 -0700 (PDT)
+X-Received: by 2002:a17:903:906:b0:2dd:c053:e669 with SMTP id d9443c01a7336-2ddc053e6a2mr4634335ad.47.1789744501092;
+        Fri, 18 Sep 2026 08:15:01 -0700 (PDT)
 Received: from localhost ([143.246.51.243])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-cc5c50e7433sm1426162a12.28.2026.09.18.09.58.36
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ddb73db302sm10267015ad.2.2026.09.18.08.14.54
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 18 Sep 2026 09:58:42 -0700 (PDT)
+        Fri, 18 Sep 2026 08:15:00 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -107,13 +107,14 @@ Precedence: list
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset=UTF-8
-Date: Sat, 19 Sep 2026 00:58:17 +0800
-Message-Id: <DLILO7Y6WWXC.ON1PAKLWJM1Y@oss.qualcomm.com>
+Date: Fri, 18 Sep 2026 23:14:35 +0800
+Message-Id: <DLIJGTK5M3G0.2PNROS5SMQWNF@oss.qualcomm.com>
 Cc: <dri-devel@lists.freedesktop.org>, <linux-kernel@vger.kernel.org>,
         <linux-aspeed@lists.ozlabs.org>,
         <linux-arm-kernel@lists.infradead.org>, <imx@lists.linux.dev>,
         <xen-devel@lists.xenproject.org>
-Subject: Re: [PATCH v3 1/2] drm/imx/lcdc: avoid duplicate clk_per enable
+Subject: Re: [PATCH v3 2/2] drm/imx: replace struct drm_simple_display_pipe
+ with regular atomic helpers
 From: "Ze Huang" <ze.huang@oss.qualcomm.com>
 To: "Thomas Zimmermann" <tzimmermann@suse.de>,
         "Ze Huang"
@@ -146,99 +147,86 @@ To: "Thomas Zimmermann" <tzimmermann@suse.de>,
  <u.kleine-koenig@pengutronix.de>,
         "Marian Cichy" <m.cichy@pengutronix.de>
 X-Mailer: aerc 0.22.0.r10.g73f20125
-References: <20260727-drm-simple-kms-removal-v3-0-de36e534f7a1@oss.qualcomm.com> <20260727-drm-simple-kms-removal-v3-1-de36e534f7a1@oss.qualcomm.com> <bbf8fd0e-8e1c-4899-98f4-b8231800de8c@suse.de>
-In-Reply-To: <bbf8fd0e-8e1c-4899-98f4-b8231800de8c@suse.de>
-X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE4MDI0MiBTYWx0ZWRfX+x2weOkPP3qK
- C5FYPEoy8K0y/kn4Iz9phQkJNHbfWbGoQ+7LxacVpX9JOWvsL4SyGuyR14XDHOaIP19Uy41GlU9
- ZU0hCJtHgi6oEfs4GTy70dYTDIOSvnM=
-X-Authority-Analysis: v=2.4 cv=Tq5zFzXh c=1 sm=1 tr=0 ts=6aad6dc4 cx=c_pps
- a=Qgeoaf8Lrialg5Z894R3/Q==:117 a=LNnhWNgewsfctp/cwirQdA==:17
+References: <20260727-drm-simple-kms-removal-v3-0-de36e534f7a1@oss.qualcomm.com> <20260727-drm-simple-kms-removal-v3-2-de36e534f7a1@oss.qualcomm.com> <8e4c84be-5c89-4d84-adda-aad4c7de0c8a@suse.de>
+In-Reply-To: <8e4c84be-5c89-4d84-adda-aad4c7de0c8a@suse.de>
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE4MDIxNyBTYWx0ZWRfXyGllaye8LpyS
+ W4MHCsNT/jJSocAzImIgg9FwUqucPi0h+Pooq6QpyY4XbDLxGtSMAtYl3YqKXnBNyWGuBb6ljyP
+ xfY1NUzC8wkJqjoK2xAHFZu32LokWrM34L9dlbbrkiYs5WSGZIJqODtQ25oH0EceAc1+cVHpQ85
+ MAdsuuvM62sMHgSowlzw6MFC7SwjAZ1qpCDy95TpUGlUqZqTL11Zh0tymHfte8qGsjtBGuorLdi
+ HEgRBWsDfMmvxWi8PuDqtNyDdvAlFXwQdasrpR4e/rw3F9axA/nVuHtI+4OksDegKFqz+gvbDuh
+ IZdDbNbhDYyNkd/JZhHIQZysP5gAMVpSIMqQPQ94mDT9Q24d2BOERgWNqWiWFoAovf4oWzjZiFf
+ j6oAmhxTpTHBAJ2YZPqhfxqI6ipVbcRI0bc/4jr+/7J+iUuNcbAisqnk+UJS/DHcGpNWehWsg1U
+ qgGY6dUdD3rzvnkrGlw==
+X-Proofpoint-GUID: WZRTeg9FsZINcroQz40OQsWRrL8Vx8wg
+X-Authority-Analysis: v=2.4 cv=bYP+w+PB c=1 sm=1 tr=0 ts=6aad5576 cx=c_pps
+ a=JL+w9abYAAE89/QcEU+0QA==:117 a=LNnhWNgewsfctp/cwirQdA==:17
  a=IkcTkHD0fZMA:10 a=VdqzKS8jKosA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22
- a=EUspDBNiAAAA:8 a=gNeoJdBQTLUQTwsD9V0A:9 a=QEXdDO2ut3YA:10
- a=x9snwWr2DeNwDh03kgHS:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwOTE4MDI0MiBTYWx0ZWRfXwsnqFhMSF3xb
- rB90A0wKK2rIGqCKLETVZPtA1mjPODqEelP9pxkPwJ4U1+Y33UUnGV1gliv2oGFJT5i264C8LxC
- hssjUYBUbLjjtcut3uSOqCl9g2/sFZSh6eTSUtX7muRh5eBMJBudjMcQwf+9i6c/9vFezcEOlBj
- LICGfeaPUzE5S90mZViCqsVrofqmay72dcUZV1T8FqylzleSNlQEaO7vVHXU7RQlZ26mBX29rbd
- MsgIwzwqkEbkWDTKX+ShOIA6ppjTjbo25/30ZdnE4WTR75AyYx5xwPpssu8+SHqv/7dHrKs9qdk
- 3gxfCpolhq5idp/+8wOb88Iy8FPb3zvOLIKgx1Fep2ugI1s115zkhOZAAr14hgGm3Og4vBS8qNd
- NsceQVQk+FX8gsSHWJBiccqOrLKB4EMRRDCn3YStjhpyBJglk1II7bCNlOKFNhCMAxKfgR77Dgt
- /nJceirufrrPJ39+5Qg==
-X-Proofpoint-ORIG-GUID: G19WTuyhNK-Q071VYRRX6x8Vq69xb2LZ
-X-Proofpoint-GUID: G19WTuyhNK-Q071VYRRX6x8Vq69xb2LZ
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=ZpdpYltYx_vBUK5n70dp:22
+ a=P-IC7800AAAA:8 a=EUspDBNiAAAA:8 a=nI5uWgR6GCbiVoZM8DwA:9 a=QEXdDO2ut3YA:10
+ a=324X-CrmTo6CU4MGRt3R:22 a=d3PnA9EDa4IxuAV0gXij:22
+X-Proofpoint-Spam-Info: AW1haW4tMjYwOTE4MDIxNyBTYWx0ZWRfX/2LZroHOMZEp
+ qVAuBU6PuuCahjCACNkJ0bkqUfe753ASZjMJaVvSYKvuRtJZq11fPodkovSRBvhxMQ6hakX7Kc/
+ IlnSGltr2WvCHrizI0ZRk4G/T0uIp4k=
+X-Proofpoint-ORIG-GUID: WZRTeg9FsZINcroQz40OQsWRrL8Vx8wg
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.134,FMLib:17.12.100.49
- definitions=2026-09-18_05,2026-09-16_02,2025-10-01_01
+ definitions=2026-09-18_04,2026-09-16_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 spamscore=0 bulkscore=0 adultscore=0 priorityscore=1501
- phishscore=0 malwarescore=0 lowpriorityscore=0 suspectscore=0 impostorscore=0
+ adultscore=0 priorityscore=1501 impostorscore=0 bulkscore=0 clxscore=1015
+ suspectscore=0 spamscore=0 lowpriorityscore=0 phishscore=0 malwarescore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609180242
+ reason=mlx scancount=1 engine=8.22.0-2609040000 definitions=main-2609180217
 
-On Wed Sep 16, 2026 at 2:24 PM CST, Thomas Zimmermann wrote:
+On Wed Sep 16, 2026 at 2:50 PM CST, Thomas Zimmermann wrote:
 > Hi
 >
 > Am 26.07.26 um 21:42 schrieb Ze Huang:
->> The simple-KMS helper calls the pipe update after enabling the CRTC.
->> On an enable commit, imx_lcdc_pipe_enable() already programs the
->> mode and enables clk_per. The following pipe update sees the plane move
->> from no CRTC to the active CRTC, treats it as a mode update, and calls
->> imx_lcdc_update_hw_registers() again.
+>> Convert i.MX LCDC to explicit primary plane, CRTC and encoder objects.
+>> Keep no-scaling plane check and GEM framebuffer prepare callback from
+>> simple-KMS path.
 >>
->> That second call has no old CRTC state to disable clk_per first, but it
->> enables clk_per again at the end. The disable path only drops one
->> reference, leaving clk_per enabled after each on/off cycle.
+>> Wire the vblank lifecycle explicitly with CRTC vblank callbacks and
+>> drm_crtc_vblank_on()/drm_crtc_vblank_off(). Use the old CRTC state in th=
+e
+>> disable path for clock unwinding so the clock reference count remains
+>> paired with the previous active state.
 >>
->> Skip the register update from the pipe update path when the CRTC already
->> needs a modeset. The enable path has already programmed the hardware for
->> that commit; keep the event handling in pipe update unchanged.
->
-
-Thanks for your review.
-
-> That seems reasonable. Once the driver uses regular DRM helpers instead=
-=20
-> of simple_kms,=20
-
-> it can all be untangled and this test won't be necessary any longer.
-
-Yes, that's the goal.
-
-IMO it's better to spilt the operations in imx_lcdc_update_hw_registers()
-or distinguish the caller.
-
-However, it might be risky to make big changes without hardware validation,
-I think it accpetable for now.
-
->
->>
->> Fixes: c87e859cdeb5 ("drm/imx/lcdc: Implement DRM driver for imx25")
 >> Signed-off-by: Ze Huang <ze.huang@oss.qualcomm.com>
->
-> Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
->
 >> ---
->>   drivers/gpu/drm/imx/lcdc/imx-lcdc.c | 3 ++-
->>   1 file changed, 2 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/gpu/drm/imx/lcdc/imx-lcdc.c b/drivers/gpu/drm/imx/l=
-cdc/imx-lcdc.c
->> index f52832b43aca..81024f7d9e96 100644
->> --- a/drivers/gpu/drm/imx/lcdc/imx-lcdc.c
->> +++ b/drivers/gpu/drm/imx/lcdc/imx-lcdc.c
->> @@ -311,7 +311,8 @@ static void imx_lcdc_pipe_update(struct drm_simple_d=
-isplay_pipe *pipe,
->>   	else if (old_crtc !=3D crtc)
->>   		mode_changed =3D true;
->>  =20
->> -	imx_lcdc_update_hw_registers(pipe, old_state, mode_changed);
->> +	if (!drm_atomic_crtc_needs_modeset(crtc->state))
->> +		imx_lcdc_update_hw_registers(pipe, old_state, mode_changed);
->>  =20
->>   	if (event) {
->>   		crtc->state->event =3D NULL;
->>
+>> +
 
+[ ... ]
 
+>> +static void imx_lcdc_crtc_helper_atomic_flush(struct drm_crtc *crtc,
+>> +					      struct drm_atomic_commit *commit)
+>> +{
+>> +	struct drm_crtc_state *new_crtc_state =3D drm_atomic_get_new_crtc_stat=
+e(commit, crtc);
+>> +	struct drm_pending_vblank_event *event =3D new_crtc_state->event;
+>> +
+>> +	if (!event)
+>> +		return;
+>> +
+>> +	new_crtc_state->event =3D NULL;
+>> +
+>> +	spin_lock_irq(&crtc->dev->event_lock);
+>> +	if (new_crtc_state->active && drm_crtc_vblank_get(crtc) =3D=3D 0)
+>> +		drm_crtc_arm_vblank_event(crtc, event);
+>> +	else
+>> +		drm_crtc_send_vblank_event(crtc, event);
+>> +	spin_unlock_irq(&crtc->dev->event_lock);
+>>   }
+>
+> Please use drm_crtc_vblank_atomic_flush(). [1]
+>
+> [1]=20
+> https://elixir.bootlin.com/linux/v7.2.5/source/drivers/gpu/drm/drm_vblank=
+_helper.c#L51
+
+Thanks! will follow
+
+>
+> Best regards
+> Thomas
+>
 
