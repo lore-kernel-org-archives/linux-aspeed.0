@@ -1,96 +1,40 @@
-Return-Path: <linux-aspeed+bounces-5060-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-5062-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71A83CA5FA7
-	for <linux-aspeed@archiver.kernel.org>; Tue, 29 Sep 2026 22:31:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AF87FCA5FAB
+	for <linux-aspeed@archiver.kernel.org>; Wed, 30 Sep 2026 05:15:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hvXvs5tvBz2yqq;
-	Wed, 30 Sep 2026 08:31:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:39::b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790668281;
-	cv=none; b=RAViEAGNno1UcwNwhX5QiP6auf4r27/Tl2sx9P4oVsy/kMiDNStMejatk5b3F4+GA+Lm8grSbM7yX54srbPrQqVCGyuBqBM1dvHQMQba9V1T7WddA21sLiIccQxvGWC+AjjhkjbQ8tvj5DEpFbRtKI5+aTP23YWhASZKMEtfISlfKY0mjAPVpBcb1frNZcplc8C+1rYk807lz1hS9TlyYwdU0yVVgfbwZ6FgQvB/rZPLLfGMQvrv34kHbqrNfiX7l9WrzuwcJroYQCx9LrKu2v2NiZJzxxGFPG+azItAYoZSguArg+OnbtHxvTwZ53c+MQryFCyT30yd3qvYlPuoUg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hvjt50Fppz2yn2;
+	Wed, 30 Sep 2026 15:15:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790745325;
+	cv=none; b=B6FIZNukulzxLojxPOvEiQfUF5obFZmMH6Al5uBuWixb0iauhqnBKvQf3MGqvbmY67oNNACxqTzAr+hYbAQff3Jv9IKGyXBgbft1vSVsyF4k32p7JPrDF3ofLvPFK8bPx/ddjqx80T4cU3q5Eq5p5U6xJMRvUSzMhu9VDoNRrp/X19b7FK/FZ8tLMCvtuyLY677RrfXhQr9sB095Ucf/SlMuFIanpQL7AHRaW/e9h0WR7psU51J7i0oMeO8enyLqaCiuOlYR84oJEQtA2s+qmsrtS+SutOdOHuUDNz9jQFjqYv3NRATWNdTh1s5ZTz4Xa10UM0Xn86qqbImuZ6eMXQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790668281; c=relaxed/relaxed;
-	bh=rzcdTpogRZ+AxGuwL3IEbWBoohYfCz3D35l9Eoy+zTU=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=h+swdKVE4F2kzSyq8CVF09Zoh2zuvDem+bupdN96DeZAtguEOr8A1PjCaXHYZmxBGAhqcPDYAz2hSY9Qis2rYJ8qhuckphLcXeGBB72RbDJGkhpoGZqXxYy0OMMY0kuTz7KwjZNbtsdaxWIIf1m9fnV04oNMgCitptPw5g0HFSpNb2FEa+SsabLLDA3yU5eXnUAKLyXUawdTIB29QhcBTKMRekXzOsCKFgjPwSWtyjmaXg9IjnNMeY0ZgxErKyS4HHkPNazDAw1WD0euswcOoTrViDagy9WPqLy0C+GbrxBzu/ZvmkbHMSgcbatPbHLGj7rawQgvgG6mCdtH6hLWGw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=GGdgApaw; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:39::b; helo=mail-pj2-x0b.google.com; envelope-from=suwangquanta@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=GGdgApaw;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:39::b; helo=mail-pj2-x0b.google.com; envelope-from=suwangquanta@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj2-x0b.google.com (mail-pj2-x0b.google.com [IPv6:2607:f8b0:4864:39::b])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1790745325; c=relaxed/relaxed;
+	bh=xq1JLdoTMC21GchqZzbboOTemAtawiyGvXi9RSRs3mE=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
+	 In-Reply-To:To:CC; b=DdjwxWdU/fdGzlEKcmzlwcHCmpiRPSSKmImT6NbbjR85KgnQK//CRkhIBsGNU1HtauTv5+juhJ7/vykcneg0ezTmp6ME6U2jCSWf5dCBZjHANlIrUezaIi6si0hW6J63gXkI3OlL3V+22waVj/PiP1LNm2Tr8Rb6rQ/c//OEtM5TvXhOT0ceEcIb6sdE/9MS1il4ip7zbZBTit9LCnkSkSyb23zh56Y35GNpYGTz4vhm3jSmHHoWVJxXgduoioqziWxuVXZu0iF8VrppMtzjABxcWMN3u87zbv3RogC0j751Q8ACqb3TAulhIRUZBSfUxAFzKVwWGbdspoKQsJZrqw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeedtech.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeedtech.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from twmbx01.aspeedtech.com (mail.aspeedtech.com [211.20.114.72])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hv9NS1ZnMz2yDD
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 29 Sep 2026 17:51:18 +1000 (AEST)
-Received: by mail-pj2-x0b.google.com with SMTP id 98e67ed59e1d1-39569e136f9so1459733a91.0
-        for <linux-aspeed@lists.ozlabs.org>; Tue, 29 Sep 2026 00:51:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1790668276; x=1791273076; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=rzcdTpogRZ+AxGuwL3IEbWBoohYfCz3D35l9Eoy+zTU=;
-        b=GGdgApawy/QX05w8mRzGLNMPpBUzWf3AhCVtS1HjwUAlikch4XidWkm12wXWAPBhEj
-         U6ifDjKhIkUQG3tFqhwXy6L7JpIbHGimmJB9JNPybfEKkLtmA0aAGeAqQVGNE+AdcUOh
-         /sO4oNwsnxNUInQp/TjLmKeeoJ1V6qEIkuwEJYOJ+ThxUur9UwY3ebvfgk/BqxCFIhDu
-         1ouYKSZSOXWJ5gzYtS5smaQHBcpw9MeL4gj/Cg2hxqYoKwaukErSDm+mSNlb1MNnlc7/
-         eqM3+lzZatnAhMJbiVlm6cpwE/oQ5K0Sll3OIlkuSMGK5qHicdh17ATJveBvSvVgc5am
-         fCYA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1790668276; x=1791273076;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=rzcdTpogRZ+AxGuwL3IEbWBoohYfCz3D35l9Eoy+zTU=;
-        b=zr0YOalgFJ3Dk9uwnVgyEv73lXXsQ91jyOf8jIxdQj9euj00uwneZmwbfr4hNqMrrt
-         ipzBMUaEg8PpZK2qwKPoPE3YTzrOW5Et79FLyQWxDGtshSEBKMhZPbMheY8f5wvdHiMQ
-         hHBpdELy7BX5xjG3TmVU9+RgTz5CVZ8BKODYtkguPeQHnJmGNLZVaq5Lyi98KbhTOqr9
-         zn5PLkjSYrzKrPtx3S0j3cQttE/zC0100m2XF2yL1kN/HMpKl8u/KA+KWGxUATTlbOWK
-         I826eui4HzsztGTzB8KG9JpeeeSxs73XcotVomlyFmjjxHZp0Io+XxTAnoJTud8ARLEY
-         1pYw==
-X-Forwarded-Encrypted: i=1; AKwUvBwyKKQZnkivA+Ycn/3VBd9E+tyukAcOldWmJkscBq+5FX6FiAGBcJEcN7kAw8k4NCSAqm5UHBMpBGoe5OQ=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYI2o+ap26l8bVTfTm/PYnDPYn5imGFegEGth+TDHz4lt3NzidS7
-	r4Lb/GsxHoPWz6val6eZiLvjAJoGkq53pcvw96aH2/MrN8TPoVqyv+TK
-X-Gm-Gg: AYBFou0KiIM9AOqw+Gu752ZgkFUsaitdBDH9t3PHytP5ExowiMAWayOScdlUBEU7jTo
-	hdtnXEEGw6OVzfCxMhugTFd05cPESM+ghLMQsPdaTLJPkrUhSS1Bai+jGQxu/Dl0H1NeoGwd3vv
-	JtW1HZ9uUyCE4JMr1dtdCIethZlpz0Dv6/kUeTOf0ZmvYbqnOdPpZULGdb5njG9ZnKKnAkBWHK6
-	VNywswNOPeWU3vxY11aTGKEMVxXUDLZhG1NBAX0gi+6RqITHbUGItJpm5THgNoyH6Zy382Tx+/B
-	mOeYl3u8tdu+yoAR9Cpj9c3o6AFZBZcXm8lAH/8HdigNNK0yEKDWvIxRC3tg5o3bbcjqugNxH9r
-	8+EDs4MA/IwaNv45hXLQXe1xJ1OTlHkWqEQ+FbDyJWkOp0X7EBVi4YfxZnRm+T4E6+3y/Af4+cF
-	1WunAhF4bx9wUMVwrDp/bzbFiYrsCIU5uPezzQwtrJuUj4O76IEIKi+lcBWomye8CJACieQweaP
-	INDLLUGJjM+Kk5OSsguDWQ3s1+Y8J5dT+e5K7xGxIKz7tYcVZMSpxF35hh5DuootpU=
-X-Received: by 2002:a17:90b:4c4f:b0:3a0:bf0a:c9da with SMTP id 98e67ed59e1d1-3a0bf0ad1cbmr11593880a91.47.1790668276375;
-        Tue, 29 Sep 2026 00:51:16 -0700 (PDT)
-Received: from suewang-PC.dhcpserver.bu9bmc.local (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3a497ebc998sm4049236a91.2.2026.09.29.00.51.12
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 29 Sep 2026 00:51:15 -0700 (PDT)
-From: Sue Wang <suwangquanta@gmail.com>
-To: robh@kernel.org,
-	krzk+dt@kernel.org,
-	conor+dt@kernel.org,
-	joel@jms.id.au,
-	andrew@codeconstruct.com.au,
-	ryan_chen@aspeedtech.com,
-	billy_tsai@aspeedtech.com,
-	devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	patrick@stwcx.xyz
-Cc: Steward.Shih@quantatw.com,
-	Martin.Peng@quantatw.com,
-	Fred.Zhang@quantatw.com,
-	p.k.lee@quantatw.com
-Subject: [PATCH v14 0/2] Add Meta (Facebook) Ventura BMC (AST2600)
-Date: Tue, 29 Sep 2026 15:51:04 +0800
-Message-Id: <20260929075106.74731-1-suwangquanta@gmail.com>
-X-Mailer: git-send-email 2.34.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hvjt42Fqtz2xnQ
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 30 Sep 2026 15:15:24 +1000 (AEST)
+Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Wed, 30 Sep
+ 2026 13:15:00 +0800
+Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
+ Transport; Wed, 30 Sep 2026 13:15:00 +0800
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Date: Wed, 30 Sep 2026 13:14:59 +0800
+Subject: [PATCH v4 1/9] EDAC/aspeed: Set the DIMM grain
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -104,104 +48,61 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-ID: <20260930-edac-v4-1-c2e526f3ed79@aspeedtech.com>
+References: <20260930-edac-v4-0-c2e526f3ed79@aspeedtech.com>
+In-Reply-To: <20260930-edac-v4-0-c2e526f3ed79@aspeedtech.com>
+To: Stefan Schaeckeler <sschaeck@cisco.com>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
+	Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Borislav Petkov <bp@alien8.de>, Tony Luck <tony.luck@intel.com>
+CC: <devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-aspeed@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+	<linux-edac@vger.kernel.org>, Borislav Petkov <bp@suse.de>, Ryan Chen
+	<ryan_chen@aspeedtech.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1790745299; l=1202;
+ i=ryan_chen@aspeedtech.com; s=20251126; h=from:subject:message-id;
+ bh=3jMs/G66KFFfPwaucwRCSemgPoTboIC6tZoHaXof+m8=;
+ b=sRf7TWL5EgGoyjxkzabJQ3BR3KN5+/hZwCavoxzhzcEykUwr4FbVallHrx6UpntmLwGpvb6tl
+ +HF1wFm18J9Dk3vFfnFkIuQsSx/2Xn0ydiJAM2Hqq1CYB5SeTP6w60O
+X-Developer-Key: i=ryan_chen@aspeedtech.com; a=ed25519;
+ pk=Xe73xY6tcnkuRjjbVAB/oU30KdB3FvG4nuJuILj7ZVc=
 
-Add Linux device tree entry related to Meta (Facebook) Ventura specific
-devices connected to the BMC (AST2600) SoC. The purpose of Ventura
-is to detect liquid leakage from all compute trays, switch trays
-and rack sensors within the rack, log the events, and take necessary
-actions accordingly.
+dimm->grain is never set, so every error is reported with a granularity
+of zero, which edac_raw_mc_handle_error() warns about and substitutes
+with 1.
+
+The controller records the address of a failing access with 16-byte
+granularity: MCR58 and MCR5C hold it in bits [30:4], with the low four
+bits reserved. Set the grain to 16 accordingly.
+
+Fixes: 9b7e6242ee4e ("EDAC, aspeed: Add an Aspeed AST2500 EDAC driver")
+Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
 
 ---
-v1:
-    1. Create ventura dts file.
-    2. Add commit msg.
-    3. Use format-patch to generate patch.
-    4. Add subject prefixes matching the subsystem.
+Changes in v4:
+- Explain where the grain value comes from rather than the warning it
+  silences.
+- Drop the Cc: stable tag.
 ---
-v2:
-    1. Modify email content.
----
-v3:
-    1. Add mail list.
----
-v4:
-    1. Apply git send-email --thread option.
-    2. Sort nodes in the dts alphanumerically.
----
-v5:
-    1. Run scripts/checkpatch.pl and fix reported warnings.
-    2. Remove unnecessary 88E6393X CONFIG FRU.
----
-v6:
-    1. Add a new stage for the DTS change.
-    2. Run scripts/checkpatch.pl and fix reported error.
-    3. Fix the issue in a separate patch.
----
-v7:
-    1. Fix broken indentation in the device tree file.
-    2. Sort nodes alphabetically, then by address if equal.
-    3. Rename fan sensor nodes from 'hwmon' to 'fan-controller'.
----
-v8:
-    1. This patch series has significant changes compared to
-       previous versions, and quite some time has passed since the last
-       submission.Therefore, previously received Acked-by/Reviewed-by/Tested-by
-       tags are not included in this version.
-       If needed, tags can be added again after review of thisnew version.
----
-v9:
-    1. Reordered the node sequence under i2c5.
-    2. Added a description of the platform's intended use to the commit
-       messages.
-    3. Added 3 GPIO expanders to i2c10 and defined the necessary GPIO
-       line names.
----
-v10:
-    1. Added IRQ support in GPIO expanders under i2c10 to handle edge-triggered
-       events.
-    2. Reordered the nodes.
----
-v11:
-    1. Modified the position for i2c3mux0ch6 and i2c3mux0ch7.
----
-v12:
-    1. Added a GPIO expander at address 0x11 on i2c10, and assign an SGPIO pin
-       as the IRQ for it.
-    2. Fixed the "failed to match any schema with compatible" issues.
-    3. Reorder the nodes in alphabetically.
----
-v13:
-    1. Add two GPIO expanders (0x16 and 0x17) to i2c10 and assign two SGPIO
-       pins as IRQs.
-    2. Move the RPU_READY_SPARE_PLD_R and RPU_2_READY_PLD_R pins from
-       SGPIO to the GPIO expander (0x10).
-    3. Add all tray PWREN pins to the GPIO expanders (0x16, 0x17 and 0x1b).
-    4. Add explanatory comments for "unmanaged mode" under &mac3 and
-       "intentionally left empty" under &mdio.
----
-v14:
-    1. Modify "Facebook ventura RMC" to "Facebook Ventura RMC"
-    2. Add a description for each bus alias.
-    3. Revise commenting style.
-    4. Enable mac0
-    5. Remove two GPIO expanders (0x16 and 0x17) to i2c10 and two SGPIO
-       pins as IRQs.
-    6. Move the RPU_READY_SPARE_PLD_R and RPU_2_READY_PLD_R pins from
-       the GPIO expander (0x10) to SGPIO.
+ drivers/edac/aspeed_edac.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Sue Wang (2):
-  dt-bindings: arm: aspeed: add Meta Ventura board
-  arm: dts: aspeed: ventura: add Meta Ventura BMC
+diff --git a/drivers/edac/aspeed_edac.c b/drivers/edac/aspeed_edac.c
+index 6e069b255595..83d60414f89a 100644
+--- a/drivers/edac/aspeed_edac.c
++++ b/drivers/edac/aspeed_edac.c
+@@ -266,6 +266,7 @@ static int init_csrows(struct mem_ctl_info *mci)
+ 	dimm->mtype = dram_type;
+ 	dimm->edac_mode = EDAC_SECDED;
+ 	dimm->nr_pages = nr_pages / csrow->nr_channels;
++	dimm->grain = 16;
+ 
+ 	dev_dbg(mci->pdev, "initialized dimm with first_page=0x%lx and nr_pages=0x%x\n",
+ 		csrow->first_page, nr_pages);
 
- .../bindings/arm/aspeed/aspeed.yaml           |    1 +
- arch/arm/boot/dts/aspeed/Makefile             |    1 +
- .../aspeed/aspeed-bmc-facebook-ventura.dts    | 1607 +++++++++++++++++
- 3 files changed, 1609 insertions(+)
- create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dts
-
-base-commit: c0538446e769fab620225578d378a0627b883bd5
-branch: dev-6.18
 -- 
 2.34.1
 
