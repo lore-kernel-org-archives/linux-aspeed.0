@@ -1,41 +1,41 @@
-Return-Path: <linux-aspeed+bounces-5096-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-5097-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53CF2CA5FC1
-	for <linux-aspeed@archiver.kernel.org>; Thu,  1 Oct 2026 03:29:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9FC68CA5FCB
+	for <linux-aspeed@archiver.kernel.org>; Thu,  1 Oct 2026 03:29:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hwHSy5wZjz2yMP;
-	Thu, 01 Oct 2026 13:29:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hwHSz5XcDz2yYf;
+	Thu, 01 Oct 2026 13:29:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790825346;
-	cv=none; b=gxesHA6EnVoe1tpEYAnCFEQbKvsm2UyjHJtpAbSdDd8fZeyMA+3CFljKquztMw1gh1y0hm67Oi3L3a1mG5MsoCbDWMPKu8GTj9KoEwckPCrIfpLtVWbCIQu1I9euuStJ2JhoilPYFht+DcNhUKG8pk1SHvObORVj/xyxTEZO/NcxFv9lISSKx4ZuFjX6/ZFH1ZieIJmUobkSJKZvWR8EaYLDyOK2FSCKLKBY+qDR4NEoYcWl3gCckSy/Jij+zKod9rY39QepKl0i4pOBiTBRMgi4Myqg89m7ewZB/H2cngWoJ5iFVVSzUUW3wZxHCjrQaxIhy4l8JS1auRJNYPfjWA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790825347;
+	cv=none; b=h+nNb39OOZw/Gw3nnnh7hB2wiMmuum/qN59C1DNifgKHVIH/ZN+8UDx8p/ZLz+bfLlrTyjfm4mQGYHh95Afv6Rd3vBxFoCUfvM/PAx8LFZ4AdsrW0+qjliP+i7gQ8G+AAwZmfm3ovKjoTRLOqkt/gguwRqMUZ0WtqH9tdd0oIVocmrcdz77IUfwE0608iLxYcnXF1B4Tz7otxoReOYak+ESdRIGt9xo5b6HDvA5RF3u6QLFEjA2oEdYSaFHMgmze8NIR99rZVcx3ScMdNBMuRQQPGi64tavhFKs7rDbJpOFWigshgG0ugdgYwrcJcHE+hKNhkw8szKP/ERhOHXROAA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790825346; c=relaxed/relaxed;
-	bh=mh4wlLozHixAk1AZzMLTj5UWdBe6r+5OganuS/DeSog=;
+	t=1790825347; c=relaxed/relaxed;
+	bh=CBIl9615h3PEG4pm/w2jSWGbQjSYORVju8rELwG85z8=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
-	 In-Reply-To:To:CC; b=ZdFEsqfCf8mV7IyoEAw4QS0ys3zqRv3XnQh+3k+3x041ONTbfQnKMJZUhAveLMQCCQBKJBTS+sP1rvFqJhMflhrttXYu7OHLsrYR6qO6oox2ZTXLW+qL6QSNsyE8bvaS2Xs+XY9QsNiNqvk7dmR2dl9LEd4HJanLNoaN854iZR3LV/5bbWQTiXb18HuUI3P96a09kHgwXGwga41+30ZEUlpMSMI8HH3+O2cCfbKWVuhaFmtIMFJPufGER7LB2KiMctKBEcNpHPK07oWPJzikAppohezIlEynUYtRenLsDqoL7To02KTctxKZLGmuuYItWAeOlGpp3BqdpgHv5ZmuXQ==
+	 In-Reply-To:To:CC; b=CnDxpJMJK6XsW+CtTC1+Ofuo1wPliM1h+InTL3jOYJxMhJSb5ktwXJWf+vGNXkZWowpqmcPxBMO3/6nMG7tN7BNMFxyuTkbUjKDHoJuisgct0fMCxDTWtBr2ZQIRbHB+6cxBbMupYv3MRKVBjRMmV5SZvqeKWa9Mdd3Nr2dretxt20XnkN5f243xpTFlsstk2EuAGzMJqKROdbFgOJ/jhBxADnn25Y9jJoqNMVHcgVvEObtApRp6kUubqDHkECuxPb6bINJtPrMwFlfyip36NywZFPXlae+P4uBdywliiV7xHjGUBYH43hiLAXQ1YE0hwPu9hozAUdQlaBXvifsJDA==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeedtech.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeedtech.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org)
 Received: from twmbx01.aspeedtech.com (mail.aspeedtech.com [211.20.114.72])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hwHSx6Zgpz2xsW
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 01 Oct 2026 13:29:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hwHSz0VBdz2xsW
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 01 Oct 2026 13:29:07 +1000 (AEST)
 Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Thu, 1 Oct
- 2026 11:28:45 +0800
+ 2026 11:28:46 +0800
 Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
- Transport; Thu, 1 Oct 2026 11:28:45 +0800
+ Transport; Thu, 1 Oct 2026 11:28:46 +0800
 From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Thu, 1 Oct 2026 11:28:44 +0800
-Subject: [PATCH 1/3] dt-bindings: iio: adc: Add syscon property for
- multi-SCU SoCs
+Date: Thu, 1 Oct 2026 11:28:45 +0800
+Subject: [PATCH 2/3] iio: adc: aspeed: Use syscon phandle for trimming data
+ when available
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -51,7 +51,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-ID: <20261001-ast27xx-adc-upstream-v1-1-5ace57533418@aspeedtech.com>
+Message-ID: <20261001-ast27xx-adc-upstream-v1-2-5ace57533418@aspeedtech.com>
 References: <20261001-ast27xx-adc-upstream-v1-0-5ace57533418@aspeedtech.com>
 In-Reply-To: <20261001-ast27xx-adc-upstream-v1-0-5ace57533418@aspeedtech.com>
 To: Jonathan Cameron <jic23@kernel.org>, David Lechner
@@ -65,81 +65,67 @@ CC: <linux-iio@vger.kernel.org>, <devicetree@vger.kernel.org>,
 	<linux-kernel@vger.kernel.org>, Billy Tsai <billy_tsai@aspeedtech.com>,
 	Jonathan Cameron <jic23@kernel.org>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1790825325; l=2250;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1790825325; l=2228;
  i=billy_tsai@aspeedtech.com; s=20251118; h=from:subject:message-id;
- bh=FsGT1zbL6rxTYT0DVNlN72Kt+1ynoxmzD31cbn5Esb0=;
- b=iiLL+6sgRQAuRmZdFxMpNwDwxz4WK9BDIu+XM8WhKlgLD5WieKxUpiRgWTyiNfTxp6PsnUs2F
- OSn1Dk0UIOECdFmC6HXqdGOQdq4yd9WL9+2W0UOt0jpkHWCII0Lar3m
+ bh=JoCVKHqa1BfpuBeYRt31i7335+6pSUtxVcgJhxASgGg=;
+ b=ldmeVaetAGKZ06YJ1o/8zPnc4zn6XrJp8cCAd9zJTPmYq0EnTpDeYPJhv+TOKHiiSiKyY3742
+ vaEMd+l1kiaCcNBQR+Uc1EUfLQ/iBPA72VVzMOFiAAkpkQ3Y1qlIpKT
 X-Developer-Key: i=billy_tsai@aspeedtech.com; a=ed25519;
  pk=/A8qvgZ6CPfnwKgT6/+k+nvXOkN477MshEGJvVdzeeQ=
 
-The ADC's reference-voltage trimming data lives in a System Control
-Unit (SCU) register. SoCs with a single SCU instance let the driver
-locate it without any additional information, but SoCs such as AST2700
-that expose more than one SCU node need an explicit phandle to
-disambiguate which one holds the trimming data.
+aspeed_adc_set_trim_data() locates the SCU holding the ADC's
+reference-voltage trimming data with of_find_node_by_name(NULL,
+"syscon"), a global search that matches the first device-tree node
+named "syscon" regardless of which SCU instance it actually is.
 
-Add an optional "syscon" phandle property, and require it for the
-AST2700 compatibles since they are the first multi-SCU SoCs supported
-by this driver.
+On AST2700, which splits its SCU into "syscon0" (soc0) and "syscon1"
+(soc1), both nodes share the same node name "syscon" and only differ
+by label and unit address, so the lookup always resolves to syscon0
+even though the ADC's trimming data lives in syscon1.
 
+Use the new "syscon" phandle property when present to look up the
+correct regmap directly, falling back to the old global by-name search
+when the property is absent so existing device trees keep working.
+
+Fixes: 9d8b88ffb773 ("iio: adc: aspeed: Add AST2700 ADC support")
 Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 Assisted-by: Claude:claude-sonnet-5
 ---
- .../bindings/iio/adc/aspeed,ast2600-adc.yaml       | 28 ++++++++++++++++++++++
- 1 file changed, 28 insertions(+)
+ drivers/iio/adc/aspeed_adc.c | 20 ++++++++++++++------
+ 1 file changed, 14 insertions(+), 6 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml b/Documentation/devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml
-index 249101b55cf4e..0d6b10450cfa8 100644
---- a/Documentation/devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml
-+++ b/Documentation/devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml
-@@ -67,6 +67,11 @@ properties:
-     description:
-       Inform the driver that last channel will be used to sensor battery.
+diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
+index 6169ce28261e..d195bc3e155f 100644
+--- a/drivers/iio/adc/aspeed_adc.c
++++ b/drivers/iio/adc/aspeed_adc.c
+@@ -206,13 +206,21 @@ static int aspeed_adc_set_trim_data(struct iio_dev *indio_dev)
+ 	u32 scu_otp, trimming_val;
+ 	struct aspeed_adc_data *data = iio_priv(indio_dev);
  
-+  syscon:
-+    $ref: /schemas/types.yaml#/definitions/phandle
-+    description:
-+      Required on SoCs with more than one SCU instance (e.g. AST2700).
-+
- required:
-   - compatible
-   - reg
-@@ -74,6 +79,18 @@ required:
-   - resets
-   - "#io-channel-cells"
- 
-+allOf:
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            enum:
-+              - aspeed,ast2700-adc0
-+              - aspeed,ast2700-adc1
-+    then:
-+      required:
-+        - syscon
-+
- additionalProperties: false
- 
- examples:
-@@ -95,4 +112,15 @@ examples:
-         #io-channel-cells = <1>;
-         aspeed,int-vref-microvolt = <2500000>;
-     };
-+  - |
-+    #include <dt-bindings/clock/aspeed,ast2700-scu.h>
-+    #include <dt-bindings/reset/aspeed,ast2700-scu.h>
-+    adc0: adc@14c00000 {
-+        compatible = "aspeed,ast2700-adc0";
-+        reg = <0x14c00000 0x100>;
-+        clocks = <&syscon1 SCU1_CLK_AHB>;
-+        resets = <&syscon1 SCU1_RESET_ADC>;
-+        syscon = <&syscon1>;
-+        #io-channel-cells = <1>;
-+    };
- ...
+-	syscon = of_find_node_by_name(NULL, "syscon");
+-	if (syscon == NULL) {
+-		dev_warn(data->dev, "Couldn't find syscon node\n");
+-		return -EOPNOTSUPP;
++	scu = syscon_regmap_lookup_by_phandle_optional(data->dev->of_node, "syscon");
++	if (!scu) {
++		/*
++		 * No "syscon" phandle: either a single-SCU SoC, or a DTB
++		 * predating the property. Fall back to the old global
++		 * by-name lookup for backward compatibility.
++		 */
++		syscon = of_find_node_by_name(NULL, "syscon");
++		if (syscon == NULL) {
++			dev_warn(data->dev, "Couldn't find syscon node\n");
++			return -EOPNOTSUPP;
++		}
++		scu = syscon_node_to_regmap(syscon);
++		of_node_put(syscon);
+ 	}
+-	scu = syscon_node_to_regmap(syscon);
+-	of_node_put(syscon);
+ 	if (IS_ERR(scu)) {
+ 		dev_warn(data->dev, "Failed to get syscon regmap\n");
+ 		return -EOPNOTSUPP;
 
 -- 
 2.34.1
