@@ -1,60 +1,60 @@
-Return-Path: <linux-aspeed+bounces-5116-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-5118-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 425EBCA5FDD
-	for <linux-aspeed@archiver.kernel.org>; Fri,  2 Oct 2026 23:56:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EBAD8CA5FE3
+	for <linux-aspeed@archiver.kernel.org>; Sat,  3 Oct 2026 00:01:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hxQg112lTz30B0;
-	Sat, 03 Oct 2026 09:56:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hxQmg6NHjz2y1W;
+	Sat, 03 Oct 2026 10:01:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.7
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790955461;
-	cv=none; b=bSd4d3SWc4w4OkxnQYeA0Xi/636df16Kw4EhidAtDQVSxVOTdSYxv8PEhXA9fG+R9YMRhEl5tzvrmFzPPP3OATka0EsDTiZXK4+/Fa/3H0mcnPsq+7VFz4RTexXitGdve1fE5neYFIgxd9TetAi8VA4pRcJRvwr1eqZKN47R4/TJg5zU81TU9F/9b/7DTAH5jL/8Tq2t+NBZTVmNJGwtT/nplRwyUTZ+oplAcbJO7plMj1WEXKYIEjaG0Vhh1EXdp3HxNBrFVsQ0qbHQKI1+2Ncz1L05WSE8Dl5spo2o9KIyt5IfZPsCH4wAP6iDlLjiuYiPmipffrZEPKmG/8aNQQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1790955456;
+	cv=none; b=ZQG3yMvrOJoodc3HrqVnw7rYwDtDmda/5B0yWf3o94RRbVwa/bhLgbtUKZSNXm4cslCgcczejrAsQgRQP9pBLeeDWGElx/WwIiETXKozPwGYx6ChPSzTYGDtNW7cAYioKzi7yiDlHWBCSlCKcsljW+vERYH7yHtqQZw749Gt+oi5YSzjw/ICssHTHPIqJS0mdB4Omv2CXqxamHKjm0IJKMZHHKiLhDEWJBamZjbipWMhA0v3GKt2+Z8QdvIYxC2b98xBi3sRN9TMDUjBtotTGn77S5nhPJorUBawDnCWTAGsIXOqfcZf4pKia382Bu3zCphfg2k7d2a/nLSP28wPCg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1790955461; c=relaxed/relaxed;
-	bh=ijByx0+/K4d2ninXLykZb17+oCSqxaAY4HTB4azbBqY=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=P6eylfxM7PECvvHNDFKKAALXEcKTj4auNuYjFfUqsDLBvWENaMf5J52sPOYcHIiClfcrWV3JYY0qnDiWKhcQkuI8sdXo+KBX4T1KEd7Lbtb6KtXSSrJHvX9n+tpMKHiUhjXiOFu7wu0IC7/IBhqrxZEEjQHOVBxczRmacRNuFtIlwOoVUXDLhG9oo9RzjAmHO/tFUPtlo0/wTg9lHROKgNUPzibYbMa1TldybmuM/U8HYImA+iw7E/S4M7J1Fdc9a037iM7YsWzrlDR5heREb5emCojzBCgCGZTfPWhv9Md9WyZUiFMQYTB1u/dpNJ2od2vniGJNGoskpMQuM30xYA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=iEDagicz; dkim-atps=neutral; spf=pass (client-ip=192.198.163.7; helo=mgamail.intel.com; envelope-from=dawid.glazik@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+	t=1790955456; c=relaxed/relaxed;
+	bh=2qPw+Pg6F2BVS6Rxytm/LCoHFcBV7RBXe2zcL1rJqwQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Lr5YBMmWDDBKJlG74W8cCmsEiWSsO00iQdmBAWajeWJxkvXAqJuPkx9uGgDY91J8LV1Ku59hSlr90aeN3pa+ia+5vgwp2FVSNxoJXN7JBVV5M9yl9fLZehf3cFOLBCQq6BrFjR5xK88nbLRkCYLSrxFHdGFZyntKF+13n5A3WSWMpPcoEFS0KoEi2cQB6wxx/g7FJEQXUzXY65du4+qnk4J7Qdy5Vo6wiy90IrOHeQPQGIJlo9EMDo/5RInDjcNZsHojGVBlES4tOyuNpwU5HdY4EKcce5RNcv2tGkWy6CcdG1xpOrwPCOsAjF/Yg37cWXmX4yuf1b1HyIInB0m4iA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=PguWyvZZ; dkim-atps=neutral; spf=pass (client-ip=192.198.163.7; helo=mgamail.intel.com; envelope-from=dawid.glazik@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=iEDagicz;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=PguWyvZZ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.7; helo=mgamail.intel.com; envelope-from=dawid.glazik@linux.intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 64 seconds by postgrey-1.37 at boromir; Sat, 03 Oct 2026 01:37:33 AEST
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hxCb90tgZz2xLg
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 03 Oct 2026 01:37:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hxCb13fmRz2xLg
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 03 Oct 2026 01:37:33 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1790955461; x=1822491461;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=k7Lyc4eyl86PbGTSOmv7ydB0HYVEW7WA0vnMeArh/5E=;
-  b=iEDagiczgVbco/VsjCguL4/HV3JgpxJAn23KNjq6KP+g8s1d6SX9Yedf
-   iM8rL67Vy5jQgCjt1RN/meJ3VPw4N5bsB9uvCM12BIwzzLrz/uQrAsBst
-   FpCHYvp3EuktVscMxYpxgi3cww01DLhfDZYqi1FUa6MiZlaxzErJu9XaI
-   9OrTDDss4VWsWABp8FS6vuAOE1kW7lsVCsPvaBpzf/eP9Io4SAktiB3ow
-   TZYzd7q2q+eI13Y0CbSHCGaaqI/P8gt9fiWGysn7NwWyTCOPXgtaewPGL
-   pR33+ZQ1+RjgkUcZlpLMh3ara/oE0h/VsYy+9Qn+4xVNPWzO4Rv8kBsm6
-   Q==;
-X-CSE-ConnectionGUID: 9vTtoFwkRfmHPvFrK9k6mQ==
-X-CSE-MsgGUID: qt4aDIlLTyKNEdmE4BoLZA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11923"; a="117247714"
+  t=1790955454; x=1822491454;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=ID/HkmFMTgXfBvEK9zp6+sIFgeqPAHbQ5YXi9GUqiE0=;
+  b=PguWyvZZs4KEdhZ20lkpUXCWAdbzbU1QjKFz/DfNjfGRe+VE6cbEsszl
+   U8c3IUnlU8GEZd4fqcbcjWwgSRKCGNZ9Mzm1pUV0zD+zA/ys86jYDdDZc
+   Lc0wxR5SGaF2hl5WuhCcyTr8kXWHPkZAyLXJ5zPtjZNExAqwyReYe3sF1
+   PanF5T82WYOTKfCMPq3G6l6UOlyFxoOIhYYxw9R3fmTy+rd5qcuQLN1uc
+   7crjKEcIwJ6SFqfMAbWaRPfY66EkazuY6boiYl9uNhSmTkiDbcwFN5tpC
+   zNhFv1ubfl42YiDVnLCyfA74xcCZhz5YII89A9hVKtCmPLRJDV9qna9rS
+   g==;
+X-CSE-ConnectionGUID: rw97cdwsS7e5Bj+azNAqdA==
+X-CSE-MsgGUID: nvUP8/yKSbOfyV7bkESN3g==
+X-IronPort-AV: E=McAfee;i="6800,10657,11923"; a="117247685"
 X-IronPort-AV: E=Sophos;i="6.27,136,1787036400"; 
-   d="scan'208";a="117247714"
+   d="scan'208";a="117247685"
 Received: from orviesa003.jf.intel.com ([10.64.159.143])
-  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Oct 2026 08:36:39 -0700
-X-CSE-ConnectionGUID: V22czOdbTVWeMqrDTzxWAA==
-X-CSE-MsgGUID: 3X18j7onTsqwz70mkBfEfg==
+  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Oct 2026 08:36:25 -0700
+X-CSE-ConnectionGUID: /exO7IEOQoiF36dXfvuycQ==
+X-CSE-MsgGUID: Btu7op7IREy2zYlUhnhmAw==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.27,136,1787036400"; 
-   d="scan'208";a="279522397"
+   d="scan'208";a="279522351"
 Received: from gklab-103a-129.igk.intel.com ([10.91.103.129])
-  by ORVIESA003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Oct 2026 08:36:36 -0700
+  by ORVIESA003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Oct 2026 08:36:22 -0700
 From: Dawid Glazik <dawid.glazik@linux.intel.com>
 To: Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -67,12 +67,10 @@ Cc: devicetree@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	dawid.glazik@linux.intel.com,
 	maciej.lawniczak@intel.com
-Subject: [PATCH 2/4] dt-bindings: arm: aspeed: Add Intel JNCRP board
-Date: Fri,  2 Oct 2026 18:32:43 +0200
-Message-ID: <212171467173c9af64b3f8ecddca2a445b7e7148.1790344811.git.dawid.glazik@linux.intel.com>
+Subject: [PATCH 0/4] arm: dts: aspeed: add Intel AVCRP and JNCRP BMC platforms
+Date: Fri,  2 Oct 2026 18:32:41 +0200
+Message-ID: <cover.1790344811.git.dawid.glazik@linux.intel.com>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <cover.1790344811.git.dawid.glazik@linux.intel.com>
-References: <cover.1790344811.git.dawid.glazik@linux.intel.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -89,25 +87,32 @@ MIME-Version: 1.0
 Organization: Intel Technology Poland sp. z o.o. - ul. Slowackiego 173, 80-298 Gdansk - KRS 101882 - NIP 957-07-52-316
 Content-Transfer-Encoding: 8bit
 
-Add a compatible string for Intel JNCRP BMC board.
+This series adds initial upstream support for the Intel AVCRP and JNCRP
+BMC platforms based on the ASPEED AST2600.
 
-Signed-off-by: Dawid Glazik <dawid.glazik@linux.intel.com>
----
- Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
- 1 file changed, 1 insertion(+)
+The first two patches extend the ASPEED board binding to describe the new
+Intel platform compatibles. The remaining patches add the corresponding
+board DTS files and register them in the ASPEED DTB build list.
 
-diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-index 2c8180e49b2f..6f7d77efb30c 100644
---- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-+++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-@@ -107,6 +107,7 @@ properties:
-               - ibm,sbp1-bmc
-               - ibm,system1-bmc
-               - intel,avcrp-bmc
-+              - intel,jncrp-bmc
-               - ibm,tacoma-bmc
-               - inventec,starscream-bmc
-               - inventec,transformer-bmc
+Dawid Glazik (4):
+  dt-bindings: arm: aspeed: Add Intel AVCRP board
+  dt-bindings: arm: aspeed: Add Intel JNCRP board
+  ARM: dts: aspeed: add Intel AVCRP BMC
+  ARM: dts: aspeed: add Intel JNCRP BMC
+
+ .../bindings/arm/aspeed/aspeed.yaml           |   2 +
+ arch/arm/boot/dts/aspeed/Makefile             |   2 +
+ .../dts/aspeed/aspeed-bmc-intel-avcrp.dts     | 321 ++++++++++++++++++
+ .../dts/aspeed/aspeed-bmc-intel-jncrp.dts     | 257 ++++++++++++++
+ 4 files changed, 582 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-intel-avcrp.dts
+ create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-intel-jncrp.dts
+
+
+base-commit: e7ae89a0c97ce2b68b0983cd01eda67cf373517d
+prerequisite-patch-id: 3af4bd880f896c97741b54ee18845b305a4bd061
+prerequisite-patch-id: 23091b539ec7723a865d82da7703bf70c6ed0222
+prerequisite-patch-id: ac42a7a373fdc407f6377d0b1c74d728af50ba42
 -- 
 2.43.0
 
