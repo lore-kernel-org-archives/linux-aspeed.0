@@ -1,68 +1,41 @@
-Return-Path: <linux-aspeed+bounces-5133-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-5134-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC5B2CA5FF0
-	for <linux-aspeed@archiver.kernel.org>; Mon,  5 Oct 2026 10:21:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7FAB6CA5FCE
+	for <linux-aspeed@archiver.kernel.org>; Mon,  5 Oct 2026 10:23:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4hywQX70mQz2yDm;
-	Mon, 05 Oct 2026 21:21:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791195668;
-	cv=none; b=CbeQAEOi5QWQ8fBMIaocOrMJa0J1fkBnfyINOOUnjfs+EKdRdIiLBUgcz7KNnJ2RgGlEKc14QMHbp198bz5IOQVqqUDX8Uey0vvh/CWpeyaECvf24qPAHpyCkwBI3+PxdTFVcHfMuXZhxs0y91n3KSK1NfFtQ5/lFyQZRwp4FOfGuBgX9hYUv83BrVeUJ8wTDt8IZzK5d7R5jXqYDDsp8I2rgCtOZvkzzN74FnC0yCxIFokWwtY9EezfpG4LSpaaw29P7FAfXS5cmtcu1lrfdKj3zcuVAVMq+e5c7cbyq1AwzRX77zMEXAyqq+IIJInUEUIW4LP1XXTeYhOYzJ0MCA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4hywSx3t50z2yDm;
+	Mon, 05 Oct 2026 21:23:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791195793;
+	cv=none; b=lMCycX5m8XDlSej4d7LbBeo1IXGcOidcOCpd0/6mYFH7j0C/Xtx28kAHom6jkw8kHNtOnyNGhS92BTGedIQH1yNpc5u+1IcNRCHpEfDcKmrqvQCHW4+JQoqZd9U5f1Yc9tYH13/fsqP0xDnIleXRmc6V9sgAOEUz11uQ56L+qyq08uiIxvLw0tJIL8Bn2Yb+AXkQrRaJOll0r1Z7fISMatanTL5jBPHTxQ6FSU3v/ntK26AD7YWK1et9c1m/VmHmtWt9UMNe3y+8JizqCJe2BBcpKzrP+dhxwWkr1rN2sJJLCoMiLOND/9lEniYS0vZ76bGXCew9obwsD405jMWPSw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791195668; c=relaxed/relaxed;
-	bh=wjjeW5yegDf0KDKbY7d9B07KRu5nvSc+73Tk90wGuNM=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=l+GU4P23TNfdRBUyaNjkeA3U7SFIUqbG9Qd1K5UCRxwIEsoFGNrIb9Rh/DPqfFqbNBBVRFB9eYWU9HsFLqsDH/sAmVnzjCy3d8sppDz7wHBRT/QUnLdyq/GH3xvPQd07vDGNoNQsAbX1w1Mzb9SOQHJc65EDs1FJ/zl66i+EEqqdgKAP6EhJb5ToQ/bxlxDinLCEiCDShp8++SO+2JJ22LIbADA89Xz6/FdFGvguPEF+pFq33xNyFjwIvqY9/06RYtPCU9gSG9aonWbW0G/Probhs18iDJlSgZeNfGTFpx2MtDasbSdNxUYrdkHJNoTCMFNqw18SYxf2NvP2JcMt8w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eMISnwWY; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=vkoul@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eMISnwWY;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=vkoul@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1791195793; c=relaxed/relaxed;
+	bh=6RJDujfXEFwg4QgGccP2V2tPbp+Gh8YpraFdiMS9tZU=;
+	h=From:Subject:Date:Message-ID:MIME-Version:Content-Type:To:CC; b=NRJhkQHD7tPsVxqGGbcop4mnuJvbgnJlLMwDGMwmW0bjm4HB1IoPabXcxQkqdmERl4GAxqU3LKmp7FLfJcBIHaFW1l1jtrIUuq3Gy0o2fNjAve7FJnXK2iakjD0Ur03h8T/8qj3S3NVBvbvXIIlJMqL8CTqD7BBB9+hRtIYKiVnSQcn2uJOaQOJ8bWNqn2VCHRrF6ejI9bLxHRXLqucVx6lMIk8pxD17oy5L/18M2Scsf1Cv1VUpzQJVVaXujZI553KyzXFdN051n9eZIR7ItGXr6Itry/zHBw3hgcBab7SuviKWO0BgiCdaRRfqw1hsSNwfzcI2/ap8WF/TijDEew==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeedtech.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeedtech.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from twmbx01.aspeedtech.com (mail.aspeedtech.com [211.20.114.72])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4hywQW3TRLz2y8G
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 05 Oct 2026 21:21:07 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 5CD7043E5C;
-	Mon,  5 Oct 2026 10:20:59 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B2AEB1F00899;
-	Mon,  5 Oct 2026 10:20:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791195659;
-	bh=wjjeW5yegDf0KDKbY7d9B07KRu5nvSc+73Tk90wGuNM=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date;
-	b=eMISnwWYbwAjJzdqTp1EndL/6YzWzvZJSug5EJGr2jtZNIZCGvgQUtOo/AsJAiCYr
-	 +E1hnYT4xvJiCYwADhkmpjBg6fl+Ja7L26Nq440OorctF3IyVDx4uQpKqf8bQXiEX8
-	 zUoCno7H9tIc0pwRXCIX1Nzzqd6u2NnwYfMMOw75ynXo84/V7vrrjui9gQmfz6ZbHT
-	 BzibSNnRobFRMCWdHNiODMLdDg+pYWFhco2mWIfJWroxsstHwYsPgNEG3VobYxdy+B
-	 CeWOQJudndNmaZjWZC//p4aa08U/ZkdhTQYUX90ZddAQSIbmCpFUPDAGGpfXUEzmdb
-	 1ZSePukef936Q==
-From: Vinod Koul <vkoul@kernel.org>
-To: Neil Armstrong <neil.armstrong@linaro.org>, 
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- Andrew Jeffery <andrew@codeconstruct.com.au>, 
- Philipp Zabel <p.zabel@pengutronix.de>, 
- Manivannan Sadhasivam <mani@kernel.org>, 
- Billy Tsai <billy_tsai@aspeedtech.com>, 
- Ryan Chen <ryan_chen@aspeedtech.com>
-Cc: linux-phy@lists.infradead.org, devicetree@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
- linux-kernel@vger.kernel.org, 
- Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>, 
- Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-In-Reply-To: <20260916-upstream_usb3phy-v4-0-812e76037d01@aspeedtech.com>
-References: <20260916-upstream_usb3phy-v4-0-812e76037d01@aspeedtech.com>
-Subject: Re: [PATCH v4 0/3] Add AST2700 USB3.2 PHY driver
-Message-Id: <179119565537.316652.120525327400272705.b4-ty@kernel.org>
-Date: Mon, 05 Oct 2026 12:20:55 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4hywSw3zKCz2y8G
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 05 Oct 2026 21:23:12 +1100 (AEDT)
+Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Mon, 5 Oct
+ 2026 18:22:54 +0800
+Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
+ Transport; Mon, 5 Oct 2026 18:22:54 +0800
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Subject: [PATCH v3 0/3] iio: adc: aspeed: Fix SCU lookup for multi-SCU
+ AST2700
+Date: Mon, 5 Oct 2026 18:22:52 +0800
+Message-ID: <20261005-ast27xx-adc-upstream-v3-0-ef25552d3a59@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -78,28 +51,89 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAHx6w2oC/43NTQ6CMBCG4auQrq1ppxTQlfcwLsp0kC74SVsbD
+ OHuFrYudPl+yTyzskDeUWDXYmWekgtuGnOoU8GwN+OTuLO5GQiopBCSmxChXhZuLPLXHKInM3B
+ VtspeqCGoW5ZPZ0+dWw72/sjduxAn/z6+JLmvP8AkueDaIOlaK1XK5mbCTGQjYX/GaWC7muAfC
+ bIE3QWlRhSiKr+kbds+ZsKNHwcBAAA=
+X-Change-ID: 20261001-ast27xx-adc-upstream-34b3d9e8e27b
+To: Jonathan Cameron <jic23@kernel.org>, David Lechner
+	<dlechner@baylibre.com>, =?utf-8?q?Nuno_S=C3=A1?= <nuno.sa@analog.com>, "Andy
+ Shevchenko" <andy@kernel.org>, Rob Herring <robh@kernel.org>, "Krzysztof
+ Kozlowski" <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, "Joel
+ Stanley" <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>,
+	"Ryan Chen" <ryan_chen@aspeedtech.com>
+CC: <linux-iio@vger.kernel.org>, <devicetree@vger.kernel.org>,
+	<linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
+	<linux-kernel@vger.kernel.org>, Billy Tsai <billy_tsai@aspeedtech.com>,
+	Jonathan Cameron <jic23@kernel.org>, Krzysztof Kozlowski
+	<krzysztof.kozlowski@oss.qualcomm.com>
 X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1791195774; l=2794;
+ i=billy_tsai@aspeedtech.com; s=20251118; h=from:subject:message-id;
+ bh=MHyVw2ZKEJEd8TJ8ETLosBAMfdGwcfGP+L8N5MhXY2k=;
+ b=PLwS/wCnfPxX+nADfgg1wNzPo70a7CAhsL3H7u0XTCfapXutbtsVxUdlgGbZIMhueQeui6wjq
+ qx+KILeVT7sDxdsA2t22v1DM8uBIvsUffnY68eM7qAf/OcNxC7MPgsp
+X-Developer-Key: i=billy_tsai@aspeedtech.com; a=ed25519;
+ pk=/A8qvgZ6CPfnwKgT6/+k+nvXOkN477MshEGJvVdzeeQ=
 
+The ADC's reference-voltage trimming data lives in a SCU register. The
+driver has always located that SCU with a global, name-based
+device-tree search, which works as long as a platform only has a
+single node named "syscon". AST2700 splits its SCU into two
+instances, syscon0 and syscon1, that share that same node name and
+differ only by label and unit address, so the lookup always resolves
+to syscon0 even when the ADC's trimming data lives in syscon1.
 
-On Wed, 16 Sep 2026 08:38:00 +0800, Ryan Chen wrote:
-> Add AST2700 USB3.2 PHY support.
->  - Supports Super Speed Plus Gen2x1 (10 Gbps), Super Speed (5 Gbps),
->    High Speed (480 Mbps), Full Speed (12Mbps), and Low Speed (1.5 Mbps).
-> 
-> 
+This series adds an explicit "aspeed,trim-syscon" phandle property so multi-SCU
+platforms can point the ADC at the right SCU, keeps the existing
+global lookup as a fallback for single-SCU platforms and already
+deployed device trees, and wires the new property up on AST2700.
 
-Applied, thanks!
+Patch summary:
+1. dt-bindings: iio: adc: Add syscon property for multi-SCU SoCs
+2. iio: adc: aspeed: Use syscon phandle for trimming data when available
+3. arm64: dts: aspeed: Add syscon phandle to AST2700 ADC nodes
 
-[1/3] dt-bindings: phy: aspeed: Document AST2700 USB3.2 PHY
-      commit: e22b112f2fa565fd7d2715ac9d1bc3ba1a3c2427
-[2/3] phy: aspeed: Add AST2700 USB3.2 PHY driver
-      commit: ad72aff5b4b5396a2a443a8f838fcfb8067dc603
-[3/3] MAINTAINERS: Add ASPEED USB3 PHY driver
-      commit: ea01f446f0682a5e7bd7a275889a890b7e0c6e02
+Assisted-by: LLM
+Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+---
+Changes in v3:
+- Switch the LLM attribution trailer to "Assisted-by: LLM", the format
+  required by Documentation/process/coding-assistants.rst, instead of
+  naming the specific tool/model
+- Move each patch's Signed-off-by to be the last trailer, after
+  Assisted-by
+- In patch 2, use dev_of_node() instead of dereferencing
+  data->dev->of_node, and check the new property with
+  of_property_present() before calling the non-optional
+  syscon_regmap_lookup_by_phandle()
+- Link to v2: https://lore.kernel.org/r/20261001-ast27xx-adc-upstream-v2-0-2f9c15cc0064@aspeedtech.com
+
+Changes in v2:
+- Rename the new property to "aspeed,trim-syscon": a bare "syscon" is
+  not a generic property per writing-bindings.rst, so follow its
+  vendor,type-syscon convention
+- Reword the property's description to state its purpose instead of
+  restating the schema's required condition in prose
+- Drop the extra AST2700 example added for the one new property
+- Link to v1: https://lore.kernel.org/r/20261001-ast27xx-adc-upstream-v1-0-5ace57533418@aspeedtech.com
+
+---
+Billy Tsai (3):
+      dt-bindings: iio: adc: Add syscon property for multi-SCU SoCs
+      iio: adc: aspeed: Use syscon phandle for trimming data when available
+      arm64: dts: aspeed: Add syscon phandle to AST2700 ADC nodes
+
+ .../bindings/iio/adc/aspeed,ast2600-adc.yaml       | 17 +++++++++++++++
+ arch/arm64/boot/dts/aspeed/aspeed-g7-soc1.dtsi     |  2 ++
+ drivers/iio/adc/aspeed_adc.c                       | 25 ++++++++++++++++------
+ 3 files changed, 37 insertions(+), 7 deletions(-)
+---
+base-commit: a3b3580713f3ac5a32dc2874ee546828977a1d68
+change-id: 20261001-ast27xx-adc-upstream-34b3d9e8e27b
 
 Best regards,
 -- 
-~Vinod
-
+Billy Tsai <billy_tsai@aspeedtech.com>
 
 
