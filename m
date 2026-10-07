@@ -1,30 +1,30 @@
-Return-Path: <linux-aspeed+bounces-5148-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-5149-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CCF8CCA6009
-	for <linux-aspeed@archiver.kernel.org>; Wed,  7 Oct 2026 06:13:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4D0CBCA6004
+	for <linux-aspeed@archiver.kernel.org>; Wed,  7 Oct 2026 06:13:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j02rC0CZWz30Tf;
-	Wed, 07 Oct 2026 17:13:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j02rD43b3z30V4;
+	Wed, 07 Oct 2026 17:13:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791353626;
-	cv=none; b=kiKTJmJQiEfap7rzSZhMa30Nw+wZI2AvVM+7RY4T01e4NmS55W2MqxNVBXiWpOCAemhzk3JKtSmp/A4C7Buo/V6WAtN+Z8hPueDiSRvfX2ObjRAMNz/tjfglMrVIsDwXc61GLCqxDIGW/MufoSRyRQXfzaztTxTl+4zc4MAt4p8KhbMYYPY+Q8dzK+FXbBbLmeiTW0PBCyk4Xg0JE6ZxAYxVwq05VpCvUpv4fYzmvNDBLhqta0ODQIUFfq7onfJZWltb78I/v84N1ePr59QzkjllYFsB+MKniJPpTwx14eAnVl3nxKaFUSlg//mgYHw8emOVbk32M1aU/xODThwSaw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791353628;
+	cv=none; b=HUWbThKbFyl3QKYmqOC6jVrtgP9UngEfrx5QkpT0Ad0y7VD4uKBL2/E5xfXFOG51wY7oHYuAuVQDQB4x4hOxE/vrA1re6crUFdAx67uK14g8J+We38eFPAh852r9iM0js1kjLnznbxPo9M5dRZ+VppoDZHnbHw0QfV2aXyCyfvWk/KlAZFxL98PY9Eguwg5OvM6SPGSOOOgiyIrleMSiZU/pikNfxFOjW+fYUzZVXtwGBX2ggBYEeczapuMg8Lwqb0bMbeRAuxUPQ0V6+DMMdOM+movEDMQewHB2N4+t7nK3VEDV8s7/UMw8vWqA2/CY/zgv79Dn6w5I6qcbNek0YA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791353626; c=relaxed/relaxed;
-	bh=UIeqQfhA/m7VZI+XCds06AtvfKEunnX/z2eRhJgYo1o=;
+	t=1791353628; c=relaxed/relaxed;
+	bh=pQAfS1Y3ULopvyVEBVb32/Ls4LJ8FM9G8Dx9HM2vKHU=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
-	 In-Reply-To:To:CC; b=RGlbILYqV0t9i7Wm2M6ppETFGYGJV/046OIMFHqf7UFcdUhEyv+oxAs8V9O6WG7csQ7zTxiCKwcNflZ3QspZ58taAeApA21MhXZjVDpPvqVW072XbMAQfruSw8KEk7oUJeNqUvTi8krQcvRdNzL5DV2z6xKdS2yx6Jq1sA4ZHhh0E9ZUBIj6CK8Db/ObKPiiuzYLwCrhqf3dDCQX3s5utEHnAFuwOZl6FOmKZJofll2hbIhddNJnclaAy0yMlDTFuh7u5GYhygarSWvU5LHwkuvuTpqO4ahXFOJpH1pMh1aPBmoR798vuF1/d1jeDJWBsOciqBBLowDm4L3wuIvVGQ==
+	 In-Reply-To:To:CC; b=gn+h+i/W+yE26JAvVZcrDBp8pwN93MHOm0SUqqSMQzrAcqAPccRSJzuzPOX+Yee803YyqtdSK+mYzuza7ANGoGuxFkNvARkIFvb/RPM87X/unDRWGUtN4G96ReKftQEO5EoTcKcoaMd2WDEGQvCZtjLhbrN3nKY/nAf0XU53OgM6CxGvx2i/EbwKSa3GVyzjSRp1ONiMknnFQoCOmCp26Yhn2tV8lw5kUykJgpaeSpCT1yV5rvBVwQYmhj+0n3GRMCCtHqIa/EtLwsppUgQ6CfZGsTpUxg2MJ1tKYirkWJPc5xkbn/LwP4HjKvYL4Q6YNmMA+XKlTlgOJAiNteIVeg==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeedtech.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeedtech.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org)
 Received: from twmbx01.aspeedtech.com (mail.aspeedtech.com [211.20.114.72])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j02r96dwKz2y8f
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 07 Oct 2026 17:13:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j02rC2vrpz30V0
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 07 Oct 2026 17:13:47 +1100 (AEDT)
 Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Wed, 7 Oct
@@ -33,9 +33,8 @@ Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
  Transport; Wed, 7 Oct 2026 14:13:20 +0800
 From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Wed, 7 Oct 2026 14:13:24 +0800
-Subject: [PATCH v5 7/9] EDAC/aspeed: Abstract SoC differences behind chip
- data
+Date: Wed, 7 Oct 2026 14:13:25 +0800
+Subject: [PATCH v5 8/9] EDAC/aspeed: Add AST2700 support
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -51,7 +50,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-ID: <20261007-edac-v5-7-5c31fc5df4cf@aspeedtech.com>
+Message-ID: <20261007-edac-v5-8-5c31fc5df4cf@aspeedtech.com>
 References: <20261007-edac-v5-0-5c31fc5df4cf@aspeedtech.com>
 In-Reply-To: <20261007-edac-v5-0-5c31fc5df4cf@aspeedtech.com>
 To: Stefan Schaeckeler <sschaeck@cisco.com>, Rob Herring <robh@kernel.org>,
@@ -63,359 +62,343 @@ CC: <devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
 	<linux-edac@vger.kernel.org>, Borislav Petkov <bp@suse.de>, Ryan Chen
 	<ryan_chen@aspeedtech.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1791353599; l=11995;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1791353599; l=11841;
  i=ryan_chen@aspeedtech.com; s=20251126; h=from:subject:message-id;
- bh=UUFY8DO88aPlfIoirDPBQOTagrRTelM6QQKqOqq8r/c=;
- b=JWRagXNV/QQDzBr7NfWvZfUf5ug+T/z9wMGHd25zk6FepC4zWqCWWTvAX4qvrahkHDtD22ki/
- EM3RuL30ylzCMx4FQ5qypROaOGB/qaVXQ76Fw7a5OKDC0ARcszuPYKE
+ bh=fXKdiG1xe87JqN+7enIkhdLap4XxCCo/n8ZJs/sBYs8=;
+ b=DdkOTtPI81neVI+GWpn9faS7pHoJJxPGZXvaxVPvF3qyJEnmEGZdNO5WHqpNvdwBSsXSIw+oG
+ 0ziJtvXmXVwCQDrKDB6nKQQZft+bKF8kHdgD8/49U8YRrfCgzaC4p5O
 X-Developer-Key: i=ryan_chen@aspeedtech.com; a=ed25519;
  pk=Xe73xY6tcnkuRjjbVAB/oU30KdB3FvG4nuJuILj7ZVc=
 
-The driver hard-codes the AST2400/2500/2600 register layout, ECC and
-DRAM-type bits, memory types and write-protection key. Abstract these
-SoC-specific details behind a per-SoC struct aspeed_edac_chip selected by
-the compatible, and move the per-instance state (register base, lock)
-into mci->pvt_info instead of globals, so controller variants that differ
-in these details can be added as table data.
+Add SDRAM ECC reporting for the Aspeed AST2700. Its DRAMC has a different
+register layout, a split interrupt status/clear/mask scheme, DDR4/DDR5
+memory and interrupt registers that are not key-protected.
 
-Only the AST2400 and AST2500 key-protect the interrupt control register
-(MCR50); the AST2600 does not. Gate the unlock/relock on the chip carrying
-a protection key and split the shared entry into keyed (AST2400/2500) and
-unkeyed (AST2600) variants, so the AST2600 no longer performs the
-unnecessary unlock.
+Its interrupt status/clear and enable sequences differ from the earlier
+SoCs, so add per-chip isr() and set_irq() hooks and route the
+devm_request_irq() and enable/disable paths through them, keeping the
+existing AST2400/2500/2600 behaviour under the shared
+aspeed_mcr_isr()/aspeed_set_irq().
 
-Tested on an AST2600: A correctable error was injected from the console by
+Unlike the earlier SoCs it records a single failure address shared by
+both error types, so extend the shared count_rec()/count_un_rec()
+helpers with a have_addr flag to report an error without an address
+(existing SoCs pass have_addr = true, unchanged) and widen their address
+argument to phys_addr_t as the AST2700 address can exceed 32 bits.
+
+Tested on an AST2700: A correctable error was injected from the console by
 unlocking the controller and writing its ECC error inject test register:
 
-  # mw 1e6e0000 fc600309
-  # mw 1e6e00b0 81
-  EDAC MC0: 1 CE address(es) not available on mc#0csrow#0channel#0 (csrow:0 channel:0 page:0x0 offset:0x0 grain:16 syndrome:0x0)
-  EDAC MC0: 1 CE on mc#0csrow#0channel#0 (csrow:0 channel:0 page:0x8a543 offset:0xec0 grain:16 syndrome:0x0)
+  # mw 12c00000 1688a8a8
+  # mw 12c00080 31
+  EDAC MC0: 1 CE on mc#0csrow#0channel#0 (csrow:0 channel:0 page:0x40f6da offset:0xdb0 grain:16 syndrome:0x0)
 
 Assisted-by: Claude:claude-opus-4-8
 Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
 
 ---
 Changes in v5:
-- Follow patch 2 in using request_irq()/free_irq().
+- Follow patch 2 in using request_irq().
+
+Changes in v3:
+- Write the AST2700 interrupt mask register outright rather than
+  read-modify-write: mask every source and unmask only the ECC ones.
+  The driver owns the line exclusively, so it should establish the
+  mask itself instead of deriving it from the register's contents.
+- Mask the interrupts before requesting them rather than after, so the
+  mask is established before the handler can run.
 
 Changes in v2:
-- Carry over the irqsave lock acquisition in init_csrows() and the
-  dev_dbg() moved out of the raw_spinlock critical section.
-- Store the interrupt number in struct aspeed_edac so that
-  aspeed_remove() can free the interrupt without looking it up again.
+- Return IRQ_NONE from ast2700_dramc_isr() when no ECC interrupt status
+  bit is set. The handler clears only the ECC bits, so unconditionally
+  claiming the interrupt could livelock the level-triggered line if
+  another DRAMC source was left unmasked.
+- Add AST2700_INT_ECC for the pair of ECC interrupt bits, now used by both
+  the handler and the enable path.
+- Expand the enable/disable ternary in ast2700_set_irq() into if/else,
+  matching the shape of aspeed_set_irq().
+- Pass struct aspeed_edac to the set_irq() hooks instead of
+  struct mem_ctl_info, which the callees only used to reach pvt_info.
 ---
- drivers/edac/aspeed_edac.c | 159 +++++++++++++++++++++++++++++++--------------
- 1 file changed, 112 insertions(+), 47 deletions(-)
+ drivers/edac/aspeed_edac.c | 161 +++++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 135 insertions(+), 26 deletions(-)
 
 diff --git a/drivers/edac/aspeed_edac.c b/drivers/edac/aspeed_edac.c
-index 124e8a39eaab..58cc32e65d8b 100644
+index 58cc32e65d8b..b11fb90a701a 100644
 --- a/drivers/edac/aspeed_edac.c
 +++ b/drivers/edac/aspeed_edac.c
-@@ -3,12 +3,14 @@
-  * Copyright 2018, 2019 Cisco Systems
-  */
- 
-+#include <linux/bitfield.h>
- #include <linux/cleanup.h>
- #include <linux/edac.h>
- #include <linux/init.h>
- #include <linux/interrupt.h>
- #include <linux/io.h>
- #include <linux/module.h>
-+#include <linux/of.h>
- #include <linux/of_address.h>
- #include <linux/platform_device.h>
- #include <linux/spinlock.h>
-@@ -30,9 +32,23 @@
+@@ -32,6 +32,24 @@
  #define ASPEED_MCR_INTR_CTRL_CNT_UNREC  GENMASK(15, 12)
  #define ASPEED_MCR_INTR_CTRL_ENABLE     (BIT(0) | BIT(1))
  
--static DEFINE_RAW_SPINLOCK(aspeed_lock);
--static void __iomem *aspeed_regs __guarded_by(&aspeed_lock);
--static int aspeed_irq;
-+struct aspeed_edac_chip {
-+	unsigned int conf_reg;
-+	u32 conf_ecc;
-+	u32 conf_dram_type;
-+	enum mem_type dram_type[2];
-+	unsigned long mtype_cap;
-+	unsigned int prot_reg;
-+	u32 prot_key;
-+};
++#define AST2700_INT_STS			0x04
++#define AST2700_INT_CLR			0x08
++#define AST2700_INT_MASK		0x0c
++#define   AST2700_INT_ECC_RECOVERABLE	BIT(5)
++#define   AST2700_INT_ECC_UNRECOVERABLE	BIT(4)
++#define   AST2700_INT_ECC		(AST2700_INT_ECC_RECOVERABLE | \
++					 AST2700_INT_ECC_UNRECOVERABLE)
++#define   AST2700_INT_ALL		GENMASK(16, 0)
++#define AST2700_MCFG			0x10
++#define   AST2700_MCFG_ECC		BIT(6)
++#define   AST2700_MCFG_DRAM_TYPE	BIT(0) /* 0=DDR4, 1=DDR5 */
++#define AST2700_ECC_STS			0x78
++#define   AST2700_ECC_REC_CNT		GENMASK(15, 8)
++#define   AST2700_ECC_UNREC_CNT		GENMASK(7, 0)
++#define AST2700_ECC_FAIL_ADDR		0x7c
 +
-+struct aspeed_edac {
-+	raw_spinlock_t lock;
++struct aspeed_edac;
 +
-+	void __iomem *regs __guarded_by(&lock);
-+	const struct aspeed_edac_chip *chip;
-+	int irq;
-+};
+ struct aspeed_edac_chip {
+ 	unsigned int conf_reg;
+ 	u32 conf_ecc;
+@@ -40,6 +58,8 @@ struct aspeed_edac_chip {
+ 	unsigned long mtype_cap;
+ 	unsigned int prot_reg;
+ 	u32 prot_key;
++	irqreturn_t (*isr)(int irq, void *arg);
++	void (*set_irq)(struct aspeed_edac *priv, bool enable);
+ };
  
- static void count_rec(struct mem_ctl_info *mci, u8 rec_cnt, u32 rec_addr)
+ struct aspeed_edac {
+@@ -50,26 +70,34 @@ struct aspeed_edac {
+ 	int irq;
+ };
+ 
+-static void count_rec(struct mem_ctl_info *mci, u8 rec_cnt, u32 rec_addr)
++static void count_rec(struct mem_ctl_info *mci, u8 rec_cnt, phys_addr_t rec_addr,
++		      bool have_addr)
  {
-@@ -97,37 +113,54 @@ static void count_un_rec(struct mem_ctl_info *mci, u8 un_rec_cnt,
+ 	struct csrow_info *csrow = mci->csrows[0];
+-	u32 page, offset, syndrome;
++	unsigned long page, offset, syndrome;
+ 
+ 	if (!rec_cnt)
+ 		return;
+ 
+-	/* report first few errors (if there are) */
+-	/* note: no addresses are recorded */
+-	if (rec_cnt > 1) {
++	/*
++	 * Report the errors whose address is not recorded: all of them when
++	 * no address is available, otherwise all but the last one (reported
++	 * with its address below).
++	 */
++	if (rec_cnt > 1 || !have_addr) {
+ 		/* page, offset and syndrome are not available */
+ 		page = 0;
+ 		offset = 0;
+ 		syndrome = 0;
+-		edac_mc_handle_error(HW_EVENT_ERR_CORRECTED, mci, rec_cnt-1,
++		edac_mc_handle_error(HW_EVENT_ERR_CORRECTED, mci,
++				     have_addr ? rec_cnt - 1 : rec_cnt,
+ 				     page, offset, syndrome, 0, 0, -1,
+ 				     "address(es) not available", "");
  	}
+ 
++	if (!have_addr)
++		return;
++
+ 	/* report last error */
+ 	/* note: rec_addr is the last recoverable error addr */
+ 	page = rec_addr >> PAGE_SHIFT;
+@@ -82,32 +110,34 @@ static void count_rec(struct mem_ctl_info *mci, u8 rec_cnt, u32 rec_addr)
  }
  
--static irqreturn_t mcr_isr(int irq, void *arg)
-+static void aspeed_mcr_irq_update_enter(struct aspeed_edac *priv)
-+	__must_hold(&priv->lock)
-+{
-+	if (priv->chip->prot_key)
-+		writel(priv->chip->prot_key, priv->regs + priv->chip->prot_reg);
-+}
-+
-+static void aspeed_mcr_irq_update_exit(struct aspeed_edac *priv)
-+	__must_hold(&priv->lock)
-+{
-+	if (priv->chip->prot_key)
-+		writel(~priv->chip->prot_key, priv->regs + priv->chip->prot_reg);
-+}
-+
-+static irqreturn_t aspeed_mcr_isr(int irq, void *arg)
+ static void count_un_rec(struct mem_ctl_info *mci, u8 un_rec_cnt,
+-			 u32 un_rec_addr)
++			 phys_addr_t un_rec_addr, bool have_addr)
  {
- 	struct mem_ctl_info *mci = arg;
- 	u32 rec_addr, un_rec_addr;
-+	struct aspeed_edac *priv;
- 	u8 rec_cnt, un_rec_cnt;
- 	u32 reg50;
+ 	struct csrow_info *csrow = mci->csrows[0];
+-	u32 page, offset, syndrome;
++	unsigned long page, offset, syndrome;
  
--	scoped_guard(raw_spinlock, &aspeed_lock) {
--		reg50 = readl(aspeed_regs + ASPEED_MCR_INTR_CTRL);
--		un_rec_addr = readl(aspeed_regs + ASPEED_MCR_ADDR_UNREC);
--		rec_addr = readl(aspeed_regs + ASPEED_MCR_ADDR_REC);
-+	priv = mci->pvt_info;
-+
-+	scoped_guard(raw_spinlock, &priv->lock) {
-+		reg50 = readl(priv->regs + ASPEED_MCR_INTR_CTRL);
-+		un_rec_addr = readl(priv->regs + ASPEED_MCR_ADDR_UNREC);
-+		rec_addr = readl(priv->regs + ASPEED_MCR_ADDR_REC);
+ 	if (!un_rec_cnt)
+ 		return;
  
- 		/*
- 		 * Clearing the counters needs a set-then-clear of CLEAR. The
- 		 * counter and interrupt flag fields are read-only, so writing
- 		 * back the values read above leaves them unaffected.
- 		 */
--		writel(ASPEED_MCR_PROT_PASSWD, aspeed_regs + ASPEED_MCR_PROT);
-+		aspeed_mcr_irq_update_enter(priv);
- 		writel(reg50 | ASPEED_MCR_INTR_CTRL_CLEAR,
--		       aspeed_regs + ASPEED_MCR_INTR_CTRL);
-+		       priv->regs + ASPEED_MCR_INTR_CTRL);
- 		writel(reg50 & ~ASPEED_MCR_INTR_CTRL_CLEAR,
--		       aspeed_regs + ASPEED_MCR_INTR_CTRL);
--		writel(~ASPEED_MCR_PROT_PASSWD, aspeed_regs + ASPEED_MCR_PROT);
-+		       priv->regs + ASPEED_MCR_INTR_CTRL);
-+		aspeed_mcr_irq_update_exit(priv);
+-	/* report 1. error */
+-	/* note: un_rec_addr is the first unrecoverable error addr */
+-	page = un_rec_addr >> PAGE_SHIFT;
+-	offset = un_rec_addr & ~PAGE_MASK;
+-	/* syndrome is not available */
+-	syndrome = 0;
+-	edac_mc_handle_error(HW_EVENT_ERR_UNCORRECTED, mci, 1,
+-			     csrow->first_page + page, offset, syndrome,
+-			     0, 0, -1, "", "");
++	/* report the first error with its address when one is available */
++	if (have_addr) {
++		/* note: un_rec_addr is the first unrecoverable error addr */
++		page = un_rec_addr >> PAGE_SHIFT;
++		offset = un_rec_addr & ~PAGE_MASK;
++		/* syndrome is not available */
++		syndrome = 0;
++		edac_mc_handle_error(HW_EVENT_ERR_UNCORRECTED, mci, 1,
++				     csrow->first_page + page, offset, syndrome,
++				     0, 0, -1, "", "");
++	}
+ 
+-	/* report further errors (if there are) */
+-	/* note: no addresses are recorded */
+-	if (un_rec_cnt > 1) {
++	/* report the remaining errors without a recorded address */
++	if (un_rec_cnt > 1 || !have_addr) {
+ 		/* page, offset and syndrome are not available */
+ 		page = 0;
+ 		offset = 0;
+ 		syndrome = 0;
+-		edac_mc_handle_error(HW_EVENT_ERR_UNCORRECTED, mci, un_rec_cnt-1,
++		edac_mc_handle_error(HW_EVENT_ERR_UNCORRECTED, mci,
++				     have_addr ? un_rec_cnt - 1 : un_rec_cnt,
+ 				     page, offset, syndrome, 0, 0, -1,
+ 				     "address(es) not available", "");
  	}
- 
- 	dev_dbg(mci->pdev, "received edac interrupt w/ mcr register 50: 0x%x\n",
- 		reg50);
- 
- 	/* collect data about recoverable and unrecoverable errors */
--	rec_cnt = (reg50 & ASPEED_MCR_INTR_CTRL_CNT_REC) >> 16;
--	un_rec_cnt = (reg50 & ASPEED_MCR_INTR_CTRL_CNT_UNREC) >> 12;
-+	rec_cnt = FIELD_GET(ASPEED_MCR_INTR_CTRL_CNT_REC, reg50);
-+	un_rec_cnt = FIELD_GET(ASPEED_MCR_INTR_CTRL_CNT_UNREC, reg50);
- 
- 	dev_dbg(mci->pdev, "%d recoverable interrupts and %d unrecoverable interrupts\n",
+@@ -166,8 +196,8 @@ static irqreturn_t aspeed_mcr_isr(int irq, void *arg)
  		rec_cnt, un_rec_cnt);
-@@ -137,35 +170,36 @@ static irqreturn_t mcr_isr(int irq, void *arg)
- 	count_un_rec(mci, un_rec_cnt, un_rec_addr);
+ 
+ 	/* process recoverable and unrecoverable errors */
+-	count_rec(mci, rec_cnt, rec_addr);
+-	count_un_rec(mci, un_rec_cnt, un_rec_addr);
++	count_rec(mci, rec_cnt, rec_addr, true);
++	count_un_rec(mci, un_rec_cnt, un_rec_addr, true);
  
  	if (!rec_cnt && !un_rec_cnt)
--		dev_dbg(mci->pdev, "received edac interrupt, but did not find any ECC counters\n");
-+		dev_dbg_ratelimited(mci->pdev, "received edac interrupt, but did not find any ECC counters\n");
- 
--	scoped_guard(raw_spinlock, &aspeed_lock)
--		reg50 = readl(aspeed_regs + ASPEED_MCR_INTR_CTRL);
-+	scoped_guard(raw_spinlock, &priv->lock)
-+		reg50 = readl(priv->regs + ASPEED_MCR_INTR_CTRL);
- 	dev_dbg(mci->pdev, "edac interrupt handled. mcr reg 50 is now: 0x%x\n",
- 		reg50);
- 
+ 		dev_dbg_ratelimited(mci->pdev, "received edac interrupt, but did not find any ECC counters\n");
+@@ -180,6 +210,54 @@ static irqreturn_t aspeed_mcr_isr(int irq, void *arg)
  	return IRQ_HANDLED;
  }
  
--static void aspeed_set_irq(bool enable)
-+static void aspeed_set_irq(struct aspeed_edac *priv, bool enable)
++static irqreturn_t ast2700_dramc_isr(int irq, void *arg)
++{
++	u32 int_sts, ecc_sts, fail_addr;
++	struct mem_ctl_info *mci = arg;
++	struct aspeed_edac *priv;
++	u8 rec_cnt, un_rec_cnt;
++	phys_addr_t addr;
++
++	priv = mci->pvt_info;
++
++	scoped_guard(raw_spinlock, &priv->lock) {
++		int_sts = readl(priv->regs + AST2700_INT_STS);
++		if (!(int_sts & AST2700_INT_ECC))
++			return IRQ_NONE;
++
++		ecc_sts = readl(priv->regs + AST2700_ECC_STS);
++		fail_addr = readl(priv->regs + AST2700_ECC_FAIL_ADDR);
++
++		/* the interrupt registers are not key-protected; clear only ECC */
++		writel(int_sts & AST2700_INT_ECC, priv->regs + AST2700_INT_CLR);
++	}
++
++	rec_cnt = FIELD_GET(AST2700_ECC_REC_CNT, ecc_sts);
++	un_rec_cnt = FIELD_GET(AST2700_ECC_UNREC_CNT, ecc_sts);
++
++	/* the register holds address bits [35:4], in units of 16 bytes */
++	addr = (phys_addr_t)fail_addr << 4;
++
++	/*
++	 * The controller records only the address of the latest failure,
++	 * shared by both error types. When only one type occurred it owns
++	 * that address; when both occurred attribute it to the uncorrectable
++	 * error and report the corrected ones without an address.
++	 */
++	if (un_rec_cnt && !rec_cnt) {
++		count_un_rec(mci, un_rec_cnt, addr, true);
++	} else if (!un_rec_cnt && rec_cnt) {
++		count_rec(mci, rec_cnt, addr, true);
++	} else if (un_rec_cnt && rec_cnt) {
++		count_un_rec(mci, un_rec_cnt, addr, true);
++		count_rec(mci, rec_cnt, 0, false);
++	} else {
++		dev_dbg_ratelimited(mci->pdev, "received interrupt with no ECC counters set\n");
++	}
++
++	return IRQ_HANDLED;
++}
++
+ static void aspeed_set_irq(struct aspeed_edac *priv, bool enable)
  {
  	u32 val;
- 
--	guard(raw_spinlock_irqsave)(&aspeed_lock);
-+	guard(raw_spinlock_irqsave)(&priv->lock);
- 
--	val = readl(aspeed_regs + ASPEED_MCR_INTR_CTRL);
-+	val = readl(priv->regs + ASPEED_MCR_INTR_CTRL);
- 	if (enable)
- 		val |= ASPEED_MCR_INTR_CTRL_ENABLE;
- 	else
- 		val &= ~ASPEED_MCR_INTR_CTRL_ENABLE;
- 
--	writel(ASPEED_MCR_PROT_PASSWD, aspeed_regs + ASPEED_MCR_PROT);
--	writel(val, aspeed_regs + ASPEED_MCR_INTR_CTRL);
--	writel(~ASPEED_MCR_PROT_PASSWD, aspeed_regs + ASPEED_MCR_PROT);
-+	aspeed_mcr_irq_update_enter(priv);
-+	writel(val, priv->regs + ASPEED_MCR_INTR_CTRL);
-+	aspeed_mcr_irq_update_exit(priv);
+@@ -197,6 +275,19 @@ static void aspeed_set_irq(struct aspeed_edac *priv, bool enable)
+ 	aspeed_mcr_irq_update_exit(priv);
  }
  
--static int config_irq(void *ctx, struct platform_device *pdev)
-+static int config_irq(struct mem_ctl_info *mci, struct platform_device *pdev)
++static void ast2700_set_irq(struct aspeed_edac *priv, bool enable)
++{
++	u32 val = AST2700_INT_ALL;
++
++	guard(raw_spinlock_irqsave)(&priv->lock);
++
++	/* interrupts are enabled by clearing their mask bits */
++	if (enable)
++		val &= ~AST2700_INT_ECC;
++
++	writel(val, priv->regs + AST2700_INT_MASK);
++}
++
+ static int config_irq(struct mem_ctl_info *mci, struct platform_device *pdev)
  {
-+	struct aspeed_edac *priv = mci->pvt_info;
- 	int irq;
- 	int rc;
- 
-@@ -175,14 +209,14 @@ static int config_irq(void *ctx, struct platform_device *pdev)
+ 	struct aspeed_edac *priv = mci->pvt_info;
+@@ -209,14 +300,16 @@ static int config_irq(struct mem_ctl_info *mci, struct platform_device *pdev)
  	if (irq < 0)
  		return irq;
  
--	rc = request_irq(irq, mcr_isr, IRQF_TRIGGER_HIGH, DRV_NAME, ctx);
-+	rc = request_irq(irq, aspeed_mcr_isr, IRQF_TRIGGER_HIGH, DRV_NAME, mci);
+-	rc = request_irq(irq, aspeed_mcr_isr, IRQF_TRIGGER_HIGH, DRV_NAME, mci);
++	priv->chip->set_irq(priv, false);
++
++	rc = request_irq(irq, priv->chip->isr, IRQF_TRIGGER_HIGH, DRV_NAME, mci);
  	if (rc)
  		return rc;
  
--	aspeed_irq = irq;
-+	priv->irq = irq;
+ 	priv->irq = irq;
  
  	/* enable interrupts */
--	aspeed_set_irq(true);
-+	aspeed_set_irq(priv, true);
+-	aspeed_set_irq(priv, true);
++	priv->chip->set_irq(priv, true);
  
  	return 0;
  }
-@@ -190,11 +224,13 @@ static int config_irq(void *ctx, struct platform_device *pdev)
- static int init_csrows(struct mem_ctl_info *mci)
- {
- 	struct csrow_info *csrow = mci->csrows[0];
--	u32 nr_pages, dram_type;
--	struct dimm_info *dimm;
-+	struct aspeed_edac *priv = mci->pvt_info;
- 	struct device_node *np;
-+	struct dimm_info *dimm;
- 	struct resource r;
--	u32 reg04;
-+	unsigned int type;
-+	u32 nr_pages;
-+	u32 conf;
- 	int rc;
- 
- 	/* retrieve info about physical memory from device tree */
-@@ -220,12 +256,12 @@ static int init_csrows(struct mem_ctl_info *mci)
- 	nr_pages = resource_size(&r) >> PAGE_SHIFT;
- 	csrow->last_page = csrow->first_page + nr_pages - 1;
- 
--	scoped_guard(raw_spinlock_irqsave, &aspeed_lock)
--		reg04 = readl(aspeed_regs + ASPEED_MCR_CONF);
--	dram_type = (reg04 & ASPEED_MCR_CONF_DRAM_TYPE) ? MEM_DDR4 : MEM_DDR3;
-+	scoped_guard(raw_spinlock_irqsave, &priv->lock)
-+		conf = readl(priv->regs + priv->chip->conf_reg);
-+	type = field_get(priv->chip->conf_dram_type, conf);
- 
- 	dimm = csrow->channels[0]->dimm;
--	dimm->mtype = dram_type;
-+	dimm->mtype = priv->chip->dram_type[type];
- 	dimm->edac_mode = EDAC_SECDED;
- 	dimm->nr_pages = nr_pages / csrow->nr_channels;
- 	dimm->grain = 16;
-@@ -238,22 +274,26 @@ static int init_csrows(struct mem_ctl_info *mci)
- 
- static int aspeed_probe(struct platform_device *pdev)
- {
-+	const struct aspeed_edac_chip *chip;
-+	struct device *dev = &pdev->dev;
- 	struct edac_mc_layer layers[2];
-+	struct aspeed_edac *priv;
- 	struct mem_ctl_info *mci;
- 	void __iomem *regs;
--	u32 reg04;
-+	u32 conf;
- 	int rc;
- 
-+	chip = of_device_get_match_data(dev);
-+	if (!chip)
-+		return -EINVAL;
-+
- 	regs = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(regs))
- 		return PTR_ERR(regs);
- 
--	scoped_guard(raw_spinlock_irqsave, &aspeed_lock)
--		aspeed_regs = regs;
--
- 	/* bail out if ECC mode is not configured */
--	reg04 = readl(regs + ASPEED_MCR_CONF);
--	if (!(reg04 & ASPEED_MCR_CONF_ECC)) {
-+	conf = readl(regs + chip->conf_reg);
-+	if (!field_get(chip->conf_ecc, conf)) {
- 		dev_err(&pdev->dev, "ECC mode is not configured in u-boot\n");
- 		return -EPERM;
- 	}
-@@ -268,12 +308,17 @@ static int aspeed_probe(struct platform_device *pdev)
- 	layers[1].size = 1;
- 	layers[1].is_virt_csrow = false;
- 
--	mci = edac_mc_alloc(0, ARRAY_SIZE(layers), layers, 0);
-+	mci = edac_mc_alloc(0, ARRAY_SIZE(layers), layers, sizeof(*priv));
- 	if (!mci)
- 		return -ENOMEM;
- 
-+	priv = mci->pvt_info;
-+	priv->chip = chip;
-+	scoped_guard(raw_spinlock_init, &priv->lock)
-+		priv->regs = regs;
-+
- 	mci->pdev = &pdev->dev;
--	mci->mtype_cap = MEM_FLAG_DDR3 | MEM_FLAG_DDR4;
-+	mci->mtype_cap = chip->mtype_cap;
- 	mci->edac_ctl_cap = EDAC_FLAG_SECDED;
- 	mci->edac_cap = EDAC_FLAG_SECDED;
- 	mci->scrub_cap = SCRUB_FLAG_HW_SRC;
-@@ -316,21 +361,41 @@ static int aspeed_probe(struct platform_device *pdev)
- static void aspeed_remove(struct platform_device *pdev)
- {
- 	struct mem_ctl_info *mci = platform_get_drvdata(pdev);
-+	struct aspeed_edac *priv = mci->pvt_info;
+@@ -364,7 +457,7 @@ static void aspeed_remove(struct platform_device *pdev)
+ 	struct aspeed_edac *priv = mci->pvt_info;
  
  	/* disable interrupts */
--	aspeed_set_irq(false);
-+	aspeed_set_irq(priv, false);
+-	aspeed_set_irq(priv, false);
++	priv->chip->set_irq(priv, false);
  
--	free_irq(aspeed_irq, mci);
-+	free_irq(priv->irq, mci);
+ 	free_irq(priv->irq, mci);
  
- 	/* free resources */
- 	edac_mc_del_mc(&pdev->dev);
- 	edac_mc_free(mci);
- }
+@@ -381,6 +474,8 @@ static const struct aspeed_edac_chip ast2400_edac = {
+ 	.mtype_cap = MEM_FLAG_DDR3 | MEM_FLAG_DDR4,
+ 	.prot_reg = ASPEED_MCR_PROT,
+ 	.prot_key = ASPEED_MCR_PROT_PASSWD,
++	.isr = aspeed_mcr_isr,
++	.set_irq = aspeed_set_irq,
+ };
  
-+static const struct aspeed_edac_chip ast2400_edac = {
-+	.conf_reg = ASPEED_MCR_CONF,
-+	.conf_ecc = ASPEED_MCR_CONF_ECC,
-+	.conf_dram_type = ASPEED_MCR_CONF_DRAM_TYPE,
-+	.dram_type = { MEM_DDR3, MEM_DDR4 },
-+	.mtype_cap = MEM_FLAG_DDR3 | MEM_FLAG_DDR4,
-+	.prot_reg = ASPEED_MCR_PROT,
-+	.prot_key = ASPEED_MCR_PROT_PASSWD,
+ /* The AST2600 does not key-protect the interrupt control register (MCR50). */
+@@ -390,12 +485,26 @@ static const struct aspeed_edac_chip ast2600_edac = {
+ 	.conf_dram_type = ASPEED_MCR_CONF_DRAM_TYPE,
+ 	.dram_type = { MEM_DDR3, MEM_DDR4 },
+ 	.mtype_cap = MEM_FLAG_DDR3 | MEM_FLAG_DDR4,
++	.isr = aspeed_mcr_isr,
++	.set_irq = aspeed_set_irq,
 +};
 +
-+/* The AST2600 does not key-protect the interrupt control register (MCR50). */
-+static const struct aspeed_edac_chip ast2600_edac = {
-+	.conf_reg = ASPEED_MCR_CONF,
-+	.conf_ecc = ASPEED_MCR_CONF_ECC,
-+	.conf_dram_type = ASPEED_MCR_CONF_DRAM_TYPE,
-+	.dram_type = { MEM_DDR3, MEM_DDR4 },
-+	.mtype_cap = MEM_FLAG_DDR3 | MEM_FLAG_DDR4,
-+};
-+
++/* The AST2700 interrupt registers are not key-protected either. */
++static const struct aspeed_edac_chip ast2700_edac = {
++	.conf_reg = AST2700_MCFG,
++	.conf_ecc = AST2700_MCFG_ECC,
++	.conf_dram_type = AST2700_MCFG_DRAM_TYPE,
++	.dram_type = { MEM_DDR4, MEM_DDR5 },
++	.mtype_cap = MEM_FLAG_DDR4 | MEM_FLAG_DDR5,
++	.isr = ast2700_dramc_isr,
++	.set_irq = ast2700_set_irq,
+ };
+ 
  static const struct of_device_id aspeed_of_match[] = {
--	{ .compatible = "aspeed,ast2400-sdram-edac" },
--	{ .compatible = "aspeed,ast2500-sdram-edac" },
--	{ .compatible = "aspeed,ast2600-sdram-edac" },
-+	{ .compatible = "aspeed,ast2400-sdram-edac", .data = &ast2400_edac },
-+	{ .compatible = "aspeed,ast2500-sdram-edac", .data = &ast2400_edac },
-+	{ .compatible = "aspeed,ast2600-sdram-edac", .data = &ast2600_edac },
+ 	{ .compatible = "aspeed,ast2400-sdram-edac", .data = &ast2400_edac },
+ 	{ .compatible = "aspeed,ast2500-sdram-edac", .data = &ast2400_edac },
+ 	{ .compatible = "aspeed,ast2600-sdram-edac", .data = &ast2600_edac },
++	{ .compatible = "aspeed,ast2700-sdram-edac", .data = &ast2700_edac },
  	{},
  };
  
