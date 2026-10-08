@@ -1,83 +1,55 @@
-Return-Path: <linux-aspeed+bounces-5157-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-5158-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0FFCACA6015
-	for <linux-aspeed@archiver.kernel.org>; Thu,  8 Oct 2026 21:41:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A83ACA6015
+	for <linux-aspeed@archiver.kernel.org>; Thu,  8 Oct 2026 22:56:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j13NV3gvWz2yPR;
-	Fri, 09 Oct 2026 08:41:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791495706;
-	cv=none; b=eTci5f3kxTOyYoahbZOK42Yinj1wkE9vIM5kyw6G5UPSKdQDVl+MR5m8eitsxPc3/kGaAINiGTe6hB4FhB1nmvq/61YSr9UyNZ08dqmQET8XEFG26vtMG80io6bAFyMz2zV+b1snN16t6cfJWbAg343gQfqAg3rInSR4eNTt9QjJv9XrtoNlAMneUPJC178q7NNJwQG+hhTsa3PsECsWW3EIdX/iR0VUp+gJ53pgqUJmTSZDP9Tkw6NCGl0k8WP1PlpL6zkDL5Ij0TIjlxVzGI5owiE0Do936M5LXtP4eNd+++UJdwwOSRDL+6wYDPWLChlSVtGKsTKN6UL6hIjsfg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j152x1pd4z30WQ;
+	Fri, 09 Oct 2026 09:56:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791466049;
+	cv=none; b=X/SMkjl1bcw1idUt2vi/IsHyhoQMoowA++9tE1ZRiOFHFZZMkSrkyy71xWtl+Yum4RCNn/1vOFqQHPOnmcq5iL9Z1TiiUWdFJRFY3e/6wo+gYhICz6X+UxDpANY0YJ8VOdS7MbCoNvKkIVydFvnvfVmFELb0Nc29nBO4JPQjB6j/sGCgyVMULIyjoHKvwHyoa9tWbfPMTZBHbXKDv8kZF2kW1c5NaOrA1LHw5YxZKd2Xm1udCtUs8/R+xUGoJDylRqKWZDAmlK2u+3j06EnBx6iPJwJNX6mS4VOouy+pUTjJg82Vj1jQ/23/n75wF1cmdgY3SwiGwP+B4Rs9r6c2Qg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791495706; c=relaxed/relaxed;
-	bh=7gwI1dcyam2yk5wsB6eHTvF/ZEiZ3eztVF1fLP049Xs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=WZ6mYhmAZe7EUwWAtCIFTuan5TKDbtd1bHowOKRa0SIVAdpxjXOPo+EEzJ1PXsKjyHCPMTMj6hfc8vZg2waDjYx9sfrnja6em4nTdYidr+QB38Jj3B6VINe8VBa3fQzUyomdnwxnTi7BhbNP1VCeuIDXp4gtRG+mzbuDJrH7nbpx1/VPwy5IowkZP6XXlmZ4uA3vZwkx5qAqGoOVykpCMehvREDTBYL3l1v5RsASgm1aRhcWreZKvLoQ4T87OxjW62vEzOT3ZrikNJRlTyJ35GAoQsQYvhITBeMqdJ6wUDnkgc9uxiQtKgjOqF1BArbJe5LyuuGTBGdzYOZfTKyj4A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=F5O2lQXr; dkim-atps=neutral; spf=pass (client-ip=192.198.163.10; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1791466049; c=relaxed/relaxed;
+	bh=SEOI6YpLTTnJBkGelFWclp/EIvRmASWvMITCwEiuTHY=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=hN5YanK6Uq00ERSESoGzlAmsW8aDfvxAcP3tAprShE0l4drXvJxMNPC+lFDk0L1sb/fAEk2qBBM1puseXwOZPWyL7QFWCIpqJw1tpr/Vn3EB8CplBXURM3706ZMsyTLMeyeI55twOGoKIaUeVwy7psU8FUIJlWwdmCFXYiQN9MTpShdoyVmk3QfRGcSg19RaQPvwIR23Zl4rrZ3qixcyp1UmJ7LkvtRJvHQA2+p3816ntmeEpGnSgnOg4+diBsrZ7XFtpzdyIxtDF0Iz/qPcDX2YBqdvMxo2z3VZy1V42Y6o6GnXHgu/Vap0Ktet32fHsWLO/+DB933juxtUZNdndA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DCEmeOqo; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=devnull+phil.phil.gs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=F5O2lQXr;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DCEmeOqo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.10; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 64 seconds by postgrey-1.37 at boromir; Fri, 09 Oct 2026 08:41:43 AEDT
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=devnull+phil.phil.gs@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j13NR6Y6vz2yPG
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 09 Oct 2026 08:41:43 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1791495704; x=1823031704;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=FonD0lPwatSwc9CLF+o0pnMjNadWk+XyTpxVZVqKIGE=;
-  b=F5O2lQXrEKdpZMkPUWp1hl1oXKJmWXlr71D3+ygPHL+cMuOChDpjWIt2
-   1UY02Or2fvsv/I0AGy83yx/FQJgnyxwyh9li6LG7/obBPvMPqJ3eMQI13
-   1dZ2xwoghZI08JXq0iy11hsBUwPVcj2a2egCZ3EpHLpnr9aseDxXRcA1k
-   Sq2wm+n1tzkr9eJGSGOizC2ltOhXpNifVonOZYqPtKl/etdBn+FeP9gBZ
-   JPPgAtu+SyPJ5SiQoh4bXEUJ4fEmdRS3OcET9dNGg6EqHeKHpXCfIOlqR
-   Yug2eicnfzO6OrZp8Zc9LtM0Bbl4zMjGD729R/TMMgIa/iBzmXmsNt0jU
-   g==;
-X-CSE-ConnectionGUID: sl+ACkzzRmuiCKeZSz4C+w==
-X-CSE-MsgGUID: iNTO7Ln4T1+wmYKCglb9LQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11929"; a="194300"
-X-IronPort-AV: E=Sophos;i="6.27,147,1787036400"; 
-   d="scan'208";a="194300"
-Received: from fmviesa012.fm.intel.com ([10.60.135.152])
-  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Oct 2026 14:40:35 -0700
-X-CSE-ConnectionGUID: xGEQVSFmQsOKbtW/QJ+sDQ==
-X-CSE-MsgGUID: ozfbqNP5R/C4UprFnJ9UQA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,147,1787036400"; 
-   d="scan'208";a="1959551"
-Received: from lkp-server01.sh.intel.com (HELO 0caa9d2d175c) ([10.239.97.150])
-  by fmviesa012.fm.intel.com with ESMTP; 08 Oct 2026 14:40:32 -0700
-Received: from kbuild by 0caa9d2d175c with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1xEvqm-000000004vU-2wDG;
-	Thu, 08 Oct 2026 21:40:28 +0000
-Date: Fri, 9 Oct 2026 05:40:18 +0800
-From: kernel test robot <lkp@intel.com>
-To: Jacky Chou <jacky_chou@aspeedtech.com>, Vinod Koul <vkoul@kernel.org>,
-	Neil Armstrong <neil.armstrong@linaro.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Ryan Chen <ryan_chen@aspeedtech.com>,
-	Billy Tsai <billy_tsai@aspeedtech.com>
-Cc: oe-kbuild-all@lists.linux.dev, linux-aspeed@lists.ozlabs.org,
-	linux-phy@lists.infradead.org, devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	Jacky Chou <jacky_chou@aspeedtech.com>
-Subject: Re: [PATCH 2/3] phy: aspeed: Add ASPEED PCIe PHY driver
-Message-ID: <202610090555.gWYlVYEL-lkp@intel.com>
-References: <20261008-aspeed_pcie_phy-v1-2-96764937aef0@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j0rQ76725z2yjN
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 09 Oct 2026 00:27:27 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 90D14601DB;
+	Thu,  8 Oct 2026 13:27:23 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 3A723C2BCF5;
+	Thu,  8 Oct 2026 13:27:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1791466043;
+	bh=5F7g5xF4AIaKKrs/o8eP2+53Fxfunl4kKyYuIFInTIM=;
+	h=From:Date:Subject:To:Cc:Reply-To:From;
+	b=DCEmeOqocaL0EIEwUje2ZhwRdUAoojvX5MCZIDQyZYfsQDYORV2NdsP+zl4X0XPb0
+	 RbcEOcF6SR29YE2pIH1t88y2nyts0LqDkmEl+P/w2CkL3z9ecpOVL30rroZYzY2AP1
+	 8Hf4k4N6VuOdXUnXiEtxXzaREeb5PeQ9ZfhP1mW+/T2rK43EqJzHp0fCBuAFV9i99w
+	 dgQeTzXFjaOCKRRjQM1wjJ1RcIAGJstb4JNwIs1dIWDMUCMUFMHuiPJiyZcAbMPSaG
+	 CibKTugsfoIac4RQTngxuOpWhw9Tre7YRSkFljzHz7AfxOqc5oeRslT374ugFXBtUD
+	 5g1Tn2WfEyW6g==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 14355CA600C;
+	Thu,  8 Oct 2026 13:27:23 +0000 (UTC)
+From: Phil Rosenthal via B4 Relay <devnull+phil.phil.gs@kernel.org>
+Date: Thu, 08 Oct 2026 09:27:20 -0400
+Subject: [PATCH] serial: 8250_pci: Add support for ASPEED BMC VUARTs over
+ PCIe
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -91,211 +63,332 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261008-aspeed_pcie_phy-v1-2-96764937aef0@aspeedtech.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261008-aspeed-vuart-v1-1-d2be17c99cd7@phil.gs>
+X-B4-Tracking: v=1; b=H4sIADeax2oC/x3MQQ5AMBBG4avIrDWpIYKriEVjfsympEUkjbtrL
+ L/Fe4kigiLSUCQKuDXq7jOqsqB5c36FUckmttxW1nbGxQMQc18unEbQcC3CcOgpJ0fAos+/G6f
+ 3/QBshHp5XgAAAA==
+X-Change-ID: 20261008-aspeed-vuart-de423dd2eae9
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ Jiri Slaby <jirislaby@kernel.org>
+Cc: Corey Minyard <corey@minyard.net>, 
+ openipmi-developer@lists.sourceforge.net, Andy Shevchenko <andy@kernel.org>, 
+ Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, 
+ Ryan Chen <ryan_chen@aspeedtech.com>, linux-aspeed@lists.ozlabs.org, 
+ Ninad Palsule <ninad@linux.ibm.com>, Andrew Lunn <andrew@lunn.ch>, 
+ linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, 
+ Phil Rosenthal <phil@phil.gs>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1791466042; l=11065;
+ i=phil@phil.gs; s=20261008; h=from:subject:message-id;
+ bh=czjVo2lcHA1KuMfHm3TWYgQ6tAwj+eybtjx/pOEEJPs=;
+ b=3YZz3+TlfzbHrNf1lgEdIvrShbOped1YIN8/M58hi9A+dUbcxWuIWysO27RK1h6tmSX2OtoHv
+ SywkVrOmI62CkKvN1GJ0zGnzXFn4DsVgQWpEBZk3MxGG2YVe45YmoTv
+X-Developer-Key: i=phil@phil.gs; a=ed25519;
+ pk=I/6AJ/pr2K5ljgV3aFteqtQglFiNZFga5ggtVMhOxmA=
+X-Endpoint-Received: by B4 Relay for phil@phil.gs/20261008 with
+ auth_id=1132
+X-Original-From: Phil Rosenthal <phil@phil.gs>
+Reply-To: phil@phil.gs
 
-Hi Jacky,
+From: Phil Rosenthal <phil@phil.gs>
 
-kernel test robot noticed the following build errors:
+On systems with an ASPEED BMC, the IPMI Serial over LAN (SOL) console
+shows the firmware and the boot loader but goes silent once Linux
+starts. The UART that the BMC bridges to SOL is not a legacy COM port:
+it sits behind a PCIe function that no driver claims.
 
-[auto build test ERROR on ea01f446f0682a5e7bd7a275889a890b7e0c6e02]
+ASPEED BMCs such as the AST2600 present this "BMC device" function to
+the host (1a03:2402, class 0c0701). Besides KCS, the BMC firmware can
+expose up to two 16550-compatible virtual UARTs through it, and host
+firmware redirects its console to them, for example "IPMI Card SOL/COM2
+(Pci Bus9,Dev1,Func0,Port0)" in the AMI setup of the ASUS Pro WS
+W680-ACE IPMI. Register these UARTs so that the kernel console and a
+getty can be used over SOL.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Jacky-Chou/dt-bindings-phy-aspeed-Add-ASPEED-PCIe-PHY/20261008-192819
-base:   ea01f446f0682a5e7bd7a275889a890b7e0c6e02
-patch link:    https://lore.kernel.org/r/20261008-aspeed_pcie_phy-v1-2-96764937aef0%40aspeedtech.com
-patch subject: [PATCH 2/3] phy: aspeed: Add ASPEED PCIe PHY driver
-config: csky-randconfig-1000-20261009 (https://download.01.org/0day-ci/archive/20261009/202610090555.gWYlVYEL-lkp@intel.com/config)
-compiler: csky-linux-gcc (GCC) 15.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20261009/202610090555.gWYlVYEL-lkp@intel.com/reproduce)
+The UART registers are in BAR1 at the VUART's LPC I/O address shifted
+left by two, one 32-bit register per 4 bytes: VUART0 at 0xfe0
+(0x3f8 << 2) and VUART1 at 0xbe0 (0x2f8 << 2). A VUART that the BMC has
+not enabled reads back as all ones; skip it so that the ports present
+are numbered contiguously. If the BMC exposes no VUART at all, decline
+the device so that it stays available to other drivers such as ipmi_si,
+whose PCI table matches the same class code.
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202610090555.gWYlVYEL-lkp@intel.com/
+The function has no INTx pin and advertises 32 MSI vectors. On the ASUS
+board (BMC firmware 1.3.13) no interrupt was delivered on MSI vector 16,
+which is the vector ASPEED's own host driver uses for VUART0: transmit
+stalled and nothing was received. Poll the ports instead.
 
-All errors (new ones prefixed by >>):
+The same function also exposes the BMC's KCS interface in BAR1.
+8250_pci does not request the BAR, so an ipmi_si interface described by
+firmware (ACPI or SMBIOS) can still use those registers. ipmi_si's PCI
+driver, which matches the function by class code, can no longer bind it
+while a VUART is enabled.
 
-   In file included from include/linux/io.h:12,
-                    from include/linux/irq.h:20,
-                    from include/asm-generic/hardirq.h:17,
-                    from ./arch/csky/include/generated/asm/hardirq.h:1,
-                    from include/linux/hardirq.h:11,
-                    from include/linux/interrupt.h:11,
-                    from include/linux/kernel_stat.h:8,
-                    from include/linux/cgroup.h:27,
-                    from include/linux/memcontrol.h:13,
-                    from include/linux/swap.h:9,
-                    from include/linux/suspend.h:5,
-                    from include/linux/regulator/consumer.h:35,
-                    from include/linux/phy/phy.h:17,
-                    from drivers/phy/aspeed/phy-aspeed-pcie.c:11:
-   drivers/phy/aspeed/phy-aspeed-pcie.c: In function 'ast2600_phy_set_mode':
->> drivers/phy/aspeed/phy-aspeed-pcie.c:16:41: error: implicit declaration of function 'FIELD_PREP' [-Wimplicit-function-declaration]
-      16 | #define  AST2600_PORT_TYPE(x)           FIELD_PREP(AST2600_PORT_TYPE_MASK, x)
-         |                                         ^~~~~~~~~~
-   arch/csky/include/asm/io.h:31:59: note: in definition of macro 'writel'
-      31 | #define writel(v,c)             ({ wmb(); writel_relaxed((v),(c)); mb(); })
-         |                                                           ^
-   drivers/phy/aspeed/phy-aspeed-pcie.c:94:24: note: in expansion of macro 'AST2600_PORT_TYPE'
-      94 |                 writel(AST2600_PORT_TYPE(0x3), pcie_phy->reg + PEHR_GLOBAL);
-         |                        ^~~~~~~~~~~~~~~~~
-   drivers/phy/aspeed/phy-aspeed-pcie.c: In function 'ast2700_phy_set_mode':
->> drivers/phy/aspeed/phy-aspeed-pcie.c:144:17: error: implicit declaration of function 'FIELD_MODIFY' [-Wimplicit-function-declaration]
-     144 |                 FIELD_MODIFY(AST2700_PORT_TYPE_MASK, &cfg_val,
-         |                 ^~~~~~~~~~~~
+Tested on an ASUS Pro WS W680-ACE IPMI (BMC firmware 1.3.13): the kernel
+console and a getty run on ttyS5 over IPMI SOL, while a non-PCI ipmi_si
+interface uses the KCS registers in the same BAR.
+
+The register layout and MSI vector assignment follow the host driver
+from ASPEED's SDK as posted in 2023, which was not merged.
+
+Link: https://lore.kernel.org/r/20230823173104.3219128-2-ninad@linux.ibm.com
+Assisted-by: LLM sparse
+Signed-off-by: Phil Rosenthal <phil@phil.gs>
+---
+Ownership of the PCI function (question for IPMI and ASPEED folks):
+
+  1a03:2402 has class 0c0701 (IPMI KCS), so ipmi_si's PCI driver also
+  matches it, and with this patch 8250_pci binds the function first once
+  the BMC enables a VUART. I believe this costs nothing in practice:
+  ipmi_si's PCI probe looks for the KCS registers at the start of BAR0,
+  but on this device they are in BAR1 (at 0xe88 on the tested board), so
+  that probe fails ("Interface detection failed") and in-band IPMI comes
+  from the firmware-described (SMBIOS/ACPI) interface instead, which is
+  unaffected. Is anyone aware of BMC firmware that puts KCS at the start
+  of BAR0 on this function? If no VUART is enabled, 8250_pci declines the
+  device and leaves it to ipmi_si.
+
+Polling:
+
+  The function on the test board has no INTx pin. With all 32 MSI vectors
+  allocated, vector 16 (the one ASPEED's 2023 host driver uses for VUART0)
+  stayed at 0 interrupts on every CPU: TX stalled and typed input was
+  never received. So the ports are polled on all platforms. On IBM POWER
+  this means polling where ASPEED's driver used INTx; a follow-up can add
+  INTx for functions that have a pin, with testing from someone who has
+  that hardware.
+
+Tested:
+
+  - ASUS Pro WS W680-ACE IPMI, BIOS 4601 (05/22/2026).
+  - BMC: hardware R1.04, firmware 1.3.13 (ipmitool mc info reports
+    "1.03", which is the same version without the build number).
+  - Proxmox 7.0.14 kernel with this change backported (identical apart
+    from the serial_pci_tbl[] entry style); console=ttyS5,115200n8.
+  - One 16550A registered at BAR1+0xfe0 with irq 0. VUART1 (0xbe0) reads
+    all ones on this BMC and is skipped.
+  - Kernel console and a getty over IPMI SOL, interactive input. In-band
+    IPMI (ipmitool) keeps working.
+  - Built on tty-next with W=1 and sparse. Both clean.
+
+Suspend/resume:
+
+  With pm_test=devices, the BMC's PCIe function stops responding after
+  resume on the tested board. The ASPEED bridge (08:00.0) reports
+  uncorrectable non-fatal AER errors before any driver's resume callback
+  runs, and afterwards both the VUART and the KCS registers read all ones
+  until the host is rebooted. The result is the same with an out-of-tree
+  driver that has no PM callbacks, so this looks like a BMC firmware or
+  hardware limitation rather than something this patch can address. While
+  the function is in that state, each poll of the dead port adds to a
+  continuous stream of AER reports. Real S3 was not tried.
+
+Not tested:
+
+  - A BMC with no VUART enabled (probe should fail and leave the function
+    to ipmi_si).
+  - Two VUARTs enabled.
+  - Hardware with INTx.
+
+AI assistance:
+
+  This patch was developed with an LLM coding assistant (Claude, model
+  claude-opus-5-5) driven from a Claude Code session. The assistant:
+
+  - investigated the hardware (register probing, MSI experiment);
+  - wrote the code and the changelog;
+  - built and booted the test kernels;
+  - ran W=1, sparse and checkpatch.
+
+Two further independent LLM reviews (Claude Fable 5.1 via Claude Code,
+  and GPT-5.6 Sol via Codex) produced changes that are folded in: the
+  presence test, error codes, board entry cleanup, MMIO BAR check and
+  the KCS wording in the changelog. I reviewed the result and tested it
+  on my hardware. The prompts were, in summary: make IPMI SOL work on
+  this board, then turn that into a mainline-quality 8250_pci patch and
+  address review findings.
+---
+ drivers/tty/serial/8250/8250_pci.c | 115 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 115 insertions(+)
+
+diff --git a/drivers/tty/serial/8250/8250_pci.c b/drivers/tty/serial/8250/8250_pci.c
+index 6e53d6d72a8e20336fc1dd05cf57850774b4babb..8c243c4fd58a9126aad2e4aecc017e32640353be 100644
+--- a/drivers/tty/serial/8250/8250_pci.c
++++ b/drivers/tty/serial/8250/8250_pci.c
+@@ -13,6 +13,7 @@
+ #include <linux/kernel.h>
+ #include <linux/math.h>
+ #include <linux/slab.h>
++#include <linux/sizes.h>
+ #include <linux/delay.h>
+ #include <linux/tty.h>
+ #include <linux/serial_reg.h>
+@@ -72,6 +73,7 @@
+ #define PCI_DEVICE_ID_AGESTAR_9375	0x6872
+ #define PCI_DEVICE_ID_BROADCOM_TRUMANAGE 0x160a
+ #define PCI_DEVICE_ID_AMCC_ADDIDATA_APCI7800 0x818e
++#define PCI_DEVICE_ID_ASPEED_BMC_DEV	0x2402
+ 
+ #define PCI_DEVICE_ID_WCHIC_CH384_4S	0x3470
+ #define PCI_DEVICE_ID_WCHIC_CH384_8S	0x3853
+@@ -1597,6 +1599,93 @@ pci_brcm_trumanage_setup(struct serial_private *priv,
+ 	return ret;
+ }
+ 
++/*
++ * The PCIe BMC device function of ASPEED BMCs can expose two VUARTs to the
++ * host. Their registers are in BAR1 at the VUART's LPC I/O address shifted
++ * left by two, one 32-bit register per 4 bytes. A VUART that the BMC firmware
++ * has not enabled reads back as all ones; skip those so that the ports that
++ * are present are numbered contiguously.
++ */
++#define PCI_ASPEED_VUART_BAR		1
++#define PCI_ASPEED_VUART_REGSHIFT	2
++
++static const u16 pci_aspeed_vuart_io[] = { 0x3f8, 0x2f8 };
++
++static unsigned int pci_aspeed_vuart_offset(unsigned int i)
++{
++	return pci_aspeed_vuart_io[i] << PCI_ASPEED_VUART_REGSHIFT;
++}
++
++/*
++ * A live 16550 can read LSR as 0xff, but never IIR, whose bits 4-5 are
++ * reserved. Only read IIR when LSR looks absent: reading IIR clears a
++ * pending THRI, and this also runs on resume while the port may be in use.
++ */
++static bool pci_aspeed_vuart_present(void __iomem *base, unsigned int offset)
++{
++	void __iomem *regs = base + offset;
++
++	return readl(regs + (UART_LSR << PCI_ASPEED_VUART_REGSHIFT)) != ~0U ||
++	       readl(regs + (UART_IIR << PCI_ASPEED_VUART_REGSHIFT)) != ~0U;
++}
++
++static int pci_aspeed_vuart_init(struct pci_dev *dev)
++{
++	void __iomem *base;
++	int i, n = 0;
++
++	if (!(pci_resource_flags(dev, PCI_ASPEED_VUART_BAR) & IORESOURCE_MEM) ||
++	    pci_resource_len(dev, PCI_ASPEED_VUART_BAR) < SZ_4K)
++		return -ENODEV;
++
++	base = pci_iomap_range(dev, PCI_ASPEED_VUART_BAR, 0, SZ_4K);
++	if (!base)
++		return -ENOMEM;
++
++	for (i = 0; i < ARRAY_SIZE(pci_aspeed_vuart_io); i++)
++		if (pci_aspeed_vuart_present(base, pci_aspeed_vuart_offset(i)))
++			n++;
++
++	pci_iounmap(dev, base);
++
++	/* Leave the function to other drivers if the BMC exposes no VUART. */
++	return n ?: -ENODEV;
++}
++
++static int
++pci_aspeed_vuart_setup(struct serial_private *priv,
++		       const struct pciserial_board *board,
++		       struct uart_8250_port *port, int idx)
++{
++	unsigned int offset;
++	int i, ret;
++
++	ret = setup_port(priv, port, PCI_ASPEED_VUART_BAR, 0,
++			 PCI_ASPEED_VUART_REGSHIFT);
++	if (ret)
++		return ret;
++
++	/* Use the idx-th VUART that is present. */
++	for (i = 0; i < ARRAY_SIZE(pci_aspeed_vuart_io); i++) {
++		offset = pci_aspeed_vuart_offset(i);
++		if (!pci_aspeed_vuart_present(port->port.membase, offset))
++			continue;
++		if (idx == 0)
++			break;
++		idx--;
++	}
++	if (i == ARRAY_SIZE(pci_aspeed_vuart_io))
++		return 1;
++
++	port->port.mapbase += offset;
++	port->port.membase += offset;
++	port->port.iotype = UPIO_MEM32;
++	port->port.type = PORT_16550A;
++	port->port.flags |= UPF_FIXED_PORT | UPF_FIXED_TYPE;
++
++	return 0;
++}
++
+ /* RTS will control by MCR if this bit is 0 */
+ #define FINTEK_RTS_CONTROL_BY_HW	BIT(4)
+ /* only worked with FINTEK_RTS_CONTROL_BY_HW on */
+@@ -2042,6 +2131,17 @@ static struct pci_serial_quirk pci_serial_quirks[] = {
+ 		.subdevice	= PCI_ANY_ID,
+ 		.setup		= afavlab_setup,
+ 	},
++	/*
++	 * ASPEED BMC VUARTs over PCIe
++	 */
++	{
++		.vendor		= PCI_VENDOR_ID_ASPEED,
++		.device		= PCI_DEVICE_ID_ASPEED_BMC_DEV,
++		.subvendor	= PCI_ANY_ID,
++		.subdevice	= PCI_ANY_ID,
++		.init		= pci_aspeed_vuart_init,
++		.setup		= pci_aspeed_vuart_setup,
++	},
+ 	/*
+ 	 * HP Diva
+ 	 */
+@@ -3045,6 +3145,7 @@ enum pci_board_num_t {
+ 	pbn_omegapci,
+ 	pbn_NETMOS9900_2s_115200,
+ 	pbn_brcm_trumanage,
++	pbn_aspeed_vuart,
+ 	pbn_fintek_4,
+ 	pbn_fintek_8,
+ 	pbn_fintek_12,
+@@ -3733,6 +3834,12 @@ static struct pciserial_board pci_boards[] = {
+ 		.reg_shift	= 2,
+ 		.base_baud	= 115200,
+ 	},
++	/* MSI is not delivered on at least the ASUS Pro WS W680-ACE IPMI. */
++	[pbn_aspeed_vuart] = {
++		.flags		= FL_NOIRQ,
++		.num_ports	= 2,
++		.base_baud	= 115200,
++	},
+ 	[pbn_fintek_4] = {
+ 		.num_ports	= 4,
+ 		.uart_offset	= 8,
+@@ -5922,6 +6029,14 @@ static const struct pci_device_id serial_pci_tbl[] = {
+ 		.driver_data = pbn_brcm_trumanage,
+ 	},
+ 
++	/*
++	 * ASPEED BMC VUARTs over PCIe
++	 */
++	{
++		PCI_VDEVICE(ASPEED, PCI_DEVICE_ID_ASPEED_BMC_DEV),
++		.driver_data = pbn_aspeed_vuart,
++	},
++
+ 	/*
+ 	 * AgeStar as-prs2-009
+ 	 */
+
+---
+base-commit: 36844ea19656fb41278799ef3d5cd52120d89149
+change-id: 20261008-aspeed-vuart-de423dd2eae9
+
+Best regards,
+-- 
+Phil Rosenthal <phil@phil.gs>
 
 
-vim +/FIELD_PREP +16 drivers/phy/aspeed/phy-aspeed-pcie.c
-
-    12	
-    13	/* AST2600 PCIe Host Controller Registers */
-    14	#define PEHR_GLOBAL		0x30
-    15	#define  AST2600_PORT_TYPE_MASK		GENMASK(5, 4)
-  > 16	#define  AST2600_PORT_TYPE(x)		FIELD_PREP(AST2600_PORT_TYPE_MASK, x)
-    17	#define PEHR_LOCK		0x7c
-    18	#define  PCIE_UNLOCK			0xa8
-    19	
-    20	/* AST2700 PEHR */
-    21	#define PEHR_MISC_58		0x58
-    22	#define  LOCAL_SCALE_SUP		BIT(0)
-    23	#define PEHR_MISC_5C		0x5c
-    24	#define  CONFIG_RC_DEVICE		BIT(30)
-    25	#define PEHR_MISC_60		0x60
-    26	#define  AST2700_PORT_TYPE_MASK		GENMASK(7, 4)
-    27	#define  PORT_TYPE_ROOT			0x4
-    28	#define PEHR_MISC_70		0x70
-    29	#define  POSTED_DATA_CREDITS(x)		FIELD_PREP(GENMASK(15, 0), x)
-    30	#define  POSTED_HEADER_CREDITS(x)	FIELD_PREP(GENMASK(27, 16), x)
-    31	#define PEHR_MISC_78		0x78
-    32	#define  COMPLETION_DATA_CREDITS(x)	FIELD_PREP(GENMASK(15, 0), x)
-    33	#define  COMPLETION_HEADER_CREDITS(x)	FIELD_PREP(GENMASK(27, 16), x)
-    34	#define PEHR_MISC_278		0x278
-    35	#define  SET_TO_DOWNSTREAM		BIT(22)
-    36	#define  ASSERT_INTERNAL_RESET		BIT(31)
-    37	#define PEHR_MISC_280		0x280
-    38	#define  SEL_INTERNAL_RESET		BIT(0)
-    39	
-    40	/**
-    41	 * struct aspeed_pcie_phy - PCIe PHY information
-    42	 * @dev: pointer to device structure
-    43	 * @reg: PCIe host register base address
-    44	 * @clk: PCIe reference clock
-    45	 * @phy: pointer to PHY structure
-    46	 * @platform: platform specific information
-    47	 */
-    48	struct aspeed_pcie_phy {
-    49		struct device *dev;
-    50		void __iomem *reg;
-    51		struct clk *clk;
-    52		struct phy *phy;
-    53		const struct aspeed_pcie_phy_platform *platform;
-    54	};
-    55	
-    56	/**
-    57	 * struct aspeed_pcie_phy_platform - Platform information
-    58	 * @phy_ops: phy operations
-    59	 */
-    60	struct aspeed_pcie_phy_platform {
-    61		const struct phy_ops *phy_ops;
-    62	};
-    63	
-    64	static int ast2600_phy_init(struct phy *phy)
-    65	{
-    66		struct aspeed_pcie_phy *pcie_phy = phy_get_drvdata(phy);
-    67		int ret;
-    68	
-    69		ret = clk_prepare_enable(pcie_phy->clk);
-    70		if (ret)
-    71			return ret;
-    72	
-    73		writel(PCIE_UNLOCK, pcie_phy->reg + PEHR_LOCK);
-    74	
-    75		return 0;
-    76	}
-    77	
-    78	static int ast2600_phy_exit(struct phy *phy)
-    79	{
-    80		struct aspeed_pcie_phy *pcie_phy = phy_get_drvdata(phy);
-    81	
-    82		clk_disable_unprepare(pcie_phy->clk);
-    83	
-    84		return 0;
-    85	}
-    86	
-    87	static int ast2600_phy_set_mode(struct phy *phy, enum phy_mode mode,
-    88					int submode)
-    89	{
-    90		struct aspeed_pcie_phy *pcie_phy = phy_get_drvdata(phy);
-    91	
-    92		switch (submode) {
-    93		case PHY_MODE_PCIE_RC:
-    94			writel(AST2600_PORT_TYPE(0x3), pcie_phy->reg + PEHR_GLOBAL);
-    95			break;
-    96		default:
-    97			dev_err(&phy->dev, "Unsupported submode %d\n", submode);
-    98			return -EINVAL;
-    99		}
-   100	
-   101		return 0;
-   102	}
-   103	
-   104	static const struct phy_ops ast2600_phy_ops = {
-   105		.init		= ast2600_phy_init,
-   106		.exit		= ast2600_phy_exit,
-   107		.set_mode	= ast2600_phy_set_mode,
-   108		.owner		= THIS_MODULE,
-   109	};
-   110	
-   111	static int ast2700_phy_init(struct phy *phy)
-   112	{
-   113		struct aspeed_pcie_phy *pcie_phy = phy_get_drvdata(phy);
-   114	
-   115		return clk_prepare_enable(pcie_phy->clk);
-   116	}
-   117	
-   118	static int ast2700_phy_exit(struct phy *phy)
-   119	{
-   120		struct aspeed_pcie_phy *pcie_phy = phy_get_drvdata(phy);
-   121	
-   122		clk_disable_unprepare(pcie_phy->clk);
-   123	
-   124		return 0;
-   125	}
-   126	
-   127	static int ast2700_phy_set_mode(struct phy *phy, enum phy_mode mode,
-   128					int submode)
-   129	{
-   130		struct aspeed_pcie_phy *pcie_phy = phy_get_drvdata(phy);
-   131		u32 cfg_val;
-   132	
-   133		switch (submode) {
-   134		case PHY_MODE_PCIE_RC:
-   135			writel(0, pcie_phy->reg + PEHR_MISC_278);
-   136			writel(SEL_INTERNAL_RESET, pcie_phy->reg + PEHR_MISC_280);
-   137			writel(POSTED_DATA_CREDITS(0xc0) | POSTED_HEADER_CREDITS(0xa),
-   138			       pcie_phy->reg + PEHR_MISC_70);
-   139			writel(COMPLETION_DATA_CREDITS(0x30) | COMPLETION_HEADER_CREDITS(0x8),
-   140			       pcie_phy->reg + PEHR_MISC_78);
-   141			writel(LOCAL_SCALE_SUP, pcie_phy->reg + PEHR_MISC_58);
-   142			writel(CONFIG_RC_DEVICE, pcie_phy->reg + PEHR_MISC_5C);
-   143			cfg_val = readl(pcie_phy->reg + PEHR_MISC_60);
- > 144			FIELD_MODIFY(AST2700_PORT_TYPE_MASK, &cfg_val,
-   145				     PORT_TYPE_ROOT);
-   146			writel(cfg_val, pcie_phy->reg + PEHR_MISC_60);
-   147			writel(ASSERT_INTERNAL_RESET | SET_TO_DOWNSTREAM,
-   148			       pcie_phy->reg + PEHR_MISC_278);
-   149			break;
-   150		default:
-   151			dev_err(&phy->dev, "Unsupported submode %d\n", submode);
-   152			return -EINVAL;
-   153		}
-   154	
-   155		return 0;
-   156	}
-   157	
-
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
 
