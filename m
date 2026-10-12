@@ -1,78 +1,81 @@
-Return-Path: <linux-aspeed+bounces-5173-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-5174-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70DD4CA9EDD
-	for <linux-aspeed@archiver.kernel.org>; Mon, 12 Oct 2026 16:44:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9F67CA9ED0
+	for <linux-aspeed@archiver.kernel.org>; Mon, 12 Oct 2026 17:19:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j3Nc86yg5z3bps;
-	Tue, 13 Oct 2026 03:44:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.12
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791823496;
-	cv=none; b=btp97wn7KoMBfBdSXAueFwvj9s2Xq8yD6gaC/HJBm23NXNj4KU2S3EbjUvphB5IbrlLWXrBzq2YMVsfnwROIMf0fYHoCF1sAJSXNZDA0KOwW4zpxsQM7PeepIyF89Nedd/a12uA48LVRtyy22r6DAZuJxjj820Cz3UU6yN/pOye4h/4fZKRX1ZK1i2L9Uo+XybTxcp2LB3GcOOsQa4GqpJsHv8NxeA689gdMs4j22eSF07sI7NRdOd+Nil2GiqueIn0/htBPbfc7pe70jKTMfzQNXQg1Guf49rcp+gcFvA3BoBevfAPo9tvOvOpDLPGzxXqbNugFmwZwJMixlHuuVw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j3PMw0F2Cz30St;
+	Tue, 13 Oct 2026 04:19:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::432"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791825563;
+	cv=none; b=N/u39qFgKlwX3sHF63Rz/9f5NpEcZ4oDTcDlgqPfDFKrZ4s/aAwd21bwkG5Rlh4180NsQK+j79L5vhao6DxRxYezs80uCCWczKa8jjsvlhpEtSNAWXwQafCoSBaVM0jqis/PdFc5MJ7rxjijuYbFaDUjsdq7gduEwXcMP+zknJ9peGElHu6JIKvaIjalrhJ3KRx6cj+Wg/hkvUEnYKO1hRGoc/ZL12QzQwvU6z/C1KXFFhWa9cUB2IU/2GuxX183g99uVBiQkLbgsVdKFJ6Nm9h7Pd73TPqeo0bvFmUpkto7c1XZ7FBtTt/v5QnJRKbB49KYlg4m1XAcbnKjOP0GQQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791823496; c=relaxed/relaxed;
-	bh=uL3/CsskW3K3F0sW8iRc0s0wKypTZi0oVbyEWoSNd70=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=hkR3bEOFLErcfGGJn4mDfvn8RRGk5I2YISccUl5KwblmZ0FkyZYeKggCIlETwTF6R+FpqOJez/LMlNKDjJhSy3P6tl5TmmJ2uw/ELgedxXOMSHLvmwFQdkoJrp+odLY/s+pElZLkfsSioxWmqFIKW9Xmwss7mhmj9ljRS2M0CCJFlvZ5di8h/HZdJca3Oyc+zcuB7ObLGMQ19fm0fyhjYGNjFBe6Ks7hACZZHImFgr6uTBqevWkIb/WRtTLB4izcCpYtc5+H9kkqRYQc3vmpFd/8CHO25DyItPSV20RxDCLvesFxJz6ZoKngbw25I41kisjC24HX0n3aTK4P+CAR/A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=V6OVI8tf; dkim-atps=neutral; spf=pass (client-ip=198.175.65.12; helo=mgamail.intel.com; envelope-from=dawid.glazik@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	t=1791825563; c=relaxed/relaxed;
+	bh=fmWhe9edetnI1XYoSUk/a0gFm8QWgHCjQdahFD9uVho=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=leyPQiD5dCaZxQyP5zI83TggAZUVQUEhOMjzEz76p/8+HMwikR2IUoBO5cJBL1wbOIPJB+XHjL7HrXg73/JqVldxKhyXqBwV+wP3Q6zmGHZWEDl41CGERO8c29Yq7KfN8PU3bZh7ULsur8Vy1f8HnW+/su/lshyAn7nh65mXawUvI332Pqqd7DPm/oKcxJW21hny9OPMxhNmjVEVbHEzbplkzuYvcSrSeWzG4g0JO1hfdzR1wuU2fETMRRRY7nCSttYEOLp/O8E20apYIt+7mb+mjgBmW6sokDRV9m0o+MUYYAjW0nlw3Y4Y1Xgs52wKQorEB5oBvbsfVyoZl8rnPQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=9elements.com; dkim=pass (2048-bit key; secure) header.d=9elements.com header.i=@9elements.com header.a=rsa-sha256 header.s=google header.b=ObVYf22J; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::432; helo=mail-wr1-x432.google.com; envelope-from=tan.siewert@9elements.com; receiver=lists.ozlabs.org) smtp.mailfrom=9elements.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=9elements.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=V6OVI8tf;
+	dkim=pass (2048-bit key; secure) header.d=9elements.com header.i=@9elements.com header.a=rsa-sha256 header.s=google header.b=ObVYf22J;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.12; helo=mgamail.intel.com; envelope-from=dawid.glazik@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=9elements.com (client-ip=2a00:1450:4864:20::432; helo=mail-wr1-x432.google.com; envelope-from=tan.siewert@9elements.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com [IPv6:2a00:1450:4864:20::432])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3Nc8032zz3bNr
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 13 Oct 2026 03:44:55 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1791823496; x=1823359496;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=mjLbYWvXUmK1LylURo0MhiTbNk1TbsrpkKtnRsA0gDo=;
-  b=V6OVI8tfFXZxQBiIHrfm/qCGrZwaN1hPmJWsElAH5PnirwrASO5Kw++H
-   Nt3/k+HJQluiMn7jYu/R0u7KcHq54nV+KTUNxKubKFkIL99UZpUt87JgZ
-   10q+toaTg92OzIxXjWGo7wuhnsdg/fb9ReJKn3I36sqV8YGm3ftOR5aAv
-   2qx7lD/Sea4ko2EIZrv+VX5CijNcthqUomXdf1+nD5hDBs7q3AjmKKZ6l
-   jwFPT/Wh5iMa6sJGpbCH79gPJAyDwK1Hb/tR6DDdQArgo8lnN++KdnWIg
-   xshMaIyM24yR6vIfmmNX1hfsQwyeo/mMgoPRHkiQ0OUGCRR+1KRIG/3S1
-   A==;
-X-CSE-ConnectionGUID: lfMhlSyzSzGNU8cH7614jQ==
-X-CSE-MsgGUID: Id5FgpmzSKeuliHpjNW9xA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11933"; a="410135"
-X-IronPort-AV: E=Sophos;i="6.27,154,1787036400"; 
-   d="scan'208";a="410135"
-Received: from fmviesa004.fm.intel.com ([10.60.135.144])
-  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Oct 2026 09:43:53 -0700
-X-CSE-ConnectionGUID: TuAkskG2ROCdmH/lGED0gQ==
-X-CSE-MsgGUID: FVN6CfYpROW+miCti8QLPA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,154,1787036400"; 
-   d="scan'208";a="1004953"
-Received: from gklab-103a-129.igk.intel.com ([10.91.103.129])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Oct 2026 09:43:51 -0700
-From: Dawid Glazik <dawid.glazik@linux.intel.com>
-To: Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	dawid.glazik@linux.intel.com,
-	maciej.lawniczak@intel.com
-Subject: [PATCH v2 3/3] ARM: dts: aspeed: add Intel JNCRP BMC
-Date: Mon, 12 Oct 2026 19:39:07 +0200
-Message-ID: <bf1ceb78c8b544d6fe8ce0e6980d75b0ab78430d.1791825961.git.dawid.glazik@linux.intel.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <cover.1791825961.git.dawid.glazik@linux.intel.com>
-References: <cover.1791825961.git.dawid.glazik@linux.intel.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3PMt2D0Fz2yS4
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 13 Oct 2026 04:19:20 +1100 (AEDT)
+Received: by mail-wr1-x432.google.com with SMTP id ffacd0b85a97d-48c4649b35bso1967237f8f.3
+        for <linux-aspeed@lists.ozlabs.org>; Mon, 12 Oct 2026 10:19:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=9elements.com; s=google; t=1791825557; x=1792430357; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=fmWhe9edetnI1XYoSUk/a0gFm8QWgHCjQdahFD9uVho=;
+        b=ObVYf22JaSKNATsF41DFk6An+8Z4/lqVFXyCuI7tmChNfo2XTS4U97VIIdQQzQRkIW
+         CIG00pSNhCpzTUoSETV7sCjSPILl0MOKGHdC1ij/XyxuBli4+mMpsE17ofNXd20LgeKT
+         x2SuU8uKMEhRn7Nbay41IslEZlE8vOz1QUDMV4okHb085vK/L5dZpy1SkC5dzbrKV88B
+         dWW76zbt//C9f9bg/0evzDnLk0S697nqF674+l+l7E4WXvZMRcowupjxq5BXPc9e+9ST
+         Kk1thB+gZUhEylPHCklkj5GY9LkE+3iK4bPmOp/Mf/DG58vEH85iZfFADbSGR+Qyic1U
+         3X7Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1791825557; x=1792430357;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=fmWhe9edetnI1XYoSUk/a0gFm8QWgHCjQdahFD9uVho=;
+        b=TvPC5x5W//2CRhhJaunPoWGplrSltBYen9pszTq0f+YEM7MbTafLXSVEl72ODL3dWW
+         iWauUjJPjamUY8VPhHnEcXf+KLh2hqNXoSe6ae9F2/EoX073eEEIAreMmezNsjGCxSdw
+         pewbk4SJbiIVZ6DyNfWuYq/9F8aEjMBYAWs/tSLI6AbGMq+oEsgVzGyGJkGt8b0t5lxb
+         hqrfKLpfXaXzpLg/P0JNdC6x9XJoHEo8PkrjJVnBw/0Mk7AmSFmMZYl4z4UVXa84P5Ug
+         ka/nkpcMIqut6WvwWqfV3p9aZJt22GcMpy/nY4kzNwlJuTKLl4CD5UrcYFZ0yAILOFec
+         M/0Q==
+X-Forwarded-Encrypted: i=1; AKwUvBz9Ri11AYqYdxOrLW8emmteUAINbD10lUq8qoCWb/6AoPINR2cpQ6y90ZCwXuO9GXyATrGXiw0o/jJ7V9s=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYIpubov4c3cow7ngwOvQgMNrC9pfj7FVRX2gM4m8Odz0igeUX/s
+	U833SzSXbH/9thUNdImP2zGbYx6imRsxMWglmduMxkkQzRFRcQC66z4wpp15CYSnixo=
+X-Gm-Gg: AYBFou1rdLaRhMJJ+hxTLUQ9yehU+CBMbWLwLLKCgdueM0PobyDL3fc0Dxr7gdSyKDF
+	EfeTfZrPXVAfwSzqbrax8UWGdfgs8xKmZD97JMOdSXYLT+jEG//kD48CoRFPxd6AoD5vMT0s7qV
+	466cq12TRY+JOhy0rbzWGMLwiXtXuUjBuywz22Pj5Aq/T6HWTdnbhR17uzUG9etAt39kBqC29R1
+	yFR+EqEhyWqKzd257v8o3PcmYsVZl+nYKxA3FQEoEzJtLh2rMTiG1hjdMOMA1gk8mCOGIMaS4j3
+	HQrG8+RaXLzFO1SF+so1AOVP5RlsmrcgvKdD7/w6h4RCMMTP794sSCUkU/OitF4cTd1weIuapT7
+	IRJyOKHf6/immDR/O8wYjoWh7NmGAwp6bqjsIjD9yBDMrtmpv8JVcOHq2O/YZSdGO46XhLa0cY0
+	ltFwS6sPTD9a9TuE2/ma7E/0hGnWnAs7ckOSbg0lc3hm2yUBT4vhL4bFvRM8paGs+wyPjP7Ienf
+	k07hkhOCMjW2BCEVS24XP50xqt1TjtLdRhZSt3dvpbRBYI4r3RlMvbeHa6mya8=
+X-Received: by 2002:a5d:5291:0:b0:486:f3db:e0f2 with SMTP id ffacd0b85a97d-48dbaade0b3mr13920551f8f.14.1791825555359;
+        Mon, 12 Oct 2026 10:19:15 -0700 (PDT)
+Received: from ?IPV6:2a01:599:840:e202:6f88:7a35:3ae9:6d10? ([2a01:599:840:e202:6f88:7a35:3ae9:6d10])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48de0bc4ec6sm437267f8f.48.2026.10.12.10.19.14
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 12 Oct 2026 10:19:15 -0700 (PDT)
+Message-ID: <7d703c43-e462-41d6-a488-87342fd139a2@9elements.com>
+Date: Mon, 12 Oct 2026 19:19:13 +0200
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -86,298 +89,216 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Organization: Intel Technology Poland sp. z o.o. - ul. Slowackiego 173, 80-298 Gdansk - KRS 101882 - NIP 957-07-52-316
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 2/3] ARM: dts: aspeed: add Intel AVCRP BMC
+To: Dawid Glazik <dawid.glazik@linux.intel.com>, Rob Herring
+ <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
+ Andrew Jeffery <andrew@codeconstruct.com.au>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ maciej.lawniczak@intel.com
+References: <cover.1791825961.git.dawid.glazik@linux.intel.com>
+ <12f8124fea31a6c6b1401d6aee640842c8d896a7.1791825961.git.dawid.glazik@linux.intel.com>
+Content-Language: en-US
+From: Tan Siewert <tan.siewert@9elements.com>
+In-Reply-To: <12f8124fea31a6c6b1401d6aee640842c8d896a7.1791825961.git.dawid.glazik@linux.intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-Add the initial AST2600 device tree for the Intel JNCRP BMC platform.
+On 10/12/26 7:39 PM, Dawid Glazik wrote:
+> Add the initial AST2600 device tree for the Intel AVCRP BMC platform.
+> 
+> Signed-off-by: Dawid Glazik <dawid.glazik@linux.intel.com>
 
-Signed-off-by: Dawid Glazik <dawid.glazik@linux.intel.com>
----
-v2:
- - Replace bootargs console=ttyS4,115200n8 with stdout-path = &uart5
----
- arch/arm/boot/dts/aspeed/Makefile             |   1 +
- .../dts/aspeed/aspeed-bmc-intel-jncrp.dts     | 258 ++++++++++++++++++
- 2 files changed, 259 insertions(+)
- create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-intel-jncrp.dts
+You got Review trailers from Andrew Lunn in v1. Unless you think Andrew 
+has to re-review it (which should be then reasoned), please keep them in 
+new revisions.
 
-diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
-index ea4645ef9872..f0d665b3dcee 100644
---- a/arch/arm/boot/dts/aspeed/Makefile
-+++ b/arch/arm/boot/dts/aspeed/Makefile
-@@ -55,6 +55,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
- 	aspeed-bmc-ibm-sbp1.dtb \
- 	aspeed-bmc-ibm-system1.dtb \
- 	aspeed-bmc-intel-avcrp.dtb \
-+	aspeed-bmc-intel-jncrp.dtb \
- 	aspeed-bmc-intel-s2600wf.dtb \
- 	aspeed-bmc-inspur-fp5280g2.dtb \
- 	aspeed-bmc-inspur-nf5280m6.dtb \
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-intel-jncrp.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-intel-jncrp.dts
-new file mode 100644
-index 000000000000..018647588c27
---- /dev/null
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-intel-jncrp.dts
-@@ -0,0 +1,258 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+// Copyright 2025 Intel Corporation
-+
-+/dts-v1/;
-+
-+#include "aspeed-g6.dtsi"
-+#include <dt-bindings/gpio/aspeed-gpio.h>
-+
-+/ {
-+	model = "Intel JNCRP BMC";
-+	compatible = "intel,jncrp-bmc", "aspeed,ast2600";
-+
-+	aliases {
-+		serial4 = &uart5;
-+	};
-+
-+	chosen {
-+		stdout-path = &uart5;
-+		bootargs = "earlycon";
-+	};
-+
-+	memory@80000000 {
-+		device_type = "memory";
-+		reg = <0x80000000 0x40000000>;
-+	};
-+};
-+
-+&rtc {
-+	status = "okay";
-+};
-+
-+&fmc {
-+	status = "okay";
-+	flash@0 {
-+		status = "okay";
-+		m25p,fast-read;
-+		label = "bmc";
-+		spi-rx-bus-width = <4>;
-+		spi-max-frequency = <50000000>;
-+#include "openbmc-flash-layout-64.dtsi"
-+	};
-+};
-+
-+&uart1 {
-+	status = "okay";
-+};
-+
-+&uart5 {
-+	status = "okay";
-+};
-+
-+&mdio1 {
-+	status = "okay";
-+
-+	ethphy1: ethernet-phy@0 {
-+		compatible = "ethernet-phy-id001c.c916";
-+		reg = <0>;
-+		reset-gpios = <&gpio0 ASPEED_GPIO(C, 1) GPIO_ACTIVE_LOW>;
-+		reset-assert-us = <10000>;
-+		reset-deassert-us = <50000>;
-+	};
-+};
-+
-+&mac1 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_rgmii2_default>;
-+	clocks = <&syscon ASPEED_CLK_GATE_MAC2CLK>,
-+		 <&syscon ASPEED_CLK_MAC2RCLK>;
-+	clock-names = "MACCLK", "RCLK";
-+	phy-mode = "rgmii-id";
-+	phy-handle = <&ethphy1>;
-+};
-+
-+&lpc {
-+	lpc_snoop: lpc-snoop@80 {
-+		snoop-ports = <0x80>;
-+		status = "okay";
-+	};
-+};
-+
-+&gpio0 {
-+	status = "okay";
-+	gpio-line-names =
-+		/*A0-A7*/ "", "", "", "", "", "", "", "",
-+		/*B0-B7*/ "PWRGD_AUX_PWRGD_BMC_CPU", "", "", "", "", "", "",
-+				"FP_ID_LED_N",
-+		/*C0-C7*/ "FM_FORCE_BMC_UPDATE_N", "RST_RGMII_PHYRST_N",
-+				"FM_TPM_EN_PULSE", "", "", "",
-+				"DBP_HOOK3_CPU_FBRK_OUT_R_N", "DBP_PRSNT_IN_N",
-+		/*D0-D7*/ "CPU_ERR0_N", "CPU_ERR1_N", "CPU_ERR2_N", "DBP_ASD_BMC_PRDY_N",
-+				"FM_SPD_SWITCH_CTRL_N", "", "", "",
-+		/*E0-E7*/ "", "", "", "ID_BUTTON", "", "", "", "",
-+		/*F0-F7*/ "", "", "FM_AGGREGATOR_MODE_N", "", "", "",
-+				"FP_LED_STATUS_GREEN_R_N", "FP_LED_STATUS_AMBER_R_N",
-+		/*G0-G7*/ "", "", "", "", "", "", "", "",
-+		/*H0-H7*/ "", "", "", "", "", "", "", "",
-+		/*I0-I7*/ "", "", "", "", "", "", "", "",
-+		/*J0-J7*/ "", "", "", "", "", "", "", "",
-+		/*K0-K7*/ "", "", "", "", "", "", "", "",
-+		/*L0-L7*/ "", "", "", "", "PREQ_N", "FM_P3V3_SW_ENA", "", "",
-+		/*M0-M7*/ "", "", "", "", "", "", "", "",
-+		/*N0-N7*/ "", "", "", "", "", "", "", "",
-+		/*O0-O7*/ "", "", "", "", "", "", "NMI_BUTTON", "",
-+		/*P0-P7*/ "RESET_BUTTON", "RESET_OUT", "POWER_BUTTON", "POWER_OUT",
-+				"", "", "", "LED_BMC_HB_LED_N",
-+		/*Q0-Q7*/ "", "", "", "", "", "", "", "",
-+		/*R0-R7*/ "", "", "", "", "", "", "", "",
-+		/*S0-S7*/ "CPU_CATERR_IERR_N", "CPU_CATERR_MCERR_N", "FM_BMC_FRU_WP_N",
-+				"FM_INTRUSION_CABLE_PRES_N", "PWRGD_CPU_AUXPWRGD",
-+				"FM_P3V_BAT_SCALED_EN", "REMOTE_DEBUG_ENABLE", "",
-+		/*T0-T7*/ "", "", "", "", "", "", "", "",
-+		/*U0-U7*/ "", "", "", "", "", "", "", "",
-+		/*V0-V7*/ "SIO_S3", "SIO_S5", "", "SIO_ONCONTROL",
-+				"SIO_POWER_GOOD", "", "", "",
-+		/*W0-W7*/ "", "", "", "", "", "", "", "",
-+		/*X0-X7*/ "", "", "POST_COMPLETE", "", "", "", "", "",
-+		/*Y0-Y7*/ "FM_BMC_CMOS_CLR_R_N", "PLTRST_N", "FM_BMC_SAFS_EN",
-+				"IRQ_PSU_ALERT_LVC3_N", "", "", "", "",
-+		/*Z0-Z7*/ "", "", "", "", "", "", "", "";
-+
-+	spd-switch-cpu-hog {
-+		gpio-hog;
-+		gpios = <ASPEED_GPIO(D, 4) GPIO_ACTIVE_HIGH>;
-+		output-low;
-+	};
-+};
-+
-+&sgpiom0 {
-+	ngpios = <128>;
-+	bus-frequency = <2000000>;
-+	status = "okay";
-+	gpio-line-names =
-+		/*A, 0-7*/ "CPU0_VRHOT_N", "LED_POSTCODE_0_LSB",
-+				"CPU0_THERMTRIP_N", "LED_POSTCODE_1",
-+				"CPU0_MEMTRIP_N", "LED_POSTCODE_2",
-+				"CPU0_MEM_VRHOT_N", "LED_POSTCODE_3",
-+				"CPU0_MEM_HOT_N", "LED_POSTCODE_4",
-+				"CPU0_MON_FAIL_N", "LED_POSTCODE_5",
-+				"CPU1_VRHOT_N", "LED_POSTCODE_6",
-+				"CPU1_THERMTRIP_N", "LED_POSTCODE_7_MSB",
-+		/*B, 8-15*/ "CPU1_MEMTRIP_N", "FM_ASYNC_WARM_RESET_REQ",
-+				"CPU1_MEM_VRHOT_N", "HPM_FRU_READ_DONE",
-+				"CPU1_MEM_HOT_N", "FM_ASYNC_GLOBAL_RESET_REQ",
-+				"CPU1_MON_FAIL_N", "BMC_BOOT_DONE",
-+				"CPU2_VRHOT_N", "NMI_OUT",
-+				"CPU2_THERMTRIP_N", "AGGREGATOR_MODE",
-+				"CPU2_MEMTRIP_N", "RST_I3C_PCIE_HUB_N",
-+				"CPU2_MEM_VRHOT_N", "",
-+		/*C, 16-23*/ "CPU2_MEM_HOT_N", "HPM0_PRESENT",
-+				"CPU2_MON_FAIL_N", "HPM1_PRESENT",
-+				"CPU3_VRHOT_N", "HPM2_PRESENT",
-+				"CPU3_THERMTRIP_N", "HPM3_PRESENT",
-+				"CPU3_MEMTRIP_N", "HPM0_SOURCE_TO_DESTINATION_FAIL",
-+				"CPU3_MEM_VRHOT_N", "HPM1_SOURCE_TO_DESTINATION_FAIL",
-+				"CPU3_MEM_HOT_N", "HPM2_SOURCE_TO_DESTINATION_FAIL",
-+				"CPU3_MON_FAIL_N", "HPM3_SOURCE_TO_DESTINATION_FAIL",
-+		/*D, 24-31*/ "FM_BMC_VAL_EN", "HPM0_FRU_VALID",
-+				"FM_SERIAL_BOOT", "HPM1_FRU_VALID",
-+				"FM_INTRUSION_CABLE_PRES_N", "HPM2_FRU_VALID",
-+				"USB_OC_P2_3_N", "HPM3_FRU_VALID",
-+				"FM_SYSTEM_COOLING_MODE0", "FM_S2D_DISCOVERY_DONE",
-+				"FM_SYSTEM_COOLING_MODE1", "", "", "", "", "",
-+		/*E, 32-39*/ "DBP_PMODE_S0_PWROK", "", "DBP_PMODE_PLTRST", "",
-+				"DBP_PMODE_GLOBALRESET", "", "DBP_PMODE_CPU_PWRGD", "",
-+				"FM_SMBUS_RDY", "", "FM_LEAK_DETECTION", "",
-+				"FM_LEAK_CBL_PRSNT_N", "", "FM_LEAK_CBL_FAULT_N", "",
-+		/*F, 40-47*/ "CPU0_SKTOCC1_N", "CPU0_SKT_FAULT_LED",
-+				"CPU0_SKTOCC2_N", "CPU1_SKT_FAULT_LED",
-+				"CPU0_MISMATCH", "CPU2_SKT_FAULT_LED",
-+				"CPU1_SKTOCC1_N", "CPU3_SKT_FAULT_LED",
-+				"CPU1_SKTOCC2_N", "", "CPU1_MISMATCH", "",
-+				"CPU2_SKTOCC1_N", "", "CPU2_SKTOCC2_N", "",
-+		/*G, 48-55*/ "CPU2_MISMATCH", "", "CPU3_SKTOCC1_N", "",
-+				"CPU3_SKTOCC2_N", "", "CPU3_MISMATCH", "",
-+				"HPM0_PRSNT_N", "", "HPM1_PRSNT_N", "",
-+				"HPM2_PRSNT_N", "", "HPM3_PRSNT_N", "",
-+		/*H, 56-63*/ "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-+		/*I, 64-71*/ "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-+		/*J, 72-79*/ "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-+		/*K, 80-87*/ "FM_BOARD_REV_ID0", "", "FM_BOARD_REV_ID1", "",
-+				"FM_BOARD_REV_ID2", "", "FM_BOARD_SKU_ID0", "",
-+				"FM_BOARD_SKU_ID1", "", "FM_BOARD_SKU_ID2", "",
-+				"FM_BOARD_SKU_ID3", "", "FM_BOARD_SKU_ID4", "",
-+		/*L, 88-95*/ "FM_BOARD_SKU_ID5", "", "FM_BOARD_SKU_ID6", "",
-+				"FM_BOARD_SKU_ID7", "", "", "", "", "", "", "",
-+				"", "", "", "",
-+		/*M, 96-103*/ "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-+		/*N, 104-111*/ "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-+		/*O, 112-119*/ "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-+		/*P, 120-127*/ "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "";
-+};
-+
-+&i3c_global {
-+	status = "okay";
-+};
-+
-+&i3c1 {
-+	status = "okay";
-+	mctp-controller;
-+	i2c-scl-hz = <1000000>;
-+};
-+
-+&i2c4 {
-+	status = "okay";
-+};
-+
-+&i2c5 {
-+	multi-master;
-+	status = "okay";
-+};
-+
-+&i2c6 {
-+	status = "okay";
-+};
-+
-+&i2c7 {
-+	multi-master;
-+	status = "okay";
-+};
-+
-+&i2c8 {
-+	multi-master;
-+	status = "okay";
-+};
-+
-+&i2c9 {
-+	multi-master;
-+	status = "okay";
-+};
-+
-+&i2c10 {
-+	multi-master;
-+	status = "okay";
-+};
-+
-+&i2c11 {
-+	status = "okay";
-+};
-+
-+&i2c12 {
-+	multi-master;
-+	status = "okay";
-+};
-+
-+&i2c13 {
-+	multi-master;
-+	status = "okay";
-+};
-+
-+&i2c14 {
-+	status = "okay";
-+};
-+
-+&i2c15 {
-+	multi-master;
-+	status = "okay";
-+};
--- 
-2.43.0
+ From the kernel docs [0]:
 
+"Both Tested-by and Reviewed-by tags, once received on mailing list from 
+tester or reviewer, should be added by author to the applicable patches 
+when sending next versions. However if the patch has changed 
+substantially in following version, these tags might not be applicable 
+anymore and thus should be removed. Usually removal of someone’s 
+Acked-by, Tested-by or Reviewed-by tags should be mentioned in the patch 
+changelog with an explanation (after the ‘---’ separator)."
+
+> ---
+> v2:
+>   - Replace bootargs console=ttyS4,115200n8 with stdout-path = &uart5
+>   - Remove the unreferenced video_memory reserved-memory node
+> ---
+>   arch/arm/boot/dts/aspeed/Makefile             |   1 +
+>   .../dts/aspeed/aspeed-bmc-intel-avcrp.dts     | 315 ++++++++++++++++++
+>   2 files changed, 316 insertions(+)
+>   create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-intel-avcrp.dts
+> 
+> diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
+> index 767f7c7652d5..ea4645ef9872 100644
+> --- a/arch/arm/boot/dts/aspeed/Makefile
+> +++ b/arch/arm/boot/dts/aspeed/Makefile
+> @@ -54,6 +54,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+>   	aspeed-bmc-ibm-rainier-4u.dtb \
+>   	aspeed-bmc-ibm-sbp1.dtb \
+>   	aspeed-bmc-ibm-system1.dtb \
+> +	aspeed-bmc-intel-avcrp.dtb \
+>   	aspeed-bmc-intel-s2600wf.dtb \
+>   	aspeed-bmc-inspur-fp5280g2.dtb \
+>   	aspeed-bmc-inspur-nf5280m6.dtb \
+> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-intel-avcrp.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-intel-avcrp.dts
+> new file mode 100644
+> index 000000000000..7c088c89d417
+> --- /dev/null
+> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-intel-avcrp.dts
+> @@ -0,0 +1,315 @@
+> +// SPDX-License-Identifier: GPL-2.0-or-later
+> +// Copyright 2026 Intel Corporation
+> +
+> +/dts-v1/;
+> +
+> +#include "aspeed-g6.dtsi"
+> +#include <dt-bindings/gpio/aspeed-gpio.h>
+> +
+> +/ {
+> +	model = "Intel AVCRP BMC";
+> +	compatible = "intel,avcrp-bmc", "aspeed,ast2600";
+> +
+> +	aliases {
+> +		serial4 = &uart5;
+> +	};
+> +
+> +	chosen {
+> +		stdout-path = &uart5;
+> +		bootargs = "earlycon";
+> +	};
+> +
+> +	memory@80000000 {
+> +		device_type = "memory";
+> +		reg = <0x80000000 0x40000000>;
+> +	};
+> +
+> +	reserved-memory {
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +		ranges;
+> +
+> +		video_engine_memory: jpegbuffer {
+> +			size = <0x02000000>; /* 32M */
+> +			alignment = <0x01000000>;
+> +			compatible = "shared-dma-pool";
+> +			reusable;
+> +		};
+> +	};
+> +
+> +};
+> +
+> +&rtc {
+> +	status = "okay";
+> +};
+
+Please sort your nodes, as described in the device tree design guideline 
+[1]. There's also a tool called `scripts/dtc/dt-check-style` that can 
+help with this.
+Note on that: we usually run `--mode strict` but it is known to report 
+false-positives, so please check any reported errors twice ^^
+
+> +
+> +&fmc {
+> +	status = "okay";
+> +	flash@0 {
+> +		status = "okay";
+> +		m25p,fast-read;
+> +		label = "bmc";
+> +		spi-rx-bus-width = <4>;
+> +		spi-max-frequency = <50000000>;
+> +#include "openbmc-flash-layout-64.dtsi"
+> +	};
+> +};
+> +
+> +&uart1 {
+> +	status = "okay";
+> +};
+> +
+> +&uart3 {
+> +	status = "okay";
+> +};
+> +
+> +&uart4 {
+> +	status = "okay";
+> +};
+> +
+> +&uart5 {
+> +	status = "okay";
+> +};
+> +
+> +&uart_routing {
+> +	status = "okay";
+> +};
+> +
+> +&mdio1 {
+> +	status = "okay";
+> +
+> +	ethphy1: ethernet-phy@0 {
+> +		compatible = "ethernet-phy-id001c.c916";
+> +		reg = <0>;
+> +		reset-gpios = <&gpio0 ASPEED_GPIO(C, 1) GPIO_ACTIVE_LOW>;
+> +		reset-assert-us = <10000>;
+> +		reset-deassert-us = <50000>;
+> +	};
+> +};
+> +
+> +&mac1 {
+> +	status = "okay";
+> +	pinctrl-names = "default";
+> +	pinctrl-0 = <&pinctrl_rgmii2_default>;
+> +	clocks = <&syscon ASPEED_CLK_GATE_MAC2CLK>,
+> +		 <&syscon ASPEED_CLK_MAC2RCLK>;
+> +	clock-names = "MACCLK", "RCLK";
+> +	phy-mode = "rgmii-id";
+> +	phy-handle = <&ethphy1>;
+> +};
+> +
+> +&lpc {
+> +	lpc_snoop: lpc-snoop@80 {
+> +		snoop-ports = <0x80>;
+> +		status = "okay";
+> +	};
+
+Why's this named if you don't use it as reference anywhere.
+
+> +};
+> +
+> +&i3c_global {
+> +	status = "okay";
+> +};
+
+That's enabled by default.
+
+> +
+> +&vhub {
+> +	status = "okay";
+> +};
+> +
+> +&video {
+> +	status = "okay";
+> +	memory-region = <&video_engine_memory>;
+> +};
+> +
+> +&gpio0 {
+> +	gpio-line-names =
+> +		/*A0-A7*/ "", "", "", "", "SMB_CPU_PIROM_SCL", "SMB_CPU_PIROM_SDA",
+> +				"SMB_IPMB_STBY_LVC3_SCL", "SMB_IPMB_STBY_LVC3_SDA",
+> +		/*B0-B7*/ "", "", "", "FM_CPU1_ERR2_LVT3_N",
+> +				"RGMII_BMC_RMM4_LVC3_R_MDC", "RGMII_BMC_RMM4_LVC3_R_MDIO",
+
+Why do you name reserved GPIO lines (in this case the RGMII lines)? 
+They're used by the kernel anyways.
+
+Tan
+
+[0] 
+https://docs.kernel.org/process/submitting-patches.html#using-reported-by-tested-by-reviewed-by-suggested-by-and-fixes
+[1] https://docs.kernel.org/devicetree/bindings/dts-coding-style.html
 
