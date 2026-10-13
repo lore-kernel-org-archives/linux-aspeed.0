@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-5188-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-5189-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 617D6CC6B03
-	for <linux-aspeed@archiver.kernel.org>; Tue, 13 Oct 2026 10:15:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1C6FCC6B03
+	for <linux-aspeed@archiver.kernel.org>; Tue, 13 Oct 2026 11:06:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j3qwj6MGrz3brM;
-	Tue, 13 Oct 2026 21:15:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791886549;
-	cv=none; b=TP67TVpA0H751IdNkviaCiQ44IGZGcn6mgRBZG55+kCs0AG4T4geEHS/2htUu62YMBvBkwy1prQUu+1M9H9C9B0FTym/gPN4m9hDpkrzHMX6SOLjA447y0MZXc74dsmwuUyto0e4fR8WbjQZhLh56Eg/CLCIbR76UwkRYpcsdsmLxxQ905OToyyQMiOAHQlYuZ4PaYavxHoS81Rx5eY0qUCdgcEzNnabhrCg7UrPUgr6SkgCprrU53GGB+Sb+sWmVEnObNGqexo4jELM0Dt5pHI7WDEdTLRUHenzOqNFrSOIbE+/G6GgxSTzNgwnAOJQ3Y6phehnt0QwVczmY7+NLA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j3s3g6KRkz3brP;
+	Tue, 13 Oct 2026 22:06:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791889615;
+	cv=none; b=oJccETcpCA8wZ2X9LTm5yxURuFI+BGtHHeY7fuR8ke2YlI9QQKl9Vegdmy0WRnGmejXr3TiPxUmR4s0IA30K9wxsy6PlFHT0OBTaRUNr+sAWlnHQeXh5d7o//I51iKHTH8IIj8P3v+2qDJ+/BQ5dveUhl730gja/xDcfygk1Qe+3hDZ8brcrqZPZP2Zl1jS8c8qmbdy4l9Cypnr+dzTVQmSB37mRZfDGXksSdIm6CzmL9fkosiUsGIFHA97WHZMGqss6Yq2S0awN5aZO6bpfoieZar4y+XGK0uX/z1p4A7DPWNZy/TFIzPh7ZamU1jNqBmLlzx/7EJQC3s4B+Pm5SA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791886549; c=relaxed/relaxed;
-	bh=T05vzeiPYCAD9ha/zYBcdJZOcJv8hbGGQej4+CwcNis=;
+	t=1791889615; c=relaxed/relaxed;
+	bh=wcA9fhPG0oSyL4cbPGDpUO0KZiowx8q5haLFn7LRlFE=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=hbhUXQadfKBvylma0zWpISpMi5PzywWp/UJ9RSQD93UCRS3ykNQ0PkD2JWu2XVb9C1qLZpr6xsrEykwI+5i8psbbwh1/X0Xjfep8BZ9ZSrS9TsSHQxiimm9bh67FPWO9NgbdjTp26qCPy85CPheVxK4Jqb3ZV71q4YV6AB1gvcu3BXNCGNbtSPxjS4xa4MbtDR6v+k818BKqC09jv/f4Pd+mp/bP+hRGeJLIGdep8QqeLXzCutLitFQ8GqLaENP3lGoHrcOWjneRFbMlKtxqGT6F2LvNhwtSCxSemX5+NKV+cIBmePaGnES/cEFxP0VC6Kt875cuzwUGBWHk7h6gLg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hktXkihh; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=jirislaby@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=lh9e3U+lkcB2RT0/cQ78Qc/c6r4luMrzQ76JNqsjY5VyPpQ83LN+caTJR04FrLDfcbwKFiED6Pt2Hxp7RJjMQU0brHOG0v/dLAJ9X2FXqL8Rb7pM7VIXkPvCb4/UZ23+RPin2XFXaFTwIFbfri/kBZhcVTB/7YXgDyiPEXmLcykFZmtUWkASu+BRnAq3ULryr5yyJt75u/zgc6MYcW/TRj3b9I+M+2QprtgOhbIHOgasau4nHbnUsDb+PhPBQYcHd9m6ikalXlk8RouU42sK3MqxO8M7g5sRoMqvi0u541C46BVHrFAYzuH6F3pj8jXzygWcDQZIWMdMBiRIYxdOaQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=oBDJPa1j; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=jirislaby@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hktXkihh;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=oBDJPa1j;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=jirislaby@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=jirislaby@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3qwh5CxGz3brH
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 13 Oct 2026 21:15:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3s3f6nMYz3brM
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 13 Oct 2026 22:06:54 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 6271E408C2;
-	Tue, 13 Oct 2026 10:15:45 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2BDB41F000FF;
-	Tue, 13 Oct 2026 10:15:36 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id AB9CE60A52;
+	Tue, 13 Oct 2026 11:06:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 879071F000FF;
+	Tue, 13 Oct 2026 11:06:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1791886545;
-	bh=T05vzeiPYCAD9ha/zYBcdJZOcJv8hbGGQej4+CwcNis=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=hktXkihhv440HGGkgdGsZEbr9oMbyg+EgOWMpAxtFBlr6aQbnoYSL6Wuas6jGFM6d
-	 V0xX9RwH9/rrdqBuOfCQJ4aRDS5pExi6C+bz/YZf/co+hdpMJiqExS5xhjKzGJJGoq
-	 DlFhQFDXpXEWS7cp4hFg+6xagwZgQ0jnbN9h2i8wdUArD3NW6Wsa7qg31LFfpSQOx4
-	 lmdNQv4XgB25O/pbwR7UhOh8PAZKI5oePw/Qmschw2YDOPqXO5VqYq4FA2WZubX2bw
-	 NkAgGxI0rXPAdE8PCelwRptp/ieU+wMKwrbOS95//EynggUIlhlw2TE9nwLPHjB6Yl
-	 o7DW5zhazUf2g==
-Message-ID: <cc5463cf-1e31-4a5f-9341-22769a7b0af5@kernel.org>
-Date: Tue, 13 Oct 2026 12:15:35 +0200
+	s=k20260515; t=1791889612;
+	bh=wcA9fhPG0oSyL4cbPGDpUO0KZiowx8q5haLFn7LRlFE=;
+	h=Date:Subject:List-Id:To:Cc:References:From:In-Reply-To;
+	b=oBDJPa1jPL+/onrK8fQoCOVBlihc25js/H2NtNLihmVVMb50mUlZULQGs1RlxN5l8
+	 aWJleQmwz27glDKiKrt5fxwfjwwoXdkM1bEi+mmT9pTi5ZefX7QCbTtZYGp63agN18
+	 TZEk2jPjou5oRheY0MFv3Kj8VbUhDfe5EEFbs6AJZLbfeeiw2Dv39ToH7RcsVVaCVV
+	 AxIG2tKbfrmrTUsda/6ruLRJ/sWX+Px5tAXQaINiZDanrGiJzAJBded5mO8+xs7wV1
+	 1m0PaQx9k+AQ84dnAVcU8hzhdJ0oEL61fsAC5d2lPUDKlr5h7csS5pMr7GkHMDRXua
+	 30omhPNpueOWA==
+Message-ID: <f808883b-464e-4de8-a0c1-f799fd3d755e@kernel.org>
+Date: Tue, 13 Oct 2026 13:06:41 +0200
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -62,8 +62,10 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v2 6/6] serial: 8250: make port operations work on struct
  uart_8250_port
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: gregkh@linuxfoundation.org, linux-serial@vger.kernel.org,
+List-Id: <linux-hardening.lore.kernel.org>
+To: Alejandro Colomar <alx+linux-hardening@kernel.org>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ gregkh@linuxfoundation.org, linux-serial@vger.kernel.org,
  =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
  Vadim Fedorenko <vadim.fedorenko@linux.dev>,
  Richard Cochran <richardcochran@gmail.com>,
@@ -100,8 +102,7 @@ References: <cover.1791873876.git.jirislaby@kernel.org>
  <as3etnbZatn4sbfx@ashevche-desk.local>
  <c6b08f53-b5ee-44c8-93d1-54fdf5994ed2@kernel.org>
  <as31PsESOgLUhMB6@ashevche-desk.local>
- <b404f3d7-1b2d-418a-8634-72c61ce33f8b@kernel.org>
- <as4BML-VUC9xUgOf@ashevche-desk.local>
+ <b404f3d7-1b2d-418a-8634-72c61ce33f8b@kernel.org> <as4JDXOIGvCbAnE_@debian>
 Content-Language: en-US
 From: Jiri Slaby <jirislaby@kernel.org>
 Autocrypt: addr=jirislaby@kernel.org; keydata=
@@ -146,50 +147,24 @@ Autocrypt: addr=jirislaby@kernel.org; keydata=
  f/bIWIr0cqQmqQ33FgRhrG1+Xml6UXyJ2jExmlO8JljuOGeXYh6ZkIEyzqzffzBLXZCujlYQ
  DFXpyMNVJ2ZwPmX2mWEoYuaBU0JN7wM+/zWgOf2zRwhEuD3A2cO2PxoiIfyUEfB9SSmffaK/
  S4xXoB6wvGENZ85Hg37C7WDNdaAt6Xh2uQIly5grkgvWppkNy4ZHxE+jeNsU7tg=
-In-Reply-To: <as4BML-VUC9xUgOf@ashevche-desk.local>
+In-Reply-To: <as4JDXOIGvCbAnE_@debian>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
-On 13. 10. 26, 12:00, Andy Shevchenko wrote:
->>>> First, it is used in the kernel quite a few times already
->>>> [1]. Second, while it is sort of c++ism (and I like to use modern c++), it
->>>> makes the life of the variable a lot more obvious.
->>>>
->>>> [1] eg. see output of: rg -U -C 5 '}\n+\s+struct .*\*.*=' drivers/
->>>
->>> (you made me to install something I haven't heard about, it's better to use
->>>    `git grep` though)
->>
->> rg is order of magnitude faster (searches in parallel). More importantly in
->> this case, supports multiline matches. (And respects .git ignores.)
+On 13. 10. 26, 12:51, Alejandro Colomar wrote:
+> 	alx@debian:~/src/linux/linux/master$ time rg -n ARRAY_SIZE | wc -l
+> 	58957
 > 
-> Isn't `git grep` fast enough due to looking into index and not into the files?
-> `rg` may not look at the Git index, right? So I may not to use an arbitrary
-> hash without checking it out first.
-
-Of course rg is not git grep.
-
->>> Note excluded __free() if I get regexp correctly
->>>
->>> $ rg -U -l '}\n+\s+struct .*\*[^)]*=' drivers/ | less
->>> drivers/ufs/host/ufs-qcom.c
->> ...
->>> drivers/gpu/drm/amd/amdgpu/amdgpu_psp.c
->>>
->>> So, less than dozen of drivers doing wrong is not an argument, try something
->>> better. But thanks, I will check and address this in some of the above.
->>
->> Well, it's only an example of a declaration after a previous opening brace
->> "{" -- this one turned out to be easy to search for. There is a lot of more,
->> of course. kernel/ included.
+> 	real	0m0.512s
+> 	user	0m0.490s
+> 	sys	0m0.974s
 > 
-> Please, provide a better search line, I will look at that. For now it's just
-> a hypothetical assumption, I am afraid.
+> It's around 50% faster, which I wouldn't call orders of magnitude.
 
-I am not much into writing a semi-parser at this point :D. This'd be a 
-task eg. for clang's ASTMatcher.
+If you pipe rg's output somewhere, it no longer works in parallel.
 
-thanks,
+Are we really about to discuss this?
+
 -- 
 js
 suse labs
