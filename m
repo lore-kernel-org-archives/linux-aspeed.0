@@ -1,105 +1,62 @@
-Return-Path: <linux-aspeed+bounces-5184-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-5185-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35DDCCC6B08
-	for <linux-aspeed@archiver.kernel.org>; Tue, 13 Oct 2026 09:09:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83AABCC6B08
+	for <linux-aspeed@archiver.kernel.org>; Tue, 13 Oct 2026 09:33:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j3pSN15Qfz3br5;
-	Tue, 13 Oct 2026 20:09:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.15
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791882580;
-	cv=none; b=MVi/VJbYq74EX38g1Ue4SH8IKHOrIuf1aZkWsF5urSojgz86u+qEc0HBXqruC+DAjdNNtUgwNQkn+cn1ZRtg0JOJnpbwmFOw9Au6V1Iauxtp/R4gem2ofTUEeA5FTcZzPO4XULUViZ40w2z88f25OOdiGz1ykWEBTcTaZTzu0yLjshyCvnd7iznYrOc/k0Us/qoFl4AaGhVRYgnyK4oofk1rF8gPT/k5pTAOr0Hc2PGjROYYiICoEGEYHIp/SGZttHEHmXqSScjG+mEIPkHvv+RXseVBGU3TZ4R/o8VTALk8xTZ0Db9A+S93U7qcNUDAMA4wwujlAfZV80ZNfD5KKw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j3pzb57J4z30VV;
+	Tue, 13 Oct 2026 20:33:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791883995;
+	cv=none; b=V+ZIQszi3JSTcaZ5FUmY7VnP72aNPMsIeNnDyOVmOv2V1xgXUeVvVHEaPKA4t3J9wni8nh6xHC+uQPfZJjXdHOq65/KQy9zWsEdyzExky7yoZiZjCma4fLilszR8mXPjoDcAk3ktDUfinJmaS9Ya0KmHEgS/bLEWBopRAPSERahH0dFzaC+n/bXh58+SrlTA5lpjXdr8wLecRlUBqG772tB1pM55r1wsDFzNd/QDrCqa67rvTRejI2YkMrka1ORex6NY1RZ/tPNNBugsvEglw5qpqwPeLrBYDDjbRXbPdou6f8oaX2FdnzJxFV0r0UKPoIs5gC5a57iFEYTS3+R3Xw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791882580; c=relaxed/relaxed;
-	bh=6lw22XAqi3McYHdECP3iKpzl9Y1OVpdjtKD9ZynF7cY=;
+	t=1791883995; c=relaxed/relaxed;
+	bh=eXWwLO4f27zLzjYaywvcUXu0PszcUzOkRGtDDmJg/mY=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ToyD3VnfykX3rc/UWXPFcY6YbHGtFVZ217fZ22RdSix6eq1Sm9AWfE95Fqm/MZvuGjE6KN5GKH3ZVqjTIOs1hJV5wae++jK+kuyMpRrM3S74tAIHqYHFTAN8hnm+nOBndNXEZh6MecHLguNg+fJFyNdHj7I3px0DsHYFAq/wEBtf6ruecuSBAdIkGdihQLtIQLvuYNiuyht9VNxVOIyjbKXfoRGRFhpjWFoyuSvybXEvGCRJx1TtYlhiw6VvJzMXpQy3wn2rV2cCklF4zwSdwrtxprEs1/0J4nP1zMh+VBPZQqdPaB/hAhDC9C3vsOijU8EsZ1S/cK30SRMzU+2qaA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=kHjNZnb5; dkim-atps=neutral; spf=pass (client-ip=198.175.65.15; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=SPiHzmEcyYjYchOzCVPrEyGVLBMZmsca9kF7D2b5QbR7j4UXLARAH3MuIkphehg7tAMTmvDvE6RWVLu7UkdDYZJl61MHaiduWaiQhfVlI1i87CQ1JN5J/ahAZUHjAJCNm+W4Vl/z9Z50UwRqzFQOfgA5eXvlOPG2Wx7ls4x8EB9ai2anPnUbghDnMoVpPGLqdKG6Kf9PnyIhkgyk+bCbUzgrws2q0mSbpWHNtV4B/bazccIXFxoWFfTv89m58szPnOxbprsvhy2XmrlLpy1ManwVnTlm2Hx8JdUS1Sfqhb/wBExThWdJBGK0wu/8q/leKcKbE0vjWYs88pDiiFXEGQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BpGJpECm; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=kHjNZnb5;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BpGJpECm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.15; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3pSJ1GMqz3br2
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 13 Oct 2026 20:09:33 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1791882577; x=1823418577;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=IQ/UNuFHURdJ5ziTLh4qZrD8MOsGX3B11CY5vdjd4ZM=;
-  b=kHjNZnb50E++J4yon/meJu5XlsB4Vjwe0WJVeRRJNYQuIQLdQIQCp4cx
-   Q9f/xAqP3VqQjifq33oDsiibeA4sRooOjcvgbI+X0l6EuyssmoqNLLWWX
-   psX4mqs8j3OhkmjubtG7BpwDbd+GKmXy+UZ1SBPZG8gedDS/JH4VOUasa
-   KjUAladHq5p6RrkTffjHz94LxN5mZDXcw+3fun6xMfUU5utM9hkQXlIm3
-   /gFfIBSzE/eFyGsafo0WKGtAqq/Q9yPCGwFmFw1dRKLlHYF2SLx4BL984
-   Pjs9r2vfpfRmAvEKrg4H5P/i3qjeE3EdYM3cy6gHMdmJgIA5bAk4WWeV/
-   A==;
-X-CSE-ConnectionGUID: xK7HelgEQ8C6mui5ZjmmVA==
-X-CSE-MsgGUID: n/K3zwN0T66pzCSJJ//1WA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11933"; a="595199"
-X-IronPort-AV: E=Sophos;i="6.27,155,1787036400"; 
-   d="scan'208";a="595199"
-Received: from fmviesa003.fm.intel.com ([10.60.135.143])
-  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Oct 2026 02:09:30 -0700
-X-CSE-ConnectionGUID: BgXYAbCpQMSPY4ai3EmgtQ==
-X-CSE-MsgGUID: Z+SacHifQmOu6wFBhA0rHQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,155,1787036400"; 
-   d="scan'208";a="1196513"
-Received: from ncintean-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.48])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Oct 2026 02:09:20 -0700
-Date: Tue, 13 Oct 2026 12:09:18 +0300
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Jiri Slaby <jirislaby@kernel.org>
-Cc: gregkh@linuxfoundation.org, linux-serial@vger.kernel.org,
-	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-	Vadim Fedorenko <vadim.fedorenko@linux.dev>,
-	Richard Cochran <richardcochran@gmail.com>,
-	Andrew Lunn <andrew+netdev@lunn.ch>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@kernel.org>,
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
-	Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Ryan Chen <ryan_chen@aspeedtech.com>,
-	Billy Tsai <billy_tsai@aspeedtech.com>,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
-	Ray Jui <ray.jui@broadcom.com>,
-	Scott Branden <scott.branden@broadcom.com>,
-	Al Cooper <alcooperx@gmail.com>,
-	Paul Cercueil <paul@crapouillou.net>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	Chaitanya Vadrevu <chaitanya.vadrevu@emerson.com>,
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
-	Helge Deller <deller@gmx.de>,
-	Kumaravel Thiagarajan <kumaravel.thiagarajan@microchip.com>,
-	Thierry Reding <thierry.reding@kernel.org>,
-	Jonathan Hunter <jonathanh@nvidia.com>,
-	Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
-	Masami Hiramatsu <mhiramat@kernel.org>, Kees Cook <kees@kernel.org>,
-	"Gustavo A. R. Silva" <gustavoars@kernel.org>,
-	Uwe =?iso-8859-1?Q?Kleine-K=F6nig_=28The_Capable_Hub=29?= <u.kleine-koenig@baylibre.com>,
-	netdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org, linux-rpi-kernel@lists.infradead.org,
-	linux-mips@vger.kernel.org, linux-mediatek@lists.infradead.org,
-	linux-parisc@vger.kernel.org, linux-tegra@vger.kernel.org,
-	linux-hardening@vger.kernel.org
-Subject: Re: [PATCH v2 6/6] serial: 8250: make port operations work on struct
- uart_8250_port
-Message-ID: <as31PsESOgLUhMB6@ashevche-desk.local>
-References: <cover.1791873876.git.jirislaby@kernel.org>
- <c59fa203f325e0fe7601ea0fbc0d222c8b37f9eb.1791873876.git.jirislaby@kernel.org>
- <as3etnbZatn4sbfx@ashevche-desk.local>
- <c6b08f53-b5ee-44c8-93d1-54fdf5994ed2@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j3pzZ5dZtz2y2h
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 13 Oct 2026 20:33:14 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id C4B7A60A7F;
+	Tue, 13 Oct 2026 09:33:11 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C64D11F000FF;
+	Tue, 13 Oct 2026 09:33:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1791883991;
+	bh=eXWwLO4f27zLzjYaywvcUXu0PszcUzOkRGtDDmJg/mY=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=BpGJpECmnc5GxGubaFlWpDQl4qaGSZ2UveCm+TNNzJZWXRKayz4Rmf+L2QFacrirh
+	 YnR8BFP6LodCdz8smZSQYduJjU2p3dbVcw9LuZFURwfnaUAGYaSWTXrXBCXQmVzviX
+	 lIWY45DPbKXmvNrAQvS9BrnJgWNJW7bszssvjnI2eCf1Chsd3g6vMQ0aaJV7np+N9C
+	 OQoM2vAXUqL/nhb5fV6ybacrvnn+ds/EL2B4kT08NC4mHHmMCLPosZxU0tngS06mkM
+	 J5PIvAcNMD4TnkFlXk2foyPEl0VdDGAWrMQ3qW/Pyh5rdAYalfuZOI8VyMGAe+0jZ1
+	 xlvI0HnD5+iWw==
+Date: Tue, 13 Oct 2026 11:33:08 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Dawid Glazik <dawid.glazik@linux.intel.com>
+Cc: Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, 
+	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, maciej.lawniczak@intel.com
+Subject: Re: [PATCH v2 1/3] dt-bindings: arm: aspeed: Add Intel AVCRP and
+ JNCRP boards
+Message-ID: <20261013-sincere-lemur-of-unity-ede6a7@quoll>
+References: <cover.1791825961.git.dawid.glazik@linux.intel.com>
+ <0b8fbf07323894a48a777ea531713a0285e319d4.1791825961.git.dawid.glazik@linux.intel.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -113,69 +70,27 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <c6b08f53-b5ee-44c8-93d1-54fdf5994ed2@kernel.org>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
+In-Reply-To: <0b8fbf07323894a48a777ea531713a0285e319d4.1791825961.git.dawid.glazik@linux.intel.com>
 
-On Tue, Oct 13, 2026 at 09:53:26AM +0200, Jiri Slaby wrote:
-> On 13. 10. 26, 9:33, Andy Shevchenko wrote:
-> > On Tue, Oct 13, 2026 at 08:48:51AM +0200, Jiri Slaby (SUSE) wrote:
-
-...
-
-> > > -	rc = serial8250_register_8250_port(&port);
-> > > -	if (rc < 0)
-> > > +	struct uart_8250_port *uport = serial8250_register_8250_port(&port);
-> > > +	if (IS_ERR(uport)) {
-> > > +		rc = PTR_ERR(uport);
-> > >   		goto err_sysfs_remove;
-> > > +	}
+On Mon, Oct 12, 2026 at 07:39:05PM +0200, Dawid Glazik wrote:
+> Add compatible strings for the Intel AVCRP and JNCRP BMC boards.
 > 
-> > Also do not define
-> > variables in the middle of the code (it's only allowed for auto cleanup
-> > variables and for-loop iterators).
-> 
-> Why, actually?
+> Signed-off-by: Dawid Glazik <dawid.glazik@linux.intel.com>
+> ---
+> v2:
+>  - Squash the separate AVCRP and JNCRP commits from v1 into a single
+>    commit, since the changes are small and closely related
+>  - Fix compatible string ordering so the new entries stay in
+>    alphabetical order within the enum
+> ---
+>  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 2 ++
+>  1 file changed, 2 insertions(+)
 
-Because it's the style. Linus also told it many times (I am tired to repeat
-this, I leave it to you to find his words on lore.kernel.org).
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
-> First, it is used in the kernel quite a few times already
-> [1]. Second, while it is sort of c++ism (and I like to use modern c++), it
-> makes the life of the variable a lot more obvious.
-> 
-> [1] eg. see output of: rg -U -C 5 '}\n+\s+struct .*\*.*=' drivers/
-
-(you made me to install something I haven't heard about, it's better to use
- `git grep` though)
-
-Note excluded __free() if I get regexp correctly
-
-$ rg -U -l '}\n+\s+struct .*\*[^)]*=' drivers/ | less
-drivers/ufs/host/ufs-qcom.c
-drivers/dma/xilinx/xilinx_dma.c
-drivers/dma/idxd/init.c
-drivers/media/platform/raspberrypi/rp1-cfe/csi2.c
-drivers/gpib/agilent_82357a/agilent_82357a.c
-drivers/gpib/ni_usb/ni_usb_gpib.c
-drivers/tty/serial/samsung_tty.c
-drivers/s390/scsi/zfcp_scsi.c
-drivers/gpio/gpiolib-shared.c
-drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_irq.c
-drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_dmub.c
-drivers/gpu/drm/msm/disp/dpu1/dpu_kms.c
-drivers/gpu/drm/msm/msm_gem_vma.c
-drivers/gpu/drm/amd/display/dc/clk_mgr/clk_mgr.c
-drivers/gpu/drm/amd/amdgpu/amdgpu_psp.c
-
-So, less than dozen of drivers doing wrong is not an argument, try something
-better. But thanks, I will check and address this in some of the above.
-
--- 
-With Best Regards,
-Andy Shevchenko
-
+Best regards,
+Krzysztof
 
 
