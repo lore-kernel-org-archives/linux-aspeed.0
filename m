@@ -1,90 +1,81 @@
-Return-Path: <linux-aspeed+bounces-5194-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-5195-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1CF44CC6B1C
-	for <linux-aspeed@archiver.kernel.org>; Thu, 15 Oct 2026 03:51:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D5BDCC6B34
+	for <linux-aspeed@archiver.kernel.org>; Thu, 15 Oct 2026 07:44:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j4vJM5X1Rz30Vy;
-	Thu, 15 Oct 2026 14:51:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792036291;
-	cv=none; b=ZuJxJ90lYSZqxU9mOcBj8kMY500+qzAl8uUmmgivOMjJzT3gxPKKrmjvRUcWEEUyDS4Quh3OLH30DEIxvbMhRItFiYnk9Zp1tx6KFJwaPt1/kfXVVCIpS+s5QMMDUh1t5GyDXibMWhCoJV+HtgZHAKcPleJpiCiZIhLff637WknoQOH8gYsMP/oSUjQ+Oij7KVdFZfgtDMO5byDUEfEVpUQjR1CKjqcGrDvfMva1l4mr+kD1hdIDzCCKk1VfI2BAYWGt/ASIJQIkjXFmAf9/Vn0KgmOyw7t+8FqUZW0H+kzB93wpF9nTUr6mefTapHPdW5P9Sm3AFVj/Qj2H9yoCOA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j50Th0StDz3048;
+	Thu, 15 Oct 2026 18:44:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::42c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792050295;
+	cv=none; b=XoV6eSUJdzTFGxWL42jpeILehooPMk5GZu34bQBgetxbtB5EfMOZqkkpqvdKUIvnRVnVLMFIYs3AuOhJUBwperNavBpwe/7wNVb+G+owj5aQwWJZMtVz/h1GIj81RJEL1m/uEH39jPwbXjqdwChp4N6zDm6L/L7ITlTt6CAxUkDN0knUgDKSIppNXNjX4L3v9AqNVNKB+sFdZRkg3kkioFH/rdwA3kVdiC6Nr7EUk7aIdZYqG/6E/K6FcyIZcCxze+k0E6jrQZ3hdUKpD4H7tzTbhkdVB6FJKTR0c3URqqVcJ+uvLh07vxyf4jNmOAFiRO4LNEXRLq6XT3g/fx6uHw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792036291; c=relaxed/relaxed;
-	bh=5Brhdwqnp+zrXya+pAYQZ+kocBKTR7q3OUom2Y3/V6I=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=lk+4g+dIW58U0uPoU1aJFDzlfT7ZpirZ2lMSnMngdVPG+SCJZVh51LqxP4Q2Fsa1b8fCKrLvh9S7zfciKPNZNDMnRpQ7jXV38kubEnSiwvak8XhqurR+XEXCDhVa8t0JgtTEHAbtei4Ny73z94k1NPg0KyTVoVYIwzsXb6wo345Qi41ukwkq2ZprI/3I0GP224aWtmseWy3Qdq92Ut/RSJDFStKMBpIS6qLPiQIzYGlTVrVqkVnyKiE6SpCqEaKxJ8fEwkPH7tQQUqPR9oi6yn1J3lMOpSh67/UBuob31CJbJRNuQuYgxwgXsPBOnhzArIW8SSCzyBc85YJxmnxnnA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=C/45TtUE; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132a; helo=mail-dy1-x132a.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1792050295; c=relaxed/relaxed;
+	bh=+dvMNnzmsfKlXaQReE9W1eWaATaq+JUXJSwSZca7lFE=;
+	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
+	 In-Reply-To:Content-Type; b=JsnC2lOody5qsgQ0ASdtPvHx6CftI+lTNQKJnavRS1ocMB1DvCiCWWbnE3ZdbCywEc3CoKfk9Q0CGVAQ8JdpaQta98ToWoDCbA75OU9S9cWhwMBsVdqb0MGCy8/fbkyozFDDDcazbPFqdwVy7c75FKMyP1ChqluQh/o/SPXGQEAg3QG/kqKA2Dd04UUA8JQNTQR6mBH2GIopi+Wkqmu+Ja2stN+0Y2TjWHzXcVU4erj3lMK8kOPJ2EZt4drBaxolwGogDeAT5w/ga0jNuPe3xNjV+azmmEhWz1XO4SiBflW6UQrgSykXCnDgrxK/ZDB8VRbTqd/UPsIjqRFpFLESjQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=k5fhz4HC; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::42c; helo=mail-wr1-x42c.google.com; envelope-from=neil.armstrong@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=C/45TtUE;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=k5fhz4HC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132a; helo=mail-dy1-x132a.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x132a.google.com (mail-dy1-x132a.google.com [IPv6:2607:f8b0:4864:20::132a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::42c; helo=mail-wr1-x42c.google.com; envelope-from=neil.armstrong@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x42c.google.com (mail-wr1-x42c.google.com [IPv6:2a00:1450:4864:20::42c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j4vJL4YJcz3090
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 15 Oct 2026 14:51:29 +1100 (AEDT)
-Received: by mail-dy1-x132a.google.com with SMTP id 5a478bee46e88-35a31bb9fb6so49380eec.1
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 14 Oct 2026 20:51:29 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j50Td3W9lz2yjw
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 15 Oct 2026 18:44:51 +1100 (AEDT)
+Received: by mail-wr1-x42c.google.com with SMTP id ffacd0b85a97d-48af27fe287so53198f8f.0
+        for <linux-aspeed@lists.ozlabs.org>; Thu, 15 Oct 2026 00:44:51 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792036287; x=1792641087; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=5Brhdwqnp+zrXya+pAYQZ+kocBKTR7q3OUom2Y3/V6I=;
-        b=C/45TtUEsnhiWEZUzVIPU/Xr7/O3mKTq07IFnvQuaXpnNThaydjrpLJXR2O1gvcWKr
-         vWWDFQmvRFWMT93TO9FRURzcXVGtawANNxOcuz8casIngGEjuAPj6P8DZntlS1TjYQJ4
-         fF7JHr3N0u0cjdpVJFvnUO3Y6PZegAFgzO5sc6VsgASof3Eo/jDnMN7ep65A7bFksNCp
-         OgGDG2LIzhb3oNAQ31dVZcsm2Aeme87YlS+A2ptH3pLE/Di1MWJtbAiOKZRMvQOvNc/D
-         kg8mNlVa1twyavOIrj/0B7UKOh/kKZi3O+caDeIwR1LlL2peWFx6N+PN3gIiEvUP7NOV
-         z4xg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792036287; x=1792641087;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=linaro.org; s=google; t=1792050283; x=1792655083; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:in-reply-to:organization
+         :autocrypt:content-language:references:cc:to:subject:reply-to:from
+         :user-agent:mime-version:date:message-id:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=5Brhdwqnp+zrXya+pAYQZ+kocBKTR7q3OUom2Y3/V6I=;
-        b=SpXKLzkJDXlZuG0wV5FWbuWMLBwwifJtBVshN6EaaDdSnwYZWnGIh6+Apw1/aAE8jF
-         kc1JX9s9eaZSUPLPnWUY2gHawYsFSsqoIWi24oOepbbtv7QCAob0hdhxf4TENa8CrS2V
-         a3x9BIm+SHZwujM1pZmA/yKKqLT0ZxhWDMGnYq9ZOIhoutmPgayu8R8n4SZBydWPvokC
-         T53f2fwYmGL6NDDmEICStzmBHy01LUEowFjtvPZjMQT/BzGqtW4oQflZMWUO/xqZktHj
-         sLEvmOU1t1PPOrg/3Pt1rwEO4P1fUuqGhsWpwthuxiji0FhmKVfJ7iHyySiLQ7ZKa/Ym
-         AXMg==
-X-Forwarded-Encrypted: i=1; AKwUvByn6R/zfV5l++QEduy60b3vlLCQBlkt64vMMySaWMiv5EYFtIvOqbJ0bL99gTgt4pEoyCl0IMGE2aOOskY=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYJWyrcM+/LoTizRT8Lep/bhjAVJ5z2QYpRY2O/8ezKgmzsGxx4F
-	nUlHsd0mKNB/p3wj++ijGfFZxpyhP6+nnTi11NkoQUAYwWTZYPRIc/OY
-X-Gm-Gg: AYBFou0cZUPj3Pp6wNsPiInAei+vxg9OzE2G11Xcgt3GamAaXTAeGokPZqXLt5uSzcM
-	IK+y5sI96B1VDZ2etM8WdGrTvgkEB5aAiN9AYA99FcXcuOZkr8x9Hs2GykM2XIXlvmOAH2FFFEd
-	cgTGvkPppKkml918s2LlbOW0+GHqhSB55M7KEmtC5u18ykBUtIDfwV3XQHvi/c8xZkNPZdc8koZ
-	fVzSZoOp2hvaRt2jL80GdyaF71WV0m2uXPuipptijl1vSGDRxibU81wIPBfdzqQZwfN/Rm0k3aV
-	b5nIBZ5ZN6sJUuXwXl9bXhnexlrQjoqj0QZ3/OLSMVTjIYIii/Q4QnLTpZuPZhX4Q5ahiygKR/2
-	b5Bkur4rkTBx7r0wkdAhnPSzJfbjgoOvQI+nZBmgfTIorLZ1+uu1cVUKux9Angu/7T99zPGRYmB
-	hrUssYnErz5aCwdccz7mWJoxpdOzyGrv8KD3Hjt+yDU6/xnFyKTfpYWMIiaGu4fbynNepmgRbvj
-	E3NlPrWsgi8KcNl
-X-Received: by 2002:a05:7300:8b14:b0:35f:f0:8edf with SMTP id 5a478bee46e88-35f00f09f07mr2511567eec.13.1792036287168;
-        Wed, 14 Oct 2026 20:51:27 -0700 (PDT)
-Received: from debian.prasanth ([103.183.205.240])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3537cb6a279sm56719830eec.30.2026.10.14.20.51.23
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 14 Oct 2026 20:51:26 -0700 (PDT)
-From: Prasanth Kumar Padarthi <prasanth.padarthi10@gmail.com>
-To: andrew@codeconstruct.com.au
-Cc: linus.walleij@linaro.org,
-	joel@jms.id.au,
-	brgl@kernel.org,
-	linux-aspeed@lists.ozlabs.org,
-	openbmc@lists.ozlabs.org,
-	linux-gpio@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	Prasanth Kumar Padarthi <prasanth.padarthi10@gmail.com>
-Subject: [RFC PATCH] pinctrl: aspeed: Handle GPIOZ6 pass-through strap on GPIO requests
-Date: Thu, 15 Oct 2026 09:21:18 +0530
-Message-ID: <20261015035118.9495-1-prasanth.padarthi10@gmail.com>
-X-Mailer: git-send-email 2.47.3
+        bh=+dvMNnzmsfKlXaQReE9W1eWaATaq+JUXJSwSZca7lFE=;
+        b=k5fhz4HCDjEuZZgI7nbN0SQWN47zm/1v5NQVoa1BBpbzB3KBbCSI5JZez1cEnYWF2F
+         s8haoiwlDHJVyzl+3o3y6I2S0ltpeOhrHRNXC7ZWCvhFDpuKNvz1pQdM1j8WKDV31vlx
+         FvgccSyD3vDeuDbft67yPUuTAoGRfc8RiyPyGX0QOPG9nfFhME3qqrmPmq0kQh6J5GUP
+         l4PnNwLPL07hB6JUl5slCAHxaubM57T8zSB4nAShkmC8SE2XG4MB5TWIhccxX7ak962+
+         gYf/q5hR/qLtDf26DH3bYNlFANXP7gqblvKBOnQqKdDfvpro/jYmu9JuQwX83rq7KKcg
+         MbFA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792050283; x=1792655083;
+        h=content-transfer-encoding:content-type:in-reply-to:organization
+         :autocrypt:content-language:references:cc:to:subject:reply-to:from
+         :user-agent:mime-version:date:message-id:x-gm-gg:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=+dvMNnzmsfKlXaQReE9W1eWaATaq+JUXJSwSZca7lFE=;
+        b=b3W70dvockQJvbeZAwv6KEmBYwCYYLN0S/I7U19nJTk44sHH3N2KeKzZiISjtUyE3f
+         qqMz4H6gHawIsKM7m9vwVJK/g/Dmmy1Y7rWShVIPmYgMFCAYfgxFipB/BI7f2Tjkgm4K
+         IJD8yqG1xvNks2ndnXpyAA5dopayrNho2slqxJhorBVk7Hvapy1R8Ba7YuPMyYTYWaSY
+         EQm75G9ONxOO1b5jfy7YYIjE/Ks7u0ZdS51PrL7Gzs/qVCPWYSqCDk39Yew8xGv+l3Ot
+         rCc2mtuihDvVAmB61vQ6EDyeiUqqRBEJSTAGhG/6NQmhbupktWEF4YAp9Zx8YCZrlD5x
+         4viw==
+X-Forwarded-Encrypted: i=1; AKwUvBx4ryUEwKqMLT6R0oopv1a3Fye0sJ0q644Jl1ozH5HX/vXOzSyBml4gzcOAr7D5ULCjRAWhqlPZIG7ak9w=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYKwjfmDbf4w1ckQw4aXdTuAcPrPSdqsnFVG09g403UbT4muvwTc
+	BCp+ks1uHnC9d+6mBb1mDWZJvI/vWmJnVZOqY16ZNA8sapUEumkOakIBNGJzfddFldk=
+X-Gm-Gg: AYBFou3VPkKk0soAKFOtVaEPi34gDWxKDnX0wvx2MSNudHeqtiDEZwzraQa0HOrtYar
+	12QrnliolbsHsMJIZ2C6ihUwKllXnIlLTLcvFmxOfTBgJqeAarxNel8gB/PFbIii/s0WnzjIgN4
+	XzjMEoH6lBPo6M3YT7CGdk54Y3EoN5KfLQ1dRvZpumlnDtcH3sDGL7F1dWS9usIW+o8fMPlzJo7
+	thTHQBJv/yZrO4C4869hf0aawvPGt4nBXydonogqsWHRB22ZU5aL/CJL9QHViFWkvvuF+Vq8yD0
+	8hv1pDTIgs/aXCt0x2dJtUklRZIpYqW1KeN9ZO1twnca/+1eh64iEACzSFmiBupoqlLnzoRgb9P
+	lTCcj7DZl1RtXun+9ZXvYrFHURhNMmblYLdcYYlrsv6cIGwW+NCwdOzoxmmQZt3vqprwJMDvQKq
+	J91u9QIcqSOPZLUHRKcXNLIrViXgEF4lOkXlSKEko7MIcWsB5z2dFOdrA3IYPUCUtwbb8EfmvCW
+	ZZn0HOPBs6DJZmxfzAToNAwD668tzSEts4b6kUg4l0529KwO/S4ahs=
+X-Received: by 2002:a05:600c:4685:b0:4a0:27eb:49b with SMTP id 5b1f17b1804b1-4a18e4ae6fcmr385008175e9.30.1792050282515;
+        Thu, 15 Oct 2026 00:44:42 -0700 (PDT)
+Received: from ?IPV6:2a01:e0a:106d:1080:fdbf:f373:6d5b:93e4? ([2a01:e0a:106d:1080:fdbf:f373:6d5b:93e4])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48ded185de7sm8548506f8f.31.2026.10.15.00.44.40
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 15 Oct 2026 00:44:42 -0700 (PDT)
+Message-ID: <8d4d3ec2-3c97-4a46-97f8-048fdf81b853@linaro.org>
+Date: Thu, 15 Oct 2026 09:44:40 +0200
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -98,142 +89,145 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+From: Neil Armstrong <neil.armstrong@linaro.org>
+Reply-To: Neil Armstrong <neil.armstrong@linaro.org>
+Subject: Re: [PATCH 2/2] dt-bindings: usb: snps,dwc3: Fix downstream port
+ numbering
+To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+ Chen-Yu Tsai <wenst@chromium.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Felipe Balbi <balbi@kernel.org>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, linux-usb@vger.kernel.org,
+ devicetree@vger.kernel.org, Kevin Hilman <khilman@baylibre.com>,
+ Jerome Brunet <jbrunet@baylibre.com>,
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+ Sven Peter <sven@kernel.org>, Janne Grunau <j@jannau.net>,
+ Neal Gompa <neal@gompa.dev>, Joel Stanley <joel@jms.id.au>,
+ Andrew Jeffery <andrew@codeconstruct.com.au>,
+ Ryan Chen <ryan_chen@aspeedtech.com>, Billy Tsai
+ <billy_tsai@aspeedtech.com>, Michal Simek <michal.simek@amd.com>,
+ Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Fabio Estevam <festevam@gmail.com>, Peter Griffin
+ <peter.griffin@linaro.org>, =?UTF-8?Q?Andr=C3=A9_Draszik?=
+ <andre.draszik@linaro.org>, Tudor Ambarus <tudor.ambarus@linaro.org>,
+ Heiko Stuebner <heiko@sntech.de>, Alim Akhtar <alim.akhtar@samsung.com>,
+ Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
+ Masami Hiramatsu <mhiramat@kernel.org>, Yixun Lan <dlan@kernel.org>,
+ Troy Mitchell <troy.mitchell@linux.spacemit.com>,
+ Minda Chen <minda.chen@starfivetech.com>,
+ Shyam Pandey <radhey.shyam.pandey@amd.com>,
+ Wei Yang <yangwei1@eswincomputing.com>,
+ Senchuan Zhang <zhangsenchuan@eswincomputing.com>,
+ Hang Cao <caohang@eswincomputing.com>, Li Jun <jun.li@nxp.com>,
+ Peng Fan <peng.fan@nxp.com>, Roy Luo <royluo@google.com>,
+ Yang Xiwen <forbidden405@foxmail.com>,
+ Ahmad Zainie <wan.ahmad.zainie.wan.mohamad@intel.com>,
+ Robert Marko <robert.marko@sartura.hr>, Xu Yang <xu.yang_2@nxp.com>,
+ Wesley Cheng <quic_wcheng@quicinc.com>,
+ Stanley Chang <stanley_chang@realtek.com>, Ze Huang <huang.ze@linux.dev>,
+ Aswath Govindraju <a-govindraju@ti.com>, Roger Quadros <rogerq@kernel.org>,
+ linux-arm-kernel@lists.infradead.org, linux-amlogic@lists.infradead.org,
+ linux-kernel@vger.kernel.org, asahi@lists.linux.dev,
+ linux-aspeed@lists.ozlabs.org, imx@lists.linux.dev,
+ linux-samsung-soc@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+ linux-rockchip@lists.infradead.org, linux-riscv@lists.infradead.org,
+ spacemit@lists.linux.dev
+References: <20261014082037.1774672-1-wenst@chromium.org>
+ <20261014082037.1774672-3-wenst@chromium.org>
+ <7020a7a6-332e-4fd0-a659-d82eb768614c@linaro.org>
+ <CAGXv+5G1kgyumbj7wGf6rPFbg3spSO0zYmEkn-hZT4qUdJbytA@mail.gmail.com>
+ <03375a31-0ac6-47a4-b0dc-6327080e1622@linaro.org>
+ <b4c0761b-34f2-42ad-97e7-ab34ae776281@oss.qualcomm.com>
+Content-Language: en-US, fr
+Autocrypt: addr=neil.armstrong@linaro.org; keydata=
+ xsBNBE1ZBs8BCAD78xVLsXPwV/2qQx2FaO/7mhWL0Qodw8UcQJnkrWmgTFRobtTWxuRx8WWP
+ GTjuhvbleoQ5Cxjr+v+1ARGCH46MxFP5DwauzPekwJUD5QKZlaw/bURTLmS2id5wWi3lqVH4
+ BVF2WzvGyyeV1o4RTCYDnZ9VLLylJ9bneEaIs/7cjCEbipGGFlfIML3sfqnIvMAxIMZrvcl9
+ qPV2k+KQ7q+aXavU5W+yLNn7QtXUB530Zlk/d2ETgzQ5FLYYnUDAaRl+8JUTjc0CNOTpCeik
+ 80TZcE6f8M76Xa6yU8VcNko94Ck7iB4vj70q76P/J7kt98hklrr85/3NU3oti3nrIHmHABEB
+ AAHNKk5laWwgQXJtc3Ryb25nIDxuZWlsLmFybXN0cm9uZ0BsaW5hcm8ub3JnPsLAkQQTAQoA
+ OwIbIwULCQgHAwUVCgkICwUWAgMBAAIeAQIXgBYhBInsPQWERiF0UPIoSBaat7Gkz/iuBQJk
+ Q5wSAhkBAAoJEBaat7Gkz/iuyhMIANiD94qDtUTJRfEW6GwXmtKWwl/mvqQtaTtZID2dos04
+ YqBbshiJbejgVJjy+HODcNUIKBB3PSLaln4ltdsV73SBcwUNdzebfKspAQunCM22Mn6FBIxQ
+ GizsMLcP/0FX4en9NaKGfK6ZdKK6kN1GR9YffMJd2P08EO8mHowmSRe/ExAODhAs9W7XXExw
+ UNCY4pVJyRPpEhv373vvff60bHxc1k/FF9WaPscMt7hlkbFLUs85kHtQAmr8pV5Hy9ezsSRa
+ GzJmiVclkPc2BY592IGBXRDQ38urXeM4nfhhvqA50b/nAEXc6FzqgXqDkEIwR66/Gbp0t3+r
+ yQzpKRyQif3OwE0ETVkGzwEIALyKDN/OGURaHBVzwjgYq+ZtifvekdrSNl8TIDH8g1xicBYp
+ QTbPn6bbSZbdvfeQPNCcD4/EhXZuhQXMcoJsQQQnO4vwVULmPGgtGf8PVc7dxKOeta+qUh6+
+ SRh3vIcAUFHDT3f/Zdspz+e2E0hPV2hiSvICLk11qO6cyJE13zeNFoeY3ggrKY+IzbFomIZY
+ 4yG6xI99NIPEVE9lNBXBKIlewIyVlkOaYvJWSV+p5gdJXOvScNN1epm5YHmf9aE2ZjnqZGoM
+ Mtsyw18YoX9BqMFInxqYQQ3j/HpVgTSvmo5ea5qQDDUaCsaTf8UeDcwYOtgI8iL4oHcsGtUX
+ oUk33HEAEQEAAcLAXwQYAQIACQUCTVkGzwIbDAAKCRAWmrexpM/4rrXiB/sGbkQ6itMrAIfn
+ M7IbRuiSZS1unlySUVYu3SD6YBYnNi3G5EpbwfBNuT3H8//rVvtOFK4OD8cRYkxXRQmTvqa3
+ 3eDIHu/zr1HMKErm+2SD6PO9umRef8V82o2oaCLvf4WeIssFjwB0b6a12opuRP7yo3E3gTCS
+ KmbUuLv1CtxKQF+fUV1cVaTPMyT25Od+RC1K+iOR0F54oUJvJeq7fUzbn/KdlhA8XPGzwGRy
+ 4zcsPWvwnXgfe5tk680fEKZVwOZKIEuJC3v+/yZpQzDvGYJvbyix0lHnrCzq43WefRHI5XTT
+ QbM0WUIBIcGmq38+OgUsMYu4NzLu7uZFAcmp6h8g
+Organization: Linaro
+In-Reply-To: <b4c0761b-34f2-42ad-97e7-ab34ae776281@oss.qualcomm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-On the ASRock Rack B650D4U, requesting GPIOP3 through gpiolib does
-not provide working host power control when the GPIOZ6 pass-through
-strap in SCU51C[9] is set.
+On 10/14/26 18:36, Konrad Dybcio wrote:
+> On 10/14/26 11:44 AM, Neil Armstrong wrote:
+>> On 10/14/26 11:29, Chen-Yu Tsai wrote:
+>>> On Wed, Oct 14, 2026 at 5:28 PM Neil Armstrong
+>>> <neil.armstrong@linaro.org> wrote:
+>>>>
+>>>> On 10/14/26 10:20, Chen-Yu Tsai wrote:
+>>>>> The DWC3 controller can operate in host mode. It does so with a XHCI
+>>>>> compliant host controller. The XHCI has two downstream ports, one for
+>>>>> HS and one for SS. USB downstream ports start from 1, not 0.
+> 
+> [...]
+> 
+> 
+>>> IMHO having consistent numbering across controller types would be
+>>> better. This avoids making the USB core and hub code deal with more
+>>> exceptions, and also easier to understand and write device trees.
+>>
+>> I was in the impression the port number not necessarily reflects
+>> an actual physical numbering, and can be a logical number we would
+>> then map in the kernel.
+>>
+>> I don't see any issue here having base 0 for the bindings and then
+>> converting it to base 1 for the XHCI port numbering.
+> 
+> I thought base1 comes from the USB spec and not just XHCI?
 
-With the existing GPIO request path, SCU4BC reads zero, but a host
-power-on request through x86-power-control times out waiting for
-power-good:
+This is my question, is the spec says: each USB Host Controller root
+port shall be considered as a port of a Hub and numbered the same way,
+then fine, let's use the base1 numbering.
 
-  SCU4BC = 0x00000000
-  SCU510 = 0x00000000
-  SCU51C = 0x00001e80
+As I understand how USB is architectured, all downstream ports of Hubs
+are numbered in base1, and the whole topology is based on that.
 
-The AST2600 A3 datasheet describes SCU51C[9] as an additional
-pass-through enable for GPIOP0/P1, GPIOP2/P3 and GPIOP4/P5 when
-SCU510[30] is clear.
+But here, we are speaking of physically separate USB busses, one
+USB2.0 and one USB3.0, a controller could also have 10 USB2.0 ports
+and 5 USB3.0 ports, who knows. The way those will be numbered is not
+part of the specification because the specification only the defines
+the topology of an USB bus, like PCI(e) defines the topology on a PCI(e) bus.
 
-A diagnostic experiment that cleared only SCU51C[9], preserving all
-other bits, allowed the same GPIO-only power-control implementation
-to power on the host:
+How we aggregate all those busses to abstract them to software is not
+part of the spec, we chose to declare a fake root Hub with a physical
+downstream port as a virtual port of the root Hub, fine but this is
+purely software abstraction.
 
-  SCU51C: 0x00001e80 -> 0x00001c80
+We may only use the hardware IP port numbering in the bindings, not
+the software abstraction.
 
-SCU4BC and SCU510 remained zero. No per-operation THRU1 switching
-or additional userspace delay was required.
+We could use the base1 to describe the DWC3 ports, but how to describe
+all the physical USB busses a controller can expose ? We may not limit
+the bindings to USB2.0 and USB3.0 ports only.
 
-Add an AST2600-specific GPIO request callback that performs the
-existing GPIO mux configuration and clears SCU51C[9] for GPIOP0-P5
-when SCU510[30] is clear. Check register access errors and verify
-that the strap bit cleared. Other GPIOs retain the existing path.
+How about the USB4, does it use the USB3.0 port ?
 
-This RFC handles only the GPIOZ6 strap source. It leaves SCU51C
-unchanged when SCU510[30] is set and returns -EOPNOTSUPP for
-GPIOP0-P5 requests when SCU510[28] is set.
+Neil
 
-Hardware testing on B650D4U with this pinctrl candidate confirmed:
+> 
+> Konrad
 
-  - Remote power-on: power-good asserted.
-  - Remote graceful power-off: power-good deasserted.
-  - Physical power-button power-on.
-  - Physical power-button shutdown.
-
-These tests used x86-power-control with software button forwarding.
-The earlier board-specific SoC driver, its DT node, custom sysfs
-interface and diagnostic boot parameter were not used.
-
-This replaces the approach explored in the withdrawn B650D4U
-power-passthrough RFC. The new proposal changes the existing pinctrl
-driver and introduces no DT binding or userspace interface.
-
-Feedback is requested on two unresolved issues:
-
-  1. SCU51C[9] is shared by all three GPIOP pass-through pairs.
-     Clearing it for one GPIO request may affect forwarding on
-     another pair. How should that shared control be represented
-     and coordinated with existing mux ownership?
-
-  2. The SCU510[28] enable path has not been validated. Returning
-     -EOPNOTSUPP is a limitation of this candidate, not a proposed
-     complete solution for every AST2600 configuration.
-
-Is the GPIO request callback the appropriate place to handle this
-strap interaction, or should it be modeled through the existing
-signal-expression mechanism?
-
-
-Signed-off-by: Prasanth Kumar Padarthi <prasanth.padarthi10@gmail.com>
----
-diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
---- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-+++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-@@ -40,6 +40,7 @@
- #define SCU4D8		0x4D8 /* Multi-function Pin Control #23 */
- #define SCU500		0x500 /* Hardware Strap 1 */
- #define SCU510		0x510 /* Hardware Strap 2 */
-+#define SCU51C		0x51c /* Hardware Strap 3 */
- #define SCU610		0x610 /* Disable GPIO Internal Pull-Down #0 */
- #define SCU614		0x614 /* Disable GPIO Internal Pull-Down #1 */
- #define SCU618		0x618 /* Disable GPIO Internal Pull-Down #2 */
-@@ -2747,12 +2748,56 @@
- 	.nconfmaps = ARRAY_SIZE(aspeed_g6_pin_config_map),
- };
- 
-+/*
-+ * GPIOP0-P5 have a global strap-controlled pass-through enable in addition
-+ * to their individual SCU4BC mux bits. SCU51C is ordinary RW, unlike the
-+ * write-one-set SCU510 register. This candidate handles the GPIOZ6 strap
-+ * source only; the SCU510[28] enable path needs separate validation.
-+ */
-+static int aspeed_g6_gpio_request_enable(struct pinctrl_dev *pctldev,
-+					 struct pinctrl_gpio_range *range,
-+					 unsigned int offset)
-+{
-+	struct aspeed_pinctrl_data *pdata = pinctrl_dev_get_drvdata(pctldev);
-+	struct regmap *scu = pdata->pinmux.maps[ASPEED_IP_SCU];
-+	unsigned int strap2, strap3;
-+	int ret;
-+
-+	if (offset < AB22 || offset > AB23)
-+		return aspeed_gpio_request_enable(pctldev, range, offset);
-+
-+	ret = regmap_read(scu, SCU510, &strap2);
-+	if (ret)
-+		return ret;
-+	if (strap2 & BIT(28))
-+		return -EOPNOTSUPP;
-+
-+	ret = aspeed_gpio_request_enable(pctldev, range, offset);
-+	if (ret)
-+		return ret;
-+
-+	/* In dedicated-strap mode, SCU51C[9] does not enable pass-through. */
-+	if (strap2 & BIT(30))
-+		return 0;
-+
-+	ret = regmap_update_bits(scu, SCU51C, BIT(9), 0);
-+	if (ret)
-+		return ret;
-+	ret = regmap_read(scu, SCU51C, &strap3);
-+	if (ret)
-+		return ret;
-+	if (strap3 & BIT(9))
-+		return -EPERM;
-+
-+	return 0;
-+}
-+
- static const struct pinmux_ops aspeed_g6_pinmux_ops = {
- 	.get_functions_count = aspeed_pinmux_get_fn_count,
- 	.get_function_name = aspeed_pinmux_get_fn_name,
- 	.get_function_groups = aspeed_pinmux_get_fn_groups,
- 	.set_mux = aspeed_pinmux_set_mux,
--	.gpio_request_enable = aspeed_gpio_request_enable,
-+	.gpio_request_enable = aspeed_g6_gpio_request_enable,
- 	.strict = true,
- };
- 
 
