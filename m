@@ -1,94 +1,93 @@
-Return-Path: <linux-aspeed+bounces-5196-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-5197-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C3F0CC6B39
-	for <linux-aspeed@archiver.kernel.org>; Thu, 15 Oct 2026 16:00:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EB263CC6B2D
+	for <linux-aspeed@archiver.kernel.org>; Fri, 16 Oct 2026 04:28:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j5CTL1S1Jz2xMQ;
-	Fri, 16 Oct 2026 03:00:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::1131" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792080022;
-	cv=pass; b=SHJAAguf8g985Famq9CR8Yq7uMiAM14fMaPRyIGYTHekQ4NfjQ1wwxprNBll2+AjHFVugFuXpEuBCEsephrfg7/IwzVjVXywTDTooIKpJXXd+bYMJz2FjgJChJfpuGr7uphAo4gTKtHidg/Ev3w9YYrk+J7v/VeSrNE/HS2+9FGbfPM5MGqsSSF/s+eWEAy3cOBQ1UtvQMmEdwZMDxmau7Hv5qHhRBiiKeA50YiJ7cMhCiHmglyiQTrQH4nAAWN+v1e0GPRCNndr91cxqkFAROmAi+Ishqx76PiO2dbXBPg9EiJycXoJN2QefXfN1pwo+/Pcm23Q+tRFk8ueR/DnUA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792080022; c=relaxed/relaxed;
-	bh=EpiamPpg7tsWlSrLw5y7LmqhMB0UGS6DfO66CA4pLkg=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Q8aodpXPn/GL+Yr6aDhhFg3sEyNDimmUxyXUSeOLy4+D5886Rl9fE3LQP8+eNv1cL68xqwQOEyK8KuzO1C8sar/RYAGS0B0t77lIG6+hCkYX0nyX/ShfeSOoLzrQKMS7cImQw14hVmNdBVPNyGkOw67tuh85iSNLZwQLkw5PMqvynnTJLvtZ38n04lzH7Xv/YoPX4V7/9apuuFS4ReU4X/hy1eqPAsvz57diyjmXOeG22KdFnq+fyAIFh1Eo2URbWm4yE1Nn5DPV6qtssv6XywiYRaGV5+i9ZgiaGxDswLsPtC7y+EdxlTHJmg0ewz1MbMuVyQcuVtaMOJT5/8ucrA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=fB/jsV6a; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1131; helo=mail-yw1-x1131.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j5X4P2pNrz2xHG;
+	Fri, 16 Oct 2026 15:28:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::72a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792113621;
+	cv=none; b=MRJVMj8hiDa6U72uqmWmO1yj+c2bunpY31H1kMtcLZiw0RBaLHbY34rXhwJdMpDm9L0rmdE89bsK8eywevLM4JkXKYtc9kTBImsnfPqELSzf/sPHYjtzUMQRLK8M5dWbicWcn7Tk9GRQdsnCDefoguVMwj0tmR7JqzjINGW5UOTsWG6ENHLgcy0Ci8F2lgt8XUWb2Xv8LR55asnHmqhkADFUBY9JRAKjCq8fu4VzlcoyBkYhccMSpvxF3Ov8cNz2Wr/FX/6Ft+m9iaygTXYnOMGIotDB4c29e4f0zqQ5iIm+E//4a9bAKaJaGR7qOqup5D8qqTJwQTsi0P1QV9rGmw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1792113621; c=relaxed/relaxed;
+	bh=PtpsWlwRVaneZFjF+7ofxpGp4s57Txr3eN6Q7YNC+/E=;
+	h=From:To:Cc:Subject:Date:Message-ID:Content-Type:MIME-Version; b=i40cK2xI8JxaaBRVlJ1KhhuX3LWHPd7mX7WoBbrPAAOKALPA8Q+XKxHRyHr2zw39XQxX/nUKWaheAEja5TmqjX/5Bel4/dW6FdRCvqs0PlkY1WdpgGH5buL1ho+cyZ9pBQcT2AtqZYRufa75YwU3D2CUEVsAVYjmkUQny3vnqUDJGlqmTXYoiKMyHiUbjYO4bKjHb/u8EOp8BwSArd8IPgmhgLMPJYeBfYBMlfRHIocKs83Hj1enzkqmaJg4KaCPKPy1bFJXajCOsS/3nDqeeJrg9uNQyBrLY2RUpFRX9d3wP+p3tbgITSvmxd9bIFbUzH6VxZSQm5rQ2XN9UHruKA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=N7m2e/vi; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::72a; helo=mail-qk1-x72a.google.com; envelope-from=mhun512@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=fB/jsV6a;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=N7m2e/vi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1131; helo=mail-yw1-x1131.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yw1-x1131.google.com (mail-yw1-x1131.google.com [IPv6:2607:f8b0:4864:20::1131])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::72a; helo=mail-qk1-x72a.google.com; envelope-from=mhun512@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-qk1-x72a.google.com (mail-qk1-x72a.google.com [IPv6:2607:f8b0:4864:20::72a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j5CTH6xZ1z2xLf
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 16 Oct 2026 03:00:19 +1100 (AEDT)
-Received: by mail-yw1-x1131.google.com with SMTP id 00721157ae682-8b09e07e149so23302897b3.1
-        for <linux-aspeed@lists.ozlabs.org>; Thu, 15 Oct 2026 09:00:18 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1792080015; cv=none;
-        d=google.com; s=arc-20260327;
-        b=lNgQ0HOsTJFWLLMkQOGUkvp3gJ+Oj0Ga5UOocfwYpcNo19DBU4aQ9vH9X+ULN6J9o3
-         Oklwl//kbyWUBsYrhr89H6TpJEXwUgAcFRiv2S8vc/4tDIeZL3J1ZSSPY+tVDmhocXKu
-         7QCUUbXldLFOYYXtOLrswWWyqcTHXtDGTvpSdnv/Hfp+EvTL/qsVojLZeW+JJ9R4Mr+l
-         w7cXimTFvCJhLxU4RIOAWiqepbUr55dSGToFBO/LkMfT0JONVbalc9okzIRid40OVxGc
-         fy5wps1B65YOcndkP4L6iG4SmPBpUeY/2EPfBNzMHGZkRo+ioVI/koa9mSEdxu+GL7g7
-         5ckw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=EpiamPpg7tsWlSrLw5y7LmqhMB0UGS6DfO66CA4pLkg=;
-        fh=/QTZIHYg51PM8am9qodHSNB1n+tesHxL22yFLxHdoR4=;
-        b=iBQ0xn7+uXWf/Za/Z51Rb76HF2i7SLlJI2ahySKowjyhQJ8uvU2ZNpxLNo/TeaYiGG
-         XTbu8lLUF0+GFqraw/h64MLrQRGjHzoDaHpE6dH1b6XtcymvbtFcONmKXxYO29pGryvW
-         Xv1MhzOLQH4VIqVH7N+cm/zgJPqflUJjq7xc2tVX7x0WEuAmmc/UFE3u9tIDWoIE6qAv
-         Y0J3eGVT6gyL5dPdKqsFPQ4t3P6LRVBxn1O592fdTsdy3BEMaUXxkIn1saWcPIeOqkqm
-         RsmWIoPOk/aP56VmoW64KnQW7w2N9xUYJKYY3hBMsqnCyOSnW4LzM7WlenJ1ygMPXoJF
-         aatg==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j5RvR3hMCz2y2B
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 16 Oct 2026 12:20:18 +1100 (AEDT)
+Received: by mail-qk1-x72a.google.com with SMTP id af79cd13be357-93f1e5d7450so2258185a.2
+        for <linux-aspeed@lists.ozlabs.org>; Thu, 15 Oct 2026 18:20:18 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792080015; x=1792684815; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=EpiamPpg7tsWlSrLw5y7LmqhMB0UGS6DfO66CA4pLkg=;
-        b=fB/jsV6a6afiS5qS0MtOUS8YYna2SzSOtSqhJc1CYci12/JVAyWTma9hIuDh6wDh0B
-         kr+r6SLDB2rAB2vlq7hpGxYueaadu7PeSexbCKwtgiY4HURC8axtwPlX8TOZuskOCw3/
-         HKZawnwKCMmhOaOcewYzqdINIa8nk64Os6T5o3l8irJe767LHuPqJIOB7A7QVtnHIQYr
-         9/rf8VHDziDgSr07Vv3ygYAr+V1m7+cGuEjsK0ggKStY+kLJSoNvKedFqf7aTwu6NRKP
-         jvIZBwqMRkQkl5R0c2iQaNLjS7lirs5dBfHXRymYWQTYow4XGS1qZRPWUiEZgGfa2/UV
-         s57g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792080015; x=1792684815;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=gmail.com; s=20251104; t=1792113615; x=1792718415; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:content-type:message-id:date
+         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=EpiamPpg7tsWlSrLw5y7LmqhMB0UGS6DfO66CA4pLkg=;
-        b=NkL4GqM15N3G4y8zI/CmneOE6hf4dcTu4UemqxinTFL23KcaSm+MM/A2LEYOW+PYBR
-         YP8ihD8WwxdzZMI+BbbPOmNvm8lnjVVNSowseFrStK0ZfO1KrYvnI+basbvgzIYL5uZK
-         BZQ/AGftlaqK1FI7AmQOojC4Fiqs7iQ8pZMBK5rvG5QrdXqW+yovNB8pgx4+HDIvIPBd
-         L3G+vp6shkHBor303hAK4W1g7ZqVblSqoJe3WQMO0LpBU0zC1UiPrw/sfirR/pa2feMz
-         PsPV8oPemWBw9U7rNtLW/+/AJlCuqX1ot69gCa6rUsGNPLHFlzGni4JXoGVNba3dneTr
-         ATDw==
-X-Forwarded-Encrypted: i=1; AKwUvBzfRQZbtKxPzvqG90tznm51d4pWqvMeE0P/xh3h8O07ck2c2ZvQWd+oCyM+Yb+psP6t0+vvVi68Z2yPb4Y=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYLcXlCWx37+SW6Ut7SJQ43Bg1xpVGpxeJ+socTcy1NCp2sxOL99
-	OFa37YYKkh/ZMrgGftPHlvRMBJirSc9spFImhYrRuj/m8NUjWpHy88NMwgbQEcH0S0b3qQA4v4M
-	jJmlNYfy1FMRCnF77pUS3wtB0uHimjik=
-X-Gm-Gg: AYBFou3K1tS+nb4761F3Rq8rvXx199m0knH19b44aJz5jta5HF8kS1ixyBz8Di5YlXZ
-	kvkgFXsJ9az71xIYdOQICsssNP8Ngtt1Dc+vmAlfAZcpJySWXS7vQBfLvrgmFrnT8k0jhTpLmf9
-	p/96XS2vJkiGhXpzMJww3OG4x/uky6Z6kBDbbV4oA6DTehH61wBEa5s7EagPGqwP52DWX6STJKX
-	U39A1eF05xHcfdYI186nzlAmCI547mJuw4ypSQi2kzPWzJHXC4WbHvgWJnOmYfvmZDTfi3Zu5wj
-	hCOEsLLE+u//1jco8q7p/8/pzebljhOj0gUWHwOxorVlyiJaFU69juvypQ==
-X-Received: by 2002:a05:690c:f91:b0:8b0:db26:88ae with SMTP id
- 00721157ae682-8b0db268c9bmr5613747b3.43.1792080014084; Thu, 15 Oct 2026
- 09:00:14 -0700 (PDT)
+        bh=PtpsWlwRVaneZFjF+7ofxpGp4s57Txr3eN6Q7YNC+/E=;
+        b=N7m2e/viTOK/wDi83lWdghoGSKdNPk7fK5xNNeZjVWkPX0YL/lpbESLR6Os/62eSud
+         SDcNdOunX3akCZZdnAzXjkJq6zwkUYDt2lhbpCnJm9z/DkfYCTvYd7AsHUcHAlCCayok
+         374DNT+UVI6JqTVkfHYFHlg4dIxkLL7u78Lu/iJ8dkUfhKhH1gx2jR6FYvpNwUghgZoz
+         MjZ4p8GvsqwA3DkQbHRaxG4OqEDG6pfi5TE27U5EeNSUomrcRvEkyELKFsxBcezGUPzW
+         m5UGLFI4CY0RRkC9fm1lbagMvUPldFrkurVictK1QgNYnSVKNqxXJCqZxAYTzag5kzTY
+         26SQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792113615; x=1792718415;
+        h=content-transfer-encoding:mime-version:content-type:message-id:date
+         :subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=PtpsWlwRVaneZFjF+7ofxpGp4s57Txr3eN6Q7YNC+/E=;
+        b=Qjw+fO16F1z+P4EwaL5NbMSngmQA5p4ueb5LdBml2EfwnRTDVg52DbWV4z+edxVtaJ
+         yP4X6iU0uiD6MCCeA2TVac6Q9TaPHprIPp98pt8HoruSEmHfAAOZbWEnelbQSt5z1Svx
+         cN0cyKzSJz+5W5kVWAUKPrlN2i8BeAkDlxZ2nuxp/C1AuJA7ujJwqgk/+mR/VDZfkkkz
+         QlOJCGZTyWerfvB6bSP9UyzG9zponHxL2/nVMeuoy6MgVL3xzF+INmxBNLg6C5uT4DVV
+         7Dpr/tDynSlFbsYQvmWuBjAcnHJ+5tF7oro0IUE7GJwKdH009SpWbr+jOy4Cd56lKZfl
+         fDFQ==
+X-Forwarded-Encrypted: i=1; AKwUvBxG5/ioglBJyir++9Q6OsbC7xRAnSzGGreXpRkjc/f9vMN5CWJzH6IQk1oPndT/wGx+o2z5FVhe5wUfWmM=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYKubzGXekLfcomZaGaCZOq6oDS38C1jH4VuvSfEMNafMDThmEE0
+	lMJ7hkXdY/eXqqX6BB46Zj5smMwLiB55AaVoOoeujuYTPKHXR+S2PZw=
+X-Gm-Gg: AYBFou2eApWJUJPTws81V0vCi4XYiGOycQoqukAjnDJT55RvFx6gs7zeozdXQfyyNd8
+	G9xfgq6Al7c2u0EKeoKoE++NluIydvBkR92NqcyTCxwZwyM86FCJh0jvAQD8jjVdJIu0+JLgeye
+	95pLdtsMBEBDojiPVS6caSwB8OJrjlXnqb/TyHDBmrtqY+OB0Uz+2Lc31hM6wk4Lub4CrkJJAKn
+	zsoHFcyiUzNe9UEET2ewcgnHq+FgtlVeAI75usLhNQ7YOYFXUzmuOfKN9hememGPQwD8MwaFZUI
+	mt1XnxWrON+SOhGdD9TKICd0/s4JRosLRTOk/RX2Evn4O4PeJ7X1W0R0Fk2PRvtcJV2pRoVa9Pp
+	1iFHMP4hjP8NpgwXuj8BES2RDIt2I22iM+czoSZCvvG3bZvyQUrcyILB83ZaWCtPdRJAyZlRILu
+	1u3pJMbPgor4cguKkkWmTlkifepuJic1Rcr7F1uiTAAxC/L9KmRXUMRB00iLY2bMJK3VxChmEF4
+	coa/sR7Jq3fhjkD4R6utQ11T/bnoM92b+/UsJHt1m0ak+XyelznDUWCgpXHYKiuKmyQ6dqwLOi3
+	YNOtVsA6X1g1OBXlQvUTyvPiCiMH
+X-Received: by 2002:a05:620a:6c01:b0:93c:23e4:359e with SMTP id af79cd13be357-93f1891428amr288853885a.50.1792113614608;
+        Thu, 15 Oct 2026 18:20:14 -0700 (PDT)
+Received: from i4-gl-tmk5904-1.ad.psu.edu ([130.203.156.90])
+        by smtp.gmail.com with ESMTPSA id af79cd13be357-93f1a1a990fsm76619985a.35.2026.10.15.18.20.12
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 15 Oct 2026 18:20:12 -0700 (PDT)
+From: Myeonghun Pak <mhun512@gmail.com>
+To: eajames@linux.ibm.com,
+	mchehab@kernel.org,
+	joel@jms.id.au,
+	andrew@codeconstruct.com.au
+Cc: ryan_chen@aspeedtech.com,
+	billy_tsai@aspeedtech.com,
+	linux-media@vger.kernel.org,
+	openbmc@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] media: aspeed: acquire IRQ after reset and clock resources
+Date: Thu, 15 Oct 2026 21:20:08 -0400
+Message-ID: <gm-top10-20261015191529-g65-295aa0ac5211@mhun512.gmail.com>
+Content-Type: text/plain; charset="utf-8"
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -102,79 +101,78 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <CAMFFDGh6XwYD-axu3brX0Tdt3PteJHHGo6oJaghzpvnEyzT58g@mail.gmail.com>
- <OSQPR06MB7252CC7FC2131D45457A1FA98B962@OSQPR06MB7252.apcprd06.prod.outlook.com>
- <CAMFFDGi-Zzwk33Rb2LPVOSz+XJa51iBQ3ZWEP6mLg4C362F=VQ@mail.gmail.com> <CAMFFDGgv0+sUL4V4itKw3pezB4MccYr1rGwrS6F0qwD=0HLB0A@mail.gmail.com>
-In-Reply-To: <CAMFFDGgv0+sUL4V4itKw3pezB4MccYr1rGwrS6F0qwD=0HLB0A@mail.gmail.com>
-From: Prasanth <prasanth.padarthi10@gmail.com>
-Date: Thu, 15 Oct 2026 21:30:03 +0530
-X-Gm-Features: AclHuK_aaHC138fG0PxG0zW83HUUPVrTWcZnddhJ4Q2cRZHfJqvDEmtIQg3W568
-Message-ID: <CAMFFDGjXyHVthH33ctkCYLu1LUFB3-b3HG2hQbtOyT3tSvy+bw@mail.gmail.com>
-Subject: Re: [RFC QUESTION] AST2600 GPIOP2/GPIOP3 pass-through with gpiolib ownership
-To: Billy Tsai <billy_tsai@aspeedtech.com>
-Cc: Andrew Jeffery <andrew@codeconstruct.com.au>, 
-	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>, 
-	"linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, 
-	"openbmc@lists.ozlabs.org" <openbmc@lists.ozlabs.org>, Joel Stanley <joel@jms.id.au>, 
-	Ryan Chen <ryan_chen@aspeedtech.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-Further testing shows that per-operation THRU1 switching is
-unnecessary. With SCU510=3D0 and SCU4BC=3D0, ordinary GPIO power-on fails
-while SCU51C[9] is set. Clearing only that bit allows remote and
-physical-button power-on/off using x86-power-control software
-forwarding.
+The threaded IRQ uses the reset and clock resources, but it is
+registered before those managed handles are acquired. Reverse devres
+cleanup can release the handles before the IRQ action has been removed
+and joined.
 
-Should this strap-to-GPIO handover be handled by AST2600 pinctrl,
-preserving other pairs=E2=80=99 routing, or by board firmware initializatio=
-n?
+On a resolution-change interrupt, aspeed_video_irq() calls
+aspeed_video_irq_res_change(), which invokes aspeed_video_reset() and
+accesses video->reset through reset_control_assert() and
+reset_control_deassert().
 
-On Tue, Oct 6, 2026 at 7:24=E2=80=AFAM Prasanth <prasanth.padarthi10@gmail.=
-com> wrote:
->
-> Thanks for the guidance. I continued with a private B650D4U experiment.
-> The experiment now reproduces the exact vendor sequence:
-> SCU4BC idle:                        0x0e000000
-> SCU4BC transition:               0x02000000
-> GPIO123 pulse SCU action: cleared
-> SCU4BC restored:                0x0e000000
-> On real hardware, OpenBMC now successfully performs:
-> - Host power-on through DBus.
-> - Power-good assertion.
-> - Graceful host power-off through DBus.
-> - Power-good deassertion.
-> The private implementation is intentionally B650D4U-specific and is
-> not proposed for upstream as-is.
-> Given that THRU1 and GPIO123 are mutually exclusive, what upstream
-> subsystem should own this temporary transition? Should the
-> power-control consumer coordinate GPIO and pinctrl states, or is an
-> Aspeed pinctrl extension preferred?
-> I would appreciate guidance before preparing a generic implementation.
->
-> On Mon, Oct 5, 2026 at 8:33=E2=80=AFPM Prasanth <prasanth.padarthi10@gmai=
-l.com> wrote:
-> >
-> > Since THRU1 claims both pins and is mutually exclusive with GPIO
-> > control, should the power-control consumer acquire GPIO122/123
-> > normally and select a temporary pinctrl state that disables THRU1
-> > before driving GPIO123, then restore THRU1 afterward?
-> >
-> > On Mon, Oct 5, 2026 at 8:04=E2=80=AFAM Billy Tsai <billy_tsai@aspeedtec=
-h.com> wrote:
-> > >
-> > > Hi Prasanth,
-> > >
-> > > On the AST2600, the THRU1 pass-through and the GPIO123 output share
-> > > the same path and are mutually exclusive, they cannot be active at
-> > > the same time, so having the pass-through pair also controllable
-> > > through gpiolib isn't achievable in hardware. This matches both your
-> > > observations.
-> > >
-> > > Could you help us understand the use case? If the pass-through
-> > > already handles the host power path, why is switching to GPIO control
-> > > needed at all =E2=80=94 rather than simply keeping THRU1 enabled thro=
-ughout?
-> > >
-> > > Thanks
+Request the IRQ after reset, clock and JPEG-table initialization so
+managed IRQ release precedes release of those handles. Add rollback for
+the JPEG allocation, reserved-memory association and prepared clocks if
+the later IRQ request fails.
+
+This issue was identified as part of our ongoing research while
+reviewing kernel code.
+
+Fixes: d2b4387f3bdf ("media: platform: Add Aspeed Video Engine driver")
+Assisted-by: LLM
+Co-developed-by: Ijae Kim <ae878000@gmail.com>
+Signed-off-by: Ijae Kim <ae878000@gmail.com>
+Signed-off-by: Myeonghun Pak <mhun512@gmail.com>
+---
+This fixes managed handle lifetime only.
+
+Compile-tested with Clang 22.1.2, W=1. No runtime or hardware testing.
+
+Base: 0fcb05b72344f40806cbe810de8872f1698bf053
+
+ drivers/media/platform/aspeed/aspeed-video.c | 19 +++++++++++--------
+ 1 file changed, 11 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/media/platform/aspeed/aspeed-video.c b/drivers/media/platform/aspeed/aspeed-video.c
+index a292275f6b7b..234001a93ad4 100644
+--- a/drivers/media/platform/aspeed/aspeed-video.c
++++ b/drivers/media/platform/aspeed/aspeed-video.c
+@@ -2232,14 +2232,6 @@ static int aspeed_video_init(struct aspeed_video *video)
+ 		return -ENODEV;
+ 	}
+ 
+-	rc = devm_request_threaded_irq(dev, irq, NULL, aspeed_video_irq,
+-				       IRQF_ONESHOT, DEVICE_NAME, video);
+-	if (rc < 0) {
+-		dev_err(dev, "Unable to request IRQ %d\n", irq);
+-		return rc;
+-	}
+-	dev_info(video->dev, "irq %d\n", irq);
+-
+ 	video->reset = devm_reset_control_get(dev, NULL);
+ 	if (IS_ERR(video->reset)) {
+ 		dev_err(dev, "Unable to get reset\n");
+@@ -2286,8 +2278,19 @@ static int aspeed_video_init(struct aspeed_video *video)
+ 
+ 	aspeed_video_init_jpeg_table(video->jpeg.virt, video->yuv420);
+ 
++	/* Release the IRQ before the reset and clock handles on devres unwind. */
++	rc = devm_request_threaded_irq(dev, irq, NULL, aspeed_video_irq,
++				       IRQF_ONESHOT, DEVICE_NAME, video);
++	if (rc < 0) {
++		dev_err(dev, "Unable to request IRQ %d\n", irq);
++		goto err_free_jpeg;
++	}
++	dev_info(video->dev, "irq %d\n", irq);
++
+ 	return 0;
+ 
++err_free_jpeg:
++	aspeed_video_free_buf(video, &video->jpeg);
+ err_release_reserved_mem:
+ 	of_reserved_mem_device_release(dev);
+ 	clk_unprepare(video->vclk);
 
