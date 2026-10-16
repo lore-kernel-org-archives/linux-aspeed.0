@@ -1,147 +1,80 @@
-Return-Path: <linux-aspeed+bounces-5213-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-5214-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 035C2CC6B38
-	for <linux-aspeed@archiver.kernel.org>; Fri, 16 Oct 2026 04:34:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC32CCCA464
+	for <linux-aspeed@archiver.kernel.org>; Fri, 16 Oct 2026 08:46:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j5XC23wTJz2yvW;
-	Fri, 16 Oct 2026 15:34:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c10c::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1791629274;
-	cv=pass; b=FMd5YINmCT/HEzxqqNjxCAoidBQ0c92KOtuXya/FQUK4/Rg2fMwCGqGkpfDcJcaCf9PHN1AwQ1H3trfId0b22Fq7aWq7ax7xG0hbNBG0AITY581ZPAErpVpCER/0dMzD6weyUP2FjhzZt7i8vblWTew+FdYgQnkXp9tiRTezi+TFTzC7r5hGQ+WLYRNqNylvnY9YX/xU2GYOqW+LPBkVodarPKtghwX8dvF1K6Vyg+TpHuYHMVunIp1dz4NqanQW9aop7/6Ha+gFIgSbKIFeI1lms1YS3Z5VY3EQDevDsxNmPgkovT+S+8VG+7qCa1Up8QgqKBzcXHX+kqu7Xddf9g==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1791629274; c=relaxed/relaxed;
-	bh=hzT5MYcpJCi3/IVo9ABpZofuFqCT89zqMrOsPNp3W3o=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=iY671WznQmKRgQ8lQyzp76f2gzw/j3LdpCLigZo8vF68ftsq9hrvX3tXyywbS2EHbhsZ0L/Lxl51pvY01zESKAOJxm/oxdQsJib+/vQLC4+psblofCzhp99fIfWkR5raHGP3y1MHmZ3yEf/ViGacS1FeeXzqW7Kjv5zqz/w7DKGntAKpTjJ3oLyo3xGMU6Hh9p3oWJt+pZl361lYJMys4EGKTuh3E9gZeqT2khbUVMjiTVdvyqoROpRgdebGAVts1snSuiZ0EmOh+Aa/so6JATzV1L4gEywFBaTKuq7S6BTQ/+pbEWs9vQgvd6XVM1IeQt75GPcOisvvmIoEMMY7vA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=phil.gs; dkim=pass (1024-bit key; unprotected) header.d=NETORGFT5377951.onmicrosoft.com header.i=@NETORGFT5377951.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NETORGFT5377951-onmicrosoft-com header.b=K2tspm4V; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c10c::1; helo=sa9pr02cu001.outbound.protection.outlook.com; envelope-from=phil@phil.gs; receiver=lists.ozlabs.org) smtp.mailfrom=phil.gs
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=phil.gs
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j5dpD6LrPz2yVB;
+	Fri, 16 Oct 2026 19:46:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::433"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792140388;
+	cv=none; b=kams1MwBCITkYfALQGJYKGT1ZVhXmFuUr2xgKAy4JWaMO3sg3kyRtmMi41il+Uk1LYL2+ZGRdOEJCy3opywCPbS0dNCg92au4iEn2D1QuM4PkosIv3mPgxqMooDnFRNm/6uhuF5XqJe/AzcuVZH0Gryr3HZu9L8s19NLV82cN5zv4r9DOvJsQ0LH4GExegCj08sJo+ttJBf3NPtt02X+QXNgjUXWOBzCFXXZEU+D5igeVZeBmb5ZeihtlTgjIt+bpA1tvCctROtZ7MxLT2yevB9mfGwzI65BDmg4bluepP3BVWVymTXhTBJqt81+35jj6bihZtQKez/JO8oRlMpLVQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1792140388; c=relaxed/relaxed;
+	bh=eP7FY3OQgnStG7pJcM3HLJIH3BqNv24XrFsKRwPXnqI=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=D1BWb+oGALogG7+DswMC5GGL5WglPj99NW/qOvUFWxks3O0uRnobNJyYquVNeiYmprIRAbK+mKdo20NvsUOTHYjqaw1iFiRU6tvxYdZlBtc6lNJmkk5jO2AJdH5UfxRAMGblNLboWQURyf6GnKz36WUPFaAWFJsX1281NcG5xPgT/I0tzzdhdkqgN4Y5jLx7E2jLz06KlTDB18dVUaXczgz5n+IVkSyA2khpB5T8z4808h0LQPwF9mclsj6l3cNaO3lr+aLYCxWRDMu/fMF6LK5UcaN2gbFRYltn5alZWODCGTfCc0JsnKgczWTdmEoI5wRtXUeRkSSTPatGAh/0IA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=JdA4i2J8; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::433; helo=mail-pf1-x433.google.com; envelope-from=kylehsieh1995@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=NETORGFT5377951.onmicrosoft.com header.i=@NETORGFT5377951.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NETORGFT5377951-onmicrosoft-com header.b=K2tspm4V;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=JdA4i2J8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=phil.gs (client-ip=2a01:111:f403:c10c::1; helo=sa9pr02cu001.outbound.protection.outlook.com; envelope-from=phil@phil.gs; receiver=lists.ozlabs.org)
-Received: from SA9PR02CU001.outbound.protection.outlook.com (mail-southcentralusazlp170130001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c10c::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::433; helo=mail-pf1-x433.google.com; envelope-from=kylehsieh1995@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x433.google.com (mail-pf1-x433.google.com [IPv6:2607:f8b0:4864:20::433])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j20n46FqLz2xsW
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 10 Oct 2026 21:47:52 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=mfu5tVawUoG+rszoasoPSX0STEZswkcavI2Hl3xsXVyzliRMIHn1PUVSXNrXuTzEQlVP2NlvVkHFuUZ5PFIya5I7y1kqunm4464uRdjYN4TAKToTtr8z0aXTtR+RpJZuaYrD+WOgp78h1cOIPWatS83FsKC+3pg8QVARy1+pYG6CdMoVQGqoyL7mc02n2N7Zk/HSlkz2vbPPj1igMf4AMl9p4whon3beE0xBaKvBr9LnkkSGjVH6QVvtlLEaVKKfD8IrAzDE6Z6JuFHkawt5RJmlLQMP5s1WbnK8UOwvFclh7gH9/+p9Wgxry0Up1ryzC46S6IvbhYXRELfzeNkr/g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=hzT5MYcpJCi3/IVo9ABpZofuFqCT89zqMrOsPNp3W3o=;
- b=lJJPMGsPKljL8GkYGJEmp5+YcOwHp3QdlqaDKohSMzy/ys3XpxZwmC9Zzov2C0vFOejWUGxeFB/796XF0FnS2y6PWT5qkfNF9sFOb8uZ46z5tNQqGguuimKavRq2purkGJEp4Qz51/5NBr5cX1iYGWsEd0QBjE1ITAWdgwu4JajnXves6tlRuDjngW/e1SBjIjhD8vaORBw1LZgUClA4pmU2T/IE8vJArWfdKlLysE3c8xjFbk9utcIodDN3zr3oQ8JDcVPcXk997L889Phc+4iW6PJ1WURlQzs338ahjE9W5dzx82Y76yBTZPVkWHyUKj4vHFdJXZJvAVTnnStogQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=phil.gs; dmarc=pass action=none header.from=phil.gs; dkim=pass
- header.d=phil.gs; arc=none
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j5dpC1xzCz2y2B
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 16 Oct 2026 19:46:26 +1100 (AEDT)
+Received: by mail-pf1-x433.google.com with SMTP id d2e1a72fcca58-89e018e466eso1114387b3a.0
+        for <linux-aspeed@lists.ozlabs.org>; Fri, 16 Oct 2026 01:46:26 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=NETORGFT5377951.onmicrosoft.com;
- s=selector1-NETORGFT5377951-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=hzT5MYcpJCi3/IVo9ABpZofuFqCT89zqMrOsPNp3W3o=;
- b=K2tspm4VYS2Cqb7tXoAuBHQYRpUcoQc/5Y1PggNZ1Bi+uQseyJvI7St/vjWQ0q5btnwUpWnFfxu8ZaZIw2w1XuhEF8V4VWqC2YUScZVWtjy62/TQ2K+XAZOouLbnnMMpzMbsvWjxH5t1rk1K/ZqFCqkd4g8qk08FD37xmuzwpUM=
-Received: from BY5PR04MB6472.namprd04.prod.outlook.com (2603:10b6:a03:1eb::10)
- by DS2PR04MB994386.namprd04.prod.outlook.com (2603:10b6:8:4aa::8) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.496.18; Sat, 10 Oct
- 2026 10:47:28 +0000
-Received: from BY5PR04MB6472.namprd04.prod.outlook.com
- ([fe80::3a9:9dbc:2aeb:8827]) by BY5PR04MB6472.namprd04.prod.outlook.com
- ([fe80::3a9:9dbc:2aeb:8827%6]) with mapi id 15.21.0496.017; Sat, 10 Oct 2026
- 10:47:27 +0000
-From: Phil Rosenthal <phil@phil.gs>
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-CC: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby
-	<jirislaby@kernel.org>, Corey Minyard <corey@minyard.net>,
-	"openipmi-developer@lists.sourceforge.net"
-	<openipmi-developer@lists.sourceforge.net>, Andy Shevchenko
-	<andy@kernel.org>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery
-	<andrew@codeconstruct.com.au>, Ryan Chen <ryan_chen@aspeedtech.com>,
-	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>, Ninad
- Palsule <ninad@linux.ibm.com>, Andrew Lunn <andrew@lunn.ch>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
-	"gregoire.layet@9elements.com" <gregoire.layet@9elements.com>,
-	"tan.siewert@9elements.com" <tan.siewert@9elements.com>
-Subject: Re: [PATCH] serial: 8250_pci: Add support for ASPEED BMC VUARTs over
- PCIe
-Thread-Topic: [PATCH] serial: 8250_pci: Add support for ASPEED BMC VUARTs over
- PCIe
-Thread-Index: AQHdVyjD7y+hjU8szkKNfIrsjPkQ17b06hAAgABQYgCAATTqgIAAK8AA
-Date: Sat, 10 Oct 2026 10:47:27 +0000
-Message-ID: <2F1931BE-F0F0-4F21-BED4-67080A40AEA9@phil.gs>
-References: <20261008-aspeed-vuart-v1-1-d2be17c99cd7@phil.gs>
- <CAHp75VdiO9tPX2vLqsX2-omNvs-YjkWWD-HOiqyDSzpJrrZ_5w@mail.gmail.com>
- <60996F21-A12C-4FCC-9D5E-9D188A4ADBEA@phil.gs>
- <CAHp75VdmMwXRQFKLG8c4yAsVA5=eFZA3jagtMGb-qVswcQ88Wg@mail.gmail.com>
-In-Reply-To:
- <CAHp75VdmMwXRQFKLG8c4yAsVA5=eFZA3jagtMGb-qVswcQ88Wg@mail.gmail.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-authentication-results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=phil.gs;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: BY5PR04MB6472:EE_|DS2PR04MB994386:EE_
-x-ms-office365-filtering-correlation-id: 659a039e-a834-40cf-7fd4-08df26bbe03c
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|19092799006|366016|1800799024|376014|7416014|23010399003|22082099003|10067099003|18002099003|261009223027099003|5023799004|4143699003|7055299009|38070700021|56012099006;
-x-microsoft-antispam-message-info:
- HtuA/LYTF9kyN7JZGdYcFLQwpCMCMcajtoZZPk86pfxGkSDEoA+idBnoYeSWYVBrp9IeUg505DzZ0K6QVcA2nnqWGiC2SZofCKbcqGEYOO6F5aIHfYtCcNVGYK2vu4zsItsLD/g2G0iK0XdPjcSEToyp+u9r+fgSNuZR2GyWYziCn828y1paERFJ8ltndrXRjRtI0JglcQWdyg4L/DkgYQuJakWpYiG/PTwq6EMOgA6S+WgbwwUvmZ3OPjTqCh3KHQfuuGIdNxoOo7PgpKthDpjgiqKNevOpR5ncFLyZ+V3x5/G1LsZic1V1VUFOQKDW3rFHepZzdgsX+Z5Wr/2Qy1f68KOtstP2CDTTX9qe0/5vfQ/147f2kOiSYYoL/Ze21eUfQCe/+1uXKBhsGHIUwZNJb1qle02wdDDv+ImQ0C8dZ7ZonA6qGEUFsApsIMW69rus9SQrQ4/Rt4s0FiOK/3hwWmFKd+4JsDJCjB49I+RjfBvRFnoeaqLBMibDzzDXceRY0JkiS+AlnHm3w8Aun/C6g3AESCKqT+TnT0grjdQbbPbqn9QyQiQuiXiJ6CUMqEOtY5pjXmZ/zOeAGlqlqBzjXi+vG1qIM1bripHj+mJhDDKmilJYoPBlFL+k+ChkSwpl05r14mmg/5Jd9Jl6H+t9cOYugmlThyhQL+5RMf/voA63dAT9dGIfbKktYYTJX8Um+slW3Kc0TlzPTE3oj3DY8Idq5avMWVjr26y1L6b2pNVP4aiDLVJdC6swXAvh
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BY5PR04MB6472.namprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(366016)(1800799024)(376014)(7416014)(23010399003)(22082099003)(10067099003)(18002099003)(261009223027099003)(5023799004)(4143699003)(7055299009)(38070700021)(56012099006);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?utf-8?B?VTA1T09ZRUd5am15bDNPUG4yTUdqdDhCU1NwSXdIOUZBQ3dFcUloSEw4QmdT?=
- =?utf-8?B?c0h6V09CQTJrK3FBOHVxakZ2MVNkbzAyZVFVMjhpUnFOOURyOUxicExjNDha?=
- =?utf-8?B?dkpGTEMzK0sydWZjRVRVUlFkOThOMVNPY0tlS1lDSklYTFord1RyOVVDS2Jk?=
- =?utf-8?B?Y2dVU1ZKak00b0R2TEEydGUzdDNYN3YraGlqVEh4WElvN0xwRTRHS0ZXeCtD?=
- =?utf-8?B?aW90Q2tsS1VPNEY4WkNNMlFQS3dCWkpQYW9DREc1MWxJT29qL2hwcW12VGln?=
- =?utf-8?B?MlQvWlp2aGhta3JEaUV5UllRM2F4M1B3UFBjS3AxeHZTK09IQTVuR09pa0J5?=
- =?utf-8?B?TVlpMkUvdTd2cXJkVkVRK1JTL056U2pvamhHd2Z5dVhRZHpCV1BzNHpJa0pN?=
- =?utf-8?B?d25tTGpXZHZWQ3JLZ0cwclVYWDQ0YWUrQXdwb01jelllbU5VRFpBeWpYM1k0?=
- =?utf-8?B?ZFY1amV5VWxDOWpKb2ZZaDkzOUtUWksvSE9GOUJDejZVMFZUTElFSmFVbG55?=
- =?utf-8?B?UndRaFZhMVJnU3ZicXJFYmtvVFdqSmE3UTBsVDRSeTE0SHdwUWU0MkhtZE1L?=
- =?utf-8?B?cmpUak9MWDV3RGRwSS81d1Nxa3FXbkZxOG1aWlpWclZkQVdSd0p1ZGJ3Rk8v?=
- =?utf-8?B?QmduMTIzYWcyM3Z3Nm5tTjl5OEd0Rms2cU5EYWlKY0Z1cVJXWHJxWC9rSitp?=
- =?utf-8?B?ZjVQZmgyNy9oQTVqUEg2S3lERlFscWNsbXNSS0l3Z3I5Rkl5ZmRiR1R5a3lH?=
- =?utf-8?B?UWtsYUxXVEVDYWFIczI1RDl1cHpINGw5dVRFSmF4dmpURHdmWXphY2F5R0gy?=
- =?utf-8?B?dWRlUEc0NVhCSmhqM2Z0RlVDY20xMys4NzVVT3cwYUpYYUIxRVlSMk4wZ25W?=
- =?utf-8?B?b0U1NU9UWGpna3l1TXdpZmxtT2Z2VzR3UXkvbmtCVFpNZVhGKzVVYXlWdzZN?=
- =?utf-8?B?cGpxRmZ4bVczRXZXSVU3SjJ4NVRDblN2RXRROTNOU0JDenNpcUI2ZnNNYS9v?=
- =?utf-8?B?T0hMUk9GNUc4Tzh6TzlremFKNDh6dUZSOEFoWi9QS0RCRXBHZWo3cDRZQU5B?=
- =?utf-8?B?YWRoV3gxQlVwRnQrWTJ6bDByZEdGUEdPWkUyWVRTZWZxc05CL1c4dmtTczhS?=
- =?utf-8?B?WEw1Rm1mbE1WV1o1SFZoK2tQcGRlbnY5bVlMbFNHcUVJK3JwTCt4Z0VNSkZk?=
- =?utf-8?B?dGlZczlXZlI0VDc1bjFUTndJTmlRNnQ0ZExzaFUvYythVzZhSmdPcHpDNnZF?=
- =?utf-8?B?V2piNzlYSHB1aUNKbHFEa3N2YmVPODlrYm92Qmc2MityNjVGdnR2UVBFbnpB?=
- =?utf-8?B?SGllYytiVWRPMmlBd1VrRStUekRVWmdQYm1rV29VV1Q2WlQxWDMxMWRnZHB0?=
- =?utf-8?B?UmdBSDBHaUZHSzN5b1IzUjhUWlBRYW1naTZFNSs5TlFRZzNaZTRTRGNuUDc4?=
- =?utf-8?B?VmxXS24vMlM5VGo4M3RpTHBzZGNrUnB4ZFpzeTBqR1hnZHR0WDZ4bUtVcVMw?=
- =?utf-8?B?Zk9zL1VmNndleFNtT2NoSkJCOFJ1ZElud2l6NFpOQUlUVmVFd0FnQ1B1eldk?=
- =?utf-8?B?Q2xmV1hBRmU2L2xQa05IRjhsUnBsa3NpSFhEcWVweTVrREFZSUdqNWlJaE5x?=
- =?utf-8?B?emowVDZaQi95aWNvaVNOc3BsdEtvOCtEZHFFMzI4TWhpVnFXNmh5a2FPUC9v?=
- =?utf-8?B?Ri9DczlNVWlwMDcxYTlBRytCV1NkZXo5U0lKT0VXM1pya1EwNVVqUUNjRWt5?=
- =?utf-8?B?OFU1N1Z6UFZXb1pZWlpLYk1vcUlTejhYYjBTNG1SQXNXdHNnbjV4U293aWwz?=
- =?utf-8?B?Y3Q4RHhISGVkdFhlMjFnalhRbHJOT0tqRzB4RzV2Zk81RWlXSng2MlUrQXlV?=
- =?utf-8?B?SEpMWGxieVdmbU1lclZNUldhZHNnZHkvcTZXaFpJNFlEU2RndUprcGxFRGk0?=
- =?utf-8?B?YkV3NXlxNmFXTTc4U1lZNENSZjNHME02aTNDVXBTZzdSYXN4SmVLbmxsQ0di?=
- =?utf-8?B?R3hvdS9hZTZWOXJwMXdsZ1V1RTBVZ3BlM3lHcWtSZWJaZG5XMTVKbWJxQ0tM?=
- =?utf-8?B?cExyUGd0YWVwOXMzdkhjbmFSRHpuM3MxNDY4c3V5MkF2S0NNREZ1NDVXVjgy?=
- =?utf-8?B?S3dNV2pGWWdwNU0wdGR5ejlyMzhLeG9EaWRHOEt3eHUxbGxwdDk3SnlJUjAw?=
- =?utf-8?B?K2hBeTZta0k5S0JFVGJDRlBGUG9IRHpDblByVHdRTC9DTGFaQkNFdXlMRWlq?=
- =?utf-8?B?RlNrM2pwUzhqczgrWWRjcW0rQ0tsL2FhZ1IrOTRrY1ZRSXFlVGFMUkxQSGtI?=
- =?utf-8?Q?fCxxysL+sV2qF94Glo?=
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <C70386B234899A449252C40184CBB21D@namprd04.prod.outlook.com>
-Content-Transfer-Encoding: base64
+        d=gmail.com; s=20251104; t=1792140383; x=1792745183; darn=lists.ozlabs.org;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=eP7FY3OQgnStG7pJcM3HLJIH3BqNv24XrFsKRwPXnqI=;
+        b=JdA4i2J85dQzrXO87upfv+yaRev21Z5YBONQzwAktrFxReLRGN8vDmjeoTwRaVUeIh
+         0YIQ9U7lg3QVzJu6Vifw2l6bvuSyZRHBKt1GcGZPsD8ceHcD5E0iDDfiuivef4TglsM7
+         vwwC4tmJ+4YoLMQGV5JABqhLUjuqL4FppI6pAig6drHoeaN9z9gzUvG1HYvjqTF2AqYV
+         nF0C43C+dQ8PzHP5w6UUkxUuuN9hJVARYILMojmVgU1rq9FTPUSaDPa1NLgk6qV44qE4
+         Wh3lFs3+EQ8f9E4Pu6VJKnCB2fn0nF1cfDmA6+EddgKUWQpXPD1FDZE4/27AXF2YiXnw
+         7XXg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792140383; x=1792745183;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=eP7FY3OQgnStG7pJcM3HLJIH3BqNv24XrFsKRwPXnqI=;
+        b=ceq69yALNW26ek5C1gXN3l52pu9Cn4WL01gayTr7w0KMbXGwg1YGjjVF0onASSmJZO
+         ccjEqxddTeTT/cVRwbwVLkNpKeJNLyn+qZGzjp81PDyEN80CUGYGOQkqELh3OdxSv1JG
+         rHDoxJu//ScuXSBOZExrRSbx1ilAnB0TjDM2F/6rsXJaQEkd7pIherIkrM8ia0m+0JhH
+         tKluIs7kE/N5oq5NlhqWypSQx8W6Avz8zHBS6tH3c2plD8ZEqP+nhS+5jTynWnxoGB9m
+         Ohi7pBYunWxcGjHnNbGp8Qnh+k5UJk5xHCqpo1tiZwKrT09WV4IFPA2FnpW+MQO6q/dC
+         rYgQ==
+X-Forwarded-Encrypted: i=1; AKwUvBwfL4xZwAziY8GNTAHAUpj5+VYfMrvEvOrieN5sNUG4gTqQ5qhgA681kd7yM0Pn0WdFdlE4W2r2FHVhMno=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYLqgE4v0a5ex5Zx+3FVqax1wDXrllUekGdJ1aL5NVeFvKVN5hrQ
+	ykG0O1OEN+6f2O9pdPujJ/UQ+NL1jbDR2izR7IAt+N8LzccykxIQvXW7
+X-Gm-Gg: AYBFou3AGHryovI/5uNIRoR9NWtdedZWtqItMlhAF2xECKr4iHpe5RbUd5uloXictei
+	vMf9eDUCb+Ix+1/iUD5KUByK0tUoRwhXiQpRfpf/SuS4LJTdVzw9m5vFFJsjfUnaOAwVOHIijb2
+	/nI9fGJi/GRN+9I5A+bWHR6YCQmwIOnyf/XNv5ssraWJ/2/W1B8XIH40U4t19u+b3eQixOn1Ykp
+	st9NVON9yW51ejqQxc4Vz8QnkAqM5jF8FKoFhZcTnqHWxBdqFbZe1QA/rMuku3TT4QEo7p/tqD7
+	oRVPwEdrWzANZD6T2aQP/yDb4S7qwAlaP4hlAx3l1q5iFV2R8MONb5FZ3y6LycQGLah3rW5yNBj
+	0czn4k8sZ94ULsXZPKQ5FP2rQExlvoD4mWNhuEOucp5o/enSjSyr8SLDJkkUEKLoLiYHtpHMubP
+	du7LKoQtcmj6E3Fq/JP/6uOUzQNxIWTaTKjq0VM+wukucNKR/NrSrQx2TVmnQlOUgoIbYhOxISi
+	wj80IIiQPTyaXXen+FlMPQia5eBQqfvaQphk7oeQhNvbBYp
+X-Received: by 2002:a05:6a00:178f:b0:886:18b2:361c with SMTP id d2e1a72fcca58-897c3ef946cmr17880250b3a.7.1792140383169;
+        Fri, 16 Oct 2026 01:46:23 -0700 (PDT)
+Received: from [127.0.1.1] (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-89f57947b0esm756620b3a.39.2026.10.16.01.46.20
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 16 Oct 2026 01:46:22 -0700 (PDT)
+From: Kyle Hsieh <kylehsieh1995@gmail.com>
+Subject: [PATCH v10 0/2] Add Meta(Facebook) ventura2 BMC(AST2600)
+Date: Fri, 16 Oct 2026 16:50:28 +0800
+Message-Id: <20261016-ventura2_initial_dts-v10-0-a546659a084b@gmail.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -155,113 +88,160 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-OriginatorOrg: phil.gs
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: BY5PR04MB6472.namprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 659a039e-a834-40cf-7fd4-08df26bbe03c
-X-MS-Exchange-CrossTenant-originalarrivaltime: 10 Oct 2026 10:47:27.2430
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 47d4f979-ea6f-4fcb-aea9-39371d64bc6b
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: HtLR086Yf+9XPYHl3/GQ61Oyj8amIl03cKk6of1Rc/EtzaCzAO5WfbinAAKqedbg
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS2PR04MB994386
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAFTl0WoC/4XQ3WrDMAwF4Fcpvl6GLNuy3au9xxjFv62hTUeSh
+ Y3Sd59bGA0pZpfngD4JXdiYhpJGtt1c2JDmMpZzXwOHlw0LB9fvU1diLRgCKo6I3Zz66WtwuCt
+ 9mYo77uI0dhasF6h1JFKsjn4OKZfvu/v+UfOhjNN5+Lmvmfmt/QeceQcdz0CcKGjjxNv+5MrxN
+ ZxP7AbOuERkA8GKZG6FdypK0E+I+EMIOBcNRFQEo8/RkVNe6jUiH4hsXiIrYoA8QHJScLlG1AM
+ hMA1EVUTolJQPWRlPa4QWCIcGQndERZNs1MnnNaKXCG8guiKOeDQW0Af1hJglohqIqUgwNlsMB
+ uTzY+0D0agbiK2IAhkgBTIg7BK5Xq+/B4rCleECAAA=
+X-Change-ID: 20251222-ventura2_initial_dts-909b3277d665
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
+ Andrew Jeffery <andrew@codeconstruct.com.au>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+ Kyle Hsieh <kylehsieh1995@gmail.com>, 
+ Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=6891;
+ i=kylehsieh1995@gmail.com; h=from:subject:message-id;
+ bh=Dw70fL2b0plUD/9OzGbqtTAJXKQCheRPU6+zb6qN4o4=;
+ b=owEBbQGS/pANAwAKAaWDQrcJVsSBAcsmYgBq0eVZpleBCZqqfNsYKGcsYjmdftXDSEKwmFEz/
+ Fk7HceNwaGJATMEAAEKAB0WIQTJHsaNZOdY+THGqJelg0K3CVbEgQUCatHlWQAKCRClg0K3CVbE
+ gZmbCADETLjO/mJloOC5b2aXbOyfCVndZI+m6BIevSwUcj90wTGsuiJwyVFTkmwFuzK6d/Jqnm0
+ 7rl4PZZ6NYSnW84hkE6fCnYI1vRQqZbUTn7eNCdqoMneyMYztF6LlAUnMRfa9oO5t3eyNYs/Cni
+ pfq/fwmOLt6/Q9y9+ZFUH0F6I2nM8KMw+xN4krxRpLEfFtbQvWcZT9AzeCiI+UKVv9+ibA09SfS
+ jE30Cwlj7GFRpw5hqVi7xQbp9LJjblBjmehWjXJCBzGgFiZAEL0YDMOoMcsDJtormME6XE+gdJy
+ +qfWkotAWp2NKPuOxZOKOrwARqrIe/OUFwgL3p6RrAmvrffg
+X-Developer-Key: i=kylehsieh1995@gmail.com; a=openpgp;
+ fpr=C91EC68D64E758F931C6A897A58342B70956C481
 
-SGkgQW5keSwNCg0KT24gU2F0LCBPY3QgMTAsIDIwMjYsIEFuZHkgU2hldmNoZW5rbyB3cm90ZToN
-Cj4gSW4gdGhlIGNvbW1lbnRzIHRvIHRoZSBwYXRjaCB5b3UgdG9sZCB0aGF0IGlwbWlfc2kgbWF0
-Y2hlcyBpdC4NCg0KWWVzLCBpcG1pX3NpIGJpbmRzIHRvIGl0LCBiZWNhdXNlIHRoZSBmdW5jdGlv
-biBoYXMgdGhlIEtDUyBjbGFzcyBjb2RlLg0KQnV0IGl0IGNhbid0IHVzZSBpdDogaXQgbG9va3Mg
-Zm9yIHRoZSBLQ1MgcmVnaXN0ZXJzIGluIEJBUjAsIGFuZCBoZXJlDQp0aGV5IGFyZSBpbiBCQVIx
-LiBTbyBpcG1pX3NpIGhvbGRzIHRoZSBkZXZpY2Ugd2l0aG91dCBkb2luZyBhbnl0aGluZw0KdXNl
-ZnVsLCBhbmQgbm90aGluZyBkcml2ZXMgdGhlIHNlcmlhbCBwb3J0cy4NCg0KPiBXaGF0IGhhcyBQ
-ZXJpY29tIHRvIGRvIHdpdGggYWxsIHRoaXM/DQoNCk5vdGhpbmcsIGl0IHdhcyBvbmx5IG1lYW50
-IGFzIGFuIGV4YW1wbGUgb2YgYW4gODI1MCBQQ0kgZHJpdmVyIHRoYXQNCmxpdmVzIGluIGl0cyBv
-d24gZmlsZSBpbnN0ZWFkIG9mIDgyNTBfcGNpLmMuDQoNCj4gSSB3aWxsIGxvb2sgaW50byB0aGlz
-IGRlZXBlciB3aGVuIEkgcmV0dXJuIGZyb20gdGhlIExQQyAyMDI2IHRyaXAsIGJ1dA0KPiB3aGF0
-IHlvdSBhcmUgZG9pbmcgc291bmRzIHJlYWxseSB3cm9uZy4NCg0KVGhhbmtzLiBJbiBzaG9ydCwg
-Zm9yIHdoZW4geW91J3JlIGJhY2s6DQoNClRoaXMgZGV2aWNlIGNvbmZ1c2VkIG1lIGF0IGZpcnN0
-IHRvby4gT24gdGhlIFN1cGVybWljcm8gYm9hcmRzIEkndmUNCnVzZWQsIHRoZSBCTUMncyBzZXJp
-YWwgcG9ydCBzaG93cyB1cCBhcyBhbiBvcmRpbmFyeSBDT00gcG9ydCAoSS9PDQoweDJmOCksIGFu
-ZCBTT0wganVzdCB3b3JrcyB3aXRoIHRoZSBzdGFuZGFyZCA4MjUwIGRyaXZlci4gT24gdGhpcyBB
-U1VTDQpib2FyZCwgZXZlcnkgZGV2aWNlIHdhcyBib3VuZCB0byBhIGRyaXZlciwgeWV0IFNPTCBz
-dGlsbCB3ZW50IHF1aWV0IG9uY2UNCkxpbnV4IGJvb3RlZC4gVGhlIHJlYXNvbiBpcyB0aGF0IHRo
-ZSBzZXJpYWwgcG9ydHMgYXJlIG9ubHkgcmVhY2hhYmxlDQp0aHJvdWdoIHRoZSBCTUMncyBQQ0kg
-ZGV2aWNlOg0KDQogIDA5OjAxLjAgSVBNSSBJbnRlcmZhY2UgWzBjMDddOiBBU1BFRUQgVGVjaG5v
-bG9neSwgSW5jLiBEZXZpY2UgWzFhMDM6MjQwMl0gKHJldiAwMSkgKHByb2ctaWYgMDEgW0tDU10p
-DQogICAgICAgICAgTWVtb3J5IGF0IDg0MDAwMDAwICgzMi1iaXQsIG5vbi1wcmVmZXRjaGFibGUp
-IFtzaXplPTFNXQ0KICAgICAgICAgIE1lbW9yeSBhdCA4NDEwMDAwMCAoMzItYml0LCBub24tcHJl
-ZmV0Y2hhYmxlKSBbc2l6ZT0yNTZLXQ0KDQpUaGUgc2Vjb25kIEJBUiBoYXMgYm90aCB0aGUgQk1D
-J3MgS0NTIHJlZ2lzdGVycyAoYXQgMHhlODgpIGFuZCB1cCB0byB0d28NCjE2NTUwLWNvbXBhdGli
-bGUgc2VyaWFsIHBvcnRzIChhdCAweGZlMCBhbmQgMHhiZTApLiBPbmUgb2YgdGhlIHNlcmlhbA0K
-cG9ydHMgY2FycmllcyBJUE1JIFNlcmlhbCBvdmVyIExBTi4NCg0KaXBtaV9zaSBsb29rcyBmb3Ig
-dGhlIEtDUyBpbnRlcmZhY2UgaW4gdHdvIHdheXMsIGFuZCBvbiB0aGlzIGJvYXJkIGJvdGgNCmhh
-cHBlbjoNCg0KLSBGcm9tIHRoZSBBQ1BJIHRhYmxlcywgd2hpY2ggZ2l2ZSBpdCB0aGUgcmlnaHQg
-YWRkcmVzcyBpbiB0aGUgc2Vjb25kDQogIEJBUi4gVGhpcyBpcyB3aGF0IG1ha2VzIGlwbWl0b29s
-IHdvcmsgb24gdGhpcyBib2FyZC4NCi0gRnJvbSB0aGUgUENJIGNsYXNzIGNvZGUuIFRoZW4gaXQg
-YmluZHMgdGhlIFBDSSBkZXZpY2UsIGJ1dCBsb29rcyBmb3INCiAgS0NTIGluIHRoZSBmaXJzdCBC
-QVIsIGZpbmRzIG5vdGhpbmcgdGhlcmUsIGFuZCBzdGF5cyBib3VuZCBhbnl3YXkuDQoNCk5laXRo
-ZXIgb2YgdGhlc2UgZHJpdmVzIHRoZSBzZXJpYWwgcG9ydHMuDQoNCk15IHBhdGNoZXMgZG9uJ3Qg
-Y2hhbmdlIHRoZSBBQ1BJIHBhdGgsIHNvIGlwbWl0b29sIGFuZCAvZGV2L2lwbWkwIHdvcmsNCnRo
-ZSBzYW1lIHdpdGggb3Igd2l0aG91dCB0aGVtLiBXaGF0IHRoZXkgYWRkIGlzIHRoZSBTT0wgY29u
-c29sZSwgd2hpY2gNCnRvZGF5IGRvZXNuJ3Qgd29yayBhdCBhbGwgb25jZSBMaW51eCBpcyBydW5u
-aW5nLg0KDQpPbmUgY29ycmVjdGlvbiB0byB2MTogaXQgc2FpZCBpbnRlcnJ1cHRzIGRvbid0IHdv
-cmsgb24gdGhpcyBkZXZpY2UuDQpUaGV5IGRvLiBUaGUgYm9hcmQganVzdCB1c2VzIGEgZGlmZmVy
-ZW50IE1TSSB2ZWN0b3IgdGhhbiB0aGUgb25lIEkNCnRyaWVkLCBhbmQgd2hpY2ggdmVjdG9yIGl0
-IGlzIGRlcGVuZHMgb24gdGhlIEJNQyBmaXJtd2FyZS4gSW4gYSBzZXBhcmF0ZQ0KZHJpdmVyIEkg
-Y2FuIGZpbmQgdGhlIHZlY3RvciBhdCBwcm9iZSB0aW1lIGFuZCBmYWxsIGJhY2sgdG8gcG9sbGlu
-ZyBpZg0KdGhlcmUgaXNuJ3Qgb25lLiBUaGF0IG1ha2VzIHRoZSBjb25zb2xlIGFib3V0IDcgdGlt
-ZXMgZmFzdGVyIHRoYW4NCnBvbGxpbmcgKGFib3V0IDE1IEtCL3MgaW5zdGVhZCBvZiAyIEtCL3Mp
-LCBhbmQgdGhlIENQVSBubyBsb25nZXIgaGFzIHRvDQpwb2xsIHRoZSBwb3J0LiBJIGNvdWxkbid0
-IGRvIHRoYXQgY2xlYW5seSBhcyBhIHF1aXJrIGluIDgyNTBfcGNpLmMsIGJ1dA0KaXQgd291bGQg
-d29yayB0aGUgc2FtZSBpbiBhIGRyaXZlciBmb3IgdGhlIHdob2xlIGRldmljZS4NCg0KR3LDqWdv
-aXJlIExheWV0IChDYydkKSBoYXMgYSBzZXJpZXMgZm9yIHRoZSBzYW1lIGRldmljZSBbMV0uIEl0
-IGFkZHMgYW4NCk1GRCBkcml2ZXIsIGRyaXZlcnMvbWZkL2FzcGVlZC1wY2ktY29yZS5jLCB0aGF0
-IHJlZ2lzdGVycyB0aGUgc2VyaWFsDQpwb3J0cyBhcyBhIGNoaWxkIGRldmljZS4gQnV0IGl0IG9u
-bHkgYmluZHMgd2hlbiB0aGUgQk1DIHJ1bnMgYSBtb2RpZmllZA0KT3BlbkJNQywgd2hpY2ggY2hh
-bmdlcyB0aGUgZGV2aWNlJ3MgY2xhc3MgY29kZSBhbmQgcHV0cyB0aGUgc2VyaWFsIHBvcnQNCmlu
-dGVycnVwdHMgb24gZml4ZWQgTVNJIHZlY3RvcnMuIFdpdGggc3RvY2sgZmlybXdhcmUsIGxpa2Ug
-b24gdGhpcw0KYm9hcmQsIGl0IGRvZXNuJ3QgYmluZCBhdCBhbGwuDQoNClNvIHRoZXJlIGFyZSB0
-d28gd2F5cyBmb3J3YXJkOg0KDQoxLiBBIHNlcGFyYXRlIDgyNTAgZHJpdmVyIGZvciBzdG9jayBm
-aXJtd2FyZSwgYXMgSSBwcm9wb3NlZC4NCg0KMi4gRXh0ZW5kIEdyw6lnb2lyZSdzIGRyaXZlciBz
-byBpdCBhbHNvIGhhbmRsZXMgc3RvY2sgZmlybXdhcmU6IG1hdGNoIHRoZQ0KICAgS0NTIGNsYXNz
-IGNvZGUgYXMgd2VsbCwgYW5kIGZpbmQgdGhlIE1TSSB2ZWN0b3IgYXQgcHJvYmUgdGltZSBpbnN0
-ZWFkDQogICBvZiBhc3N1bWluZyBpdC4gSSdkIHdvcmsgdGhhdCBvdXQgd2l0aCBHcsOpZ29pcmUg
-YW5kIHNlbmQgaXQgb24gdG9wIG9mDQogICBoaXMgc2VyaWVzLCB0b2dldGhlciB3aXRoIHRoZSBp
-cG1pX3NpIGNoYW5nZS4gS0NTIHdvdWxkIHN0YXkgd2l0aA0KICAgaXBtaV9zaSdzIEFDUEkgcGF0
-aCBlaXRoZXIgd2F5Lg0KDQpJJ20gaGFwcHkgd2l0aCBlaXRoZXIuIFBsZWFzZSBsZXQgbWUga25v
-dyB3aGljaCB5b3UnZCBwcmVmZXIsIGFuZCBJJ2xsDQp3YWl0IGZvciB0aGF0IGJlZm9yZSBzZW5k
-aW5nIGFueXRoaW5nIG5ldy4NCg0KWzFdIGh0dHBzOi8vbG9yZS5rZXJuZWwub3JnL3IvMjAyNjA4
-MTgtYXNwZWVkLWRyaXZlci12Ni12Ni0wLWZkN2NjMGIzMzhlYUA5ZWxlbWVudHMuY29tDQoNClRo
-YW5rcywNClBoaWwNCg0KDQo+IE9uIE9jdCAxMCwgMjAyNiwgYXQgNDoxMOKAr0FNLCBBbmR5IFNo
-ZXZjaGVua28gPGFuZHkuc2hldmNoZW5rb0BnbWFpbC5jb20+IHdyb3RlOg0KPiANCj4gT24gRnJp
-LCBPY3QgOSwgMjAyNiBhdCA0OjQ14oCvUE0gUGhpbCBSb3NlbnRoYWwgPHBoaWxAcGhpbC5ncz4g
-d3JvdGU6DQo+Pj4gT24gT2N0IDksIDIwMjYsIGF0IDQ6NTfigK9BTSwgQW5keSBTaGV2Y2hlbmtv
-IDxhbmR5LnNoZXZjaGVua29AZ21haWwuY29tPiB3cm90ZToNCj4+PiANCj4+PiBUaGVyZSBpcyBh
-bHJlYWR5IGEgZHJpdmVyIGZvciB0aGlzIDgyNTBfYXNwZWVkX3Z1YXJ0LmMuIFBsZWFzZSwgZG8g
-bm90DQo+Pj4gYWRkIG5ldyBxdWlya3MgdG8gODI1MF9wY2kuYy4NCj4+IA0KPj4gVGhhbmtzIGZv
-ciB0aGUgcmV2aWV3Lg0KPj4gDQo+PiBBcyBmYXIgYXMgSSBjYW4gdGVsbCwgODI1MF9hc3BlZWRf
-dnVhcnQuYyBkcml2ZXMgdGhlIG90aGVyIGVuZCBvZiB0aGUNCj4+IFZVQVJULiBJdCBpcyBhbiBP
-RiBwbGF0Zm9ybSBkcml2ZXIgKGFzcGVlZCxhc3QyNDAwLXZ1YXJ0IGFuZA0KPj4gYXNwZWVkLGFz
-dDI1MDAtdnVhcnQpIGZvciBMaW51eCBydW5uaW5nIG9uIHRoZSBCTUMgaXRzZWxmOiBpdCBkZXBl
-bmRzIG9uDQo+PiBBUkNIX0FTUEVFRCwgaGFzIG5vIFBDSSBJRCB0YWJsZSwgYW5kIHByb2dyYW1z
-IHRoZSBCTUMtc2lkZSBHQ1JBL0dDUkINCj4+IHJlZ2lzdGVycyAoVlVBUlQgZW5hYmxlLCBob3N0
-IFNJUlEgcm91dGluZyksIHdoaWNoIHRoZSBob3N0IGNhbm5vdA0KPj4gcmVhY2guDQo+PiANCj4+
-IFRoaXMgcGF0Y2ggaXMgZm9yIHRoZSBob3N0IHNpZGUuIFRoZXJlIHRoZSBWVUFSVCBhcHBlYXJz
-IGFzIDE2NTUwDQo+PiByZWdpc3RlcnMgaW4gQkFSMSBvZiB0aGUgQk1DJ3MgUENJZSBmdW5jdGlv
-biAoMWEwMzoyNDAyKSwgYW5kIG5vdGhpbmcNCj4+IGJpbmRzIHRoYXQgZnVuY3Rpb24gdG9kYXks
-DQo+IA0KPiBJbiB0aGUgY29tbWVudHMgdG8gdGhlIHBhdGNoIHlvdSB0b2xkIHRoYXQgaXBtaV9z
-aSBtYXRjaGVzIGl0Lg0KPiANCj4+IHNvIFNPTCBnb2VzIHF1aWV0IG9uY2UgTGludXggc3RhcnRz
-LiBJIGRvbid0DQo+PiBzZWUgYSB3YXkgdG8gcmV1c2UgODI1MF9hc3BlZWRfdnVhcnQuYyBmb3Ig
-aXQsIGJ1dCBwbGVhc2UgY29ycmVjdCBtZSBpZg0KPj4gSSdtIG1pc3Npbmcgc29tZXRoaW5nLg0K
-Pj4gDQo+PiBVbmRlcnN0b29kIGFib3V0IDgyNTBfcGNpLmMuIFdvdWxkIGEgc2VwYXJhdGUgZHJp
-dmVyIGJlIGFjY2VwdGFibGUsDQo+PiBlLmcuIGRyaXZlcnMvdHR5L3NlcmlhbC84MjUwLzgyNTBf
-YXNwZWVkX3BjaS5jIHVzaW5nIDgyNTBfcGNpbGliLCBhbG9uZw0KPj4gdGhlIGxpbmVzIG9mIDgy
-NTBfcGVyaWNvbS5jPyBJdCB3b3VsZCBkbyB0aGUgc2FtZSBhcyB0aGlzIHBhdGNoOiBmaW5kDQo+
-PiB0aGUgVlVBUlRzIHRoZSBCTUMgaGFzIGVuYWJsZWQgaW4gQkFSMSBhbmQgcmVnaXN0ZXIgdGhl
-bSBhcyBwb2xsZWQNCj4+IHBvcnRzLiBJZiB0aGF0IHdvcmtzIGZvciB5b3UsIEknbGwgc2VuZCBp
-dCBhcyB2Mi4NCj4gDQo+IFdoYXQgaGFzIFBlcmljb20gdG8gZG8gd2l0aCBhbGwgdGhpcz8NCj4g
-DQo+IC4uLg0KPiANCj4gSSB3aWxsIGxvb2sgaW50byB0aGlzIGRlZXBlciB3aGVuIEkgcmV0dXJu
-IGZyb20gdGhlIExQQyAyMDI2IHRyaXAsIGJ1dA0KPiB3aGF0IHlvdSBhcmUgZG9pbmcgc291bmRz
-IHJlYWxseSB3cm9uZy4NCj4gDQo+IC0tIA0KPiBXaXRoIEJlc3QgUmVnYXJkcywNCj4gQW5keSBT
-aGV2Y2hlbmtvDQoNCg==
+Summary:
+This series adds the device tree for the Meta (Facebook) Ventura2 Rack
+Management Controller (RMC), which uses an AST2600 BMC.
+
+Signed-off-by: Kyle Hsieh <kylehsieh1995@gmail.com>
+---
+Changes in v10:
+- Addressed review comments from Tan Siewert:
+  - Restored the standard kernel comment style (' * '), which v9 had
+    changed by applying dt-check-style strict output too mechanically.
+  - Kept #address-cells and #size-cells adjacent.
+  - Added openbmc-flash-layout-128-alt.dtsi to the alt-bmc flash.
+  - Added a comment explaining that &kcs3, &lpc_ctrl and &peci0 serve
+    the optional COM Express module.
+  - Renamed "Sequence_TransFR_Alert" to "SEQUENCE_TRANSFR_ALERT".
+  - Added the Assisted-by trailer to patch 2/2.
+- The v5 changelog wrongly said &peci0 was removed; it is kept for the
+  COM Express module.
+- Hardware alignment:
+  - Dropped static TMP75 nodes (i2c5 0x4f, i2c10 0x4c/0x4d/0x4e); a
+    second-source part is used on some boards, so they are probed from
+    userspace.
+  - Dropped the INA230 at i2c10 0x4f, missed in v5.
+  - Declared mctp-controller only on i2c4 mux channel 6, where the MCTP
+    endpoint is.
+  - Added FM_E810_MUX_SEL_R and FM_E810_MUX_EN_R_N line names.
+- Dropped redundant status = "okay" from I2C mux channel nodes.
+- Moved device_type before reg in the memory node.
+- dt-check-style (v7.3-rc1 and later): relaxed mode is clean. The
+  mixed-indent-chars warnings seen in v8 were false positives on
+  '\t * ' comments, fixed upstream by commit 32541ce0ae ("dtc:
+  dt-check-style: Allow space-aligning indentation in DTS"). Strict mode
+  reports 10 [property-order] warnings, all from keeping #address-cells
+  and #size-cells adjacent, as requested in the v9 review.
+- Updated comments that still referred to labels removed in v9.
+- Link to v9: https://lore.kernel.org/r/20260727-ventura2_initial_dts-v9-0-504c0ec68039@gmail.com
+
+Changes in v9:
+- Rebased onto the `aspeed/arm/dt` branch of `bmc/linux.git` to resolve merge conflicts.
+- Resolved all formatting issues flagged by `dt-check-style --mode strict`, including:
+  - Fixed 'mixed-indent-chars' and 'continuation-alignment' issues.
+  - Sorted properties and nodes into canonical order.
+  - Removed unused labels. 
+- Resolved DT schema binding warnings reported by `make CHECK_DTBS=y`:
+  - Removed invalid `channel@X` subnodes from the `maxim,max31790` fan controller.
+  - Dropped the deprecated `aspeed,hw-timeout-ms` property from the I2C bus.
+  - Removed the incomplete `ti,ads1015` ADC and generic `pmbus` power monitor nodes to comply with upstream schemas.
+- Corrected the compatible string for the 40-bit I/O expanders from `nxp,pca9698` to `nxp,pca9505`.
+- Link to v8: https://lore.kernel.org/r/20260615-ventura2_initial_dts-v8-0-c89f92c80447@gmail.com
+
+Changes in v8:
+- Addressed review comments from Andrew Lunn:
+  * Added a detailed comment to the Marvell 88E6393X EEPROM node to clarify its hardware I2C multiplexer isolation and out-of-band firmware update mechanism, explaining why there is no concurrent access or multi-master scenario.
+- Link to v7: https://lore.kernel.org/r/20260611-ventura2_initial_dts-v7-0-a61d8902bc5f@gmail.com
+
+Changes in v7:
+- Updated the commit message to include a detailed description of the Ventura2 platform's purpose and its key hardware features.
+- Fix comments from Andrew Jeffery:
+  * Ensured consistent blank lines to separate child nodes from parent properties and from each other throughout the DTS.
+  * Sorted fan nodes in ascending order.
+  * Replaced '//' comments with '/* */' block comments.
+- Fix feedback from Sashiko AI:
+  * Added 'idle-state = <6>;' to the PCA9548 mux on i2c4.
+- Link to v6: https://lore.kernel.org/r/20260610-ventura2_initial_dts-v6-0-375d8e9d7ebf@gmail.com
+
+Changes in v6:
+- Addressed automated feedback from Sashiko bot:
+  * Clarified comments that io_expander0 and io_expander8 physically share the same interrupt line (Wired-OR) by hardware design.
+  * Removed leading zeros from unit addresses in DAC nodes (dac@c, dac@e, dac@f).
+  * Removed unused properties from the adc@48 node.
+- Link to v5: https://lore.kernel.org/r/20260608-ventura2_initial_dts-v5-0-37ee5bcf58b6@gmail.com
+
+Changes in v5:
+- Addressed review comments:
+  * Added comments explaining the necessity of 'legacy_' prefixes (hardware label collision), pre-allocated I2C aliases (future expansions), and the 'ledd1' naming convention (schematic alignment).
+  * Removed the empty `&mdio0` node to comply with upstream networking subsystem guidelines.
+  * Removed the redundant `&peci0` node.
+  * Sorted `&kcs3` and `&lpc_ctrl` nodes in strict alphabetical order.
+- Hardware/DT alignment updates:
+  * Removed unpopulated sensors (adi,adt7461, infineon,tda38640, ti,ina230, ti,ina238) to accurately reflect the current board population.
+  * Added the secondary flash node (flash@1 labeled "e810") under the &spi2 bus.
+- Link to v4: https://lore.kernel.org/r/20260424-ventura2_initial_dts-v4-0-806b00ea4314@gmail.com
+
+Changes in v4:
+- Fixed capitalization: "ventura2" -> "Ventura2".
+- Reordered I2C child nodes in ascending order of unit addresses.
+- Enable PECI, LPC control, and KCS3 interfaces for host communication.
+- Configure MCTP controller on I2C4 and enable MCTP support for specific mux channels.
+- Add Infineon TDA38640 and TI INA230 power monitor nodes.
+- GPIO and Pinmux cleanup for PVT:
+    - Aligned gpio-line-names as requested.
+    - Remove unused or non-existent GPIO line names to align with Ventura2 PVT.
+    - Update specific GPIO pins to empty strings where signals were removed or consolidated.
+- Adjust SGPIOM frequency to 200kHz and update signal line names.
+- Enable UART3 and add serial2 alias.
+- Link to v3: https://lore.kernel.org/r/20260113-ventura2_initial_dts-v3-0-2dbfda6a5b47@gmail.com
+
+Changes in v3:
+- Add annotation for marvel 88e6393x
+- Modify the gpio-line-name
+- Modify the node order alphabetically
+- Modify dt-bindings document for rmc instead of bmc
+- Move the gpio-line-names to original node
+- Link to v2: https://lore.kernel.org/r/20251224-ventura2_initial_dts-v2-0-f193ba5d4073@gmail.com
+
+Changes in v2:
+- Remove unused mdio
+- Link to v1: https://lore.kernel.org/r/20251222-ventura2_initial_dts-v1-0-1f06166c78a3@gmail.com
+
+---
+Kyle Hsieh (2):
+      dt-bindings: arm: aspeed: add Meta ventura2 board
+      ARM: dts: aspeed: ventura2: Add Meta ventura2 BMC
+
+ .../devicetree/bindings/arm/aspeed/aspeed.yaml     |    1 +
+ arch/arm/boot/dts/aspeed/Makefile                  |    1 +
+ .../dts/aspeed/aspeed-bmc-facebook-ventura2.dts    | 2888 ++++++++++++++++++++
+ 3 files changed, 2890 insertions(+)
+---
+base-commit: 749c34389679f8d56cb200a69b62f9a64670034f
+change-id: 20251222-ventura2_initial_dts-909b3277d665
+
+Best regards,
+-- 
+Kyle Hsieh <kylehsieh1995@gmail.com>
+
 
