@@ -1,62 +1,87 @@
-Return-Path: <linux-aspeed+bounces-5218-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-5219-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 33930CCA46C
-	for <linux-aspeed@archiver.kernel.org>; Fri, 16 Oct 2026 14:31:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61716CC6B38
+	for <linux-aspeed@archiver.kernel.org>; Fri, 16 Oct 2026 15:04:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j5nSm5jCTz3bsm;
-	Sat, 17 Oct 2026 01:31:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.18
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792161112;
-	cv=none; b=GpI0r6yv0BqzHxZKOMWzgHXdECn5zFXFtIshDtr5rQVr2ehvxYMSpdAjw7Bfa5rBXH+3DYHbjoz4m10TtnELpn4tf4hON/iNdSSSTK4Vs5405I1ljInnzAWkXvdtduBKxAJIG7veNJijbboq6UPdByHJDr0syVYynFOSoMatvS0XTuHsZKu+qi3QRy64buSziBaXbFaEihXkDfDGs3j0Q/h2en0ZttNaE62z6PEC9WiKzuVfuRmjzQP6gEDmH8lxxGT++8H9005WrdzYY4BauqdSCt+ZdGlNemDKtnO8jiezjJHDESDL60D0sU65WfjdYXIU+tL917xYGsmkh70Eaw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j5pBY29G3z2yqw;
+	Sat, 17 Oct 2026 02:04:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::72f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792163077;
+	cv=none; b=mJQjDpi9M8wj3w0JLx627Iy71O9Dtp+HfVzhwKq0tPNXTirM0K2SI8pjrs4Je5ZqpBqgFD7ElYPZonFtumlv40L5VJolIhXwcLKmFOSwAd2CvLtrekyYa4sqh9r/sNCvYbzmWVoWDfexOVQCxub27AJnFbQoId2/bUN/bUoJVwau2bRz0dzybra5HzMPNYeBi4xL1okAc/QnHSexOXmSUFGgPubaUQDS61FgmNQv4uyFWaqA3uw9jDGvlo6eox0C2NBBu+zLMrV9CKs9Cfifjo6JV/6GXRMs/tleqHHVSfa/onDugXwmbEKhbI9cRdBAidfKDKRNtJwnXuBe6gVD8A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792161112; c=relaxed/relaxed;
-	bh=Hj1KH8boNQyeqb0RG6bTHrI9yRinPTXtodZqXvdAi2Q=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=eUfPu4UXOfbPSVLXkAifVL7418oagXEDr07VFni0LfrGzR+9r+pNy1mo51XHHqgMxN17uDKq/1hcWdPMhbIzI4SWiHcGIXxoE9vCiXCs9HFy3Z7CcEL3rSnlnA2hPvYfOdVeTxxoNdEaTzOyf39jsyjL1n3endxv86cYuysgLU3zUztw/IkV36kmKYVFAhv/t7uUEifx174HlpAG9KN7W/l6b3mn+fXEqEoKTjSCRcj7QCDbAq4BRvsN/IsTzUKmC4kIXBCxKpYTs1Rbx7jvjajliwyNtW8jpGYT3QPXReFVRzKPkoHd1tuUahy3WsFoTnsB+6wnHTE9IY8l0LtInQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=d/9lK3cl; dkim-atps=neutral; spf=pass (client-ip=198.175.65.18; helo=mgamail.intel.com; envelope-from=dawid.glazik@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	t=1792163077; c=relaxed/relaxed;
+	bh=QjMVhSxuyV4C5Y9lVNWGp1YsEKYu5m2G3O2NV9TfmW8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=mO0bPuuQW766vOKQ8lEOsOUA4EyX5h8WIqEdo6DN+YS/SmW8JJvb47JhtCEzBVeyT7R6uHf8PxylphbfDrP5By/LEOCWh3ObIZLLDMvjY4S/jJHzCe20sh18+99YAKz7Qw72qha1nUEC28nZTFZnkY9kAojkPFzf/BYboZ4AaVQwf+hpD9Z8PPOmCnsYVCbZQdDBvTGTDxAy0rAUL6pL+PYrVzyq+RWgcUpj19C4S2J2UmBoiuXpIN8UUkSsSsK4AZ0dnUbAKmFwVblWdlD0lU39NXQeBGYR10MbDF03xjeIYzJ4W6gLhc3MzEcER1SZHpxkLkOlhC9WBx7JCo2W1A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=rowland.harvard.edu; dkim=pass (2048-bit key; unprotected) header.d=rowland.harvard.edu header.i=@rowland.harvard.edu header.a=rsa-sha256 header.s=google header.b=OmUkatAD; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::72f; helo=mail-qk1-x72f.google.com; envelope-from=stern@g.harvard.edu; receiver=lists.ozlabs.org) smtp.mailfrom=g.harvard.edu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=rowland.harvard.edu
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=d/9lK3cl;
+	dkim=pass (2048-bit key; unprotected) header.d=rowland.harvard.edu header.i=@rowland.harvard.edu header.a=rsa-sha256 header.s=google header.b=OmUkatAD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.18; helo=mgamail.intel.com; envelope-from=dawid.glazik@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=g.harvard.edu (client-ip=2607:f8b0:4864:20::72f; helo=mail-qk1-x72f.google.com; envelope-from=stern@g.harvard.edu; receiver=lists.ozlabs.org)
+Received: from mail-qk1-x72f.google.com (mail-qk1-x72f.google.com [IPv6:2607:f8b0:4864:20::72f])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j5nSj3lpyz30HB
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 17 Oct 2026 01:31:47 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1792161110; x=1823697110;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=dt+a4a6W70jAxDMgMbHMH1fPbQ/npH5no4bHOhmOJ1Q=;
-  b=d/9lK3clbVUDAgL2gQLsLXmTwOfG7uzxBRCi5uLqOSWlXPu+DRN90xE2
-   XOjU3i4IEQNk/RtINrXbJKNLyFZ0zpkk+GG/2HQQSMIqbF1pWpLVw8QAe
-   jFddoWKlmDCrtiqNJ4+3kuxLTnVvb8dYstmggHlM9tKZubawurjSn/Sp2
-   1JLS9AgnbBAKxLBgZEDp6AW8b1LUkCREkdBmVpcoXppDBDxePfogWQQ81
-   fCoLeByAuUovjKP7KgPk7Laa66bHayX9YGQ0ho1ylZ19oV4ssA6lAD5aa
-   uQgdc2k6RcF0l6uJDXhgIG1YfIEH7/qIeKKxnrNXHtcd2b78C6A6OkTTb
-   Q==;
-X-CSE-ConnectionGUID: 44o2Q4QjQ/6SfKmJtyIlYA==
-X-CSE-MsgGUID: i7KBJ5qnT0SUluT2+ck13Q==
-X-IronPort-AV: E=McAfee;i="6800,10657,11936"; a="950271"
-X-IronPort-AV: E=Sophos;i="6.27,161,1787036400"; 
-   d="scan'208";a="950271"
-Received: from orviesa004.jf.intel.com ([10.64.159.144])
-  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Oct 2026 07:31:43 -0700
-X-CSE-ConnectionGUID: mRWJKeS1S0+qnz5vjEKOLw==
-X-CSE-MsgGUID: 52fbFazJTpmxta21tS5qsw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,161,1787036400"; 
-   d="scan'208";a="1954568"
-Received: from dawidgla-mobl.ger.corp.intel.com (HELO [10.94.249.157]) ([10.94.249.157])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Oct 2026 07:31:41 -0700
-Message-ID: <f7c98fbe-2880-4769-bf09-53134cdfc63d@linux.intel.com>
-Date: Fri, 16 Oct 2026 16:31:33 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j5pBV4N1Sz2yql
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 17 Oct 2026 02:04:32 +1100 (AEDT)
+Received: by mail-qk1-x72f.google.com with SMTP id af79cd13be357-93f1cf92c9eso4509285a.0
+        for <linux-aspeed@lists.ozlabs.org>; Fri, 16 Oct 2026 08:04:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=rowland.harvard.edu; s=google; t=1792163069; x=1792767869; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=QjMVhSxuyV4C5Y9lVNWGp1YsEKYu5m2G3O2NV9TfmW8=;
+        b=OmUkatADiLhaQ3LyVEXFjMqqAHP6lSKGN8XJTIy2baTAzDZJ3o84uydV3blBYkSKdm
+         HW0oF+L3HD/lq4e/cEJW9+D0b5TwIBY1EJTCkz2w72nNoTA9cj4s1lFx5igTyjiknSHg
+         0okja77iTtZRANDO1kte5rVBpoTwu91ufdmO0g5Z41SYXZQbxna47TsogASChV9WPNgE
+         NLrfLn4akQikL0ul36PP+cv1At7UAw6dH//paOYnP1UZLEjeqUSZb4Pv1SuwPS6Zb8yq
+         D90VSkOG+dkrfLsm3Jra5Cbhsp6+Sr2Bmy7hr0DAvFIbFxPtamTqeEqqv59EUA9ul7BB
+         QN5Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1792163069; x=1792767869;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=QjMVhSxuyV4C5Y9lVNWGp1YsEKYu5m2G3O2NV9TfmW8=;
+        b=L0Zr5U4oKxyH4zt5/GmEyceqcZAgrXTilluiV/I55KW9A+0l3kG2fuYPNT1JhxnMth
+         8UwMArgV/3L4hq6DI1Xs4S/YGsbuBI57bFjXGaAMbPJUdDwWQiO4kJ1CfhEJugiKsAJd
+         tGHioQybx9hY8sMwXkJ6EmoIDG9/BJbmhydalKjV3k0H4mCSqW6uTa94MWjoP6IL+rJA
+         thUtmAgV4yRl7Pp2zWQiKGykGtDnpqn7yCXtsjpROYj7Vgzl0li4oKTNJc7qNQKiK9Aw
+         nO66Y+6wMN1aqQQzyv0ZRotHufqs+wxwm4jQi9dhTlpsErQxXPg4pMdTva9aRQr9XFd6
+         BEYA==
+X-Forwarded-Encrypted: i=1; AKwUvBx42+ktd2iNntd3LsJYsKKWR1vci6JlD/7Jv4mWSeAVTbWfst7OV6Fm8nsMJKUUOnFc3l746N7DVtrbyrc=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYJiYco4fDZHbOhJ5m+9DUInjRW+m1wjj/er6V8FBIg2BgzxIdpH
+	LLGV8NMRpdAfi9cAxoplzHwTiKs87+7Z77sHfTBZrx/gNvCj/NyOa+dBmAP5Y9GveQ==
+X-Gm-Gg: AYBFou1W+CV79LFwDyD3x92Pqbi75CtEUeS8DtYzY8vplA06yv2MY5pYSK7gcBBGiKS
+	5RMsm8Rt1PWBH4KWsnr0PeKa9NtwZ6X6y6tqbkHuMl3JXUIHXefnFHtynASPDXozCNp3SbuEcOm
+	38AhIY5Yommuxb/Eh8/EMrxDXzGfDfItv0J/syG2OGqnaQcmWKFcfDF9VqTSICplG35laGGeswK
+	6/HGdeK/m4cjSxmig50O3JoFCPzpeqsZfo5fQveQns7aFnvhduEJSmWESJt/VBnOgE3WglLvIHT
+	ykgWlVkAkPvnrjRR2y1SYFnVIut+7xWM7OUkWYX3O/htfDN3Ki9wy4ZZvQSz06iTuEh+MLBY5O/
+	ll4oMK+ecq0UdO9XVXALwwkaNybKZ1GFVUOTl+2EVxHG79MmbUvs1FWrroio6FEP33PmAsRFWd+
+	xjXrqeR0GaAWUrGNqBYJ5xsyDKVSF5biIN4sBjcBGUnPiopjqcDIf2LpnZRpez7HIaE+W3cJI=
+X-Received: by 2002:a05:620a:439b:b0:93e:e1fd:b87f with SMTP id af79cd13be357-93f29e17275mr10664485a.83.1792163068256;
+        Fri, 16 Oct 2026 08:04:28 -0700 (PDT)
+Received: from rowland.harvard.edu ([2601:19b:d01:d210::4791])
+        by smtp.gmail.com with ESMTPSA id af79cd13be357-93f1a1b882asm227739285a.42.2026.10.16.08.04.26
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 16 Oct 2026 08:04:27 -0700 (PDT)
+Date: Fri, 16 Oct 2026 11:04:24 -0400
+From: Alan Stern <stern@rowland.harvard.edu>
+To: Joe Wang <joe_wang@aspeedtech.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	linux-aspeed@lists.ozlabs.org, linux-usb@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] usb: ehci: Quiesce ASPEED EHCI before halting it on
+ shutdown
+Message-ID: <7dfc5ef1-a466-4d78-af65-147bee8fe698@rowland.harvard.edu>
+References: <20261016-upstream_ehci_aspeed_shutdown-v1-1-8440c13b5652@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -70,229 +95,111 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/3] ARM: dts: aspeed: add Intel AVCRP BMC
-To: Tan Siewert <tan.siewert@9elements.com>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
- Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- maciej.lawniczak@intel.com
-References: <cover.1791825961.git.dawid.glazik@linux.intel.com>
- <12f8124fea31a6c6b1401d6aee640842c8d896a7.1791825961.git.dawid.glazik@linux.intel.com>
- <7d703c43-e462-41d6-a488-87342fd139a2@9elements.com>
-Content-Language: en-US
-From: Dawid Glazik <dawid.glazik@linux.intel.com>
-Organization: Intel Technology Poland sp. z o.o. - ul. Slowackiego 173, 80-298
- Gdansk - KRS 101882 - NIP 957-07-52-316
-In-Reply-To: <7d703c43-e462-41d6-a488-87342fd139a2@9elements.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261016-upstream_ehci_aspeed_shutdown-v1-1-8440c13b5652@aspeedtech.com>
 
-On 10/12/2026 7:19 PM, Tan Siewert wrote:
-> On 10/12/26 7:39 PM, Dawid Glazik wrote:
->> Add the initial AST2600 device tree for the Intel AVCRP BMC platform.
->>
->> Signed-off-by: Dawid Glazik <dawid.glazik@linux.intel.com>
+On Fri, Oct 16, 2026 at 04:53:07PM +0800, Joe Wang wrote:
+> On ASPEED EHCI controllers, clearing USBCMD.RS while both the periodic
+> and asynchronous schedules are enabled may leave the controller unable
+> to halt. If an asynchronous transaction is in progress when RS is
+> cleared, it may run past the end of the micro-frame. The controller then
+> clears its internal schedule buffer at the start of the next micro-frame
+> while it is already walking the periodic schedule, issues a DMA read
+> from address 0x0 and never sets USBSTS.HCHalted.
 > 
-> You got Review trailers from Andrew Lunn in v1. Unless you think Andrew 
-> has to re-review it (which should be then reasoned), please keep them in 
-> new revisions.
+> ehci_shutdown() calls ehci_silence_controller(), which halts the
+> controller without first turning off the schedules. For ASPEED
+> controllers, call ehci_quiesce() first to clear CMD_ASE/CMD_PSE and
+> wait for STS_ASS/STS_PSS to clear, as ehci_stop() and
+> ehci_bus_suspend() already do before halting. This is also the stop
+> sequence recommended by ASPEED.
 > 
->  From the kernel docs [0]:
+> Quiesce the controller after setting rh_state to EHCI_RH_STOPPING.
+> The asynchronous and periodic schedule-enable paths require
+> EHCI_RH_RUNNING, so this ordering prevents them from restarting the
+> schedules while the controller is being shut down.
 > 
-> "Both Tested-by and Reviewed-by tags, once received on mailing list from 
-> tester or reviewer, should be added by author to the applicable patches 
-> when sending next versions. However if the patch has changed 
-> substantially in following version, these tags might not be applicable 
-> anymore and thus should be removed. Usually removal of someone’s Acked- 
-> by, Tested-by or Reviewed-by tags should be mentioned in the patch 
-> changelog with an explanation (after the ‘---’ separator)."
+> Allow ehci_quiesce() to operate in EHCI_RH_STOPPING as well as
+> EHCI_RH_RUNNING. As documented for enum ehci_rh_state, both states
+> indicate that the controller may still be performing DMA, while
+> lower states indicate that it is not.
 > 
->> ---
->> v2:
->>   - Replace bootargs console=ttyS4,115200n8 with stdout-path = &uart5
->>   - Remove the unreferenced video_memory reserved-memory node
->> ---
->>   arch/arm/boot/dts/aspeed/Makefile             |   1 +
->>   .../dts/aspeed/aspeed-bmc-intel-avcrp.dts     | 315 ++++++++++++++++++
->>   2 files changed, 316 insertions(+)
->>   create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-intel-avcrp.dts
->>
->> diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/ 
->> aspeed/Makefile
->> index 767f7c7652d5..ea4645ef9872 100644
->> --- a/arch/arm/boot/dts/aspeed/Makefile
->> +++ b/arch/arm/boot/dts/aspeed/Makefile
->> @@ -54,6 +54,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
->>       aspeed-bmc-ibm-rainier-4u.dtb \
->>       aspeed-bmc-ibm-sbp1.dtb \
->>       aspeed-bmc-ibm-system1.dtb \
->> +    aspeed-bmc-intel-avcrp.dtb \
->>       aspeed-bmc-intel-s2600wf.dtb \
->>       aspeed-bmc-inspur-fp5280g2.dtb \
->>       aspeed-bmc-inspur-nf5280m6.dtb \
->> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-intel-avcrp.dts b/ 
->> arch/arm/boot/dts/aspeed/aspeed-bmc-intel-avcrp.dts
->> new file mode 100644
->> index 000000000000..7c088c89d417
->> --- /dev/null
->> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-intel-avcrp.dts
->> @@ -0,0 +1,315 @@
->> +// SPDX-License-Identifier: GPL-2.0-or-later
->> +// Copyright 2026 Intel Corporation
->> +
->> +/dts-v1/;
->> +
->> +#include "aspeed-g6.dtsi"
->> +#include <dt-bindings/gpio/aspeed-gpio.h>
->> +
->> +/ {
->> +    model = "Intel AVCRP BMC";
->> +    compatible = "intel,avcrp-bmc", "aspeed,ast2600";
->> +
->> +    aliases {
->> +        serial4 = &uart5;
->> +    };
->> +
->> +    chosen {
->> +        stdout-path = &uart5;
->> +        bootargs = "earlycon";
->> +    };
->> +
->> +    memory@80000000 {
->> +        device_type = "memory";
->> +        reg = <0x80000000 0x40000000>;
->> +    };
->> +
->> +    reserved-memory {
->> +        #address-cells = <1>;
->> +        #size-cells = <1>;
->> +        ranges;
->> +
->> +        video_engine_memory: jpegbuffer {
->> +            size = <0x02000000>; /* 32M */
->> +            alignment = <0x01000000>;
->> +            compatible = "shared-dma-pool";
->> +            reusable;
->> +        };
->> +    };
->> +
->> +};
->> +
->> +&rtc {
->> +    status = "okay";
->> +};
+> The controller-death path in ehci_irq() also sets EHCI_RH_STOPPING
+> and clears CMD_RUN, CMD_ASE and CMD_PSE. A quiesce call in that
+> state writes the command register with these bits still cleared
+> and polls the schedule status bits using the existing timeout
+> limits, without re-enabling the controller or its schedules.
 > 
-> Please sort your nodes, as described in the device tree design guideline 
-> [1]. There's also a tool called `scripts/dtc/dt-check-style` that can 
-> help with this.
-> Note on that: we usually run `--mode strict` but it is known to report 
-> false-positives, so please check any reported errors twice ^^
+> Signed-off-by: Joe Wang <joe_wang@aspeedtech.com>
+> ---
+> This issue was observed on a customer host platform using the AST2700
+> PCIe EHCI (ehci-pci), and the root cause was confirmed by the ASPEED
+> hardware team in RTL simulation. The stop sequence used here (clear
+> PSE/ASE, wait for PSS/ASS to clear, then clear RS) is their
+> recommended workaround and was confirmed to resolve the issue on that
+> platform. All ASPEED EHCI controllers share the same design, so the
+> workaround applies to every controller with is_aspeed set.
 > 
->> +
->> +&fmc {
->> +    status = "okay";
->> +    flash@0 {
->> +        status = "okay";
->> +        m25p,fast-read;
->> +        label = "bmc";
->> +        spi-rx-bus-width = <4>;
->> +        spi-max-frequency = <50000000>;
->> +#include "openbmc-flash-layout-64.dtsi"
->> +    };
->> +};
->> +
->> +&uart1 {
->> +    status = "okay";
->> +};
->> +
->> +&uart3 {
->> +    status = "okay";
->> +};
->> +
->> +&uart4 {
->> +    status = "okay";
->> +};
->> +
->> +&uart5 {
->> +    status = "okay";
->> +};
->> +
->> +&uart_routing {
->> +    status = "okay";
->> +};
->> +
->> +&mdio1 {
->> +    status = "okay";
->> +
->> +    ethphy1: ethernet-phy@0 {
->> +        compatible = "ethernet-phy-id001c.c916";
->> +        reg = <0>;
->> +        reset-gpios = <&gpio0 ASPEED_GPIO(C, 1) GPIO_ACTIVE_LOW>;
->> +        reset-assert-us = <10000>;
->> +        reset-deassert-us = <50000>;
->> +    };
->> +};
->> +
->> +&mac1 {
->> +    status = "okay";
->> +    pinctrl-names = "default";
->> +    pinctrl-0 = <&pinctrl_rgmii2_default>;
->> +    clocks = <&syscon ASPEED_CLK_GATE_MAC2CLK>,
->> +         <&syscon ASPEED_CLK_MAC2RCLK>;
->> +    clock-names = "MACCLK", "RCLK";
->> +    phy-mode = "rgmii-id";
->> +    phy-handle = <&ethphy1>;
->> +};
->> +
->> +&lpc {
->> +    lpc_snoop: lpc-snoop@80 {
->> +        snoop-ports = <0x80>;
->> +        status = "okay";
->> +    };
+> The quiesce is limited to ASPEED controllers to keep the change
+> minimal for other platforms.
 > 
-> Why's this named if you don't use it as reference anywhere.
-> 
->> +};
->> +
->> +&i3c_global {
->> +    status = "okay";
->> +};
-> 
-> That's enabled by default.
-> 
->> +
->> +&vhub {
->> +    status = "okay";
->> +};
->> +
->> +&video {
->> +    status = "okay";
->> +    memory-region = <&video_engine_memory>;
->> +};
->> +
->> +&gpio0 {
->> +    gpio-line-names =
->> +        /*A0-A7*/ "", "", "", "", "SMB_CPU_PIROM_SCL", 
->> "SMB_CPU_PIROM_SDA",
->> +                "SMB_IPMB_STBY_LVC3_SCL", "SMB_IPMB_STBY_LVC3_SDA",
->> +        /*B0-B7*/ "", "", "", "FM_CPU1_ERR2_LVT3_N",
->> +                "RGMII_BMC_RMM4_LVC3_R_MDC", 
->> "RGMII_BMC_RMM4_LVC3_R_MDIO",
-> 
-> Why do you name reserved GPIO lines (in this case the RGMII lines)? 
-> They're used by the kernel anyways.
-> 
-> Tan
-> 
-> [0] https://docs.kernel.org/process/submitting-patches.html#using- 
-> reported-by-tested-by-reviewed-by-suggested-by-and-fixes
-> [1] https://docs.kernel.org/devicetree/bindings/dts-coding-style.html
-Hi Tan,
+> Tested on AST2700 (ehci-platform): ehci_shutdown() and unbind/bind
+> (ehci_stop()) with a hub and USB mass storage under load, no
+> regressions.
 
-Thanks for the instructions. I'll implement them in the new revision
+Under what circumstances does ehci_shutdown() run without ehci_stop() 
+being called first?  Is controller death the only possibility?  If the 
+controller is dead, will quiescing work?
 
-Dawid
+Is there any real reason not to do this on all types of EHCI controller, 
+not just ASPEED?
+
+> ---
+>  drivers/usb/host/ehci-hcd.c | 10 +++++++++-
+>  1 file changed, 9 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/usb/host/ehci-hcd.c b/drivers/usb/host/ehci-hcd.c
+> index 3c46bb18c7f3..d984987c8691 100644
+> --- a/drivers/usb/host/ehci-hcd.c
+> +++ b/drivers/usb/host/ehci-hcd.c
+> @@ -274,7 +274,7 @@ static void ehci_quiesce (struct ehci_hcd *ehci)
+>  {
+>  	u32	temp;
+>  
+> -	if (ehci->rh_state != EHCI_RH_RUNNING)
+> +	if (ehci->rh_state < EHCI_RH_RUNNING)
+>  		return;
+>  
+>  	/* wait for any schedule enables/disables to take effect */
+> @@ -372,6 +372,14 @@ static void ehci_shutdown(struct usb_hcd *hcd)
+>  	ehci->enabled_hrtimer_events = 0;
+>  	spin_unlock_irq(&ehci->lock);
+>  
+> +	/*
+> +	 * ASPEED EHCI may never halt if RS is cleared while both schedules
+> +	 * are enabled, so turn them off first. rh_state is STOPPING at this
+> +	 * point, which keeps them from being re-enabled.
+> +	 */
+> +	if (ehci->is_aspeed)
+> +		ehci_quiesce(ehci);
+
+Don't you want to check whether the controller has already been 
+quiesced?
+
+Alan Stern
+
+> +
+>  	ehci_silence_controller(ehci);
+>  
+>  	hrtimer_cancel(&ehci->hrtimer);
+> 
+> ---
+> base-commit: 2f2f7eeef8b0a1a9b9ca998231419873ccae8d4e
+> change-id: 20261016-upstream_ehci_aspeed_shutdown-9ccffedb2a1c
+> 
+> Best regards,
+> -- 
+> Joe Wang <joe_wang@aspeedtech.com>
+> 
 
