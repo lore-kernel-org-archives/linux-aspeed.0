@@ -1,127 +1,38 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 49A1860A260A
-	for <linux-aspeed@archiver.kernel.org>; Tue, 20 Oct 2026 10:43:28 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=TuwCNtVV
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE047606A336
+	for <linux-aspeed@archiver.kernel.org>; Tue, 20 Oct 2026 12:00:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j88CL3VrRz2y2B;
-	Tue, 20 Oct 2026 21:43:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c406::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792493006;
-	cv=pass; b=R8mX2AtrCt3SIvyhHGmcMazApRLCbTJ+DA7tXYcAPzMHm9d01IZnyM5pjxjmN6p9DyqPOVSW30fuMPo6x7uG3dUAniaaRxZzzWDSMZCLip8qh+9K6TZ8iEMdM13r2ZCHgLiDhfFhqlSPDTZYHQehUoeymXNxbLrT/3cHVLVpftPyLwp/vUCJo1VlhPxAnOd8DdwT1ldUmbw92rONL4QLIwT7HHPrgZizY4FfGY8/cmqOB9k6HHGsi292ozwRavC1Yv/HrzvqUFsNlYN6ErM/UGLSNLJ0QCIFkTEA4hynZANIongahZGIOqClTQKkXXgJEIWNeTMk4FF3ru1Weaywrg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792493006; c=relaxed/relaxed;
-	bh=nhQMcisqF5o1gnO6naa+W00GyBaFML/fu8/C6rDhHsw=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=Efo6s7KWDZbszsHsAgVhvAJUQOOOBa20hpcPRZwRbywzo66VUMdO+wpoqCOYA1P/GLa7zFeRrOWMihkSfD9J7FR9yceOb0V6EYsmhACyp0MlNHmQbCtc8/IG6j1oSPUatcQBptlvrEsL8QnKZrmqQLjbzEIuP6UCaeYKQXs02xcTFb+22gZTaIJec4lERSfV+F+uMjvkc+GaZAbLRdCn11e6ZqnvgPIBMYdtDQoK77buy6zRyjwnqGUyPfOGUzykL0JcWRSJ3RENCyWgk1n2MAvj2MIkZtQD5NhQhNBoSdGhxa0RFOlv4/g9sA0IlRoUway7Ipm7jvO7KGuy91lUcQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=TuwCNtVV; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c406::3; helo=os8pr02cu002.outbound.protection.outlook.com; envelope-from=joe_wang@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j89vp058bz2xwL;
+	Tue, 20 Oct 2026 23:00:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792497605;
+	cv=none; b=j+oqQtdJMX988+fm2DlBe45P0QANmJXEHQKR9+CmqVq5ma2/dVcpEL0ewqqSBUyNPLP79UPPdhTqjCcpbU4LLm8De2rHPAwBE+pNQaHVujoM4/GeazjCdDMYKxAGTC+/c3bZOAz2uIHfA3ZFnvlvjgfeXKUNdO3b9focUodZa6KuIvww6omx6T0yle/WfQatdN2X2KLWki2Vsn8I11YHERlpFDwaS/FWDX7b7hhGUMWhQ372ahmoAII1Q4v67mkvlfbLaWC4Nm+PXmBp5peDX/A4Tf4m92rK8ZwZEf1Lcvnmi6rpGtVCku6BzKpKqNrV0pR3fA9sl8tOzZY1EkccYw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1792497605; c=relaxed/relaxed;
+	bh=46IyvM73UruEFoU5tvYGZme473bX8sHtZFFnADjSTtM=;
+	h=From:Subject:Date:Message-ID:MIME-Version:Content-Type:To:CC; b=LPi64A9oU0/Fl+3LSPDwrj3IAHtB1tZQrR13r0HEa07wSfskNKkqX69UJSk9PSQD6I+SYczC/VD9vmr0I00uhuWEYCqGmDzx4mV++bCZQh6EhbdyKtBmO1EqWaP/gT0RTqLpWlVLRnVA18ZY9smVr8IzUEpfT5tNmyFNkXerZJJtvEwA8DslDkcwDn9I7QYbxUkpaDilS5epkbLDwDlVUSq72XhJ3Fz75Jm1PO8iipTLJEv+sqGniYDsNE4A+Mka6/hXAPNZO8RuBxw3zZmV3eLkTOW9/QDwxkUyr8Zg1lDa7jcdRZ9eWCOOjWM0PQXy2ai+4UrP2PJ/pQNaEisGWg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeedtech.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=TuwCNtVV;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:c406::3; helo=os8pr02cu002.outbound.protection.outlook.com; envelope-from=joe_wang@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from OS8PR02CU002.outbound.protection.outlook.com (mail-japanwestazlp170120003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c406::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeedtech.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from twmbx01.aspeedtech.com (mail.aspeedtech.com [211.20.114.72])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j88CH2sMKz2xwL
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 20 Oct 2026 21:43:22 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=cVOSncro1+bg7ssnR+o/HySyaDLIOLlA9onFXmWE5Ueb+kLXVTlRGlCkbZr6THpdzPp+VbOZLaqIHIN9C6xAtzAd5fHUvC5AavNv/lp48JUyco2hYRcuZXKxdBUXUi1I4VCsRm038p4BdeO18emmTvpKD+fzqzqC1nx8Kxm8X6eTI5ylG4glK/aydHf88MyYtY9narv1HeEhU7lg+BgN7akZvHNPZLodO31c2+lfRBRidSUsIEMaIv+e242jJVLXaT63sSkRqashpBNKiinHQXQZTQSD9mDjAgluBFA53fYrV/DI4VJ6de7PovNBZat8TfhDc4qcBe/O7X7U6zQRxw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=nhQMcisqF5o1gnO6naa+W00GyBaFML/fu8/C6rDhHsw=;
- b=bwFFN0bPm40LRBA8/NflZTLr6RlVnf7dHAqEXxPoF7enzO2STnb6iiPgrkbnF+t1B6zE1XOpaUKEOppGCePjxJGbfD587K/hTfaKzZg/uDJkmGUp2DdHVqPehmp6v8aXEpZQ+gmIbR9xuMDMnDEH/NdiUY/ya7Icp+91mmBTQ+62Filp3etOXD8UEhyQ/z/y7Z98ItUz5jOMkJTZIxoSi1ZrFnPMUAfLQSwxSfoKKrbHI2sK+7x2fa8SPsucCACpjXgdsDTJJj9L9XL4UIwP6fyg0sTrMaKgPPdiYlykI/8JQKIrfaiBVBYeAbTwlGvoLbmDDKu1SA2PjSyyoeKfjQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
- header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=nhQMcisqF5o1gnO6naa+W00GyBaFML/fu8/C6rDhHsw=;
- b=TuwCNtVVCdMsqCmbnWb++n7cQ4JDlR97AQ3xlksJHDVhQOpkgqVqpSmi+jeGe7/YhH5De7gKvjSqPJ+DUZZpmiusRl4mib19J6bftyWXVQzt6fvih85hyRmh0O/dTpMH0XEecIT9YIOutkkGjf0X2nZiiWrSY3EhXWEtKWueGnJZDNAbI3WztTKBZ15jRf9rldhDJRxeh80JqVLpBEzoi8GgHaGKsLYSD6AkmVSrkIxggjoTGluDfUYpVBvwRV+Gj4eGo0Rhkj//aVDx4dttULkIoqc+6jEnNHD1h/F7PMXii1wkZ0VUH5EFIr6WQj0rmgIDqj75wxBDFLV+mhDUTg==
-Received: from OSQPR06MB7250.apcprd06.prod.outlook.com (2603:1096:604:2a1::14)
- by SEZPR06MB5880.apcprd06.prod.outlook.com (2603:1096:101:e9::8) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.522.19; Tue, 20 Oct
- 2026 10:42:56 +0000
-Received: from OSQPR06MB7250.apcprd06.prod.outlook.com
- ([fe80::6187:792f:4b8b:a243]) by OSQPR06MB7250.apcprd06.prod.outlook.com
- ([fe80::6187:792f:4b8b:a243%3]) with mapi id 15.21.0522.017; Tue, 20 Oct 2026
- 10:42:56 +0000
-From: Joe Wang <joe_wang@aspeedtech.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
-	"linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH] usb: ehci: Quiesce ASPEED EHCI before halting it on
- shutdown
-Thread-Topic: [PATCH] usb: ehci: Quiesce ASPEED EHCI before halting it on
- shutdown
-Thread-Index: AQHdXUv6lY/W8IuC00y5UIm9ibmlPbcARKoAgAR09PA=
-Date: Tue, 20 Oct 2026 10:42:55 +0000
-Message-ID:
- <OSQPR06MB725090D70BB07F70A2B521E789672@OSQPR06MB7250.apcprd06.prod.outlook.com>
-References:
- <20261016-upstream_ehci_aspeed_shutdown-v1-1-8440c13b5652@aspeedtech.com>
- <7dfc5ef1-a466-4d78-af65-147bee8fe698@rowland.harvard.edu>
-In-Reply-To: <7dfc5ef1-a466-4d78-af65-147bee8fe698@rowland.harvard.edu>
-Accept-Language: zh-TW, en-US
-Content-Language: zh-TW
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-authentication-results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=aspeedtech.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: OSQPR06MB7250:EE_|SEZPR06MB5880:EE_
-x-ms-office365-filtering-correlation-id: 2bc704d9-8340-4d9d-14fd-08df2e96e6a7
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|23010399003|366016|376014|1800799024|18002099003|22082099003|38070700021|4143699003|10067099003|56012099006;
-x-microsoft-antispam-message-info:
- DQjpZOSK8wJ4THRC7lG3JH9zaajQjFsX3XDYTXZcPXyWHfYwEjmQQ74P79+9VQNbZoXZNlQrHOpIR+0mu7mlIPv21JL4tjXOswfbsquPpNdtuMtir0g/Wl5HLbiAew9jeYMeCtvpMreGipVkomgfegbxRTyWQ0RwQpZriQTdckK23IRMertmnJN5I5ekGCc5bizsyfZVVgeTKosd6pAYn2eUpUh/JhuKjf1HzC+cadI+RH3KIvbDqZVYF14s6gl894goUf6opXC5I4kVA9MPVvPtAo/toPtSR78drMbeYZgLO3KSyj1xDRArIjYovBGv9JIENbjaPRwlLi9yjnFe4UpyYf2r+d+jXuB/aQCT2Kbk/k2/+ZG225uDoQQYZ0mteFYsmVYOPH25HHKg+eDKnVFiE8JmCXkKQq3RmyPdOkvXs9DHvit5Q2BiwJLMmXGI0Lf/QAvz+E4hjOco94KZZFR6wB/i+uApiXL8aJ+Pvz3BtzZo7tjCJCV2Oxot+xkF79XlYGCrh5aQ4xs2O8wsR/HWeZlecwyoNNRKxVpCRs4oxgxqQ8yk2pUlNkMXE1f5P3kjLuPS+vUEoptgWUsWpZnwJ/WBV0tBeZa/+ZnjDGJjirUH3Rjxbz+nO4e9DR3Bjcn1SB3K3j/04Xwlcs8gWTG/3/rVkyAxB0RjvHcIcW5z0waICSOBGTjWQgkCmfiW1BgaNpJf0YxdtpUpoKO5uqefwfMLduVVRJeOS5ABod8=
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:OSQPR06MB7250.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(366016)(376014)(1800799024)(18002099003)(22082099003)(38070700021)(4143699003)(10067099003)(56012099006);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?us-ascii?Q?KeTToyj0VPryaXihWVXJ/0fQSlDm7wWqrVqisU4v4djz1/QT/4hfzfhJOfkx?=
- =?us-ascii?Q?d+R/Qt6VLMRRbFB+gebPieUGs5m9PNAZgEYrh6HKHuPdiMYEwnXszhOLl5oT?=
- =?us-ascii?Q?8EAMH/y2QvzD58QXjcG5myCPEAFxxF4ma5j/JBbruLFw/Vr2A/wiPAKPukoK?=
- =?us-ascii?Q?Ej3/o4tYcU3py6Y17B+fQ0SGoiJ1ViCIyCs+XREBaJk8BYmzrCAIk1Ep4cwH?=
- =?us-ascii?Q?MxwmsGQDfJeGVp24e70aPlb8mqjvRJLK2qjqC50+s0Ic7GuBsWu7z3SIl9xA?=
- =?us-ascii?Q?d+Va/C67VB3huVy6WzDYtjng+a0etLbc8P+DfxPrDkcDMoQK0tp8/FTEFzv8?=
- =?us-ascii?Q?kgb22UUe2lzsmyQHZ52/V5oa8DC9R2naN0SHu7IHoDZcT2JFaV37zDS+3y8Q?=
- =?us-ascii?Q?t05/M96f0z6KG/u5dDmHvuu89YG2jX1g9eK1zniyt8WQmbMUx/b5y1MbvxZH?=
- =?us-ascii?Q?tMfSQZWKRJMXTaOUvfaWoXXfbvEV5pfhYc4VU5FB2+xDV945K9ioiFVRRV41?=
- =?us-ascii?Q?BO0BN18NQ+FcpiWJ7OgczrCsfpdyJSJsRqGnUuvN+qd6WTrEsd9L0GXZ5pCE?=
- =?us-ascii?Q?9vNbjYAhD8Mo/Eu/PHKfpLKErADwIK33Wblgk0mIousARs7LlccHfh/45Nyi?=
- =?us-ascii?Q?Mv8XVw4tQEHq9/EcsyC9twq2y9H9UvameyUhUc/12wbG10hkuR7eNRDLolv3?=
- =?us-ascii?Q?pO7azXqVqfNip0hKJ8z2ztCBsQTVgw8DMKW6A0g1Ly1vqmxKsdeBQ8vGaJcY?=
- =?us-ascii?Q?H1qSaKyEKEFUpbAsG1xo3hbPwSVo16SENfdsC8+K5Udg8QTa9KkKfxtuHura?=
- =?us-ascii?Q?OQ1IhRf7JdEcFr4KbaI2r4aIwWMLTXf19W0v+fnIKcglkIcylw90TnNVQ1Az?=
- =?us-ascii?Q?l7YtnqjUte3WmeNipyB+fgJztpt/pwIkA7HDINh030y5zIm50w7vTCdF5QPu?=
- =?us-ascii?Q?cdV9vka0KKnyabpsAcJ99+5J/l2k5/06x6OrD6T9ljLsh9BX8hhHhDhoWtE3?=
- =?us-ascii?Q?FiaT1SHNHm2YKJhTpaw8iV76KG8x/i+4+DY4ISek9jxYml0J5qF/2tbrI4+f?=
- =?us-ascii?Q?zTB9ASzu9Z+SLhsctyojDB4yCaqjH+XzqXPYE16+J9S51WpSLr5NxPC3aICq?=
- =?us-ascii?Q?4LNDDDG5RiHa/rzauWBqnLzFlOxbD3ZDQphhShKZq6+3pfjFK48/Smug6wOw?=
- =?us-ascii?Q?ntLAEc9VZPSJxJx/clbw/YAVQob/MK0LfnRIf7nLr3n2tQfZDN5lDKArkEub?=
- =?us-ascii?Q?Tv59rSmZPClzmdCW+lCVvKuUmznF9VX35p7sHVEtq7TfFM6mS6RlePOxb465?=
- =?us-ascii?Q?4hcMoxTr3inRShC6QWoEviBDXqKMiHwYoaFJGj5iHcdtT8DXd0aYicIL3kUP?=
- =?us-ascii?Q?d1uw+Xs2b7AdT02+w+eXj5C0+dN7aVcJB2xHWzHY08kyimlwm24WQ+NcLKUC?=
- =?us-ascii?Q?8gWEb5fbtFG6kzpgYewSKpZw9xslz8QSv8pLhTngfKZIiE8hvCJk8gsVDuj4?=
- =?us-ascii?Q?jbTIfaDg/sXlQCrnAhZc9LGZjNJl/H/HVHdpM8YtFSqF/90QO1O7Ty7mCv9r?=
- =?us-ascii?Q?Rz9/A73ES9m4i+94mTxMH67QHrIoSzjuW04PB53uSKoYcjGraxE2ruo86Nuh?=
- =?us-ascii?Q?ly0AKy0JhAJLOVzdbJUIWxIt44UNwuOknyBPo/EKX/zJxDf2b3+/HxpJXwlV?=
- =?us-ascii?Q?f76TAzBCR/IddqY0WqVYo1VaKZsaqeLEdAeYwXnhVSTILt/XjK2lyU2qjldC?=
- =?us-ascii?Q?nYWf9YE0tw=3D=3D?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j89vn0Hbhz2xmk
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 20 Oct 2026 23:00:05 +1100 (AEDT)
+Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Tue, 20 Oct
+ 2026 19:59:50 +0800
+Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
+ Transport; Tue, 20 Oct 2026 19:59:50 +0800
+From: Jacky Chou <jacky_chou@aspeedtech.com>
+Subject: [PATCH v10 0/3] Add ASPEED PCIe PHY support
+Date: Tue, 20 Oct 2026 19:59:48 +0800
+Message-ID: <20261020-upstream_pcie_rc-v10-0-fba209af8656@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -135,81 +46,172 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-OriginatorOrg: aspeedtech.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: OSQPR06MB7250.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 2bc704d9-8340-4d9d-14fd-08df2e96e6a7
-X-MS-Exchange-CrossTenant-originalarrivaltime: 20 Oct 2026 10:42:55.9157
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: T1EBJpb7f2V6CJPEgfFoBsRP1IBEUiIBmAMhi2WtQ7Kxg7CejO4MfJXrcb1zZMiVnN27Q+2/fo5pyFBpLK76og==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SEZPR06MB5880
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIALRX12oC/43R22rDMAyA4VcpuZ6DZEU+9GrvMUZxFHfJRpuQt
+ GGl9N3nFrYUauguJfg/gX0upjh2cSrWq3Mxxrmbun6fBoSXVSFt2H9E1TVpUWjQjAikjsN0GGP
+ YbQbp4mYU5aqKLfumdkhFyoYxbrvvm/n2nua2mw79eLqdmPG6vWFgkIAIAEtCJkNWofoM8nXaS
+ NsfX8M0xNgcorSl9LviKs16qS0yUEUaSs1M7j81LbUHBGavdYmpZobndfVXI2gLnp3mEh2iwec
+ xLzGifXzDmRWougroHVsTZJtVzKJowIxikuLEOQBhU6PJKvZOQZNRbFKqEGvYMkklMau4O4Ugo
+ 7ikALF30jQOpMkq/lcxgMgZxSelMeJ0SB9lgn1QLpfLD8KAQxjFAgAA
+X-Change-ID: 20251103-upstream_pcie_rc-8445759db813
+To: Vinod Koul <vkoul@kernel.org>, Neil Armstrong <neil.armstrong@linaro.org>,
+	Manivannan Sadhasivam <mani@kernel.org>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
+	Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Ryan Chen <ryan_chen@aspeedtech.com>, Billy Tsai <billy_tsai@aspeedtech.com>
+CC: <linux-aspeed@lists.ozlabs.org>, <linux-phy@lists.infradead.org>,
+	<devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-kernel@vger.kernel.org>, Jacky Chou <jacky_chou@aspeedtech.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1792497590; l=6380;
+ i=jacky_chou@aspeedtech.com; s=20251031; h=from:subject:message-id;
+ bh=nsaiDKDcqqGMfom04v8aWN0Ba2aHC4xg9Hlr8F8E+a4=;
+ b=5UFcNODqu9txzKJ83jT+ocQVK77jeiXxOQwW6FRy6eVJJanU2IHEeSn1chJJb642IbW+uncc3
+ 9ptecfQeVuOCKpvxaobrKIRy6f5IurkWzCJm1vmqhcJaRb1wWIu1tfS
+X-Developer-Key: i=jacky_chou@aspeedtech.com; a=ed25519;
+ pk=8XBx7KFM1drEsfCXTH9QC2lbMlGU4XwJTA6Jt9Mabdo=
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi Alan,
+This patch series adds support for the ASPEED PCIe PHY, including the
+device tree bindings and the PCIe PHY driver.
 
-Thanks for the review.
->=20
-> Under what circumstances does ehci_shutdown() run without ehci_stop()
-> being called first?  Is controller death the only possibility?=20
+Summary of changes:
+- Add device tree binding documents for ASPEED PCIe PHY
+- Implement ASPEED PCIe PHY driver, including reference clock handling
+  and an AST2700 host bridge reset sequence
+- Update MAINTAINERS for the new bindings and driver
 
-No, it's the normal case: ehci_shutdown() runs from the .shutdown
-callback during reboot, poweroff and kexec, where the HCD is not
-removed, so ehci_stop() is never called and the controller is usually
-still running with devices attached. The issue was seen on a host
-using LinuxBoot (NERF) firmware, which boots the final OS with kexec.
+This series has been tested on AST2600/AST2700 platforms and enables PCIe
+device enumeration and operation.
 
-Controller death is mentioned in the changelog only because relaxing
-the check in ehci_quiesce() also affects that path.
+Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
+---
+Changes in v10:
+- dt-bindings: add required 'clocks' property (fixed 100MHz PCIe
+  reference clock) to the PHY binding
+- Drop Rob Herring's Reviewed-by on the dt-bindings patch since the
+  binding gained the new 'clocks' property
+- Kconfig: allow building the driver with COMPILE_TEST
+- driver: get and enable the PHY reference clock in .init(), release it
+  in a new .exit() callback, for both AST2600 and AST2700
+- driver: add AST2700 host bridge internal reset sequence around the
+  port-type configuration in .set_mode()
+- driver: make pcie_phy_ast2600/pcie_phy_ast2700 platform data static
+- driver: fix ast2600_phy_set_mode() to read-modify-write PEHR_GLOBAL
+  instead of overwriting the whole register
+- driver: merge the identical ast2600/ast2700 .exit() callbacks into a
+  single aspeed_pcie_phy_exit()
+- driver: include <linux/of.h> directly for of_device_get_match_data()
+- driver: remove the unused dev field from struct aspeed_pcie_phy
+- MAINTAINERS: fix drivers/phy/aspeed/phy-aspeed-pcie.c file path
+- Link to v9: https://lore.kernel.org/r/20260115-upstream_pcie_rc-v9-0-d6c82a1556a7@aspeedtech.com
 
-> If the controller is dead, will quiescing work?
+Changes in v9:
+- Remove '[v8,2/4] ARM: dts: aspeed-g6: Add PCIe RC and PCIe PHY node'
+  and send it separately.
+- Use FIELD_MODIFY to configure register.
+- Link to v8: https://lore.kernel.org/r/20251230-upstream_pcie_rc-v8-0-03598cdd80cd@aspeedtech.com
 
-It won't help, but it's harmless. The death path has already cleared
-CMD_RUN, CMD_ASE and CMD_PSE, so ehci_quiesce() writes those bits back
-as zero and the handshakes either succeed at once or time out after
-16 uframes. ehci_shutdown() already touches the registers through
-ehci_halt() in that case anyway.
+Changes in v8:
+- Update the title of cover letter
+- Remove 'default y' from Kconfig
+- Change 'PHY:' to 'phy:' in the title of ASPEED PCIe PHY commit.
+- Remove unnecessary headers from phy-aspeed-pcie.c.
+- Add ASPEED PCIe PHY MAINTAINERS
+- Remove applied patches
+  [v7,2/7] dt-bindings: PCI: Add ASPEED PCIe RC support
+  [v7,5/7] PCI: Add FMT, TYPE and CPL status definition for TLP header
+  [v7,6/7] PCI: aspeed: Add ASPEED PCIe RC driver
+  [v7,7/7] MAINTAINERS: Add ASPEED PCIe RC driver
+- Link to v7: https://lore.kernel.org/r/20251216-upstream_pcie_rc-v7-0-4aeb0f53c4ce@aspeedtech.com
 
-> Is there any real reason not to do this on all types of EHCI controller, =
-not
-> just ASPEED?
+Changes in v7:
+- Add PCIe port into aspeed,ast2600-pci.yaml.
+- Remove aspeed_pcie_init_ports() and merge aspeed_pcie_port_init() to
+  aspeed_pcie_parse_port()
+- Refactor aspeed remap pcie addr to aspeed_pcie_map_ranges()
+- Link to v6: https://lore.kernel.org/r/20251201-upstream_pcie_rc-v6-0-8c8800c56b16@aspeedtech.com
 
-No EHCI technical reason that I know of. I limited it to ASPEED because
-that's what the report and my testing cover. Since ehci_stop()
-already quiesces unconditionally, doing it for all controllers should
-be safe.
+Changes in v6:
+- Refer to pci-cpi-bridge.yaml to update aspeed,ast2600-pcie.yaml and
+  the pcie node of aspeed-g6.dtsi.
+- 'dt-bindings: pinctrl: aspeed,ast2600-pinctrl: Add PCIe RC PERST#
+  group' have applied, remove it from this version.
+- Adjust the defnitions in pci.h.
+- Link to v5: https://lore.kernel.org/r/20251117-upstream_pcie_rc-v5-0-b4a198576acf@aspeedtech.com
 
-> Don't you want to check whether the controller has already been quiesced?
+Changes in v5:
+- Remove legacy-interrupt-controller and the INTx points to pcie node itself.
+- Correct bar mapping description and implementation to PCIe address
+  configuration in pcie-aspeed.c driver.
+- Link to v4: https://lore.kernel.org/r/20251027095825.181161-1-jacky_chou@aspeedtech.com/
 
-The quiesce has to come after rh_state is set to EHCI_RH_STOPPING;
-otherwise a URB submission or hrtimer event could re-enable the
-schedules through ehci_poll_ASS()/ehci_poll_PSS() before the halt.
-That's why v1 relaxes the check in ehci_quiesce(). The side effect is
-that a controller that was already suspended or halted gets quiesced
-again, which is harmless but unnecessary.
+Changes in v4:
+- Remove aspeed,ast2700-pcie-cfg.yaml
+- Add more descriptions for AST2600 PCIe RC in aspeed,ast2600-pcie.yaml
+- Change interrupt-controller to legacy-interrupt-controller in yaml
+  and dtsi
+- Remove msi-parent property in yaml and dtsi
+- Modify the bus range to starting from 0x00 in aspeed-g6.dtsi
+- Fixed the typo on MODULE_DEVICE_TABLE() in phy-aspeed-pcie.c
+- Add PCIE_CPL_STS_SUCCESS definition in pci/pci.h
+- Add prefix ASPEED_ for register definition in RC driver
+- Add a flag to indicate clear msi status twice for AST2700 workaround
+- Remove getting domain number
+- Remove scanning AST2600 HOST bridge on device number 0
+- Remove all codes about CONFIG_PCI_MSI
+- Get root but number from resouce list by IORESOURCE_BUS
+- Change module_platform_driver to builtin_platform_driver
+- Link to v3: https://lore.kernel.org/r/20250901055922.1553550-1-jacky_chou@aspeedtech.com/
 
-I see two ways to avoid the extra ehci_quiesce() :
+Changes in v3:
+- Add ASPEED PCIe PHY driver
+- Remove the aspeed,pciecfg property from AST2600 RC node, merged into RC node
+- Update the binding doc for aspeed,ast2700-pcie-cfg to reflect the changes
+- Update the binding doc for aspeed,ast2600-pcie to reflect the changes
+- Update the binding doc for aspeed,ast2600-pinctrl to reflect the changes
+- Update the device tree source to reflect the changes
+- Adjusted the use of mutex in RC drivers to use GRAND
+- Updated from reviewer comments
+- Link to v2: https://lore.kernel.org/r/20250715034320.2553837-1-jacky_chou@aspeedtech.com/
 
-(a) Keep the relaxed check, and in ehci_shutdown() record under
-   ehci->lock whether rh_state was EHCI_RH_RUNNING before setting
-   EHCI_RH_STOPPING, quiescing only in that case. This is the
-   smaller change.
+Changes in v2:
+- Moved ASPEED PCIe PHY yaml binding to `soc/aspeed` directory and
+  changed it as syscon
+- Added `MAINTAINERS` entry for the new PCIe RC driver
+- Updated device tree bindings to reflect the new structure
+- Refactored configuration read and write functions to main bus and
+  child bus ops
+- Refactored initialization to implement multiple ports support
+- Added PCIe FMT and TYPE definitions for TLP header in
+  `include/uapi/linux/pci_regs.h`
+- Updated from reviewer comments
+- Link to v1: https://lore.kernel.org/r/20250613033001.3153637-1-jacky_chou@aspeedtech.com/
 
-(b) Same as (a), but leave ehci_quiesce() unchanged and have
-   ehci_shutdown() call a separate helper for the schedule
-   quiescing part. Other callers of ehci_quiesce() are then not
-   affected at all.
+---
+Jacky Chou (3):
+      dt-bindings: phy: aspeed: Add ASPEED PCIe PHY
+      phy: aspeed: Add ASPEED PCIe PHY driver
+      MAINTAINERS: Add ASPEED PCIe PHY driver
 
-Either can be combined with dropping the `is_aspeed` check. Which would
-you prefer?
+ .../bindings/phy/aspeed,ast2600-pcie-phy.yaml      |  49 +++++
+ MAINTAINERS                                        |   8 +
+ drivers/phy/aspeed/Kconfig                         |  12 +-
+ drivers/phy/aspeed/Makefile                        |   1 +
+ drivers/phy/aspeed/phy-aspeed-pcie.c               | 230 +++++++++++++++++++++
+ 5 files changed, 299 insertions(+), 1 deletion(-)
+---
+base-commit: 8f56fdf3d8cb9f1dbdc93bf9ac816698aa6f70b7
+change-id: 20251103-upstream_pcie_rc-8445759db813
 
-Thanks,
-Joe
+Best regards,
+-- 
+Jacky Chou <jacky_chou@aspeedtech.com>
+
 
