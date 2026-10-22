@@ -2,92 +2,138 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 27F10606A31A
-	for <linux-aspeed@archiver.kernel.org>; Thu, 22 Oct 2026 02:43:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D9C4E606A31B
+	for <linux-aspeed@archiver.kernel.org>; Thu, 22 Oct 2026 09:53:11 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Vpd1V7cq
+	dkim=pass (2048-bit key, unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=KwmRxsbU
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j99Sk1428z2ySc;
-	Thu, 22 Oct 2026 13:43:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::122d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792637014;
-	cv=none; b=aszq3FQCmYbpUH09Id1osQlOnQUsDNL1KTV73VbXk6GEt67pXjoHN0J7NzUJD8LMMzjC8ILElcu0/d8JdqoF+78NoMAXBNsYqdWGAR9PZlXhVqTy/L2xDXkluUIg5uGut6fgBL1Q+fK0sbAaFpqFp6/1wFPfY2KOWZHs8gbJMkMrM+4KJKNBrJt0xfLXmnajgZjV1ob880wSIuXNGg+FYJPWZMSTBGqCs1tt412x/1KYkPq1ZayCaxbuMgVEE/Ohih4H2m2oXSJ3NtqH41WCO5o57ODN0RNKf49JTmIsQWUwMY/hvoLvt4N4JC5P8mdknUZPAXRaWf+qYDaCU69rMA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792637014; c=relaxed/relaxed;
-	bh=TUkEOgHWS4CYXansuqJaAAhK76CRt/42A/p2kv2zT+8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Md/0qw/TcVujfOi9a73npfmmycwMxl/sjBgBc4OvMHeF2TQeoAGywBqwiylilJtYOZUElZ8yCnJW8IgEqeeN6/nvejNqmzPqAD+b97JbGX5vUg9+erJ2Y64b32Dp22vUSCpp9jtcqdU5IK0EsXCOgxYUdZ4TnD+Na0ggt1RTx4I4CBHo3JB0RtKyxAHqmWtxDLyHxZAz57uPNCvaAIZFy4dD0jutJ65Be3UuceYIQ+0qTlUmfvliL7PGDfWm2aYUM2S89PXW6tG3r/Q2634ZRoyE+h93zhZK0FUgTmofrQz5S/PJpKF/Wkj9MfUcsYH54REkVOuCu00y41pujWEvYA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Vpd1V7cq; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::122d; helo=mail-dl1-x122d.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j9M0Q3wq4z2y7W;
+	Thu, 22 Oct 2026 20:53:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c406::3" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792662790;
+	cv=pass; b=mOQU3rwSaW+Fg1L6SG094+4xK71xVTzXRC2xPyrEVYDVwf6hafZwfDIETJDQuB9SxQLJbPaulfZptV2ClhVbIyJoflbo4CvLHxfsxtoaTf6y2344/6l1zOY2ijCFzH6E0kIofwAOuMmiVyyZTCeKV3CGwaxI8mo9Wa79nVf/JW90Dc7gp8V6sVqVIYpSXEFFSMzRwTIsVcuz/7bn59487UL6ETfMOg6Uq9wpq9JOCVLmbWGkdCunGea2zJVCDPzuYmarNyfuuJ+6vjvD2IyCmZ0arfTGs1rUMKev2aKpIzgUsmXV57eJtoXz/TQgp5adR7i9WL32lj6L5sXHb5s3UQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1792662790; c=relaxed/relaxed;
+	bh=8Z6phzq4o9KkpX1gB6koBcHx6gVreC5wsmVVMeSFB2U=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=Hxp8g/mURk5T5k6VQGtbmmRv0BnEoNiOE7IVbLSSN1F6pJqu+DFLqOLBTfNiVD1K3xbpUI9kikXzoQ8PAgfG/A11CkV60er3ohPVWjHGcjPNLJ9CSh4n+D9s+kzmyXhZB1ZqoYDLZ8VejucI/hy6BimnryyF12C862Dskxs8y820cM5pfyDBhQFeQIZenf9Q21KmlvuKkVJLyzEOXroPqh7tPKXENgFsKrWNeZXgWJtyesRaE7bWNrOB/UkXFEyFZanLdft53OcE3ucFltZL8TZT9EHoBJxhW2LSXNNrC3Wrv85Y0MG6B+lKU7M+09StEymbblUGeDbFv7CgWmFE/g==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=KwmRxsbU; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c406::3; helo=os8pr02cu002.outbound.protection.outlook.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Vpd1V7cq;
+	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=KwmRxsbU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::122d; helo=mail-dl1-x122d.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dl1-x122d.google.com (mail-dl1-x122d.google.com [IPv6:2607:f8b0:4864:20::122d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:c406::3; helo=os8pr02cu002.outbound.protection.outlook.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from OS8PR02CU002.outbound.protection.outlook.com (mail-japanwestazlp170120003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c406::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j99Sh6Frvz2yRn
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 22 Oct 2026 13:43:32 +1100 (AEDT)
-Received: by mail-dl1-x122d.google.com with SMTP id a92af1059eb24-15ea896ddc8so1948725c88.0
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 21 Oct 2026 19:43:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792637011; x=1793241811; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=TUkEOgHWS4CYXansuqJaAAhK76CRt/42A/p2kv2zT+8=;
-        b=Vpd1V7cqWsfbgwEHPVWxJJWBT4NaW2JK8wJ7KmYYR0bck4x6ZywbUatCFLCf2XJW3c
-         Ew0apGtbl3ix2tmeZyhC7FF/zccs1wQwSZPV2jG3f8WUMZw3BAhdM6SBrd1ODfq3HUMH
-         OxI2C6D/bcyyT9QB2IirxYLRS0oA4hbPE7Ce9C1HCWVGYKPSpRTkMc0B1rBfxKA8XKfX
-         LicqGdQ1XhcK7NCxAcVX2Tt/GAAScFzrms8gCqy+HtBHgKxwgy+COg7KoyWeeDZ1kyAe
-         rE5WmFI1/ACSpT8Pxx5L8ILf4E2pr/kYo6Lui3HF5lTPe8TgPgd1EW5hcsSPTecbheSO
-         naHQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792637011; x=1793241811;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=TUkEOgHWS4CYXansuqJaAAhK76CRt/42A/p2kv2zT+8=;
-        b=xdFSA2F6ZTBGLuLz8nCDl7A4HoBmBSE2/AGMV06zc6v6fJO1IpyrPk9qMM7r3lzRM0
-         xTITze0+gZzEuU9QBcO638OJCFY0yTnhrjkdoJTJGFHmG1g1T7KB8eIj1L1Y++tK/VPk
-         G0LF/fQRy8gHNHVGP37fAv7rlirVuBb0/TI1YGtZFvqhYexnwOJ+QZr4bfi7JnSrhsYp
-         MROfeMGFyeSHefXkRA/PPZ1LkYD934rl2EAsQ3xa0YKU5JS9/r74XDLlnS9bGuDv14uO
-         9ZCC1IBqzRRKp0wXaD41+bz9Ur8yD+HxulAIQWh827vaZvWf7pzq+LUJHWu+aFZT8mh+
-         b2Uw==
-X-Gm-Message-State: AFq9FYLLgYAG4DaTGxU1C5Yln/RMyaxM1e7Jof7mAKHEPJIMHs3a0UYg
-	BeNv15Z0uMkxYQ9xrPgYV/ZQXLvgqJoUodms56gTlqlmHCDq4oa5bYoQW2ngog==
-X-Gm-Gg: AYBFou0VX7X37Y93l7D/aqumCW9miZBbs32wUH449gbREKo/oNm3Id5cFh44tmN8Aja
-	/uMMetJy5BchHEf8J+u1P5nKSbIOFqCpqotXLZuxY4ZbWUVkNA8sPT8e50ORJ9Tl87GXQrlZtED
-	SbpuqotY1pjOvbjJA1kJ148XJ00Ca4y7ILOZkNtyHNFfKzVPg2G1O2p6d4Tn+yblkG3ZI96EUcu
-	zTbYCDZD7plPYGOhKH5mOdFZi7tVABEu7oQcd+zZdbATT3GQp1isMBF4qUMirC+rqbR9JBJgdVV
-	WZDbOLLUI5sQnfhO0mv3dlBQ06fxVBX88OzqrY7Oi6hFBxXMRkOWtlZuvC39XML/27sIPQ54HsI
-	xq+nXAAY+S/pv1hBio78/URQcEMnPihC+GHI11PSYMERFixuUO4lCcL8QtmPolzM4Nvsy4VVoH/
-	3k5o1kwm/XlNAJBFhc+bZkt9cxolPh+Ewkyzp+6c0ux5DRG4h3LumcjVcR1hzwu6i6X5qRSpNMv
-	4Hxi0+8O4bL4v50U4l337HfuuI00baSwqA6ZE7AYDFyoHiKBFbpNnJnyEyebLdMjMx6FRJ8R4BP
-	Q0qq+bR/P7GecPb7aw==
-X-Received: by 2002:a05:7022:7a9:b0:187:eb7f:b8f with SMTP id a92af1059eb24-190a50efe13mr6277201c88.13.1792637010372;
-        Wed, 21 Oct 2026 19:43:30 -0700 (PDT)
-Received: from debian.prasanth ([103.183.205.34])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1903ca044d4sm11077386c88.17.2026.10.21.19.43.26
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 21 Oct 2026 19:43:29 -0700 (PDT)
-From: Prasanth Kumar Padarthi <prasanth.padarthi10@gmail.com>
-To: linux-aspeed@lists.ozlabs.org
-Cc: linux-gpio@vger.kernel.org,
-	openbmc@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	krzk@kernel.org,
-	tan.siewert@9elements.com,
-	billy_tsai@aspeedtech.com,
-	Prasanth Kumar Padarthi <prasanth.padarthi10@gmail.com>
-Subject: [RFC PATCH v2] pinctrl: aspeed: Hand over global GPIOP passthrough to local mux controls
-Date: Thu, 22 Oct 2026 08:13:14 +0530
-Message-ID: <20261022024314.48623-2-prasanth.padarthi10@gmail.com>
-X-Mailer: git-send-email 2.47.3
-In-Reply-To: <20261022024314.48623-1-prasanth.padarthi10@gmail.com>
-References: <20261015035118.9495-1-prasanth.padarthi10@gmail.com>
- <20261022024314.48623-1-prasanth.padarthi10@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j9M0M3PWlz2xKQ
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 22 Oct 2026 20:53:07 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=KNKI8u9l6ktd8dy67MIvLH1LK1eAMMVC2SF2rOlhDHiyitZscQDwD0sGrW8sSaFeu0bbyHvrDVD2F3XBv948aBGwdnmcA2zL3bjCw5mDne91szY/VRuQk1C2Vj9uQSqKSyo1GQIBQEjnjHElrzYWtk7qe5RmMctzZF/MVzpzzC7rTyZmZEgIy5olg85lUOpyne7z8VLDAX9ra2fn3z9XG2n963g+oOthy9vYUdaHz1/YDVrPPI82SRtcr8dOT7ySWRW+pYADhirFRDbyOlu+0kTBjSEXzYt75VfbeigjrQ65mOpvKSk4ybsC3xCLKBL/aOzJ5Tu3I2Xm5mMDXdKbLg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=8Z6phzq4o9KkpX1gB6koBcHx6gVreC5wsmVVMeSFB2U=;
+ b=dEWRipB2Epvhb88eb6H6+Asww+otHOuvVWICR6CRhL0rBHe5jpDDlEq6aV6ZTjD23u7BZL/ywaCIAcbfpqSNGmVJTSYjvYxB0mJCXhfQqdYmTnURdzj7eFePyMguErrYCBZKR4DEgDPiMH8zau18hEePvvM2fmVNhxJucM4eCPuXBE3SClKxZC9O3jVxUrO7SR+hrRVPmivzZwft1/Wf86R8yMNGt78GqDr/PdEoLm+wrwXGR16A/h1SB9CBJTrmNi0ovE2Ap+dWZicYnr9KU+ewjgRbcvqq5FW46QncanNSn+xPCTHA9xyX8q/6GG+Ll855QS6CdC4C+8YfNgm58g==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
+ header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=8Z6phzq4o9KkpX1gB6koBcHx6gVreC5wsmVVMeSFB2U=;
+ b=KwmRxsbUjcdyksXLDaLLdkuu5dTsh3aqN5QdbUs5/7XxAYbuX2rUvpNp3NyDRLSl0P+7cD+QXUmySaaj/u/8Tn//WHb5qO6PxLO35vl5a5StTJwcoZgMecC2qDZNqZd6i6f+sgk97a64SCf7vYsYGYlfFh766hUTG5EGzojmF6uaWnTqFb2mLb4fkcPGCwNGEp0E4pYNEEGf9lXI/C9sQwh72f6H+t7+6fslhaJi/CtG09uuIz+n5qGVE+/eAf/7/kw6+BZJx0Y9kfjlXqp6IkzWV1IhJXfQGJPUogXgAbmDU+NduN3pOZzvUl7fw76xLmjoSAc8iycBCPfvgiSUNw==
+Received: from TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com (2603:1096:408::791)
+ by KUYPR06MB8723.apcprd06.prod.outlook.com (2603:1096:d10:8e::19) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.569.2; Thu, 22 Oct
+ 2026 09:52:37 +0000
+Received: from TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com
+ ([fe80::e00f:6219:946c:195e]) by TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com
+ ([fe80::e00f:6219:946c:195e%4]) with mapi id 15.21.0569.000; Thu, 22 Oct 2026
+ 09:52:36 +0000
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+To: Ryan Chen <ryan_chen@aspeedtech.com>, Stefan Schaeckeler
+	<sschaeck@cisco.com>, Rob Herring <robh@kernel.org>, Krzysztof Kozlowski
+	<krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel Stanley
+	<joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, Borislav
+ Petkov <bp@alien8.de>, Tony Luck <tony.luck@intel.com>
+CC: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+	"linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
+	<linux-aspeed@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>, "linux-edac@vger.kernel.org"
+	<linux-edac@vger.kernel.org>, Borislav Petkov <bp@suse.de>, Krzysztof
+ Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Subject: RE: [PATCH v5 0/9] Add Aspeed AST2700 SDRAM EDAC support
+Thread-Topic: [PATCH v5 0/9] Add Aspeed AST2700 SDRAM EDAC support
+Thread-Index: AQHdViL12A+l5SpHfkGkIr76gXxHGrcJaaIQ
+Date: Thu, 22 Oct 2026 09:52:36 +0000
+Message-ID:
+ <TY2PPF5CB9A1BE6C09C55652B1A6AA68725F2652@TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com>
+References: <20261007-edac-v5-0-5c31fc5df4cf@aspeedtech.com>
+In-Reply-To: <20261007-edac-v5-0-5c31fc5df4cf@aspeedtech.com>
+Accept-Language: zh-TW, en-US
+Content-Language: zh-TW
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=aspeedtech.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: TY2PPF5CB9A1BE6:EE_|KUYPR06MB8723:EE_
+x-ms-office365-filtering-correlation-id: e4c0dedf-2d46-4997-577c-08df302233bb
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|7416014|376014|366016|1800799024|23010399003|261021121427099003|38070700021|56012099006|261009223027099003|10067099003|261021123027099003|18002099003|22082099003|6133799003;
+x-microsoft-antispam-message-info:
+ fxYURV0PAdt4eKDqlDIDy2iPWObI4l9KoUhKsWDiSCAtgK+Obmbazk0IPfxRl3RtNyZ/LEe8HvXleeP6i27XByzgmSo3hgmSgz9XrdoVH824EGTUFPuBihIMPziPKMKDbjUQZIqkD0/8yTV6k/ExYjMrF0bquGprvtiNH1L2frWNqMJAc8Kgz7ZSvX7y7wS8yH8BkZ6QU+WxCVs2s2WpXauha+pWL2/R4i4fUjTHn/QnTCa+ZweW1iuM0slqvxYjwnem7KyDgadAHt0K8rP89ji2IxsKA/zXWQzvEx2P23l8t7uC30MF6BRV+wNJg0dGw4cWxadUZPByohBSyzwXYZnmKFuuDgyQeK+1JyUSd+9Ubhf8p2DYCspDzpkrJwr1O83yJ04grEJajlea50zh1Famiy2PEw3hEBsZC45LJuea/pVbHlCoZt2En15DZ12i2k+Fq8FrZ7aD1hEXCIh3W9ovXv8e87xAnpaflTyZVor4bY/GDNSWHnFMdlLixakmaFQsQhNI97npVH0rsDj8JkBaOXLZoaYkdgtjXhsUbFjsvkMiHYcR6DqG/zfuReDMOz96ii2tx/fKRK+b76RJFQXkXKYGioRGiROS6u9LrZJn83PaZH+wxGeIVcQ17Gw09YN5sBn/2SU9E69BdlbfS3lVMvsu6TrVIC9aS/YHC4U=
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:zh-tw;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(366016)(1800799024)(23010399003)(261021121427099003)(38070700021)(56012099006)(261009223027099003)(10067099003)(261021123027099003)(18002099003)(22082099003)(6133799003);DIR:OUT;SFP:1102;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?utf-8?B?ZTlqbnNSTDA2K1dhNERjdFRqOFBkOVFENXlqRHRxQ3BJdDl3a3V5c21qSmJo?=
+ =?utf-8?B?T2U3QktnUElyUHBNQThLcmd2Nm91dXdndXFId1lKZVBXTXJLTHBMeDB5RzVN?=
+ =?utf-8?B?bjZFaDJiWERpQTlVMWhaeGlldFczbm9HWkIxMVdsNUdJZ3A4SmhkZEsvbk11?=
+ =?utf-8?B?b2htbi9SUWYvbnp5c1cxVXUxSWIxT1JtL002V1hrTzlScGc5TG1BZ1p2Q1pE?=
+ =?utf-8?B?WmVwU0FvNjdmaGxHWFJhUWhDNEU4NU12a2RpeXRWUk5PNURKZ040MmpEZExy?=
+ =?utf-8?B?cjRGb3ZncnhQNHFBc1AzRmx2YlZpUzNld041amRqeUZpRHIxZ1dEQlJMSU0y?=
+ =?utf-8?B?NUZQcTJwZkFRU0hnTjNoc0FUcy81dEhZemVXbytRaU5TL3Y5Tjd6MjRONkMv?=
+ =?utf-8?B?d0V5ZjNLMkErbGVtRzd2cUhySkdnTjRrTzBHelF0UGlzT1pnMFZNSWJERkNh?=
+ =?utf-8?B?WVM2clpTbkY1R0R4YkRobnpOdWxuMW84bjRkVHpwNTU4QWVERnFWd3FEeUZs?=
+ =?utf-8?B?USticVVrelI0ZXU0VWEraHBzUDRGMEdzMUN0b1RBUnJpcER4QU1uK1kyWXQw?=
+ =?utf-8?B?SEljampBQnhHd2xDMENCS3RtcDExMDVkSHA2eSsrZmtVSkR1T2kwaUV2NXBv?=
+ =?utf-8?B?K24xVkZYV3F1MGQ2em1pSjZ1N3MzbzJJeXh4YUQ4NmVmVFhlMjJwQUpHelRY?=
+ =?utf-8?B?a2JpZ2sxRUtSOUJ6aTdUaTlsOHdacFF2VE5KQThmNkFLam5ncWdQRm1ZYkRK?=
+ =?utf-8?B?a2grUUU4cUdlTlE5UEdZL01ibnB1MVdsckJTdWg2bzV4bjlpVWQ5VWVKeE11?=
+ =?utf-8?B?QS9PR2FlOGhleTErc0l5TTB6TXlhYTJkU0RNaXdONlFKeVE4RDlGbU52eUhw?=
+ =?utf-8?B?eW5WdU1kK01iK2JWbGlHaFBtN1N3dGh0ZXVoV2tDV29NZDI4MkZzRkVUUkM3?=
+ =?utf-8?B?K1pncTNlR2IrNENiUmpYSWVvSkR1UWlhZzBhUm1mMGRZMVZudVdacStWUWhu?=
+ =?utf-8?B?U0x4eU0yUXMvN3FndGdJZVVTbEd1Vm1iRHBsNXVDTG1DMnNNREpTdjI2NFNB?=
+ =?utf-8?B?VHJPdXM0NGhwRHpsZWZhcXFWYUplTzVkZEUzVncyZWozOG9Va1BWb2tPcy9j?=
+ =?utf-8?B?dTZ0SFFDM05UemZCUXo3MlBmRVp3VmFXZVNmaUpCL2EvVkM4eGJ2SFFtRG9v?=
+ =?utf-8?B?RDlBUE52VzFDYnNiYjJST0Y1TTYwQzRQem5RaWZwQml5SkZHcUZnaHdieXd3?=
+ =?utf-8?B?bUZ3b1RHbURsYzVGZVExYjBqSjBYZW5WZGxERmVvWkFvSndQOXk3UjRublQr?=
+ =?utf-8?B?a2E5azZ5dGU0anZlbmdwY2luc0NOSE9NdDR0cEZ5RXF4aVB6N0lxSlllaVlB?=
+ =?utf-8?B?VG1QQjhxaVNKYk1MeTU2U1dvakl6cHZJZHFlcUZQcXRxKzJ4NjlGQmpKbVpS?=
+ =?utf-8?B?OXN2NVRVV1RoZ0s0K3V3SlUxR1BhNDVwUEpFbVRpTlFaR0J0TlhtbnpaZUNt?=
+ =?utf-8?B?L3B4QTVHOVIzRVloWHpCOTBKaWZic0NjVlRxb2syNDFBbk5qdlc4dzl0dGZT?=
+ =?utf-8?B?R1l4UkxyVHNFRm9mbXBDdFBIMWYxSWZnVUswbWttdTN3c2tDdnZ5d1k1Ykkv?=
+ =?utf-8?B?dU5GU1R6ak5XYmNPRkxKbGRFTlRiNlcxb0U4UkNEWXFwcmRQWWx2L2srRDlp?=
+ =?utf-8?B?UHVod2dUT3NROEpsc0NLckZNU1RrRXhCNk13WExuaCtkVjlnckFxajVjVXA4?=
+ =?utf-8?B?MG4rN3E2YkdreG9PTW1Pek9sRXlnWk0yR3dvNTlCK2oycFgxcFZaak5xZ3NI?=
+ =?utf-8?B?L3lTZ0xLUWZaTWE0VWZ0bDNad0RJSTVycVFZaTdyaHRnVTRiUndaVk80MjNC?=
+ =?utf-8?B?dktrL2NRV0MzOHgrUVcvNmdGL2hzMzBEcVJKUjg4cWVydzYrY0VaeGVhczdk?=
+ =?utf-8?B?UlpudFVxRTJLRWllamdWcmphN3NVL2lyNys0OTIwaXpmY21tRnZPa1pMS1U2?=
+ =?utf-8?B?WHI5S2M5NE05SGF4cHJWTEJiazJLRmUrQk55UkF2VXA5K1UybXRyN0dNZjBF?=
+ =?utf-8?B?SWF0WVlSQ1JRRk5VL0NnSktUNnZ5OWo1K0dwL1JsSjkxcnRYcDJaVUExV1J6?=
+ =?utf-8?B?Mi9lbEM5OFNsRlhLZEtoVGx6RzJ1Um1uSkV3WWhYYnY0RHNZcVY0ZFRVOHcy?=
+ =?utf-8?B?Qkl2UDd5cGloUFQydXJtd1NaTXZtVTY1N09QdE1LdVFkV3g0TmRNaUxwSnc0?=
+ =?utf-8?B?ZzNnM1VJODVKMzVxZzJ4enhOaU1PQnNGeEhHZG5FV2U3Qm9PMGM0cU5STVZ3?=
+ =?utf-8?B?TlJZZ05Qb1F1WDUvbVo5VUdXSzc1YTR2RFVkZy82cGVVWTNZTXN4QT09?=
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -101,241 +147,115 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-OriginatorOrg: aspeedtech.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: e4c0dedf-2d46-4997-577c-08df302233bb
+X-MS-Exchange-CrossTenant-originalarrivaltime: 22 Oct 2026 09:52:36.4615
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: 5vKjYm7pUsJR5efXCsMLTHPlf91vQ0f/Bbh34mWha0bTpklvdKjFBGKZ6/35OUJ+jg2aaQ/UO0nivvO+s2lZJoy2zp208ny/C3ImLyKn6sM=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: KUYPR06MB8723
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=4.0.1
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On B650D4U, GPIO-only host power control fails when SCU51C[9]
-selects GPIOP passthrough even after the normal GPIO request path
-clears the per-pin SCU4BC selections. The THRU expressions currently
-model the local controls but not the shared strap source.
-
-Experiment with transferring globally selected GPIOP0-P5 THRU roles
-to SCU4BC[29:24] before registering the controller, then clear the
-active shared sources. Leave PWM selection and the strap-source
-selector unchanged. Subsequent requests use the existing mux helpers.
-Clear SCU510[28] through SCU514 and verify the shared enables cleared.
-
-If handover fails, record an instance-local error and reject GPIO and
-mux requests involving P0-P5 before changing their mux state, while
-attempting to register the controller for unrelated pins. A P0-P5
-controller hog can still cause registration to fail. Retain prepared
-local selections after partial failure rather than blindly restoring
-a shared enable.
-
-This RFC explores probe-time normalization rather than the previous
-request callback. Mandatory initialization policy, signal continuity,
-concurrent SCU writers and post-handover registration failure remain
-open design questions.
-
-On the tested B650D4U, the new image powers on the host with unchanged
-GPIO-only power-control userspace. SCU4BC remains 0x30000000 and
-SCU51C remains 0x1c80 before and after the request. The operator also
-reports successful power-on after complete AC removal. Actual P4/P5
-forwarding, transition glitches, PWM coexistence, SCU510[28] hardware
-handling and restricted failure paths have not been validated.
-
-Signed-off-by: Prasanth Kumar Padarthi <prasanth.padarthi10@gmail.com>
----
- drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c | 147 ++++++++++++++++++++-
- 1 file changed, 143 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-index b0c7e4f6df9c..54396f2ba91b 100644
---- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-+++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-@@ -10,6 +10,7 @@
- #include <linux/platform_device.h>
- #include <linux/pinctrl/pinctrl.h>
- #include <linux/pinctrl/pinmux.h>
-+#include <linux/slab.h>
- #include <linux/string.h>
- #include <linux/types.h>
- 
-@@ -40,6 +41,8 @@
- #define SCU4D8		0x4D8 /* Multi-function Pin Control #23 */
- #define SCU500		0x500 /* Hardware Strap 1 */
- #define SCU510		0x510 /* Hardware Strap 2 */
-+#define SCU514		0x514 /* Hardware Strap 2 Clear */
-+#define SCU51C		0x51c /* Hardware Strap 3 */
- #define SCU610		0x610 /* Disable GPIO Internal Pull-Down #0 */
- #define SCU614		0x614 /* Disable GPIO Internal Pull-Down #1 */
- #define SCU618		0x618 /* Disable GPIO Internal Pull-Down #2 */
-@@ -2747,12 +2750,56 @@ static struct aspeed_pinctrl_data aspeed_g6_pinctrl_data = {
- 	.nconfmaps = ARRAY_SIZE(aspeed_g6_pin_config_map),
- };
- 
-+struct aspeed_g6_probe_data {
-+	struct aspeed_pinctrl_data pdata;
-+	int thru_error;
-+};
-+
-+static bool aspeed_g6_is_thru_pin(unsigned int pin)
-+{
-+	return pin >= AB22 && pin <= AB23;
-+}
-+
-+static int aspeed_g6_gpio_request_enable(struct pinctrl_dev *pctldev,
-+					 struct pinctrl_gpio_range *range,
-+					 unsigned int offset)
-+{
-+	struct aspeed_pinctrl_data *pdata = pinctrl_dev_get_drvdata(pctldev);
-+	struct aspeed_g6_probe_data *g6 =
-+		container_of(pdata, struct aspeed_g6_probe_data, pdata);
-+
-+	if (g6->thru_error && aspeed_g6_is_thru_pin(offset))
-+		return g6->thru_error;
-+
-+	return aspeed_gpio_request_enable(pctldev, range, offset);
-+}
-+
-+static int aspeed_g6_set_mux(struct pinctrl_dev *pctldev,
-+			     unsigned int function, unsigned int group)
-+{
-+	struct aspeed_pinctrl_data *pdata = pinctrl_dev_get_drvdata(pctldev);
-+	struct aspeed_g6_probe_data *g6 =
-+		container_of(pdata, struct aspeed_g6_probe_data, pdata);
-+	const struct aspeed_pin_group *pgroup = &pdata->pinmux.groups[group];
-+	unsigned int i;
-+
-+	/* Check the entire group before the shared helper changes any pin. */
-+	if (g6->thru_error) {
-+		for (i = 0; i < pgroup->npins; i++) {
-+			if (aspeed_g6_is_thru_pin(pgroup->pins[i]))
-+				return g6->thru_error;
-+		}
-+	}
-+
-+	return aspeed_pinmux_set_mux(pctldev, function, group);
-+}
-+
- static const struct pinmux_ops aspeed_g6_pinmux_ops = {
- 	.get_functions_count = aspeed_pinmux_get_fn_count,
- 	.get_function_name = aspeed_pinmux_get_fn_name,
- 	.get_function_groups = aspeed_pinmux_get_fn_groups,
--	.set_mux = aspeed_pinmux_set_mux,
--	.gpio_request_enable = aspeed_gpio_request_enable,
-+	.set_mux = aspeed_g6_set_mux,
-+	.gpio_request_enable = aspeed_g6_gpio_request_enable,
- 	.strict = true,
- };
- 
-@@ -2782,15 +2829,107 @@ static const struct pinctrl_desc aspeed_g6_pinctrl_desc = {
- 	.confops = &aspeed_g6_conf_ops,
- };
- 
-+/*
-+ * Experimental: transfer the global GPIOP0-P5 THRU selection to the
-+ * individual mux controls before registering any pinctrl consumers.
-+ * PWM selection is higher priority and is deliberately left unchanged.
-+ *
-+ * Do not undo the local selections on error: a shared enable may already
-+ * have cleared. Keeping the equivalent local selections preserves routing
-+ * while rejecting affected requests, rather than granting an unsafe GPIO.
-+ * Signal continuity during this transfer still needs hardware validation.
-+ * Running before pinctrl registration excludes this controller's consumers,
-+ * not independent SCU writers. Regmap locks individual accesses, not this
-+ * sequence; coordination with other writers remains an RFC design question.
-+ */
-+static int aspeed_g6_thru_handover(struct regmap *scu)
-+{
-+	const u32 local_mask = GENMASK(29, 24);
-+	unsigned int strap2, strap3, local;
-+	int ret;
-+
-+	ret = regmap_read(scu, SCU510, &strap2);
-+	if (ret)
-+		return ret;
-+	ret = regmap_read(scu, SCU51C, &strap3);
-+	if (ret)
-+		return ret;
-+
-+	if (!(strap2 & BIT(28)) &&
-+	    ((strap2 & BIT(30)) || !(strap3 & BIT(9))))
-+		return 0;
-+
-+	/* Preserve every globally selected role, including under PWM. */
-+	ret = regmap_update_bits(scu, SCU4BC, local_mask, local_mask);
-+	if (ret)
-+		return ret;
-+	ret = regmap_read(scu, SCU4BC, &local);
-+	if (ret)
-+		return ret;
-+	if ((local & local_mask) != local_mask)
-+		return -EPERM;
-+
-+	/* Leave the inactive GPIOZ6 source alone in dedicated-strap mode. */
-+	if (!(strap2 & BIT(30)) && (strap3 & BIT(9))) {
-+		ret = regmap_update_bits(scu, SCU51C, BIT(9), 0);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	if (strap2 & BIT(28)) {
-+		/* SCU510 is write-one-set; do not use an ordinary RW clear. */
-+		ret = regmap_write(scu, SCU514, BIT(28));
-+		if (ret)
-+			return ret;
-+	}
-+
-+	ret = regmap_read(scu, SCU510, &strap2);
-+	if (ret)
-+		return ret;
-+	ret = regmap_read(scu, SCU51C, &strap3);
-+	if (ret)
-+		return ret;
-+	if ((strap2 & BIT(28)) ||
-+	    (!(strap2 & BIT(30)) && (strap3 & BIT(9))))
-+		return -EPERM;
-+
-+	return 0;
-+}
-+
- static int aspeed_g6_pinctrl_probe(struct platform_device *pdev)
- {
--	int i;
-+	struct aspeed_g6_probe_data *g6;
-+	struct regmap *scu;
-+	int i, ret;
-+
-+	if (!pdev->dev.parent)
-+		return -ENODEV;
-+	scu = syscon_node_to_regmap(pdev->dev.parent->of_node);
-+	if (IS_ERR(scu))
-+		return dev_err_probe(&pdev->dev, PTR_ERR(scu),
-+				     "No SCU regmap for THRU handover\n");
-+
-+	g6 = devm_kzalloc(&pdev->dev, sizeof(*g6), GFP_KERNEL);
-+	if (!g6)
-+		return -ENOMEM;
-+	/* Copy per-device state; referenced mapping tables remain shared. */
-+	memcpy(&g6->pdata, &aspeed_g6_pinctrl_data, sizeof(g6->pdata));
-+
-+	ret = aspeed_g6_thru_handover(scu);
-+	if (ret == -EPROBE_DEFER)
-+		return ret;
-+	if (ret) {
-+		g6->thru_error = ret;
-+		dev_warn(&pdev->dev,
-+			 "THRU handover failed (%d); GPIOP0-P5 mux requests blocked\n",
-+			 ret);
-+	}
- 
- 	for (i = 0; i < ARRAY_SIZE(aspeed_g6_pins); i++)
- 		aspeed_g6_pins[i].number = i;
- 
- 	return aspeed_pinctrl_probe(pdev, &aspeed_g6_pinctrl_desc,
--			&aspeed_g6_pinctrl_data);
-+			&g6->pdata);
- }
- 
- static const struct of_device_id aspeed_g6_pinctrl_of_match[] = {
--- 
-2.47.3
-
+SGVsbG8gQm9yaXMsDQoJSnVzdCBhIGdlbnRsZSBwaW5nIG9uIHRoaXMgc2VyaWVzLg0KCUFueSBm
+ZWVkYmFjayB3b3VsZCBiZSBhcHByZWNpYXRlZC4NCglQbGVhc2UgbGV0IG1lIGtub3cgaWYgdGhl
+cmUgaXMgYW55dGhpbmcgSSBzaG91bGQgYWRkcmVzcyBvciByZXZpc2UuDQoNClJ5YW4NCg0KDQo+
+IFN1YmplY3Q6IFtQQVRDSCB2NSAwLzldIEFkZCBBc3BlZWQgQVNUMjcwMCBTRFJBTSBFREFDIHN1
+cHBvcnQNCj4gDQo+IEFkZCBFQ0MgZXJyb3IgcmVwb3J0aW5nIGZvciB0aGUgQXNwZWVkIEFTVDI3
+MDAgU29DIHRvIHRoZSBleGlzdGluZw0KPiBhc3BlZWRfZWRhYyBkcml2ZXIuDQo+IA0KPiBUaGUg
+QVNUMjcwMCBtZW1vcnkgY29udHJvbGxlciBrZWVwcyB0aGUgc2FtZSBvdmVyYWxsIEVEQUMgcHJv
+Z3JhbW1pbmcNCj4gbW9kZWwgYXMgdGhlIGVhcmxpZXIgQXNwZWVkIEJNQyBTb0NzLCBidXQgdXNl
+cyBhIGRpZmZlcmVudCByZWdpc3RlciBsYXlvdXQsIGENCj4gc3BsaXQgaW50ZXJydXB0IHN0YXR1
+cy9jbGVhci9tYXNrIHNjaGVtZSBhbmQgRERSNC9ERFI1IG1lbW9yeS4NCj4gUmF0aGVyIHRoYW4g
+Zm9yayB0aGUgZHJpdmVyLCB0aGUgZXhpc3RpbmcgY29kZSBpcyBmaXJzdCB0aWRpZWQgYW5kIGdl
+bmVyYWxpc2VkLA0KPiB0aGVuIHRoZSBBU1QyNzAwIGlzIGFkZGVkIGFzIG9uZSBtb3JlIHBlci1T
+b0MgdmFyaWFudC4NCj4gDQo+IFBhdGNoZXMgMS00IGFyZSBidWcgZml4ZXMgYW5kIGNsZWFudXBz
+IHRvIHRoZSBleGlzdGluZyBkcml2ZXIuIFBhdGNoIDUNCj4gZG9jdW1lbnRzIHRoZSBBU1QyNzAw
+IGJpbmRpbmcsIHBhdGNoZXMgNiBhbmQgNyByZXdvcmsgdGhlIGltcGxlbWVudGF0aW9uDQo+IHRv
+IGFjY29tbW9kYXRlIGl0LCBhbmQgcGF0Y2ggOCBhZGRzIHRoZSBBU1QyNzAwIHN1cHBvcnQgaXRz
+ZWxmLiBQYXRjaCA5IGlzDQo+IFN0ZWZhbidzIHN0ZXAtZG93biBwYXRjaCwgYW1lbmRlZCB0byBs
+ZWF2ZSB0aGUgZW50cnkgaW4gcGxhY2Ugd2l0aCBtZSBhcyBpdHMNCj4gcmV2aWV3ZXIuDQo+IA0K
+PiBTaWduZWQtb2ZmLWJ5OiBSeWFuIENoZW4gPHJ5YW5fY2hlbkBhc3BlZWR0ZWNoLmNvbT4NCj4g
+LS0tDQo+IENoYW5nZXMgaW4gdjU6DQo+IC0gUmVnaXN0ZXIgdGhlIEVDQyBpbnRlcnJ1cHQgd2l0
+aCByZXF1ZXN0X2lycSgpIGluc3RlYWQgb2YNCj4gICBkZXZtX3JlcXVlc3RfaXJxKCkgZm9sbG93
+ZWQgYnkgYW4gZXhwbGljaXQgZnJlZSwgYW5kIGtlZXAgdGhlDQo+ICAgaW50ZXJydXB0IG51bWJl
+ciBhbG9uZ3NpZGUgdGhlIGRyaXZlcidzIG90aGVyIHN0YXRlIHNvDQo+ICAgYXNwZWVkX3JlbW92
+ZSgpIGRvZXMgbm90IGhhdmUgdG8gY2FsbCBwbGF0Zm9ybV9nZXRfaXJxKCkgYWdhaW4uDQo+IC0g
+TGluayB0byB2NDoNCj4gaHR0cHM6Ly9sb3JlLmtlcm5lbC5vcmcvci8yMDI2MDkzMC1lZGFjLXY0
+LTAtYzJlNTI2ZjNlZDc5QGFzcGVlZHRlY2guY29tDQo+IA0KPiBDaGFuZ2VzIGluIHY0Og0KPiAt
+IFB1dCB0aGUgYnVnIGZpeGVzIGZpcnN0OiB0aGUgdHdvIGZpeGVzIGFyZSBub3cgcGF0Y2hlcyAx
+IGFuZCAyLCB0aGUNCj4gICBjbGVhbnVwcyAzIGFuZCA0LCBhbmQgdGhlIGJpbmRpbmdzIHBhdGNo
+IG1vdmVzIHRvIDUgYWhlYWQgb2YgdGhlDQo+ICAgQVNUMjcwMCB3b3JrLg0KPiAtIEV4cGxhaW4g
+aW4gcGF0Y2ggMSB3aGVyZSB0aGUgZ3JhaW4gdmFsdWUgY29tZXMgZnJvbSwgcmF0aGVyIHRoYW4g
+dGhlDQo+ICAgd2FybmluZyBpdCBzaWxlbmNlcy4NCj4gLSBEcm9wIHRoZSBDYzogc3RhYmxlIHRh
+Z3MgZnJvbSB0aGUgdHdvIGZpeGVzLiBOZWl0aGVyIG1lZXRzIHRoZSBiYXIgaW4NCj4gICBEb2N1
+bWVudGF0aW9uL3Byb2Nlc3Mvc3RhYmxlLWtlcm5lbC1ydWxlcy5yc3Q7IHRoZSBGaXhlczogdGFn
+cyBzdGF5Lg0KPiAtIE1lcmdlIFN0ZWZhbidzIHN0ZXAtZG93biBwYXRjaCBpbnRvIHBhdGNoIDks
+IGtlZXBpbmcgdGhlIE1BSU5UQUlORVJTDQo+ICAgZW50cnkgYWxpdmUgd2l0aCBhIHJldmlld2Vy
+IGluc3RlYWQgb2YgcmVtb3ZpbmcgaXQuDQo+IC0gTGluayB0byB2MzoNCj4gaHR0cHM6Ly9sb3Jl
+Lmtlcm5lbC5vcmcvci8yMDI2MDkxNi1lZGFjLXYzLTAtMjNlOWVkMmZiZGY5QGFzcGVlZHRlY2gu
+Y29tDQo+IA0KPiBDaGFuZ2VzIGluIHYzOg0KPiAtIEVzdGFibGlzaCB0aGUgQVNUMjcwMCBpbnRl
+cnJ1cHQgbWFzayBpbiB0aGUgZHJpdmVyIHJhdGhlciB0aGFuDQo+ICAgZGVyaXZpbmcgaXQgZnJv
+bSB0aGUgcmVnaXN0ZXIncyBjb250ZW50czogYXN0MjcwMF9zZXRfaXJxKCkgbm93DQo+ICAgd3Jp
+dGVzIHRoZSBtYXNrIG91dHJpZ2h0LCBtYXNraW5nIGV2ZXJ5IHNvdXJjZSBhbmQgdW5tYXNraW5n
+IG9ubHkNCj4gICB0aGUgRUNDIG9uZXMsIGFuZCB0aGUgbWFzayBpcyBlc3RhYmxpc2hlZCBiZWZv
+cmUgdGhlIGludGVycnVwdCBpcw0KPiAgIHJlcXVlc3RlZC4NCj4gLSBOZXcgcGF0Y2g6IGFkZCBt
+eXNlbGYgYXMgYSByZXZpZXdlciBmb3IgdGhlIGRyaXZlciBpbiBNQUlOVEFJTkVSUy4NCj4gLSBU
+ZXN0ZWQgb24gYW4gQVNUMjYwMCB3aXRoIENPTkZJR19QUk9WRV9MT0NLSU5HPXk7IGluamVjdGVk
+IGNvcnJlY3RhYmxlDQo+ICAgZXJyb3JzIGFyZSByZXBvcnRlZCBmcm9tIHRoZSBpbnRlcnJ1cHQg
+aGFuZGxlciB3aXRoIG5vIGxvY2tkZXAgcmVwb3J0cy4NCj4gLSBMaW5rIHRvIHYyOg0KPiBodHRw
+czovL2xvcmUua2VybmVsLm9yZy9yLzIwMjYwODI0LWVkYWMtdjItMC1jOGQ4YmI2OTM1ODZAYXNw
+ZWVkdGVjaC5jbw0KPiBtDQo+IA0KPiBDaGFuZ2VzIGluIHYyOg0KPiAtIE5ldyBwYXRjaDogZnJl
+ZSB0aGUgRUNDIGludGVycnVwdCBiZWZvcmUgdGhlIG1lbV9jdGxfaW5mbyBpbg0KPiAgIGFzcGVl
+ZF9yZW1vdmUoKS4gVGhlIGludGVycnVwdCBpcyByZXF1ZXN0ZWQgd2l0aCBkZXZtX3JlcXVlc3Rf
+aXJxKCkgYW5kDQo+ICAgaXMgb25seSByZWxlYXNlZCBhZnRlciAucmVtb3ZlKCkgaGFzIHJldHVy
+bmVkLCBzbyBlZGFjX21jX2ZyZWUoKSBjb3VsZA0KPiAgIGZyZWUgdGhlIGhhbmRsZXIncyBjb250
+ZXh0IHdoaWxlIHRoZSBoYW5kbGVyIHdhcyBzdGlsbCBydW5uaW5nIG9uDQo+ICAgYW5vdGhlciBD
+UFUuDQo+IC0gQWNxdWlyZSB0aGUgcmVnaXN0ZXIgbG9jayB3aXRoIHRoZSBpcnFzYXZlIHZhcmlh
+bnQgaW4gaW5pdF9jc3Jvd3MoKSBhbmQNCj4gICBpbiBhc3BlZWRfcHJvYmUoKS4gVGhlIGludGVy
+cnVwdCBoYW5kbGVyIHRha2VzIHRoZSBzYW1lIGxvY2sgaW4gaGFyZGlycQ0KPiAgIGNvbnRleHQu
+DQo+IC0gTW92ZSB0aGUgZGV2X2RiZygpIG9mIHRoZSBpbnRlcnJ1cHQgc3RhdHVzIHJlZ2lzdGVy
+IG91dCBvZiB0aGUNCj4gICByYXdfc3BpbmxvY2sgY3JpdGljYWwgc2VjdGlvbiBpbiB0aGUgaW50
+ZXJydXB0IGhhbmRsZXIuDQo+IC0gT3B0IGFzcGVlZF9lZGFjLm8gaW50byBjb250ZXh0IGFuYWx5
+c2lzIGluIGRyaXZlcnMvZWRhYy9NYWtlZmlsZS4gVGhlDQo+ICAgY2hlY2sgaXMgb3B0LWluIHBl
+ciBvYmplY3QsIHNvIHdpdGhvdXQgaXQgdGhlIF9fZ3VhcmRlZF9ieSgpIGFubm90YXRpb24NCj4g
+ICBhZGRlZCBieSB0aGUgc2FtZSBwYXRjaCB3YXMgbmV2ZXIgYWN0dWFsbHkgdmVyaWZpZWQuDQo+
+IC0gUmV0dXJuIElSUV9OT05FIGZyb20gYXN0MjcwMF9kcmFtY19pc3IoKSB3aGVuIG5vIEVDQyBp
+bnRlcnJ1cHQgc3RhdHVzDQo+ICAgYml0IGlzIHNldDsgdGhlIGhhbmRsZXIgY2xlYXJzIG9ubHkg
+dGhlIEVDQyBiaXRzLCBzbyB1bmNvbmRpdGlvbmFsbHkNCj4gICBjbGFpbWluZyB0aGUgaW50ZXJy
+dXB0IGNvdWxkIGxpdmVsb2NrIHRoZSBsZXZlbC10cmlnZ2VyZWQgbGluZS4NCj4gLSBUZXN0ZWQg
+djIgb24gYm90aCBBU1QyNjAwIGFuZCBBU1QyNzAwIGJ5IGluamVjdGluZyBhIGNvcnJlY3RhYmxl
+DQo+ICAgZXJyb3Igd2l0aCB0aGUgbWVtb3J5IGNvbnRyb2xsZXIncyBFQ0MgZXJyb3IgaW5qZWN0
+aW9uOyBlYWNoIGlzDQo+ICAgcmVwb3J0ZWQgYXMgYSBDRSB3aXRoIHRoZSBleHBlY3RlZCBmYWls
+dXJlIGFkZHJlc3MuDQo+IC0gTGluayB0byB2MToNCj4gaHR0cHM6Ly9sb3JlLmtlcm5lbC5vcmcv
+ci8yMDI2MDgxMi1lZGFjLXYxLTAtMDM5OTJlZGVhMjk3QGFzcGVlZHRlY2guY28NCj4gbQ0KPiAN
+Cj4gLS0tDQo+IFJ5YW4gQ2hlbiAoOCk6DQo+ICAgICAgIEVEQUMvYXNwZWVkOiBTZXQgdGhlIERJ
+TU0gZ3JhaW4NCj4gICAgICAgRURBQy9hc3BlZWQ6IEZyZWUgdGhlIGludGVycnVwdCBiZWZvcmUg
+dGhlIG1lbV9jdGxfaW5mbyBvbiByZW1vdmUNCj4gICAgICAgRURBQy9hc3BlZWQ6IENsZWFuIHVw
+IHdoaXRlc3BhY2UgYW5kIGluY2x1ZGUgb3JkZXJpbmcNCj4gICAgICAgRURBQy9hc3BlZWQ6IEZy
+ZWUgdGhlIG1lbV9jdGxfaW5mbyB1bmNvbmRpdGlvbmFsbHkgb24gcmVtb3ZlDQo+ICAgICAgIGR0
+LWJpbmRpbmdzOiBlZGFjOiBhc3BlZWQ6IEFkZCBBU1QyNzAwIFNEUkFNIEVEQUMNCj4gICAgICAg
+RURBQy9hc3BlZWQ6IFJlcGxhY2UgcmVnbWFwIHdpdGggZGlyZWN0IHJlZ2lzdGVyIGFjY2Vzcw0K
+PiAgICAgICBFREFDL2FzcGVlZDogQWJzdHJhY3QgU29DIGRpZmZlcmVuY2VzIGJlaGluZCBjaGlw
+IGRhdGENCj4gICAgICAgRURBQy9hc3BlZWQ6IEFkZCBBU1QyNzAwIHN1cHBvcnQNCj4gDQo+IFN0
+ZWZhbiBNIFNjaGFlY2tlbGVyICgxKToNCj4gICAgICAgTUFJTlRBSU5FUlM6IFN0ZXAgZG93biBh
+cyBBc3BlZWQgQVNUMjUwMCBFREFDIGRyaXZlciBtYWludGFpbmVyDQo+IA0KPiAgQ1JFRElUUyAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfCAgIDggKw0KPiAgLi4u
+L2JpbmRpbmdzL2VkYWMvYXNwZWVkLGFzdDI0MDAtc2RyYW0tZWRhYy55YW1sICAgfCAgIDggKy0N
+Cj4gIE1BSU5UQUlORVJTICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwg
+ICAyICstDQo+ICBkcml2ZXJzL2VkYWMvTWFrZWZpbGUgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICB8ICAgMSArDQo+ICBkcml2ZXJzL2VkYWMvYXNwZWVkX2VkYWMuYyAgICAgICAgICAgICAg
+ICAgICAgICAgICB8IDQyNQ0KPiArKysrKysrKysrKysrKy0tLS0tLS0NCj4gIDUgZmlsZXMgY2hh
+bmdlZCwgMjkzIGluc2VydGlvbnMoKyksIDE1MSBkZWxldGlvbnMoLSkNCj4gLS0tDQo+IGJhc2Ut
+Y29tbWl0OiA1NDY0OTg1ZTQyYzA0ZTMzNWZiMzBlMzhmYmM0MDljOTk3ZGI5YmVjDQo+IGNoYW5n
+ZS1pZDogMjAyNjA2MjUtZWRhYy04ZTk2MGUwMmU3ZjcNCj4gDQo+IEJlc3QgcmVnYXJkcywNCj4g
+LS0NCj4gUnlhbiBDaGVuIDxyeWFuX2NoZW5AYXNwZWVkdGVjaC5jb20+DQoNCg==
 
