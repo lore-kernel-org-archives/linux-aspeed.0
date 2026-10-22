@@ -2,76 +2,76 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 471E1606A31A
-	for <linux-aspeed@archiver.kernel.org>; Thu, 22 Oct 2026 02:43:29 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 27F10606A31A
+	for <linux-aspeed@archiver.kernel.org>; Thu, 22 Oct 2026 02:43:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=lpIej4ZG
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Vpd1V7cq
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4j99Sb4KSpz2xLs;
-	Thu, 22 Oct 2026 13:43:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::122c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792637007;
-	cv=none; b=RFzGadNzfZwe5MfgkzpimycEY7iKYjV/P799zxDDkPBQaiHUk+RPHmXm0ImP4Zaj3CpgTwzS0tD1YpoZphxpYUr3hLoAyowB6sryZFFxRb8Z/SN8LJGxgPddm6roG5Qvvj47ql8tEYELXp6jt9J49TMaG4dA/rgFrOcagGaMoI8/HH/0Didhvs4IwkqCz+OntjTSDJxfa+jE58RPupJwn779mG5+sms1JHSxO2tKMNsddCgJ0wfpRRjwXeyW3DGKltKVOmfF11B6zhz9iXFfsyKJPCL04oNPRVDbDEMPi4TtJvosGpuqcrSUe1iDCZKARVm/ZDfzp9ZCiG6pfp8A8g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4j99Sk1428z2ySc;
+	Thu, 22 Oct 2026 13:43:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::122d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792637014;
+	cv=none; b=aszq3FQCmYbpUH09Id1osQlOnQUsDNL1KTV73VbXk6GEt67pXjoHN0J7NzUJD8LMMzjC8ILElcu0/d8JdqoF+78NoMAXBNsYqdWGAR9PZlXhVqTy/L2xDXkluUIg5uGut6fgBL1Q+fK0sbAaFpqFp6/1wFPfY2KOWZHs8gbJMkMrM+4KJKNBrJt0xfLXmnajgZjV1ob880wSIuXNGg+FYJPWZMSTBGqCs1tt412x/1KYkPq1ZayCaxbuMgVEE/Ohih4H2m2oXSJ3NtqH41WCO5o57ODN0RNKf49JTmIsQWUwMY/hvoLvt4N4JC5P8mdknUZPAXRaWf+qYDaCU69rMA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792637007; c=relaxed/relaxed;
-	bh=xLBRusOCzgaX2ifJa7rH6HLwuWuCZ8NlzSUvqTQo+pk=;
+	t=1792637014; c=relaxed/relaxed;
+	bh=TUkEOgHWS4CYXansuqJaAAhK76CRt/42A/p2kv2zT+8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=heTpjWBpzf/bj+CIb2UNE3cb+5Oq7hJ0v2lyC3A3jCbOd4RIJR5Bir6Vs11lrBcWHkZU4Awk9gOVBoZ39E5Htz9xj3MOIZLDM/DIcrPc1fwlOwEOr1kKJi0Ix0QoWmTAcXkpmhrBlpSyhkd9WoVr/Ip4sjPqO37JzZtBBcPo4bUdMOfqX/AB6dVpYldlXDaYxKZR2Pa0nzY0c6soqDLkG0UrJAG+axDwa+VHqf2uQErfxjlEN2Wpj00YgtydHmHnZLzSO0IcyUgTHaz7QI8RlEYBvRXyuSh9oYAl+wX8qV9n/ucOY5m+2mXLx51P3gOje+AGF2a5mxt38Xsjw7yolw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=lpIej4ZG; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::122c; helo=mail-dl1-x122c.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=Md/0qw/TcVujfOi9a73npfmmycwMxl/sjBgBc4OvMHeF2TQeoAGywBqwiylilJtYOZUElZ8yCnJW8IgEqeeN6/nvejNqmzPqAD+b97JbGX5vUg9+erJ2Y64b32Dp22vUSCpp9jtcqdU5IK0EsXCOgxYUdZ4TnD+Na0ggt1RTx4I4CBHo3JB0RtKyxAHqmWtxDLyHxZAz57uPNCvaAIZFy4dD0jutJ65Be3UuceYIQ+0qTlUmfvliL7PGDfWm2aYUM2S89PXW6tG3r/Q2634ZRoyE+h93zhZK0FUgTmofrQz5S/PJpKF/Wkj9MfUcsYH54REkVOuCu00y41pujWEvYA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Vpd1V7cq; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::122d; helo=mail-dl1-x122d.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=lpIej4ZG;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Vpd1V7cq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::122c; helo=mail-dl1-x122c.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dl1-x122c.google.com (mail-dl1-x122c.google.com [IPv6:2607:f8b0:4864:20::122c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::122d; helo=mail-dl1-x122d.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dl1-x122d.google.com (mail-dl1-x122d.google.com [IPv6:2607:f8b0:4864:20::122d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4j99SZ2HNBz2xLm
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 22 Oct 2026 13:43:25 +1100 (AEDT)
-Received: by mail-dl1-x122c.google.com with SMTP id a92af1059eb24-156cbe59622so1052204c88.0
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 21 Oct 2026 19:43:25 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4j99Sh6Frvz2yRn
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 22 Oct 2026 13:43:32 +1100 (AEDT)
+Received: by mail-dl1-x122d.google.com with SMTP id a92af1059eb24-15ea896ddc8so1948725c88.0
+        for <linux-aspeed@lists.ozlabs.org>; Wed, 21 Oct 2026 19:43:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792637003; x=1793241803; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1792637011; x=1793241811; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=xLBRusOCzgaX2ifJa7rH6HLwuWuCZ8NlzSUvqTQo+pk=;
-        b=lpIej4ZG+k9cr0GbEApGweAlpj/NicBq+TsirRVNGAQTsO/XXFO9m2idsWC2BrL56m
-         7eyAL25vV66brgOKZ1P6UbHuQ2OOxfEbI4Wzru3GRtwHyYLrNfCAAMnQUnH0zMvfOG+C
-         6OiM+QMhIzhXkH0Tb8lD26fqKqWudRvfPWKhMuVvhtAzN+zNZ0BQ7AtKYDZ4CvyRe6xq
-         OjfZ6d4Pqm06ncPMKYhN/PBMg4Qow/ON5893zAuz9wzc0uwA1gXbFqMHrQP1ECw/jabE
-         uCP+XYeEIPJoZdC+E0FFMUQtgm/9NAC02fNj4fGz2pd1xWq3s1iFM/cX7xR/0Rd+HZty
-         yBJg==
+        bh=TUkEOgHWS4CYXansuqJaAAhK76CRt/42A/p2kv2zT+8=;
+        b=Vpd1V7cqWsfbgwEHPVWxJJWBT4NaW2JK8wJ7KmYYR0bck4x6ZywbUatCFLCf2XJW3c
+         Ew0apGtbl3ix2tmeZyhC7FF/zccs1wQwSZPV2jG3f8WUMZw3BAhdM6SBrd1ODfq3HUMH
+         OxI2C6D/bcyyT9QB2IirxYLRS0oA4hbPE7Ce9C1HCWVGYKPSpRTkMc0B1rBfxKA8XKfX
+         LicqGdQ1XhcK7NCxAcVX2Tt/GAAScFzrms8gCqy+HtBHgKxwgy+COg7KoyWeeDZ1kyAe
+         rE5WmFI1/ACSpT8Pxx5L8ILf4E2pr/kYo6Lui3HF5lTPe8TgPgd1EW5hcsSPTecbheSO
+         naHQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792637003; x=1793241803;
+        d=1e100.net; s=20260707; t=1792637011; x=1793241811;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=xLBRusOCzgaX2ifJa7rH6HLwuWuCZ8NlzSUvqTQo+pk=;
-        b=k5Ypx9tD28SkU0jOCqgEC4Q353v1e8BvmSpdA7Toxp6Bm5zY/7IOIjombFbkyVWr0g
-         6vxodMAE6qxqCA0RU6CfZw4iDdGBkJ/PGBBwLVN4XioK8iZ+LZBpJU8seh1TYvcfL1IU
-         sHWpAR587YoSoxzr4YhEsyHKpPpcfcOdwCuKHMgNgl7L5NymUrQoKbPLgMgP/d2+oJ2K
-         lOP2/GZ99UNEKm64trOuHagpuA8BKFMf258yjltbkNPkvOOUTym0EOMGKKQP1UeX3CFO
-         0Xfgsgx9xgR//4QWIwS3YOwM4YbnZq4Uvu4dVUhEMWRbNUI3CwZ7/9mFTrayRDHw4Gk6
-         a3xA==
-X-Gm-Message-State: AFq9FYJtLH7/VXfThnHg0kVPmtgu8PNEyzDV/2MNIx8jDmsqASbno7Ks
-	aXccFZ5EkQ0yhm8vTgPDepkGGQqfYgMQ7N0Rwz6vJU7bM8pSH1P3h/0PofSPFg==
-X-Gm-Gg: AYBFou0N0T/cKiXV68jBd9n68GiKzaHaloFIyKhOd0In8D/7j7bbK80CdpcJMNUVumP
-	TnTZYy/Dg+6Yyz/d6OM/5aYzspRbWRHsIzEwbAueePrTREBxKccOO7F3rIeOfHZ61BjyLw0kXZ2
-	o6mXwcB8LJJ1xbLjt2FFGYGc64Y6v/VY+7BZBWqP96EJCRzVg8eRqUtUX/7a21TrYfPm6a0/ckI
-	Wf1xS65A6zyBe41/fwHrcj1PYZf7AoQF3CngOAiFt//QC72NspsnDHh4aNcXhx7ZXoCpNqkk6Fp
-	EAKkovjb5vM5jTO67T/BdLnV1Nu0f4wJq57oxtF+Ndo8s6ko1GcCa0ayXnpz4EJS8XnVAgkFeYB
-	Sv4pMYiGe4fc64TGJ3g+Xt2p9gr9Rda+cAmvGYmUdFp+KWVPR3JsXtw9gir3gPh5+TCnvvB1i/O
-	EITdyQw+bQiuMBw/ZjSPu2ZtfSaudHXtL72XivWk/dveGV77SxNqwS6jpkX29QOpP+yjoAex+He
-	BKHE+NoeYkOdQHLSEY3O9H79w5Suc7JfdR3QJ9lE+ap/nWvq5U92iS2fIsCnA7DKP8JU9fKMUjd
-	1R8Mg9f4/WsxCcyBzQ==
-X-Received: by 2002:a05:701a:ca01:b0:149:1feb:6da4 with SMTP id a92af1059eb24-190a5e65d52mr5119789c88.32.1792637002767;
-        Wed, 21 Oct 2026 19:43:22 -0700 (PDT)
+        bh=TUkEOgHWS4CYXansuqJaAAhK76CRt/42A/p2kv2zT+8=;
+        b=xdFSA2F6ZTBGLuLz8nCDl7A4HoBmBSE2/AGMV06zc6v6fJO1IpyrPk9qMM7r3lzRM0
+         xTITze0+gZzEuU9QBcO638OJCFY0yTnhrjkdoJTJGFHmG1g1T7KB8eIj1L1Y++tK/VPk
+         G0LF/fQRy8gHNHVGP37fAv7rlirVuBb0/TI1YGtZFvqhYexnwOJ+QZr4bfi7JnSrhsYp
+         MROfeMGFyeSHefXkRA/PPZ1LkYD934rl2EAsQ3xa0YKU5JS9/r74XDLlnS9bGuDv14uO
+         9ZCC1IBqzRRKp0wXaD41+bz9Ur8yD+HxulAIQWh827vaZvWf7pzq+LUJHWu+aFZT8mh+
+         b2Uw==
+X-Gm-Message-State: AFq9FYLLgYAG4DaTGxU1C5Yln/RMyaxM1e7Jof7mAKHEPJIMHs3a0UYg
+	BeNv15Z0uMkxYQ9xrPgYV/ZQXLvgqJoUodms56gTlqlmHCDq4oa5bYoQW2ngog==
+X-Gm-Gg: AYBFou0VX7X37Y93l7D/aqumCW9miZBbs32wUH449gbREKo/oNm3Id5cFh44tmN8Aja
+	/uMMetJy5BchHEf8J+u1P5nKSbIOFqCpqotXLZuxY4ZbWUVkNA8sPT8e50ORJ9Tl87GXQrlZtED
+	SbpuqotY1pjOvbjJA1kJ148XJ00Ca4y7ILOZkNtyHNFfKzVPg2G1O2p6d4Tn+yblkG3ZI96EUcu
+	zTbYCDZD7plPYGOhKH5mOdFZi7tVABEu7oQcd+zZdbATT3GQp1isMBF4qUMirC+rqbR9JBJgdVV
+	WZDbOLLUI5sQnfhO0mv3dlBQ06fxVBX88OzqrY7Oi6hFBxXMRkOWtlZuvC39XML/27sIPQ54HsI
+	xq+nXAAY+S/pv1hBio78/URQcEMnPihC+GHI11PSYMERFixuUO4lCcL8QtmPolzM4Nvsy4VVoH/
+	3k5o1kwm/XlNAJBFhc+bZkt9cxolPh+Ewkyzp+6c0ux5DRG4h3LumcjVcR1hzwu6i6X5qRSpNMv
+	4Hxi0+8O4bL4v50U4l337HfuuI00baSwqA6ZE7AYDFyoHiKBFbpNnJnyEyebLdMjMx6FRJ8R4BP
+	Q0qq+bR/P7GecPb7aw==
+X-Received: by 2002:a05:7022:7a9:b0:187:eb7f:b8f with SMTP id a92af1059eb24-190a50efe13mr6277201c88.13.1792637010372;
+        Wed, 21 Oct 2026 19:43:30 -0700 (PDT)
 Received: from debian.prasanth ([103.183.205.34])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1903ca044d4sm11077386c88.17.2026.10.21.19.43.18
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1903ca044d4sm11077386c88.17.2026.10.21.19.43.26
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 21 Oct 2026 19:43:22 -0700 (PDT)
+        Wed, 21 Oct 2026 19:43:29 -0700 (PDT)
 From: Prasanth Kumar Padarthi <prasanth.padarthi10@gmail.com>
 To: linux-aspeed@lists.ozlabs.org
 Cc: linux-gpio@vger.kernel.org,
@@ -81,12 +81,13 @@ Cc: linux-gpio@vger.kernel.org,
 	tan.siewert@9elements.com,
 	billy_tsai@aspeedtech.com,
 	Prasanth Kumar Padarthi <prasanth.padarthi10@gmail.com>
-Subject: [RFC PATCH v2 0/1] AST2600 global GPIOP passthrough handover experiment
-Date: Thu, 22 Oct 2026 08:13:13 +0530
-Message-ID: <20261022024314.48623-1-prasanth.padarthi10@gmail.com>
+Subject: [RFC PATCH v2] pinctrl: aspeed: Hand over global GPIOP passthrough to local mux controls
+Date: Thu, 22 Oct 2026 08:13:14 +0530
+Message-ID: <20261022024314.48623-2-prasanth.padarthi10@gmail.com>
 X-Mailer: git-send-email 2.47.3
-In-Reply-To: <20261015035118.9495-1-prasanth.padarthi10@gmail.com>
+In-Reply-To: <20261022024314.48623-1-prasanth.padarthi10@gmail.com>
 References: <20261015035118.9495-1-prasanth.padarthi10@gmail.com>
+ <20261022024314.48623-1-prasanth.padarthi10@gmail.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -101,121 +102,239 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=4.0.1
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi,
+On B650D4U, GPIO-only host power control fails when SCU51C[9]
+selects GPIOP passthrough even after the normal GPIO request path
+clears the per-pin SCU4BC selections. The THRU expressions currently
+model the local controls but not the shared strap source.
 
-This RFC v2 explores a different implementation from the October 15
-GPIO-request callback. It is not presented as a completed generic fix.
+Experiment with transferring globally selected GPIOP0-P5 THRU roles
+to SCU4BC[29:24] before registering the controller, then clear the
+active shared sources. Leave PWM selection and the strap-source
+selector unchanged. Subsequent requests use the existing mux helpers.
+Clear SCU510[28] through SCU514 and verify the shared enables cleared.
 
-The intended software model remains ordinary GPIO power control with
-x86-power-control software button forwarding. No board-specific sysfs ABI,
-Devicetree binding, or per-operation userspace SCU switching is introduced.
+If handover fails, record an instance-local error and reject GPIO and
+mux requests involving P0-P5 before changing their mux state, while
+attempting to register the controller for unrelated pins. A P0-P5
+controller hog can still cause registration to fail. Retain prepared
+local selections after partial failure rather than blindly restoring
+a shared enable.
 
-Changes from v1:
-- Move shared-enable handling before pinctrl registration.
-- Preserve global THRU selections in per-pin SCU4BC controls first.
-- Handle the SCU510[28] source using SCU514 rather than rejecting it outright.
-- If handover fails, block affected GPIO/mux requests while attempting to
-  retain unrelated pinctrl functionality. Check all group pins before muxing.
+This RFC explores probe-time normalization rather than the previous
+request callback. Mandatory initialization policy, signal continuity,
+concurrent SCU writers and post-handover registration failure remain
+open design questions.
 
-Problem and observations
-------------------------
-On B650D4U, a baseline with SCU4BC=0, SCU510=0, SCU51C=0x1e80 logs
-a 200 ms power pulse but times out waiting for power-good after 8 seconds.
-The earlier callback candidate clears SCU51C[9], permitting power-on.
-The current implementation transfers the global selection to local mux bits
-before registering consumers; observed post-daemon state is:
+On the tested B650D4U, the new image powers on the host with unchanged
+GPIO-only power-control userspace. SCU4BC remains 0x30000000 and
+SCU51C remains 0x1c80 before and after the request. The operator also
+reports successful power-on after complete AC removal. Actual P4/P5
+forwarding, transition glitches, PWM coexistence, SCU510[28] hardware
+handling and restricted failure paths have not been validated.
 
-                    Before power request       After power request
-  SCU41C                 0x000000c0                 0x000000c0
-  SCU4BC                 0x30000000                 0x30000000
-  SCU510                 0x00000000                 0x00000000
-  SCU51C                 0x00001c80                 0x00001c80
-
-Current implementation journal excerpts (boot-relative seconds):
-  182.265233 power-on request event received
-  182.267277 control-power-n set to 0
-  182.467530 control-power-n released
-  182.496345 power OK assert event received
-  182.496404 Moving to On
-
-The logged pulse lasts 200.253 ms; power-good arrives 231.112 ms after
-the request. The operator confirms physical power-on, including after
-complete AC removal. The supplied timestamped trace is not separately
-identified as the AC-removal run. P4/P5 local THRU selections remain set;
-actual forwarding and signal continuity have not been measured.
-
-Runtime SHA256 matches the earlier A/B tests:
-  eb98e896b67c2742db5ea127a40eecc6d23659a69a635ba9e2c5495bb32bd8bb
-    /usr/bin/power-control
-  47d323408e754c692f9f8764f2369e8bdbe76f56c59b804f52428a6229a7b4d3
-    /usr/share/x86-power-control/power-config-host0.json
-
-The locally patched x86-power-control permits omitted optional GPIO
-configuration entries. A comparison patch removes the earlier custom sysfs
-passthrough switching and 300 us delay, restoring the original GPIO pulse
-helper, including its masked-output handling. The configured power pulse is
-200 ms; software button forwarding is enabled. This is not a logging-only
-change or an unmodified upstream binary. The same executable/configuration
-hashes were captured in the baseline and candidate tests. These source
-changes are not intended to introduce different GPIO request flags; the
-captured hashes identify the tested executables rather than independently
-proving their build provenance.
-
-The image build completed successfully. The kernel base is the local
-OpenBMC revision 68da063267662da17b990c3384d5beceab1cdc80, whose
-Makefile identifies Linux 6.18.24 (VERSION=6, PATCHLEVEL=18, SUBLEVEL=24).
-It is not claimed to be the current pinctrl maintainer base, and equivalence
-of its Aspeed pinctrl code to an upstream stable release has not been
-verified. Runtime release: 6.18.24-68da063-patch-157ea07.
-
-Open questions and validation limits
------------------------------------
-1. Is local/global THRU equivalence valid during the transfer, including
-   PWM priority and signal continuity? Only steady-state selections were
-   checked; no electrical measurements or mixed-pair functional tests exist.
-2. Is mandatory normalization at probe acceptable, including platforms that
-   never request GPIOP? Would an ownership-aware request path be preferable?
-3. What shared serialization should protect the complete handover against
-   other SCU writers, including concurrent driver probes? Would a common
-   SCU-level locking mechanism be appropriate, and which writers must
-   participate? A pinctrl-private mutex would not serialize independent
-   drivers, and regmap_fields alone does not make a multi-register sequence
-   atomic. Regmap locking currently covers individual accesses only.
-4. How should partial handover and subsequent registration/hog failure be
-   handled? Current restricted mode does not guarantee registration if a
-   controller hog itself requests a blocked P0-P5 group.
-
-Protected-write/fault paths, PWM coexistence and SCU510[28] behavior have
-not been hardware tested. All presented register captures are after daemon
-GPIO initialization, not a direct trace of the handover. Exact flashed-image
-hashes and standalone raw evidence archive references are not yet attached.
-BMC NotReady, missing BootProgress and LPC snoop failures remain separate
-port issues; successful power-on is not full platform qualification.
-
-Feedback on this implementation direction and its ownership assumptions
-is requested before extending it or treating it as a generic solution.
-
-Previous RFC Message-ID:
-20261015035118.9495-1-prasanth.padarthi10@gmail.com
-
-Regards,
-Prasanth
-
-Prasanth Kumar Padarthi (1):
-  pinctrl: aspeed: Hand over global GPIOP passthrough to local mux
-    controls
-
- drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c | 147 ++++++++++++++++++++++++++++-
+Signed-off-by: Prasanth Kumar Padarthi <prasanth.padarthi10@gmail.com>
+---
+ drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c | 147 ++++++++++++++++++++-
  1 file changed, 143 insertions(+), 4 deletions(-)
 
+diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
+index b0c7e4f6df9c..54396f2ba91b 100644
+--- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
++++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
+@@ -10,6 +10,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/pinctrl/pinctrl.h>
+ #include <linux/pinctrl/pinmux.h>
++#include <linux/slab.h>
+ #include <linux/string.h>
+ #include <linux/types.h>
+ 
+@@ -40,6 +41,8 @@
+ #define SCU4D8		0x4D8 /* Multi-function Pin Control #23 */
+ #define SCU500		0x500 /* Hardware Strap 1 */
+ #define SCU510		0x510 /* Hardware Strap 2 */
++#define SCU514		0x514 /* Hardware Strap 2 Clear */
++#define SCU51C		0x51c /* Hardware Strap 3 */
+ #define SCU610		0x610 /* Disable GPIO Internal Pull-Down #0 */
+ #define SCU614		0x614 /* Disable GPIO Internal Pull-Down #1 */
+ #define SCU618		0x618 /* Disable GPIO Internal Pull-Down #2 */
+@@ -2747,12 +2750,56 @@ static struct aspeed_pinctrl_data aspeed_g6_pinctrl_data = {
+ 	.nconfmaps = ARRAY_SIZE(aspeed_g6_pin_config_map),
+ };
+ 
++struct aspeed_g6_probe_data {
++	struct aspeed_pinctrl_data pdata;
++	int thru_error;
++};
++
++static bool aspeed_g6_is_thru_pin(unsigned int pin)
++{
++	return pin >= AB22 && pin <= AB23;
++}
++
++static int aspeed_g6_gpio_request_enable(struct pinctrl_dev *pctldev,
++					 struct pinctrl_gpio_range *range,
++					 unsigned int offset)
++{
++	struct aspeed_pinctrl_data *pdata = pinctrl_dev_get_drvdata(pctldev);
++	struct aspeed_g6_probe_data *g6 =
++		container_of(pdata, struct aspeed_g6_probe_data, pdata);
++
++	if (g6->thru_error && aspeed_g6_is_thru_pin(offset))
++		return g6->thru_error;
++
++	return aspeed_gpio_request_enable(pctldev, range, offset);
++}
++
++static int aspeed_g6_set_mux(struct pinctrl_dev *pctldev,
++			     unsigned int function, unsigned int group)
++{
++	struct aspeed_pinctrl_data *pdata = pinctrl_dev_get_drvdata(pctldev);
++	struct aspeed_g6_probe_data *g6 =
++		container_of(pdata, struct aspeed_g6_probe_data, pdata);
++	const struct aspeed_pin_group *pgroup = &pdata->pinmux.groups[group];
++	unsigned int i;
++
++	/* Check the entire group before the shared helper changes any pin. */
++	if (g6->thru_error) {
++		for (i = 0; i < pgroup->npins; i++) {
++			if (aspeed_g6_is_thru_pin(pgroup->pins[i]))
++				return g6->thru_error;
++		}
++	}
++
++	return aspeed_pinmux_set_mux(pctldev, function, group);
++}
++
+ static const struct pinmux_ops aspeed_g6_pinmux_ops = {
+ 	.get_functions_count = aspeed_pinmux_get_fn_count,
+ 	.get_function_name = aspeed_pinmux_get_fn_name,
+ 	.get_function_groups = aspeed_pinmux_get_fn_groups,
+-	.set_mux = aspeed_pinmux_set_mux,
+-	.gpio_request_enable = aspeed_gpio_request_enable,
++	.set_mux = aspeed_g6_set_mux,
++	.gpio_request_enable = aspeed_g6_gpio_request_enable,
+ 	.strict = true,
+ };
+ 
+@@ -2782,15 +2829,107 @@ static const struct pinctrl_desc aspeed_g6_pinctrl_desc = {
+ 	.confops = &aspeed_g6_conf_ops,
+ };
+ 
++/*
++ * Experimental: transfer the global GPIOP0-P5 THRU selection to the
++ * individual mux controls before registering any pinctrl consumers.
++ * PWM selection is higher priority and is deliberately left unchanged.
++ *
++ * Do not undo the local selections on error: a shared enable may already
++ * have cleared. Keeping the equivalent local selections preserves routing
++ * while rejecting affected requests, rather than granting an unsafe GPIO.
++ * Signal continuity during this transfer still needs hardware validation.
++ * Running before pinctrl registration excludes this controller's consumers,
++ * not independent SCU writers. Regmap locks individual accesses, not this
++ * sequence; coordination with other writers remains an RFC design question.
++ */
++static int aspeed_g6_thru_handover(struct regmap *scu)
++{
++	const u32 local_mask = GENMASK(29, 24);
++	unsigned int strap2, strap3, local;
++	int ret;
++
++	ret = regmap_read(scu, SCU510, &strap2);
++	if (ret)
++		return ret;
++	ret = regmap_read(scu, SCU51C, &strap3);
++	if (ret)
++		return ret;
++
++	if (!(strap2 & BIT(28)) &&
++	    ((strap2 & BIT(30)) || !(strap3 & BIT(9))))
++		return 0;
++
++	/* Preserve every globally selected role, including under PWM. */
++	ret = regmap_update_bits(scu, SCU4BC, local_mask, local_mask);
++	if (ret)
++		return ret;
++	ret = regmap_read(scu, SCU4BC, &local);
++	if (ret)
++		return ret;
++	if ((local & local_mask) != local_mask)
++		return -EPERM;
++
++	/* Leave the inactive GPIOZ6 source alone in dedicated-strap mode. */
++	if (!(strap2 & BIT(30)) && (strap3 & BIT(9))) {
++		ret = regmap_update_bits(scu, SCU51C, BIT(9), 0);
++		if (ret)
++			return ret;
++	}
++
++	if (strap2 & BIT(28)) {
++		/* SCU510 is write-one-set; do not use an ordinary RW clear. */
++		ret = regmap_write(scu, SCU514, BIT(28));
++		if (ret)
++			return ret;
++	}
++
++	ret = regmap_read(scu, SCU510, &strap2);
++	if (ret)
++		return ret;
++	ret = regmap_read(scu, SCU51C, &strap3);
++	if (ret)
++		return ret;
++	if ((strap2 & BIT(28)) ||
++	    (!(strap2 & BIT(30)) && (strap3 & BIT(9))))
++		return -EPERM;
++
++	return 0;
++}
++
+ static int aspeed_g6_pinctrl_probe(struct platform_device *pdev)
+ {
+-	int i;
++	struct aspeed_g6_probe_data *g6;
++	struct regmap *scu;
++	int i, ret;
++
++	if (!pdev->dev.parent)
++		return -ENODEV;
++	scu = syscon_node_to_regmap(pdev->dev.parent->of_node);
++	if (IS_ERR(scu))
++		return dev_err_probe(&pdev->dev, PTR_ERR(scu),
++				     "No SCU regmap for THRU handover\n");
++
++	g6 = devm_kzalloc(&pdev->dev, sizeof(*g6), GFP_KERNEL);
++	if (!g6)
++		return -ENOMEM;
++	/* Copy per-device state; referenced mapping tables remain shared. */
++	memcpy(&g6->pdata, &aspeed_g6_pinctrl_data, sizeof(g6->pdata));
++
++	ret = aspeed_g6_thru_handover(scu);
++	if (ret == -EPROBE_DEFER)
++		return ret;
++	if (ret) {
++		g6->thru_error = ret;
++		dev_warn(&pdev->dev,
++			 "THRU handover failed (%d); GPIOP0-P5 mux requests blocked\n",
++			 ret);
++	}
+ 
+ 	for (i = 0; i < ARRAY_SIZE(aspeed_g6_pins); i++)
+ 		aspeed_g6_pins[i].number = i;
+ 
+ 	return aspeed_pinctrl_probe(pdev, &aspeed_g6_pinctrl_desc,
+-			&aspeed_g6_pinctrl_data);
++			&g6->pdata);
+ }
+ 
+ static const struct of_device_id aspeed_g6_pinctrl_of_match[] = {
 -- 
 2.47.3
 
