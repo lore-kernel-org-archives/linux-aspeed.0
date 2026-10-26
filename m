@@ -1,79 +1,119 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 88AAA606A330
-	for <linux-aspeed@archiver.kernel.org>; Mon, 26 Oct 2026 15:46:15 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 16B4A606A31E
+	for <linux-aspeed@archiver.kernel.org>; Mon, 26 Oct 2026 22:43:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=IoHuT4uy
+	dkim=fail reason="signature verification failed" (2048-bit key, unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=PhMPCZKC
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jCydx11tyz2yR1;
-	Tue, 27 Oct 2026 02:46:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.14
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793029573;
-	cv=none; b=njgx/jl+xHB6dX7JkItf5mFesh01PXkyFOiUvc173Eg318OCiNRaABufLJBEQbs3m9YYzQmx+SQlx9cELPPQ/+ekR6LM4cPfohnU3lOR1VYOY02u9IUy21x8wUUld9p5tvSi5c1pRvdsLuVmlUTropsIbWrDFECO+Sy5lxN8j5LtCNnYhMqG+xvNE8bYvUFl4kOaru60f4ZUM/f/pr8vQwNhAPg8v9X0aqWBGpXUX7z5GvJpp1b7a17jQR7BzUMVnsT8/s7eXOHTmYin7y+tw56ZaLzTA9ZTzfgC/MBU84BIFDu+5GYuye0RN9yza+Rl9xnQlq7BZTAYfmgdzDxDTA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793029573; c=relaxed/relaxed;
-	bh=3G31KBJaRwiw612dZ3pYhgzjjk4d6bD8+u2MU06/dcw=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=PI8ovlQplHLkti/8tODOqBuRKjK0TppbQG1DCxQQ0xMSFbaGuvdeoBJC5OaT8GV05HvizosQnM21/c+V8A68m0sB5EBQ/rvlv9qcdCYvmlccg1DfZM+GOnqUhw1anyFY6EG5fVCfVfAoMocRSfBumMcwJFTqXpmXtGwEDcfJ+iU/fs4G4Tx/O3U/88a24ErREd3cYKbzw8c+X+5djATGGmeJMgA/Inct/6O05c6dssW3HMcHhaRgePpuqgK+79HB6QMp195drHCQ5wJ7HF3N8ece7IpI/BreHEt/cUDAcvW7Iwpw+8K2vmnrEqrMkREwVGzN0+F3jWdM0bkgMDfMTQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=IoHuT4uy; dkim-atps=neutral; spf=pass (client-ip=192.198.163.14; helo=mgamail.intel.com; envelope-from=dawid.glazik@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jD7tv20HFz2xwM;
+	Tue, 27 Oct 2026 09:43:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=fail smtp.remote-ip="2a01:111:f403:c202::7"
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793032778;
+	cv=fail; b=gzb8Oopy/YwZ3ZdF7bBfMKa0gFmzvHWUrVHkynFoLRy/ea3y+D5QOiVx3ueyh5ygMQxarcZklgghIZZfLq7E/g0Jvhq2nOZgXrjm0nG73HOqF6sMwPeWqMHBr82FC7pB9B+s2Tsefdu9rLfXm7/e6cWi++VyiDa0ojAHnNWp+WAseotEHfU0ND+yehgStx8MMdE54j4oaoJxq+6FiLT/CVL1LrlaFIa94tfq5macVYmAFdVmSMFkgNiBD4huT+Y2WGddztoGSSKRsBWajDnWj6plMCL26R4O5gohMlL7wv6jMp5lzEQDaal0puh+ErbGQHi7KfzQH7IZdoCFDfk3ag==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1793032778; c=relaxed/relaxed;
+	bh=9PKdJ3OQLSbF2lvSnCOsCqkcmUMhO1Ixl9R/fYdUR4Q=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=O4vDdNemssIrWMsI+U0tUmcaSWrch+88tFGhXEUAExjsYZo8gIVSz8UUlKUJR9LwcjYUA3H4zN3hTF+cWXghtOmQh7PadQFOytct5JDjfB+mmVfjb7zVVf/CT04GCXQCQABcdBzZT4lFonYwrCvtaJ2R/WqgFaP/lw39zRwkEvKiCuUd+WCbMbs7AfHit+49fFxT4YsadF5j7gI8PNqEdp1Wi6+j7+2NjEEICLC/yd7ovl9PhZRxrvwwEpMlfIT4zmem89onBSWRvx1h3kTD7mjr5nzXX0dH3TCCNRlvgkdm/lLC9X0NMOdtS4GV6gQqKv0IFLnyaCqM64nf4Oeqcg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=fail (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=PhMPCZKC reason="signature verification failed"; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c202::7; helo=gvxpr05cu001.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=IoHuT4uy;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=PhMPCZKC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.14; helo=mgamail.intel.com; envelope-from=dawid.glazik@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c202::7; helo=gvxpr05cu001.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org)
+Received: from GVXPR05CU001.outbound.protection.outlook.com (mail-swedencentralazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c202::7])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jCydw1dCSz2yKp
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 27 Oct 2026 02:46:11 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1793029573; x=1824565573;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=cvtp5EYYkTIx0O22EVRUfZcVlTDDrk/czE4zc6Ue4C8=;
-  b=IoHuT4uyYi/0ip68ftOcJRVw6+1m0tF4c4Mt+90ugWy4le+F2R18kNlG
-   Nnk8bVFFxWlKAHvjBP2UMoyaK9kFo5QYqQv2Juil9zkpZFyF30Z67ceBk
-   4St0Ig1Wmk812TUryaAz2yo8nui9azE4DfnuNYOQpOA6yycDH3iBBbH2T
-   bqk1Uqux1IXHiRKVO83+2AnnldqqY42LaxRFJdpNxALlEU2N39L6LJvMy
-   zqxwfc01O41UNRbdy4WACeiQDc97RkWzgVzMhJKY5SJfl04YAkPUAk9hR
-   8hAz3sarPM1coHa2ybiQNstsw2NYpxz08pFWDu12m3C5sYOycscIyZ4uF
-   g==;
-X-CSE-ConnectionGUID: jMzmehhkSt6m0/SIYqMhWg==
-X-CSE-MsgGUID: G9I0h4NxTKi5M+IXeqzzPw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11947"; a="1730878"
-X-IronPort-AV: E=Sophos;i="6.27,179,1787036400"; 
-   d="scan'208";a="1730878"
-Received: from orviesa006.jf.intel.com ([10.64.159.146])
-  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Oct 2026 08:46:12 -0700
-X-CSE-ConnectionGUID: 8G14wGdBRxOGmZtIynJkuw==
-X-CSE-MsgGUID: SZw7HwxsQkOfG/HiQkbnVQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,179,1787036400"; 
-   d="scan'208";a="4369382"
-Received: from gklab-103a-129.igk.intel.com ([10.91.103.129])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Oct 2026 08:46:08 -0700
-From: Dawid Glazik <dawid.glazik@linux.intel.com>
-To: Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: devicetree@vger.kernel.org,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jCzqY0krMz2xN4;
+	Tue, 27 Oct 2026 03:39:36 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=bnC5XS55QxBVUtdyD1OT/KgJyw9TppX3QWL9Ftwlx/N1JAwFysbaebzNGZ9WdQ8R2mHgzk0UDO7U+L4AnqBVX8QVolfU72N+Q0ad1GDs5jOqiayuW/kjh1QOqStNFJfrYaM1ImIPLVH5nXB6m7l5Q2SNS9KJJhbhqKe9m82XxZ9rAaDjV5wY8mrvvNhHCM1FnfaHPmaroTpyeprbFa3qXOHgiJX6hiC0SHg1FPIK1MHW4mq4Tq09F5g7DBGnKw0TGjpOoONgNu9YOu1MEXxnag5bfQzuZkL3JPWNOUcN3s+otjkzhPMx5dJajw0OU44NQs6J++TG84CviuZzdIvK8w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=WxZSarhcF7uEiNtUsNT1QpnEdNvxeem7zxUA/WOdbWE=;
+ b=rpc1nKvch8rcOjh1h2BcHMxJ4ZUcyu+k3kaMRb00VlhR3wL1URaQn+USzjkotm+9aI9A1Rp+JkkKjDckdox1GiV4IoRvbtSCvjVTbxXYOTtzRkWda7u0V7eihALDdNS33ldi+Rk0Io/oNKxVvEEdCL+ywESvZ5rjYCY5Q0fm50HV4HWd5iR0QFCOT1AhCrR4qoDaHA2zSBkZ2NTic8QFcGitNsRpJiuA6vdqW1lb8Kwkw8CdIxi997kKQS/uDY408OTUyjh7QO6aimCy68lVKkf6P1nQH0WqqqtCHYMV5yWlohPe3YDxWSSoyUHblTyDfQW9b2pGihHkew4YkyvIgA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector1-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=WxZSarhcF7uEiNtUsNT1QpnEdNvxeem7zxUA/WOdbWE=;
+ b=PhMPCZKCP6PZrQ17OMhfDwq7/A7gcsAP9FRIOn9wgzSIXgOanVxtjukfYvA5QHYYFbee8W+yA7un5erkdcMMzU5QZxy4/8wkQZsX5cYalrwHeJvfgXbJ8GaKerWd8ibRPxHNz2YuT75w14v+coBm0SIz/JqoDKlqBv2jZ0aBgBmBkNona1wKvmf0Kr/pm4zSyXItmDT+aXC3QBW2KIgSS9YRnPZJemXobo788GO3k1f5qRG/fY/7WHvtmqChdslRDU0JMfwfmve1HGOAWu6+hWBmRDkmlqJc/IdN8RRRvkwcNILgHW6GeKWNFL4x6uaXNgoAxNgb15BtPv1nHAGhdg==
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+Received: from MI3PR04MB12438.eurprd04.prod.outlook.com (2603:10a6:290:76::14)
+ by VI0PR04MB10140.eurprd04.prod.outlook.com (2603:10a6:800:246::12) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.546.22; Mon, 26 Oct
+ 2026 16:39:06 +0000
+Received: from MI3PR04MB12438.eurprd04.prod.outlook.com
+ ([fe80::c715:c32:8bb1:b70b]) by MI3PR04MB12438.eurprd04.prod.outlook.com
+ ([fe80::c715:c32:8bb1:b70b%6]) with mapi id 15.21.0546.021; Mon, 26 Oct 2026
+ 16:39:06 +0000
+Date: Mon, 26 Oct 2026 11:38:49 -0500
+From: Frank Li <Frank.li@oss.nxp.com>
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig_=28The_Capable_Hub=29?= <u.kleine-koenig@baylibre.com>
+Cc: Linus Walleij <linusw@kernel.org>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	Andy Shevchenko <andy@kernel.org>, linux-gpio@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Yang Shen <shenyang39@huawei.com>,
+	Lixu Zhang <lixu.zhang@intel.com>,
+	Sakari Ailus <sakari.ailus@linux.intel.com>,
+	Ray Jui <rjui@broadcom.com>,
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+	Florian Fainelli <florian.fainelli@broadcom.com>,
+	Scott Branden <sbranden@broadcom.com>,
+	Eugeniy Paltsev <Eugeniy.Paltsev@synopsys.com>,
+	Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>, Imre Kaloz <kaloz@kernel.org>,
+	Conor Dooley <conor.dooley@microchip.com>,
+	Valentina Fernandez <valentina.fernandezalanis@microchip.com>,
+	Daire McNamara <daire.mcnamara@microchip.com>,
+	Daniel Palmer <daniel@thingy.jp>,
+	Romain Perier <romain.perier@gmail.com>,
+	Robert Jarzmik <robert.jarzmik@free.fr>, imx@lists.linux.dev,
 	linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	dawid.glazik@linux.intel.com,
-	maciej.lawniczak@intel.com,
-	Andrew Lunn <andrew@lunn.ch>
-Subject: [PATCH v4 3/3] ARM: dts: aspeed: add Intel JNCRP BMC
-Date: Mon, 26 Oct 2026 17:40:30 +0100
-Message-ID: <ffb7b028f317a3a2cd1a98b8f454b46a706cee42.1792749922.git.dawid.glazik@linux.intel.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <cover.1792749922.git.dawid.glazik@linux.intel.com>
-References: <cover.1792749922.git.dawid.glazik@linux.intel.com>
+	linux-riscv@lists.infradead.org,
+	Hoan Tran <hoan@os.amperecomputing.com>,
+	Alan Borzeszkowski <alan.borzeszkowski@linux.intel.com>,
+	Mika Westerberg <westeri@kernel.org>,
+	Israel Cepeda <israel.a.cepeda.lopez@intel.com>,
+	Hans de Goede <hansg@kernel.org>,
+	Matti Vaittinen <mazziesaccount@gmail.com>,
+	"Enrico Weigelt, metux IT consult" <info@metux.net>,
+	Viresh Kumar <vireshk@kernel.org>, virtualization@lists.linux.dev,
+	Yinbo Zhu <zhuyinbo@loongson.cn>,
+	Thierry Reding <thierry.reding@kernel.org>,
+	Jonathan Hunter <jonathanh@nvidia.com>, linux-tegra@vger.kernel.org,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+	Srinivas Neeli <srinivas.neeli@amd.com>,
+	Michal Simek <michal.simek@amd.com>, linux-aspeed@lists.ozlabs.org,
+	asahi@lists.linux.dev, linux-mediatek@lists.infradead.org,
+	openbmc@lists.ozlabs.org, linux-omap@vger.kernel.org,
+	linux-renesas-soc@vger.kernel.org, linux-unisoc@lists.infradead.org,
+	linux-rockchip@lists.infradead.org,
+	linux-stm32@st-md-mailman.stormreply.com,
+	Michael Buesch <m@bues.ch>, William Breathitt Gray <wbg@kernel.org>,
+	Robert Richter <rric@kernel.org>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	linux-acpi@vger.kernel.org
+Subject: Re: [PATCH v3 00/22] gpio: Improvements around device-id arrays
+Message-ID: <at-CGVq5jVsMQief@SMW015318>
+References: <cover.1793030820.git.u.kleine-koenig@baylibre.com>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <cover.1793030820.git.u.kleine-koenig@baylibre.com>
+X-ClientProxiedBy: DS1PR03CA0015.namprd03.prod.outlook.com
+ (2603:10b6:8:233::10) To MI3PR04MB12438.eurprd04.prod.outlook.com
+ (2603:10a6:290:76::14)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -87,334 +127,191 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Organization: Intel Technology Poland sp. z o.o. - ul. Slowackiego 173, 80-298 Gdansk - KRS 101882 - NIP 957-07-52-316
-Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-22.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=4.0.1
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: MI3PR04MB12438:EE_|VI0PR04MB10140:EE_
+X-MS-Office365-Filtering-Correlation-Id: cc32ed66-1b3c-496b-47e1-08df337fa6df
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|7416014|23010399003|376014|1800799024|19092799006|366016|261026140227099003|260925022911599003|260925021911599003|260925021311599003|56012099006|11063799006|5023799004|261009223027099003|261022075727099003|261021121427099003|261022105027099003|10067099003|261026121527099003|18002099003|22082099003|41080700001;
+X-Microsoft-Antispam-Message-Info:
+	TzsjTWC9ZLj+LVZmfIQKqr/h8gO8GiStteVQR5dMSF572EQcie+0+dkxU84Myl8P2ZEOSvfzB905POP9L7qs6y42KOMKNp1xAvfqJScgIyDlLSr/EZpaa9oywDXf38LsLoX8XxBO5FQ5bdco1XrhnMNfODeAXzmUIxfoHcSieUlhg4DkifiD7RSfOl0N0LTFM4EFt/q/eVDw4OV02DqVo9YyuvKLfaTg5ZhodOCJiGut5zxJ3ioAkwc8+En6KRG1sHIf0cr7g5bz82TC9ZsaorqlvTTG4obVs0JXpVfDgiWkFNSS3ezjFb++WrI3n8T37V6UaZdBZFm0ZvvStM5RLmF1p/JRcr2mr8EbTf7GnAe7UfDijfB7o1iuawpPAxDwqB86TAjrTDiRo5Y6f++g38S6Y/2y6tDrPHyKKWJ7NLncNy+fbykywyufoSyibicOU5JyhLy1lRRR2B8/LHH5QKYLoU3r6ljllXBXa3+MpzKFFaycB9QFtcnGJZ3cSxkt8gDR7uoZwJQZZ5WfCnsbpsiP18WQp0wtWBnvKmAuFzp88NSFSv3fQoswfeJdegBljE6MfhBlDyYxFu4SSAAnKzdPa4KqfNk243Al89wFMwW+CG/alF3X0ZH3KxWEkhksuXkuoT2rkg5xs7JFbAxSKxkt8vTNhZd6uqJhijf/KFM=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MI3PR04MB12438.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(23010399003)(376014)(1800799024)(19092799006)(366016)(261026140227099003)(260925022911599003)(260925021911599003)(260925021311599003)(56012099006)(11063799006)(5023799004)(261009223027099003)(261022075727099003)(261021121427099003)(261022105027099003)(10067099003)(261026121527099003)(18002099003)(22082099003)(41080700001);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?iso-8859-1?Q?kOxvwXleufIgI4BGstiJTXJoW7NhnFnGxjKALhwVd5w8ceBRLFqiAyEfy4?=
+ =?iso-8859-1?Q?ZXi5r/f+v1+d7+sQUlkQYraFq4zBBxLaYjwgV0e1S4QtdAls4SnsADGX81?=
+ =?iso-8859-1?Q?FV8G7Ylu+ODVWbkCHflkS/i6LZ5IoNuY3SeF88uC3H5EdezkW36tBMgNF0?=
+ =?iso-8859-1?Q?TzKtPwel++0KIdTzH4Yzcew0sTaq3DwWxfT7doua+nQyWZ4iJzZAZw0BDy?=
+ =?iso-8859-1?Q?5cxdxeOBjmDaYIWKSiuancWxofOPuKnor4skwYjFcI/vQRR2nSGIomoiJt?=
+ =?iso-8859-1?Q?8mlOEITVC9N9t2C1nR7iPLIHJEI12mtuveYg0OOsBNPYwCPdaOvmmh5TDh?=
+ =?iso-8859-1?Q?zp1eNAfX88IySSQTSOQ3Tt8PhoWnZXdbjcBEUejQnN6WgFKbUss0NoGI73?=
+ =?iso-8859-1?Q?33TcJaPjgPdia6eyEzjYlI/pzW+F0Yen8oNq1TnBCdJZIXkZyTjU+bt1CM?=
+ =?iso-8859-1?Q?Q3igtlMgnrz6z8DZjOiXL08W+gYZGfQzkN8S8aCzxPKpJoTYnkxlugSALG?=
+ =?iso-8859-1?Q?BGPYjcAkwHO/dJqaAb0pOwqJQhUerKnfzmIC086LNIkD7Rap1cfsk+R7R9?=
+ =?iso-8859-1?Q?mZwo+9zjB7/lTRd4ePKduwevLJvCaIc43MthnZvsbjbboiQWqGTfklJ//I?=
+ =?iso-8859-1?Q?wecdzNgLaU94daPwLWOTj01KDvtJ2mUunpBO2Md+ZtyuryMBPL6/KOXF1e?=
+ =?iso-8859-1?Q?oF1nSsDkJsA3Fr4D6AK9gAo7A+2LVpyI9Fc2aPpqo0oorkTRmXUXkO3iwb?=
+ =?iso-8859-1?Q?23X4LW8wtX8KjxVw7tgIJ8dEYzL+4mg5dD82cdUS5STCvqgFzmEPwAYBM/?=
+ =?iso-8859-1?Q?S/C1uvZmn6XKNcdgQBeBQZEOT1bcabb9KpQzFkJQETZbfchrxlvm99X/cZ?=
+ =?iso-8859-1?Q?wwSnUhRo1TvD3Jqds0HVqfm1sDqVIheorLBAy/CwqtAJUv11q3NR5ufFYi?=
+ =?iso-8859-1?Q?AgTKPtL8fF+nf3x+cRnAM10Cgdy6vjhUxvwHmWVKdz3zgJZgGAJFDURCFX?=
+ =?iso-8859-1?Q?pdH5NTh2dkn7ztqePhlEs56Rf4dnh9ppluxc9fDDXa9bwJhlPXNf8vg8dp?=
+ =?iso-8859-1?Q?M5s2LjTZ/kU+etUNXcqSh2+LYkWKJWowREJhVnugq1ATreJIOrkNhyYvo7?=
+ =?iso-8859-1?Q?gWEHpi0cEcZ2Vrh7Zqvl/fa/lXDAF5CQQps5EZNJWLuzcTKR6Z+eo4R1us?=
+ =?iso-8859-1?Q?mUzK5kA1dkVRz29aihUjxNFqgCCHeP0t7Yu6VCLACZS8fyAVMwnSMg/eOk?=
+ =?iso-8859-1?Q?p19Nvn3DuNZrxixBw3VNk4Hx9IUcI3YagaYGx2tXQbilhZgsyz7FLOEwls?=
+ =?iso-8859-1?Q?7vCAzW/Mqt6+5a4tjCGF+3Gsfy3PROC5GQ2DRi4aRwOJGaiQbFsCOAmJY2?=
+ =?iso-8859-1?Q?D8YdS28x5GQD6g7N/+SQNDJTgOiR8NYXh24r+QQYC2I66oOXaNuGQDsU61?=
+ =?iso-8859-1?Q?V//UNVD/u926Kp1F0tiobI3sjdYVr3yh/CvtVq1qdSd5gkTiHTNjgcqe0B?=
+ =?iso-8859-1?Q?jzsAed7oCQI7hPZYgsCJcj/mFFYpEonh62VDtwAK25uF6nvIBnimMQM1Ht?=
+ =?iso-8859-1?Q?hFSJpsuv4T73CoCCHB518q5xfVoBQLF2JyjHKzdCgMTP+UR+A2VEHo1W94?=
+ =?iso-8859-1?Q?ZbnMVGtgKUd0FapU49yylpY48gmK/VeymrJfSQt/9d+zDIp85EJo8Q77fS?=
+ =?iso-8859-1?Q?Et05YtXGiRkJ4QYCBfZHPr+panf9jYjJYht7lImY16F7nBEOYSz8/LNf4K?=
+ =?iso-8859-1?Q?xcPRuuxNrHMXEtKg9DW+W+ys/NkiF56KezHwzM9CZm1MQbQYc+thlZGFme?=
+ =?iso-8859-1?Q?0X3muI+J5uzt9XSVh6ZaRkekYLTGDgc7v07wSjKhFPZJi/TOwsn8?=
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: cc32ed66-1b3c-496b-47e1-08df337fa6df
+X-MS-Exchange-CrossTenant-AuthSource: MI3PR04MB12438.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 26 Oct 2026 16:39:06.5244
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 6sZRTz0pVhFlSF7EBVyQ+dtCHOlp//kUVETNITxzHc+vCv1CCg0ehPm3leCM5D+UYUddqkWOot6igMD9LV/kAZaFgwYP/nx3hhdmAbPYpJniEz6DJle+GpjlcQoTee3g
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI0PR04MB10140
+X-Spam-Status: No, score=-13.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Add the initial AST2600 device tree for the Intel JNCRP BMC platform.
+On Mon, Oct 26, 2026 at 05:28:11PM +0100, Uwe Kleine-König (The Capable Hub) wrote:
+> Hello,
+>
+> as with v1 and v2 the original motivation for this series are the
+> patches that convert the arrays to use named initializers, see
+> https://lore.kernel.org/all/cover.1780048925.git.u.kleine-koenig@baylibre.com/
+> for the idea behind it. Then by not closing the eyes for small issues
+> spotted while working on that, this series grew a bit.
+>
+> Changes since v2 (available at
+> https://lore.kernel.org/all/cover.1784133987.git.u.kleine-koenig@baylibre.com/)
+>
+>  - Rebase to current next/master (new changes to
+>    drivers/gpio/gpio-mlxbf.c, drivers/gpio/gpio-mlxbf2.c,
+>    drivers/gpio/gpio-74x164.c)
+>  - Fix a few commit logs to reference the right *_device_id names
+>  - Drop all tags for Andy
+>  - Drop a questionable MODULE_DEVICE_TABLE(acpi, ...) for drivers/gpio/gpio-usbio.c
+>
+> Checkpatch only reports two undocumented device-tree compatibles:
+>
+> 	WARNING: DT compatible string "apm,xgene-gpio-v2" appears un-documented -- check ./Documentation/devicetree/bindings/
+> 	WARNING: DT compatible string "marvell,pxa1928-gpio" appears un-documented -- check ./Documentation/devicetree/bindings/
+>
+> I felt free to ignore these as this is a pre-existing issue and
+> out-of-context for this series.
+>
+> Andy didn't like how this series is split into patches before, I do. I
+> think it's not possible to please everyone's opinion regarding minimal
+> changes per patch vs grouping similar changes in patches and about what
+> is considered churn. I'm happy about every patch in this series that
+> goes in, so feel free to apply patches that you like and that don't get
+> resistance even if other's do. If patches don't apply, just drop them,
+> I'll catch up on them eventually.
+>
+> Best regards
+> Uwe
+>
+> Uwe Kleine-König (The Capable Hub) (22):
+>   gpio: Remove __maybe_unused annotations from acpi_device_id arrays
+>   gpio: fxl6408: Remove __maybe_unused annotations from of_device_id
+>     array
+>   gpio: Drop unused assignment of acpi_device_id driver data
+>   gpio: max7301: Drop unused assignment of spi_device_id driver data
+>   gpio: mmio: Drop unused assignment of platform_device_id driver data
+>   gpio: ljca: Drop unused assignment of auxiliary_device_id driver data
+>   gpio: xgene: Add missing ACPI module annotation
+>   gpio: sodaville: Add missing PCI module annotations
+>   gpio: Add missing OF module annotations
+>   gpio: pxa: Add missing platform module annotations
+>   gpio: pl061: Use empty initializer for amba_id terminator
+>   gpio: Use named initializers for acpi_device_id array
+>   gpio: pcf857x: Use named initializers for of_device_id array
+>   gpio: bd73800: Use named initializers for platform_device_id array
+>   gpio: Use named initializers for spi_device_id array
+>   gpio: virtio: Use a named initializer for virtio_device_id array
+>   gpio: Unify style of acpi_device_id arrays
+>   gpio: Unify style of of_device_id arrays
+>   gpio: max77620: Unify style of platform_device_id array
+>   gpio: Unify style of spi_device_id arrays
+>   gpio: Unify style of pci_device_id arrays
+>   gpio: Unify style of various *_device_id arrays
+>
+>  drivers/gpio/gpio-74x164.c          |  4 ++--
+>  drivers/gpio/gpio-adnp.c            |  4 ++--
+>  drivers/gpio/gpio-aggregator.c      |  2 +-
+>  drivers/gpio/gpio-altera-a10sr.c    |  2 +-
+>  drivers/gpio/gpio-altera.c          |  4 ++--
+>  drivers/gpio/gpio-amd8111.c         |  2 +-
+>  drivers/gpio/gpio-amdpt.c           |  8 ++++----
+>  drivers/gpio/gpio-aspeed-sgpio.c    | 10 ++++-----
+>  drivers/gpio/gpio-aspeed.c          | 10 ++++-----
+>  drivers/gpio/gpio-ath79.c           |  2 +-
+>  drivers/gpio/gpio-bcm-kona.c        |  1 +
+>  drivers/gpio/gpio-bd73800.c         |  4 ++--
+>  drivers/gpio/gpio-blzp1600.c        |  4 ++--
+>  drivers/gpio/gpio-brcmstb.c         |  2 +-
+>  drivers/gpio/gpio-bt8xx.c           |  2 +-
+>  drivers/gpio/gpio-cadence.c         |  6 +++---
+>  drivers/gpio/gpio-creg-snps.c       |  5 +++--
+>  drivers/gpio/gpio-davinci.c         |  8 ++++----
+>  drivers/gpio/gpio-dwapb.c           | 14 ++++++-------
+>  drivers/gpio/gpio-em.c              |  4 ++--
+>  drivers/gpio/gpio-ep93xx.c          |  1 +
+>  drivers/gpio/gpio-ftgpio010.c       |  3 ++-
+>  drivers/gpio/gpio-fxl6408.c         |  2 +-
+>  drivers/gpio/gpio-graniterapids.c   |  4 ++--
+>  drivers/gpio/gpio-grgpio.c          |  2 +-
+>  drivers/gpio/gpio-gw-pld.c          |  4 ++--
+>  drivers/gpio/gpio-hisi.c            |  6 +++---
+>  drivers/gpio/gpio-hlwd.c            |  4 ++--
+>  drivers/gpio/gpio-imx-scu.c         |  1 +
+>  drivers/gpio/gpio-ixp4xx.c          |  4 ++--
+>  drivers/gpio/gpio-ljca.c            |  4 ++--
+>  drivers/gpio/gpio-loongson-64bit.c  |  4 ++--
+>  drivers/gpio/gpio-lp3943.c          |  2 +-
+>  drivers/gpio/gpio-lpc32xx.c         |  4 ++--
+>  drivers/gpio/gpio-macsmc.c          |  4 ++--
+>  drivers/gpio/gpio-max3191x.c        | 12 +++++------
+>  drivers/gpio/gpio-max7301.c         |  2 +-
+>  drivers/gpio/gpio-max7360.c         |  8 ++++----
+>  drivers/gpio/gpio-max77620.c        |  4 ++--
+>  drivers/gpio/gpio-max77759.c        |  2 +-
+>  drivers/gpio/gpio-mb86s7x.c         |  2 +-
+>  drivers/gpio/gpio-ml-ioh.c          |  2 +-
+>  drivers/gpio/gpio-mlxbf.c           |  6 +++---
+>  drivers/gpio/gpio-mlxbf2.c          |  6 +++---
+>  drivers/gpio/gpio-mlxbf3.c          |  4 ++--
+>  drivers/gpio/gpio-mm-lantiq.c       |  2 +-
+>  drivers/gpio/gpio-mmio.c            |  3 +--
+>  drivers/gpio/gpio-mockup.c          |  4 ++--
+>  drivers/gpio/gpio-moxtet.c          |  4 ++--
+>  drivers/gpio/gpio-mpc5200.c         |  9 ++++----
+>  drivers/gpio/gpio-mpc8xxx.c         | 25 +++++++++++-----------
+>  drivers/gpio/gpio-mpfs.c            |  1 +
+>  drivers/gpio/gpio-mpsse.c           |  3 +--
+>  drivers/gpio/gpio-msc313.c          |  1 +
+>  drivers/gpio/gpio-mt7621.c          |  2 +-
+>  drivers/gpio/gpio-mvebu.c           | 13 ++++++------
+>  drivers/gpio/gpio-mxc.c             |  2 +-
+>  drivers/gpio/gpio-mxs.c             |  4 ++--
 
-Signed-off-by: Dawid Glazik <dawid.glazik@linux.intel.com>
-Reviewed-by: Andrew Lunn <andrew@lunn.ch>
----
-v4:
-  - Rebased onto aspeed/arm/dt of bmc/linux.git, no other changes
-v3:
-  - Sorted nodes alphabetically
-  - Sorted properties per dts-coding-style
-  - Removed lpc-snoop label
-  - Removed &i3c_global since it's enabled by default
-  - Added &kcs3 and replaced flash layout with 128MB one
-  - Restored Reviewed-by from Andrew Lunn, dropped by mistake in v2
-v2:
-  - Reviewed-by: Andrew Lunn for nodes: &mdio1, &mac1
-  - Replace bootargs console=ttyS4,115200n8 with stdout-path = &uart5
----
- arch/arm/boot/dts/aspeed/Makefile             |   1 +
- .../dts/aspeed/aspeed-bmc-intel-jncrp.dts     | 276 ++++++++++++++++++
- 2 files changed, 277 insertions(+)
- create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-intel-jncrp.dts
+For all imx part:
 
-diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
-index 1e4154f12228..5e685a625883 100644
---- a/arch/arm/boot/dts/aspeed/Makefile
-+++ b/arch/arm/boot/dts/aspeed/Makefile
-@@ -58,6 +58,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
- 	aspeed-bmc-ibm-sbp1.dtb \
- 	aspeed-bmc-ibm-system1.dtb \
- 	aspeed-bmc-intel-avcrp.dtb \
-+	aspeed-bmc-intel-jncrp.dtb \
- 	aspeed-bmc-intel-s2600wf.dtb \
- 	aspeed-bmc-inspur-fp5280g2.dtb \
- 	aspeed-bmc-inspur-nf5280m6.dtb \
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-intel-jncrp.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-intel-jncrp.dts
-new file mode 100644
-index 000000000000..e66ea7f00fed
---- /dev/null
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-intel-jncrp.dts
-@@ -0,0 +1,276 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+// Copyright 2025 Intel Corporation
-+
-+/dts-v1/;
-+
-+#include "aspeed-g6.dtsi"
-+#include <dt-bindings/gpio/aspeed-gpio.h>
-+
-+/ {
-+	compatible = "intel,jncrp-bmc", "aspeed,ast2600";
-+	model = "Intel JNCRP BMC";
-+
-+	aliases {
-+		serial4 = &uart5;
-+	};
-+
-+	chosen {
-+		bootargs = "earlycon";
-+		stdout-path = &uart5;
-+	};
-+
-+	memory@80000000 {
-+		device_type = "memory";
-+		reg = <0x80000000 0x40000000>;
-+	};
-+};
-+
-+&fmc {
-+	status = "okay";
-+
-+	flash@0 {
-+		label = "bmc";
-+		spi-max-frequency = <50000000>;
-+		spi-rx-bus-width = <4>;
-+		m25p,fast-read;
-+
-+		status = "okay";
-+
-+#include "openbmc-flash-layout-128.dtsi"
-+	};
-+};
-+
-+&gpio0 {
-+	gpio-line-names =
-+		/*A0-A7*/ "", "", "", "", "", "", "", "",
-+		/*B0-B7*/ "PWRGD_AUX_PWRGD_BMC_CPU", "", "", "", "", "", "",
-+				"FP_ID_LED_N",
-+		/*C0-C7*/ "FM_FORCE_BMC_UPDATE_N", "RST_RGMII_PHYRST_N",
-+				"FM_TPM_EN_PULSE", "", "", "",
-+				"DBP_HOOK3_CPU_FBRK_OUT_R_N", "DBP_PRSNT_IN_N",
-+		/*D0-D7*/ "CPU_ERR0_N", "CPU_ERR1_N", "CPU_ERR2_N", "DBP_ASD_BMC_PRDY_N",
-+				"FM_SPD_SWITCH_CTRL_N", "", "", "",
-+		/*E0-E7*/ "", "", "", "ID_BUTTON", "", "", "", "",
-+		/*F0-F7*/ "", "", "FM_AGGREGATOR_MODE_N", "", "", "",
-+				"FP_LED_STATUS_GREEN_R_N", "FP_LED_STATUS_AMBER_R_N",
-+		/*G0-G7*/ "", "", "", "", "", "", "", "",
-+		/*H0-H7*/ "", "", "", "", "", "", "", "",
-+		/*I0-I7*/ "", "", "", "", "", "", "", "",
-+		/*J0-J7*/ "", "", "", "", "", "", "", "",
-+		/*K0-K7*/ "", "", "", "", "", "", "", "",
-+		/*L0-L7*/ "", "", "", "", "PREQ_N", "FM_P3V3_SW_ENA", "", "",
-+		/*M0-M7*/ "", "", "", "", "", "", "", "",
-+		/*N0-N7*/ "", "", "", "", "", "", "", "",
-+		/*O0-O7*/ "", "", "", "", "", "", "NMI_BUTTON", "",
-+		/*P0-P7*/ "RESET_BUTTON", "RESET_OUT", "POWER_BUTTON", "POWER_OUT",
-+				"", "", "", "LED_BMC_HB_LED_N",
-+		/*Q0-Q7*/ "", "", "", "", "", "", "", "",
-+		/*R0-R7*/ "", "", "", "", "", "", "", "",
-+		/*S0-S7*/ "CPU_CATERR_IERR_N", "CPU_CATERR_MCERR_N", "FM_BMC_FRU_WP_N",
-+				"FM_INTRUSION_CABLE_PRES_N", "PWRGD_CPU_AUXPWRGD",
-+				"FM_P3V_BAT_SCALED_EN", "REMOTE_DEBUG_ENABLE", "",
-+		/*T0-T7*/ "", "", "", "", "", "", "", "",
-+		/*U0-U7*/ "", "", "", "", "", "", "", "",
-+		/*V0-V7*/ "SIO_S3", "SIO_S5", "", "SIO_ONCONTROL",
-+				"SIO_POWER_GOOD", "", "", "",
-+		/*W0-W7*/ "", "", "", "", "", "", "", "",
-+		/*X0-X7*/ "", "", "POST_COMPLETE", "", "", "", "", "",
-+		/*Y0-Y7*/ "FM_BMC_CMOS_CLR_R_N", "PLTRST_N", "FM_BMC_SAFS_EN",
-+				"IRQ_PSU_ALERT_LVC3_N", "", "", "", "",
-+		/*Z0-Z7*/ "", "", "", "", "", "", "", "";
-+
-+	status = "okay";
-+
-+	spd-switch-cpu-hog {
-+		gpio-hog;
-+		gpios = <ASPEED_GPIO(D, 4) GPIO_ACTIVE_HIGH>;
-+		output-low;
-+	};
-+};
-+
-+&i2c4 {
-+	status = "okay";
-+};
-+
-+&i2c5 {
-+	multi-master;
-+
-+	status = "okay";
-+};
-+
-+&i2c6 {
-+	status = "okay";
-+};
-+
-+&i2c7 {
-+	multi-master;
-+
-+	status = "okay";
-+};
-+
-+&i2c8 {
-+	multi-master;
-+
-+	status = "okay";
-+};
-+
-+&i2c9 {
-+	multi-master;
-+
-+	status = "okay";
-+};
-+
-+&i2c10 {
-+	multi-master;
-+
-+	status = "okay";
-+};
-+
-+&i2c11 {
-+	status = "okay";
-+};
-+
-+&i2c12 {
-+	multi-master;
-+
-+	status = "okay";
-+};
-+
-+&i2c13 {
-+	multi-master;
-+
-+	status = "okay";
-+};
-+
-+&i2c14 {
-+	status = "okay";
-+};
-+
-+&i2c15 {
-+	multi-master;
-+
-+	status = "okay";
-+};
-+
-+&i3c1 {
-+	i2c-scl-hz = <1000000>;
-+	mctp-controller;
-+
-+	status = "okay";
-+};
-+
-+&kcs3 {
-+	aspeed,lpc-io-reg = <0xca2>;
-+
-+	status = "okay";
-+};
-+
-+&lpc {
-+	lpc-snoop@80 {
-+		snoop-ports = <0x80>;
-+
-+		status = "okay";
-+	};
-+};
-+
-+&mac1 {
-+	clocks = <&syscon ASPEED_CLK_GATE_MAC2CLK>,
-+		 <&syscon ASPEED_CLK_MAC2RCLK>;
-+	clock-names = "MACCLK", "RCLK";
-+	phy-handle = <&ethphy1>;
-+	phy-mode = "rgmii-id";
-+	pinctrl-0 = <&pinctrl_rgmii2_default>;
-+	pinctrl-names = "default";
-+
-+	status = "okay";
-+};
-+
-+&mdio1 {
-+	status = "okay";
-+
-+	ethphy1: ethernet-phy@0 {
-+		compatible = "ethernet-phy-id001c.c916";
-+		reg = <0>;
-+		reset-assert-us = <10000>;
-+		reset-deassert-us = <50000>;
-+		reset-gpios = <&gpio0 ASPEED_GPIO(C, 1) GPIO_ACTIVE_LOW>;
-+	};
-+};
-+
-+&rtc {
-+	status = "okay";
-+};
-+
-+&sgpiom0 {
-+	bus-frequency = <2000000>;
-+	gpio-line-names =
-+		/*A, 0-7*/ "CPU0_VRHOT_N", "LED_POSTCODE_0_LSB",
-+				"CPU0_THERMTRIP_N", "LED_POSTCODE_1",
-+				"CPU0_MEMTRIP_N", "LED_POSTCODE_2",
-+				"CPU0_MEM_VRHOT_N", "LED_POSTCODE_3",
-+				"CPU0_MEM_HOT_N", "LED_POSTCODE_4",
-+				"CPU0_MON_FAIL_N", "LED_POSTCODE_5",
-+				"CPU1_VRHOT_N", "LED_POSTCODE_6",
-+				"CPU1_THERMTRIP_N", "LED_POSTCODE_7_MSB",
-+		/*B, 8-15*/ "CPU1_MEMTRIP_N", "FM_ASYNC_WARM_RESET_REQ",
-+				"CPU1_MEM_VRHOT_N", "HPM_FRU_READ_DONE",
-+				"CPU1_MEM_HOT_N", "FM_ASYNC_GLOBAL_RESET_REQ",
-+				"CPU1_MON_FAIL_N", "BMC_BOOT_DONE",
-+				"CPU2_VRHOT_N", "NMI_OUT",
-+				"CPU2_THERMTRIP_N", "AGGREGATOR_MODE",
-+				"CPU2_MEMTRIP_N", "RST_I3C_PCIE_HUB_N",
-+				"CPU2_MEM_VRHOT_N", "",
-+		/*C, 16-23*/ "CPU2_MEM_HOT_N", "HPM0_PRESENT",
-+				"CPU2_MON_FAIL_N", "HPM1_PRESENT",
-+				"CPU3_VRHOT_N", "HPM2_PRESENT",
-+				"CPU3_THERMTRIP_N", "HPM3_PRESENT",
-+				"CPU3_MEMTRIP_N", "HPM0_SOURCE_TO_DESTINATION_FAIL",
-+				"CPU3_MEM_VRHOT_N", "HPM1_SOURCE_TO_DESTINATION_FAIL",
-+				"CPU3_MEM_HOT_N", "HPM2_SOURCE_TO_DESTINATION_FAIL",
-+				"CPU3_MON_FAIL_N", "HPM3_SOURCE_TO_DESTINATION_FAIL",
-+		/*D, 24-31*/ "FM_BMC_VAL_EN", "HPM0_FRU_VALID",
-+				"FM_SERIAL_BOOT", "HPM1_FRU_VALID",
-+				"FM_INTRUSION_CABLE_PRES_N", "HPM2_FRU_VALID",
-+				"USB_OC_P2_3_N", "HPM3_FRU_VALID",
-+				"FM_SYSTEM_COOLING_MODE0", "FM_S2D_DISCOVERY_DONE",
-+				"FM_SYSTEM_COOLING_MODE1", "", "", "", "", "",
-+		/*E, 32-39*/ "DBP_PMODE_S0_PWROK", "", "DBP_PMODE_PLTRST", "",
-+				"DBP_PMODE_GLOBALRESET", "", "DBP_PMODE_CPU_PWRGD", "",
-+				"FM_SMBUS_RDY", "", "FM_LEAK_DETECTION", "",
-+				"FM_LEAK_CBL_PRSNT_N", "", "FM_LEAK_CBL_FAULT_N", "",
-+		/*F, 40-47*/ "CPU0_SKTOCC1_N", "CPU0_SKT_FAULT_LED",
-+				"CPU0_SKTOCC2_N", "CPU1_SKT_FAULT_LED",
-+				"CPU0_MISMATCH", "CPU2_SKT_FAULT_LED",
-+				"CPU1_SKTOCC1_N", "CPU3_SKT_FAULT_LED",
-+				"CPU1_SKTOCC2_N", "", "CPU1_MISMATCH", "",
-+				"CPU2_SKTOCC1_N", "", "CPU2_SKTOCC2_N", "",
-+		/*G, 48-55*/ "CPU2_MISMATCH", "", "CPU3_SKTOCC1_N", "",
-+				"CPU3_SKTOCC2_N", "", "CPU3_MISMATCH", "",
-+				"HPM0_PRSNT_N", "", "HPM1_PRSNT_N", "",
-+				"HPM2_PRSNT_N", "", "HPM3_PRSNT_N", "",
-+		/*H, 56-63*/ "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-+		/*I, 64-71*/ "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-+		/*J, 72-79*/ "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-+		/*K, 80-87*/ "FM_BOARD_REV_ID0", "", "FM_BOARD_REV_ID1", "",
-+				"FM_BOARD_REV_ID2", "", "FM_BOARD_SKU_ID0", "",
-+				"FM_BOARD_SKU_ID1", "", "FM_BOARD_SKU_ID2", "",
-+				"FM_BOARD_SKU_ID3", "", "FM_BOARD_SKU_ID4", "",
-+		/*L, 88-95*/ "FM_BOARD_SKU_ID5", "", "FM_BOARD_SKU_ID6", "",
-+				"FM_BOARD_SKU_ID7", "", "", "", "", "", "", "",
-+				"", "", "", "",
-+		/*M, 96-103*/ "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-+		/*N, 104-111*/ "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-+		/*O, 112-119*/ "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-+		/*P, 120-127*/ "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "";
-+	ngpios = <128>;
-+
-+	status = "okay";
-+};
-+
-+&uart1 {
-+	status = "okay";
-+};
-+
-+&uart5 {
-+	status = "okay";
-+};
--- 
-2.43.0
-
+Acked-by: Frank Li <Frank.Li@nxp.com>
 
