@@ -2,58 +2,78 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 813BF606A333
-	for <linux-aspeed@archiver.kernel.org>; Mon, 26 Oct 2026 12:36:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DCCB860A2606
+	for <linux-aspeed@archiver.kernel.org>; Mon, 26 Oct 2026 15:46:11 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=uBMeGJL4
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=c8sD8DeH
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jCtRS4YJcz2yMK;
-	Mon, 26 Oct 2026 23:36:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793018212;
-	cv=none; b=d3+cPm7u3w+FCl3PGM15x3xqZ4IVWf6wmUTT8W9wzHEZ9b2yJ2f5ig6jTDY5cuC8Pb3/JIrWNI4e3dYkFECIvgjHY2owfrm+6h9Z8SkNYYSf+7JFb71Tw7QA6Kngi00IFTXfvIlxo6JFLSGlt7ZIa7wWjr49Qg/Zb7NpEW30upRcFmLTEF3juwrcxxIsd3sAwz2mw8wcNFOuIsY3a11A5BWxOHGM9Yt/wbi+qq0tqI2gtj/vA6JmRGTz//sVG5IF+VeCJiUSzJI8j4b9aWst7ZFnY6ncT7ZRd7QhxrqYoEFBXwBCkc6mk82/zBxdYDJ/F2GDefDLLqoToKl0jy+hAA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jCyds55ZZz2yQH;
+	Tue, 27 Oct 2026 02:46:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.14
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793029569;
+	cv=none; b=RpB9qpnBBjXmsImnjygk4Qqf/6GUOTLgbG++QcI+6zg9k6dEUO+MF79JirLKCRAZ7OyNrhgSfl95XPdsH/bL269niYGS/roHDUqHucmSUjP1Ld0Lb1YYYdQvvSsShiLQ1hTfHiSgwhGeyUzRVpEuAdkHolwLiRZSzYwRbWOFIAVfgtyFwBMeLiv7WVXjDXarRzzf7JhxdraIcaVc0fVIsWPU4mAJS/Igjc4hnQkvOIGXRAMkxFqrueTl42tztmKxeP1dx+DhUL/IcN7v13g3DZplsceX8tQ5mzDubIDkV1aD1J5yohKVc6rMFimIUZw+nt9pE6PkqS0zvtFcktaDvg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793018212; c=relaxed/relaxed;
-	bh=lIwfX39/1xU2NA1XZwUTvUajjOaDvuDKqu8wPxFYaZQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=J9bmrlGTcQOAgUpo9syGVVKOq32tQWkrgHHxLoqfzL9d77yIwbRpNWUjLTZyhtOydq1QZosfjmAyRK9lO52UWzfNe+RAfJ/UzLZRhJLt+mZo5cg/0srUibobo6ng32hmxZTnzd+qLhvuASDbz2JQz3tc/3LORSgaSGCutxv8Hd+vb5FX/INsqVC+BalDiS549yDi05NwrK++03nock+bwjvLi6ANP6Sp2QufKCuH4RFspPz12mpVyG7y1G5WmohA73v7vWUJOoxkPxakQY0SfVcWlvBEuFqO/aQ3FVsIO2rI2MjQys7aW1giwNXw0P7WRSGnMqtsLDYNWa6S7POPdw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=uBMeGJL4; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
+	t=1793029569; c=relaxed/relaxed;
+	bh=h0fx31x6gaF+8787Z73S/7lRDFQWwzYnD/urzHGXw/o=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=Nsn9mY2WBwik3982OwrjJmenU6IP6bj+F6dxQJffF8+7yJerqq56phzxk6KFxVE1ngbJCaOO8iFLyWoZIJbhHgloobhfTtCDKQSIi8i61PdEnxlJFuk2nZ3u+uhOX4+x+0wRKJYOg091pIvG2dGOT/JMksn9YiD8MOc/ZaJP5QpW9eXsDoGtM3rYCJ302WevcPAEV2+GoStH2vzHeD1DRB5TXGquMgzSiPU/8rCGbJrtzTJPUzGYQHwlwzJUvur0/eYrPnB5BqsKQqk5bQ2xCbqO6N+B7cq/zVgl7ZLNCYr64mkQMAEtFJmSO0VI2qHHfsYKV8yh4/IA4B7ICQ7QzA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=c8sD8DeH; dkim-atps=neutral; spf=pass (client-ip=192.198.163.14; helo=mgamail.intel.com; envelope-from=dawid.glazik@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=uBMeGJL4;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=c8sD8DeH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.14; helo=mgamail.intel.com; envelope-from=dawid.glazik@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.14])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jCtRP0jwWz2yKp
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 26 Oct 2026 23:36:48 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
-	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
-	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
-	bh=lIwfX39/1xU2NA1XZwUTvUajjOaDvuDKqu8wPxFYaZQ=; b=uBMeGJL4afAOvzwTx3cTjiA5jz
-	CzZF53gUcYSEEsWw8kW70v32vlp6yJ0uKq+n+GqqsntmJ3kvMuzA4FKG4UDJpifhPr7Qz/w7AqAvH
-	WVwgVz/OflNGm4uJ41Tfopvv6Neh/+bgDm7bC7GFhCw/CRcsqkmi5KYR8ve357yIMabI=;
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
-	(envelope-from <andrew@lunn.ch>)
-	id 1xLJwE-00CnRx-S5; Mon, 26 Oct 2026 13:36:30 +0100
-Date: Mon, 26 Oct 2026 13:36:30 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-To: KAVYA M M <kavyamadarsh@gmail.com>
-Cc: Prasanth <prasanth.padarthi10@gmail.com>, devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, openbmc@lists.ozlabs.org,
-	joel@jms.id.au, andrew@codeconstruct.com.au, robh@kernel.org,
-	krzk+dt@kernel.org, conor+dt@kernel.org
-Subject: Re: [PATCH v8 2/2] ARM: dts: aspeed: Add ASRock Rack B650D4U BMC
-Message-ID: <e33a471b-5f4f-492f-9656-e19e0dbfa1b7@lunn.ch>
-References: <20261002062933.26497-1-prasanth.padarthi10@gmail.com>
- <20261002062933.26497-3-prasanth.padarthi10@gmail.com>
- <CAMFFDGjmJTRR8GOX=S+kKnMA-bG+gbZP0sS8dG_d+taDPPRDZQ@mail.gmail.com>
- <CAD_a9mYKSYyP2TqeyjbQWYHdZgF3ggdrU6oTK6VWs2C2GSYMjQ@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jCydp4vHLz2yPR
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 27 Oct 2026 02:46:06 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1793029567; x=1824565567;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=yR3pp0eTp1CaPWvhXx9uOIKYRXzm/jqa7VinEVixpYY=;
+  b=c8sD8DeHWYXh98C7ubBOpkKiyOhVm4pyyGW21xsKrCnUNwca7pqPq9b9
+   28T4RolwWYT6PUDAeRLv/CeGr87xFAMAEmLf6SlCyI3kK5/HZ6KglpI9c
+   yqTw2jSh9JcrIF/lwIgUeYIcqZvhy5cwTG/J21AR2hrQBjfck7eP25Wwb
+   L6bpbDV80idRz6qc5UDm3U6MvH/jj59fIeHleEY1eokm5AZpci0lXzDsn
+   qydRZBpX+XQ6dAJEaiYgnBsNQLjveLkRuKu2dY5JzuqJvM3cH3guSnChr
+   ZL6DArV5aTr5mk7JPvmHq6fE2xcVUbC0TzdP+qu4oJfoKq2Ken0Xlivq4
+   w==;
+X-CSE-ConnectionGUID: JokeBhxGT9SmerI+K91Q/A==
+X-CSE-MsgGUID: 5Jx61EX9TrayrorEOrYzyw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11947"; a="1730855"
+X-IronPort-AV: E=Sophos;i="6.27,179,1787036400"; 
+   d="scan'208";a="1730855"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+  by fmvoesa108.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Oct 2026 08:46:05 -0700
+X-CSE-ConnectionGUID: pr2HmqE+RZCiRm7uo46Bmg==
+X-CSE-MsgGUID: nLAGilQ5TdGJTIqLlLOOdg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,179,1787036400"; 
+   d="scan'208";a="4369360"
+Received: from gklab-103a-129.igk.intel.com ([10.91.103.129])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Oct 2026 08:46:01 -0700
+From: Dawid Glazik <dawid.glazik@linux.intel.com>
+To: Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>
+Cc: devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	dawid.glazik@linux.intel.com,
+	maciej.lawniczak@intel.com,
+	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Subject: [PATCH v4 1/3] dt-bindings: arm: aspeed: Add Intel AVCRP and JNCRP boards
+Date: Mon, 26 Oct 2026 17:40:28 +0100
+Message-ID: <36281bba6f86d9e0ce22025487a0538bdcda921e.1792749922.git.dawid.glazik@linux.intel.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <cover.1792749922.git.dawid.glazik@linux.intel.com>
+References: <cover.1792749922.git.dawid.glazik@linux.intel.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -67,28 +87,46 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAD_a9mYKSYyP2TqeyjbQWYHdZgF3ggdrU6oTK6VWs2C2GSYMjQ@mail.gmail.com>
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
-	autolearn_force=no version=4.0.1
+Organization: Intel Technology Poland sp. z o.o. - ul. Slowackiego 173, 80-298 Gdansk - KRS 101882 - NIP 957-07-52-316
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-22.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Mon, Oct 26, 2026 at 10:04:05AM +0530, KAVYA M M wrote:
-> Hello team,
-> I am new to OpenBMC. I want to development image for the machine using the
-> OpenBMC/Yocto build system, available firmware information, and readings from
-> the existing BMC.
+Add compatible strings for the Intel AVCRP and JNCRP BMC boards.
 
-FYI
+Signed-off-by: Dawid Glazik <dawid.glazik@linux.intel.com>
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+---
+v4:
+ - Rebased onto aspeed/arm/dt of bmc/linux.git, no other changes
+v2:
+ - Squash the separate AVCRP and JNCRP commits from v1 into a single
+   commit, since the changes are small and closely related
+ - Fix compatible string ordering so the new entries stay in
+   alphabetical order within the enum
+---
+ Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 2 ++
+ 1 file changed, 2 insertions(+)
 
-It is considered bad practice to hijack some other thread for
-unrelated matters. Please start a new thread.
+diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+index b7e70868ebd8..61616a9754a4 100644
+--- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
++++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+@@ -110,6 +110,8 @@ properties:
+               - ibm,sbp1-bmc
+               - ibm,system1-bmc
+               - ibm,tacoma-bmc
++              - intel,avcrp-bmc
++              - intel,jncrp-bmc
+               - inventec,starscream-bmc
+               - inventec,transformer-bmc
+               - jabil,rbp-bmc
+-- 
+2.43.0
 
-Also, don't top post. Netiquette rules apply to mailing lists.
-
-      Andrew
 
