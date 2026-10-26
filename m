@@ -1,94 +1,94 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 68EE8606A325
-	for <linux-aspeed@archiver.kernel.org>; Mon, 26 Oct 2026 06:25:12 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 596E5606A31D
+	for <linux-aspeed@archiver.kernel.org>; Mon, 26 Oct 2026 11:06:32 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Xr4e1Wm+
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=i1lAwKgc
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jCkBZ3bp5z2yGT;
-	Mon, 26 Oct 2026 17:25:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::530" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1792989266;
-	cv=pass; b=B8y0HD/4zHhOYksgXMZ8xDZW7k0Eo5POF3a8YH5HragyepMlScHQ/IYzoPGvZO3p76K/5ATWDwp187qIfZse8cf4U3f02OgGTxmvbAYSQo0AAK6uVd0evvTbqMzd0QrCZ5+ZNz91xwbleCPzfFCRJKLttMfedHIVuKSE6biJPp9Fm4bRh43R/p08JhSVJVIXZbeMns4kunwDrX2dQGTsWE/m1xbkt6QgrMNxL00hRE/9TnaAJRRmNxdAr3Yl154KpT1Oniuk6icMdmkcadXJs6kMRZHn7mjQYTWIJ0HQnjvIaRiqHeCgRymm1yij8rdPGzObaU5Ch+f1dpe2eH/3eQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jCrRB72Z0z2yMK;
+	Mon, 26 Oct 2026 22:06:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::112c" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793012790;
+	cv=pass; b=OpoZpTzavR/RfBAaKD5wl4asD0IZYi1x1rza6+WwSh7k8mpf+cWjKiVUx3c0p2ER/j0ywAj2ykV7vXB8TRbweV+E7KjLkR1+2+4irlqPtDo9lh+iT8ip+X+Y2UTmM79eGkiDxlQStf7XesyjOHcHE2FFXu5qKeXW1w5htVl8lRb0Lu7yTpsaAizxpfC+MnjgzuHFWVdlkiSF1Sy0SM9XeczRDoHu38ecNwzVtyvS7cjZQCq/ew9ilJ0S/Al2pWtu7PJcz+Wyikk52Fd1KFc3tv/KDGdOeJBLR+x6Hmq009dm9i4BiDU14XF80PlFi79br4ba1+bH1l0vcn/wVQmIIA==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1792989266; c=relaxed/relaxed;
-	bh=JknfVeyropx1Yfkv746qbFuy3ZewLN9dKu8PP8jMuQY=;
+	t=1793012790; c=relaxed/relaxed;
+	bh=pPXikRGFnJQcIYGTwbO+d8f4V12ha0QEQB0RoGK+Qzo=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=gzalmKOlFFbo3FFwkJ+1d4gqa/uW9ICaM3JghN5tUQySeZPZ6WEkV89mI4d6zbDnz3DdS9JqPyXcwZQGaEot5GrXT4taapABRcnnKDfjblleO3A1h4us/j9jm3hb+L2+Dq80y8BNcVmTBrpvykAp9Mp/KWTHX7Cxb0Rmej7B/e+yX+0b//jyjZhEZ/+pnL8ZUcfPC5AT3K5rUClNfV/bIHmGdOVgst79x/1JDBS+DjBox4bDH5o20OLoA6sIhWblUjSxcocQRTyOOtTRqevuW0eop02PogszsvjVSzZjxroCv0e/dYFcCn6vyKpEAcjw6QAeVGs82hdrqnaL/8f/OA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Xr4e1Wm+; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::530; helo=mail-ed1-x530.google.com; envelope-from=kavyamadarsh@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 To:Cc:Content-Type; b=TXULndndMDmkS1u9woj/tnLlXLKkBFl9Frk1fypn1YtnsuzIrMM+6mtAxFxcur7AmfrgnIqcmGARxgeFoZxPqN5DtLFe2kxwNYzoVLB71iSnKQoYYzARImuwwbqH2SOaOVwl6SVGS4Qj+IE52XvoMdJXbXcfwfrNZzfvLc4etyuT7QP/IKKlgL6pVG+TSxKuVWaJisdMtd/oXWesC/I6Qnujob1nzBLL//fbOB4g2OXsBLp6JmMULpZcD/vamjhMcMQhXFnq/fc1ZaXryIQ4EpGn4XfXfWYz4wW+S7GGiL6JOhyFGXLwXw6aL1/R7xGFEOtTCYPOrRcvyoQZGu7GDw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=i1lAwKgc; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::112c; helo=mail-yw1-x112c.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Xr4e1Wm+;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=i1lAwKgc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::530; helo=mail-ed1-x530.google.com; envelope-from=kavyamadarsh@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ed1-x530.google.com (mail-ed1-x530.google.com [IPv6:2a00:1450:4864:20::530])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::112c; helo=mail-yw1-x112c.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yw1-x112c.google.com (mail-yw1-x112c.google.com [IPv6:2607:f8b0:4864:20::112c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jCgkl5wKlz2xcB
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 26 Oct 2026 15:34:22 +1100 (AEDT)
-Received: by mail-ed1-x530.google.com with SMTP id 4fb4d7f45d1cf-6ae305e3bd9so4495223a12.0
-        for <linux-aspeed@lists.ozlabs.org>; Sun, 25 Oct 2026 21:34:22 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1792989257; cv=none;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jCrR91CjHz2yLg
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 26 Oct 2026 22:06:27 +1100 (AEDT)
+Received: by mail-yw1-x112c.google.com with SMTP id 00721157ae682-8565d77c277so21196767b3.0
+        for <linux-aspeed@lists.ozlabs.org>; Mon, 26 Oct 2026 04:06:27 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1793012785; cv=none;
         d=google.com; s=arc-20260327;
-        b=KnPwxvMIwv/ZW3VyYuQEl5ztSriz/t/tnP7gsAMosAGHJsYbvmjAutViWcra5EItNA
-         VhellpI9/R2QYWvlCoNI6azuAIGetEyQcnA+z/QvnOrHPoODpeAiZxV1Nmvb/tngxf64
-         e1BwYHT+o78cOrLpZE4gn4Nt3w64bJwQfglB2ljh6ItWba8N1R+RgmrgV1h2QlXHqRXP
-         hM0U47w+q51HGLYLjB14kCYZeO66iPOPSWcXLAH5HmOzBQUHAkRWpXJa7hTLIl8LXihi
-         MupgbAZztUCtf/FIAaqDCAw4CRXBYkY/pdNvkD4FEVGop9EQnaUt/VdJN91kGh3mEwEx
-         +lfQ==
+        b=Ts1rpMh8OUeioj20s+RX8fhpg9953Z3A1Bi262R4VZqqnmKd/T77d8pOlUHr8jW92I
+         nK+bvBXw5tcaXzPfz482sMvbC3dXCbFLVUpIZNWG536Qkg7p2nsMeDiVuftfbWThZjeW
+         29NDf7ksMSRprbXgP8qGDu6+UERBuz0kJ7nu0OkGYfKbR3iONkzKFOaO8vJ4FLuPq0Df
+         /EtGpEAmrCdSpybViE0cUNRKKkQbapwvLw0JK3R+sCdNKye9r1VGPJgJlS3TaRWEzS7r
+         J3DrMOpkzxiPVHOYoS1Pnitwovg6o/QuZJSQIidXjQ1iTlvfIhuQ1mvUz5IF+7HFTVti
+         szXA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:dkim-signature;
-        bh=JknfVeyropx1Yfkv746qbFuy3ZewLN9dKu8PP8jMuQY=;
-        fh=o8gM4DlxPOdl5OURfVvTraJth6/HNCOdmAxoP9erMCY=;
-        b=L1+O9QKnI17ZdBbUjUDYV0F9ONtbKZ0gVz3wNFjS9iHb4e0nQe2Bv3Z69z/6Ych4WO
-         P7dxGolUHIMfoAziIVPd86cSJf8ek0gX0t9WXnotpyMoq4t7BeTpeu9VsfiPkyhN4WZv
-         tvXIR+hEdHPX1+cniA6D4o3CZqyGuQ7FRG5rPXPPdwyszzitE3a/vEl/u0DYJ+a0+5BZ
-         8yVmRM8Zqh158oqS+cLFbRdkLdSCSIwAfr6NoSlw3+I2dUl5kHcvgy5wSZTGMxV8TjYm
-         YYX/WJywXDMGeaKYRwFHGrnaDaKn6pultL0iE5jAoxUfoQLl8q6V3iiMDr0L0c22ekjE
-         mX/A==;
+        bh=pPXikRGFnJQcIYGTwbO+d8f4V12ha0QEQB0RoGK+Qzo=;
+        fh=aymN5A4CcA8sfzNSofehMhDpg6NM1wsv7wnDmgTecs0=;
+        b=S3N5uYbeCaEgBRlZ/wt0Nej2/t7/Yzm7B2uLfBZPMwhnUuxs2XIVLWDd/wEm7cdHTL
+         42dphlhLwccLM6LsbNrlF9gqP4bR4XlwuwfsyYLdjBWtUNHvB/ggEYeZPL594uT3V22b
+         ZUdlEigHb8N2nUe4UqKrnMKsPdLnZNBrFsS5zc974sI2Er6cmCraIE+95q9Wo282t11g
+         dQgSKlWt9n331qLl8tV1O79OGIqrILPnmB6/X6ek5bNP45ThPSiYxlcwP+gJzE3AxYCh
+         0ZWMBxjcl2V8ylGr2tN6hqzLnSbL31Lmng/MT3aU5Zuje0pXAxAf2aBfGVAZ6xLX4LUv
+         zTIA==;
         darn=lists.ozlabs.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1792989257; x=1793594057; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1793012785; x=1793617585; darn=lists.ozlabs.org;
         h=content-type:cc:to:subject:message-id:date:from:in-reply-to
          :references:mime-version:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=JknfVeyropx1Yfkv746qbFuy3ZewLN9dKu8PP8jMuQY=;
-        b=Xr4e1Wm+qhoDun12DgFTQuRK5nbNXgfPDmtPrA0mMPaJ4/JoZ3oMR+Se5qpazyEuNg
-         kfMtWpDsX+nGuCo5v0Ruyu4Havw1flkaddGs85AaWaGPqzwPKIDlYqyZT3mKvBM9uECj
-         w6/hwEvLb9huGFeVdEqYzT6EhF7f59mxr88Lw4OvQHtaYJiYpIls9nEip1vua9ZpaP2Q
-         EQ+vtzYTWosWAJT1hCZUtifW92kTlVbj6SF6sASkQ51rNrAR2HEBsi1nxQor/Ikk4V1m
-         pMaCFWx+C97NZPbnW8Ds65IfBV38tXcNG082l8Xj4uQUBehAHtDHsRSp7B5khTAvuV3J
-         tKTw==
+        bh=pPXikRGFnJQcIYGTwbO+d8f4V12ha0QEQB0RoGK+Qzo=;
+        b=i1lAwKgcgGrh3QlSMlKVziNYsXlipTOBg1lXNaeYo11MnWkedXCQXipBhr3jm5AXFu
+         ntFxg7aPnKeI/AxC8IyYmGmDCvA+qCxHVb39pur6B0RJC1XznxVfkweNOp+cWp+rh5yP
+         6XHw5MOCu7gaja9lhk6oeJWJtLGi9xrUknweAJZoUifqsdiYEglr9csrcc+uG/j9g2/J
+         AcA5L8ur44PGOyVn3h/9t7xo0/rdY1aBYJkg8BmN1yiZ3yY7UsCBox4bbeZcomleYymW
+         Tvk1E5caH+dSOAP+crZ45IBi7IIlXDvx7tfxPSfpp1TY1NStxzqR/Y+Gba+bufq1RPTD
+         EY7g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1792989257; x=1793594057;
+        d=1e100.net; s=20260707; t=1793012785; x=1793617585;
         h=content-type:cc:to:subject:message-id:date:from:in-reply-to
          :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to:content-type;
-        bh=JknfVeyropx1Yfkv746qbFuy3ZewLN9dKu8PP8jMuQY=;
-        b=VwgmLeLGOAYl7QcfqSOggYSu3ARnCgH9PU0Z4QsJVyrlkP9d2YavmyRLf6Jd8xSJuz
-         NUhafHQ8dcNmuZatCcc+3PxEihN8dHer9SbaCs8nh2pfTXEBrlhc6WUlouwZYBfLh9gb
-         yPJ0ZDOx7ycy9mZQG9+hzpo4fHJWtt+JOMYOVAq2oPTWwDPEzX0VTwN/t+ktH82DA27H
-         /NTTu7p3OStiyByMbRtFuT7rr9SbpC9XKoIuv4mi7rBsqoBX0mjV546Ju85i8GvqW5rE
-         8Zl5+68T0iGmVaBoMLYN8nZZfxSb5Cnfuap0K/+Z/pJ/GvM3M7WgKSBnSeMjsXaB6rcY
-         F5lA==
-X-Forwarded-Encrypted: i=1; AKwUvBzMzJbYQg+0492Flc5hAX5v8q2twrMWfUG/zxSbNTgExJhS4ECKVnyTK+rMz4XxvN5el0uUOxUjBR2ZWUQ=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYJMWBa2tKX8RkWJH0HMdp05swVVZkk+wTVyskUq64sJc8mO/QMX
-	7RIUT+jYQGI170ED+YQh1Z/UjGeQ0gYaFHV/u1SrvurxfQl+lSvj3oPm0KqUMcyg2uFEWR8Jh3a
-	cq0KpftQ2OpOZsYHJTsrd5ne8Dlu+Mog=
-X-Gm-Gg: AYBFou1s9Q2V/tG3SJIPsX/NUx0Lz0uaX+KLCaLdS2mu4THMJ1a8hOGKUTdGUaVht5P
-	TLYau3650uujzFrcHGv3po0vKb9xSS9hhsuBiHAb+tRpRDu+RTyfsvz/MPg+DLMGfAy8RuhVzQt
-	1NSqXbuuXn9qZ0KKa8REPqn7uReeIaNjnRq09CjU0EjlT8F0x5+BS/tvn4osapwcDRnYdxouruw
-	KyGwOlGh1Ag5/DSNPuvL6meFyZZe/Elxsny7xuwHbWg/bdqhPVHU6tvyQi5L25IrL8U/UeVcH9X
-	TOrwX2CTGYZtSIqB2fJn+wfKZJw9QPLYj6/hDR3uUVX0Cj+bdzMrhfk1/16N8MM+HsF716QRwlC
-	pJcgQsiYbM0Kkl8YM1gSxtp7PTOlY9TyP26gS
-X-Received: by 2002:a17:906:f58c:b0:c2e:3b23:1468 with SMTP id
- a640c23a62f3a-c46bdfe801emr708215866b.48.1792989257222; Sun, 25 Oct 2026
- 21:34:17 -0700 (PDT)
+        bh=pPXikRGFnJQcIYGTwbO+d8f4V12ha0QEQB0RoGK+Qzo=;
+        b=aaEOEa7QTMuJvSvW6ZZzwClTukdGCeMQNF4pDBZSHL1fDnvOuaSLBPs/FRg9cPAYwi
+         96HIRtxfS9h1wv7ChM9kRsBZHLYoE1qDwzLF3AS6ZprwbS1ZEAQNPOXcAE4mo/dHJoFL
+         CIMoxioYa3sifVtemyZIAwlcPMTvgGkPEhyQ0Iq2ai0z2xaSgkPNl8LbZHvBUo1jd/nV
+         lcqjmqxwpS2NNIyITNSjoW4/8wnI9o5o9eDDFQin2Dmq9nAL3L60lSVHPKoQhwqkwVb5
+         jh7QxlEwq8aBx738iCKqLEqO2T5T2qN4AAVjsDGWTOEWbpFQ6yVKD27Amv5oX5rsbNpT
+         D98A==
+X-Forwarded-Encrypted: i=1; AKwUvBwVPWrUk0fQjPfrDZIG9q+14PYOCZ6pekYZe2S4L5QP04jC3zqhA0iWk9rMHKsE9gge/Rv8ogrRmYW+wnc=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYJ8FdPDYPgH7IPCj4qwDb3PeC+RuDlUkVP48wvqq2S2PvjTgl3E
+	yHQ/RHaipI/3hi9k8JXZcg7kmNIgw7IY282dfaFQEhdM23wKv0EQ7RrRLoiHAwnhE0dqzGmdu2s
+	DRPoIh/Q99e8pohN+brvsURs/YFUoklo=
+X-Gm-Gg: AYBFou1jBXwjzOVzgIHirScXWvfEkOHOVJKfj9jIgmT2EJN6BjojZyxtnx1M7AwfnEK
+	U6cFAhvyNRjxOv6tZ/cgC5Jf+CkwKSsWx8G4uGBmPUvohCag/3c91PbmAXdhvd9c55D8TkM8XeF
+	fpgelYcely18ILu9Nn479l4YDhJZvD+AYkdgcgnjQyN8XXBd5E63K0vZ5YXwN704Pq8NT+yMfQZ
+	VXWVaMFDFJYVPTSuSic8cWBjh5lsYrpo94dkmhNv5wj7TIPC5+sA+Myq06Dx8mr+BrIzxLswyzi
+	XMx6KgeeSZkxwMQYvVv5sA6GrCFKv/A0WnWyvAph7NZjL8KLrQiPSszGK+Ccztw/VT6wflSSqD1
+	yYWsKtqP4l3Ruaho20ka9ZhIlyTr+KRE4I/htRvC8zjPtpTIFMKWURjeKw3U=
+X-Received: by 2002:a05:690c:7482:b0:8b1:8d69:1b0f with SMTP id
+ 00721157ae682-8b18d691da9mr11843167b3.1.1793012785319; Mon, 26 Oct 2026
+ 04:06:25 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -102,721 +102,257 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-References: <20261002062933.26497-1-prasanth.padarthi10@gmail.com>
- <20261002062933.26497-3-prasanth.padarthi10@gmail.com> <CAMFFDGjmJTRR8GOX=S+kKnMA-bG+gbZP0sS8dG_d+taDPPRDZQ@mail.gmail.com>
-In-Reply-To: <CAMFFDGjmJTRR8GOX=S+kKnMA-bG+gbZP0sS8dG_d+taDPPRDZQ@mail.gmail.com>
-From: KAVYA M M <kavyamadarsh@gmail.com>
-Date: Mon, 26 Oct 2026 10:04:05 +0530
-X-Gm-Features: AclHuK99f_qXUYjg8MyEOV0P5O4UaXNX-iYuiNNSBbvkSpdmMfb2FxquJTDgB8Y
-Message-ID: <CAD_a9mYKSYyP2TqeyjbQWYHdZgF3ggdrU6oTK6VWs2C2GSYMjQ@mail.gmail.com>
-Subject: Re: [PATCH v8 2/2] ARM: dts: aspeed: Add ASRock Rack B650D4U BMC
-To: Prasanth <prasanth.padarthi10@gmail.com>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
-	openbmc@lists.ozlabs.org, joel@jms.id.au, andrew@codeconstruct.com.au, 
-	robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, 
-	Andrew Lunn <andrew@lunn.ch>
-Content-Type: multipart/alternative; boundary="000000000000c34f0c065eb6d71d"
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+References: <CAD_a9macSzuBsmmoLu2Cu1doLADvcpASFi-6ADnOvmMdgDEfHA@mail.gmail.com>
+In-Reply-To: <CAD_a9macSzuBsmmoLu2Cu1doLADvcpASFi-6ADnOvmMdgDEfHA@mail.gmail.com>
+From: Prasanth <prasanth.padarthi10@gmail.com>
+Date: Mon, 26 Oct 2026 16:36:12 +0530
+X-Gm-Features: AclHuK_pCN5hqYStADz3quS5R2ODIBwL_9oHQ6_3O2wMX4SOFrV28JqDIucZFYc
+Message-ID: <CAMFFDGgj+VtLx7fNS=g7q=kJbg9AEHEiCgMHEtjLPsVA7=fWgQ@mail.gmail.com>
+Subject: Re: [OpenBMC] Guidance on Getting Started with OpenBMC and Choosing a
+ Development Board
+To: KAVYA M M <kavyamadarsh@gmail.com>
+Cc: "openbmc@lists.ozlabs.org" <openbmc@lists.ozlabs.org>, 
+	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>, 
+	Andrew Jeffery <andrew@codeconstruct.com.au>, changhuang.liang@starfivetech.com, 
+	Shuah Khan <skhan@linuxfoundation.org>, Jani Nikula <jani.nikula@intel.com>, 
+	Vitaly Lubart <lubvital@gmail.com>, Hanjun Guo <guohanjun@huawei.com>, 
+	Andrew Morton <akpm@linux-foundation.org>, Alexander Usyskin <alexander.usyskin@intel.com>, 
+	Jason Gunthorpe <jgg@ziepe.ca>, Breno Leitao <leitao@debian.org>, Philipp Zabel <p.zabel@pengutronix.de>, 
+	James Morse <james.morse@arm.com>, Paolo Abeni <pabeni@redhat.com>, 
+	Stephen Hemminger <stephen@networkplumber.org>, Dave Penkler <dpenkler@gmail.com>, 
+	Jakub Kicinski <kuba@kernel.org>, Jonathan Cameron <jic23@kernel.org>, Dan Williams <djbw@kernel.org>, 
+	Mukesh Rathor <mrathor@linux.microsoft.com>, Vladimir Oltean <vladimir.oltean@nxp.com>, 
+	Alexandra Winter <wintera@linux.ibm.com>, Julian Braha <julianbraha@gmail.com>, 
+	Karthikeyan KS <karthiproffesional@gmail.com>, Pengpeng Hou <pengpeng@iscas.ac.cn>, 
+	linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Jonathan Corbet <corbet@lwn.net>, Joel Stanley <joel@jms.id.au>, 
+	Chia-Wei Wang <chiawei_wang@aspeedtech.com>, Oskar Senft <osk@google.com>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Content-Type: multipart/alternative; boundary="0000000000002595b2065ebc526d"
+X-Spam-Status: No, score=0.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,WEIRD_QUOTING
-	autolearn=unavailable autolearn_force=no version=4.0.1
+	HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
---000000000000c34f0c065eb6d71d
+--0000000000002595b2065ebc526d
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hello team,
-I am new to OpenBMC. I want to development image for the machine using the
-OpenBMC/Yocto build system, available firmware information, and readings
-from the existing BMC.
+Hi Kavya,
 
-Since the original BMC firmware has limited access and the motherboard
-schematic is not available to me, I would appreciate your guidance on the
-recommended approach for developing and validating a reliable OpenBMC image
-for this board.
+Thanks for sharing your platform details and starting a separate thread.
 
-I have the following questions:
+I am also Working On OpenBMC through ASRock Rack B650D4U enablement. My
+work is still in progress, and I have not worked on the Gigabyte MZ32-AR0
+or evaluated development boards within your budget, so I cannot recommend a
+specific platform confidently.
 
-1. Hardware documentation required
-=E2=80=A2 What documents are normally required before starting an OpenBMC p=
-ort for
-a new motherboard?
-=E2=80=A2 Is the motherboard user manual sufficient, or do we also need the
-motherboard schematic, BMC datasheet, hardware design guide, component
-datasheets, and board-specific signal mappings?
-=E2=80=A2 for example the CPU schematic and AST(BmC) reference schematic ar=
-e
-available but the motherboard schematic is missing, how much of the
-required hardware configuration can be established from them?
-=E2=80=A2 Since my target board uses the ASTs BmC, which specific datasheet=
-s or
-hardware design documents should I obtain?
+For the vendor-restricted shell, I would suggest contacting Gigabyte
+support about supported debugging access and recovery procedures.
 
-2. Extracting information from existing BMC firmware
-=E2=80=A2 If the original BMC firmware is available only as a binary and it=
-s Linux
-shell or source code is restricted, what information can reliably be
-extracted from the image?
-=E2=80=A2 Can we identify the flash layout, device tree, GPIO configuration=
-, I=C2=B2C
-devices, sensor definitions, fan configuration, Ethernet settings, and
-board identity?
-=E2=80=A2 Which details can be confirmed from firmware, and which require t=
-he
-motherboard schematic or physical measurements?
+My practical recovery experience is limited to the ASRock Rack B650D4U that
+I am currently working on. I use a CH341A external SPI flash programmer for
+BMC firmware recovery.
 
-3. GPIO and hardware configuration
-=E2=80=A2 How can we verify GPIO connections, signal polarity, direction, t=
-iming,
-and safe initial states without the motherboard schematic?
-=E2=80=A2 How can we identify the actual I=C2=B2C bus routing, multiplexers=
-, device
-addresses, and peripheral protocols?
-=E2=80=A2 What is the recommended method for verifying voltage-divider valu=
-es, ADC
-scaling, and temperature sensor configuration?
-=E2=80=A2 How should fan PWM/tachometer mappings, fan zones, minimum safe s=
-peeds,
-and failsafe behavior be established?
-=E2=80=A2 How can the LED wiring, Ethernet PHY address/reset configuration,=
- and
-NCSI connections be verified?
+I have not worked on the Gigabyte MZ32-AR0, so I cannot confirm its
+recovery procedure or programmer compatibility. Please verify the flash
+device, required voltage, and board-specific recovery instructions before
+attempting external programming.
 
-4. OpenBMC image development
-=E2=80=A2 What is the recommended workflow for creating a new OpenBMC machi=
-ne
-configuration, device tree, Yocto layer, sensor configuration, and required
-services?
-=E2=80=A2 Are there existing OpenBMC reference boards or porting guides tha=
-t would
-be useful for this type of project?
-=E2=80=A2 Can we proceed with firmware analysis and QEMU testing while some
-hardware details remain unknown?
-=E2=80=A2 Which functions can be validated in QEMU, and which must be teste=
-d on the
-physical motherboard?
+Regards,
+Prasanth
 
-5. Flashing and recovery
-=E2=80=A2 If the original BMC firmware source code is unavailable, can a cu=
-stom
-OpenBMC image still be developed and flashed safely?
-=E2=80=A2 How should the original SPI flash be backed up, the flash layout =
-and
-image size verified, and a recovery procedure prepared?
-=E2=80=A2 What checks should be completed before writing the image to the p=
-hysical
-BMC?
-=E2=80=A2 If the image boots but networking, fan control, sensors, or other
-hardware functions do not work correctly, what is the recommended debugging
-and recovery process?
+On Mon, 26 Oct, 2026, 4:07=E2=80=AFpm KAVYA M M, <kavyamadarsh@gmail.com> w=
+rote:
 
-6. Validation and safety
-
-=E2=80=A2 What validation checklist should be completed before enabling hos=
-t power
-control or testing other GPIO outputs?
-=E2=80=A2 How should fan control and cooling failsafe behavior be validated=
- before
-using the image on a live server?
-=E2=80=A2 What are the minimum hardware details that must be verified befor=
-e
-proceeding with physical-board testing?
-
-My current goal is to continue testing the image in QEMU, document the
-confirmed and unverified hardware mappings, and determine the correct
-procedure before flashing the physical board.
-
-I would be grateful for any recommended documentation, reference
-schematics, OpenBMC porting guides, practical experience, or advice from
-engineers who have worked on similar BMC porting projects .
-
-Thank you for your time and guidance.  please response or guide anyone to
-take my step forward towards learning.
-
-Best regards,
-Kavya M M
-
-On Mon, 26 Oct, 2026, 9:05=E2=80=AFam Prasanth, <prasanth.padarthi10@gmail.=
-com>
-wrote:
-
-> Hi,
+> Hello OpenBMC Team,
 >
-> A gentle follow-up on the B650D4U BMC device-tree series posted on Octobe=
+> I am new to OpenBMC development and would appreciate your guidance on
+> getting started with developing and validating an OpenBMC image for a
+> server platform.
+>
+> *I have a few general questions:*
+>
+> 1. What hardware documentation is normally required to develop a reliable
+> OpenBMC image for a new motherboard? Are the user manual and BMC referenc=
+e
+> schematic sufficient, or are the complete motherboard schematic and
+> board-specific signal mappings essential?
+> 2. If the original BMC firmware is available only as a binary and the
+> motherboard schematic is unavailable, what is the recommended approach fo=
 r
-> 2.
+> identifying the hardware configuration and developing the initial image?
+> 3. Which existing OpenBMC reference platforms are suitable for beginners
+> who want to learn the Yocto/BitBake build system, device trees, machine
+> configuration, sensor integration, and required services?
+> 4. Which hardware platforms provide good support for testing sensor
+> monitoring, fan PWM/tachometer control, Redfish, GPIO, host power control=
+,
+> and power sequencing?
+> 5. Which functions can be tested in QEMU, and what hardware documentation
+> and recovery facilities are necessary before proceeding with physical-boa=
+rd
+> testing?
 >
-> Could you please let me know whether any further changes or validation
-> are needed before this series can be picked up?
+> *Request for Guidance on Restricted BMC SSH Access*
 >
-> Thanks,
-> Prasanth
+> I would also like to understand how to access the underlying Linux shell
+> on a BMC when SSH access is restricted by the vendor firmware.
 >
-> On Fri, Oct 2, 2026 at 11:59=E2=80=AFAM Prasanth Kumar Padarthi
-> <prasanth.padarthi10@gmail.com> wrote:
-> >
-> > Add the device tree for the ASRock Rack B650D4U BMC, which is
-> > based on the ASPEED AST2600 SoC.
-> >
-> > Describe the BMC memory, SPI NOR flash layout, UART console,
-> > GPIO line names, video framebuffer memory, I2C EEPROM, and MAC0
-> > connected to an RTL8211F Ethernet PHY.
-> >
-> > Use the EEPROM on I2C7 as the NVMEM provider for the MAC0 address.
-> >
-> > Configure MAC0 to use the RTL8211F in RGMII-ID mode.
-> >
-> > Reviewed-by: Andrew Lunn <andrew@lunn.ch> # MAC0 and MDIO nodes only
-> > Signed-off-by: Prasanth Kumar Padarthi <prasanth.padarthi10@gmail.com>
-> > ---
-> >  arch/arm/boot/dts/aspeed/Makefile             |   1 +
-> >  .../dts/aspeed/aspeed-bmc-asrock-b650d4u.dts  | 135 ++++++++++++++++++
-> >  2 files changed, 136 insertions(+)
-> >  create mode 100644
-> arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-b650d4u.dts
-> >
-> > diff --git a/arch/arm/boot/dts/aspeed/Makefile
-> b/arch/arm/boot/dts/aspeed/Makefile
-> > index 6b68671f9379..b109491d5c8f 100644
-> > --- a/arch/arm/boot/dts/aspeed/Makefile
-> > +++ b/arch/arm/boot/dts/aspeed/Makefile
-> > @@ -10,6 +10,7 @@ dtb-$(CONFIG_ARCH_ASPEED) +=3D \
-> >         aspeed-bmc-ampere-mtmitchell.dtb \
-> >         aspeed-bmc-arm-stardragon4800-rep2.dtb \
-> >         aspeed-bmc-asrock-altrad8.dtb \
-> > +       aspeed-bmc-asrock-b650d4u.dtb \
-> >         aspeed-bmc-asrock-e3c246d4i.dtb \
-> >         aspeed-bmc-asrock-e3c256d4i.dtb \
-> >         aspeed-bmc-asrock-paul-ipmi-card.dtb \
-> > diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-b650d4u.dts
-> b/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-b650d4u.dts
-> > new file mode 100644
-> > index 000000000000..a4e384588a54
-> > --- /dev/null
-> > +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-b650d4u.dts
-> > @@ -0,0 +1,135 @@
-> > +// SPDX-License-Identifier: GPL-2.0
-> > +/dts-v1/;
-> > +
-> > +#include "aspeed-g6.dtsi"
-> > +
-> > +/ {
-> > +       compatible =3D "asrock,b650d4u-bmc", "aspeed,ast2600";
-> > +       model =3D "ASRock Rack B650D4U BMC";
-> > +
-> > +       aliases {
-> > +               serial0 =3D &uart5;
-> > +       };
-> > +
-> > +       chosen {
-> > +               stdout-path =3D "serial0:115200n8";
-> > +       };
-> > +
-> > +       memory@80000000 {
-> > +               device_type =3D "memory";
-> > +               reg =3D <0x80000000 0x20000000>;
-> > +       };
-> > +
-> > +       reserved-memory {
-> > +               ranges;
-> > +               #address-cells =3D <1>;
-> > +               #size-cells =3D <1>;
-> > +
-> > +               gfx_memory: framebuffer {
-> > +                       compatible =3D "shared-dma-pool";
-> > +                       alignment =3D <0x01000000>;
-> > +                       reusable;
-> > +                       size =3D <0x01000000>;
-> > +               };
-> > +       };
-> > +};
-> > +
-> > +&fmc {
-> > +       status =3D "okay";
-> > +
-> > +       flash@0 {
-> > +               compatible =3D "jedec,spi-nor";
-> > +               reg =3D <0>;
-> > +               label =3D "bmc";
-> > +               spi-max-frequency =3D <50000000>;
-> > +               spi-rx-bus-width =3D <4>;
-> > +               m25p,fast-read;
-> > +
-> > +               status =3D "okay";
-> > +
-> > +#include "openbmc-flash-layout-64.dtsi"
-> > +       };
-> > +};
-> > +
-> > +&gfx {
-> > +       memory-region =3D <&gfx_memory>;
-> > +
-> > +       status =3D "okay";
-> > +};
-> > +
-> > +&gpio0 {
-> > +       gpio-line-names =3D
-> > +               /* A0-A7 */     "","","","","","","","",
-> > +               /* B0-B7 */     "","","","","","","","",
-> > +               /* C0-C7 */     "","","","","","","","",
-> > +               /* D0-D7 */     "","","","","","","","",
-> > +               /* E0-E7 */     "","","","","","","","",
-> > +               /* F0-F7 */     "","","","","","","","",
-> > +               /* G0-G7 */     "","","","","","","","",
-> > +               /* H0-H7 */     "","","","","","","","",
-> > +               /* I0-I7 */     "","","","","","","","",
-> > +               /* J0-J7 */     "","","","","","","","",
-> > +               /* K0-K7 */     "","","","","","","","",
-> > +               /* L0-L7 */     "","","","","","","","",
-> > +               /* M0-M7 */     "","","","","","","","",
-> > +               /* N0-N7 */     "","","","","","","","",
-> > +               /* O0-O7 */     "","","","","","","","",
-> > +               /* P0-P7 */     "button-reset-n","control-reset-n",
-> > +               "button-power-n","control-power-n",
-> > +               "button-nmi-n","control-nmi-n",
-> > +               "","",
-> > +               /* Q0-Q7 */     "","","","","","","","",
-> > +               /* R0-R7 */     "","","","","","","","",
-> > +               /* S0-S7 */     "","","","","","","","",
-> > +               /* T0-T7 */     "","","","","","","","",
-> > +               /* U0-U7 */     "","","","","","","","",
-> > +               /* V0-V7 */     "","","","","","","","",
-> > +               /* W0-W7 */     "","","","","","","","",
-> > +               /* X0-X7 */     "","","","","","","","",
-> > +               /* Y0-Y7 */     "","","","","","","","",
-> > +               /* Z0-Z7 */     "","","","","","","","";
-> > +};
-> > +
-> > +&i2c7 {
-> > +       status =3D "okay";
-> > +
-> > +       eeprom@57 {
-> > +               compatible =3D "atmel,24c128";
-> > +               reg =3D <0x57>;
-> > +               pagesize =3D <16>;
-> > +
-> > +               nvmem-layout {
-> > +                       compatible =3D "fixed-layout";
-> > +                       #address-cells =3D <1>;
-> > +                       #size-cells =3D <1>;
-> > +
-> > +                       eth0_macaddress: macaddress@3f80 {
-> > +                               reg =3D <0x3f80 6>;
-> > +                       };
-> > +               };
-> > +       };
-> > +};
-> > +
-> > +&mac0 {
-> > +       nvmem-cells =3D <&eth0_macaddress>;
-> > +       nvmem-cell-names =3D "mac-address";
-> > +       phy-handle =3D <&ethphy0>;
-> > +       phy-mode =3D "rgmii-id";
-> > +       pinctrl-0 =3D <&pinctrl_rgmii1_default>;
-> > +       pinctrl-names =3D "default";
-> > +
-> > +       status =3D "okay";
-> > +};
-> > +
-> > +&mdio0 {
-> > +       status =3D "okay";
-> > +
-> > +       ethphy0: ethernet-phy@0 {
-> > +               compatible =3D "ethernet-phy-ieee802.3-c22";
-> > +               reg =3D <0>;
-> > +       };
-> > +};
-> > +
-> > +&uart5 {
-> > +       status =3D "okay";
-> > +};
-> > --
-> > 2.47.3
-> >
+> For example, some BMCs provide SSH access but expose only a restricted
+> interface, such as SMASH-CLP, instead of a standard Linux shell. In such
+> cases, what is the recommended and authorized method for accessing the
+> underlying Linux environment for debugging, inspecting system
+> configuration, and understanding the running services?
 >
+> Are there standard OpenBMC debugging methods or configuration options for
+> enabling SSH shell access during development? If access is restricted by
+> the vendor firmware, what documentation or permissions would be required =
+to
+> investigate this further?
+> *My current hardware*
+>
+> I currently have access to a Gigabyte MZ32-AR0-00 motherboard with an
+> ASPEED AST2500 BMC.
+>
+> I am considering using this board for my OpenBMC development. However, I
+> do not have access to the complete motherboard schematic, and some
+> board-specific hardware mappings are difficult to confirm from the
+> available documentation and original vendor firmware.
+>
+> I would appreciate your advice on whether this is a suitable platform for
+> learning and developing OpenBMC, or whether a different, better-documente=
+d
+> development platform would be a more practical starting point.
+>
+> *Request for development-board recommendations*
+>
+> My budget for purchasing a BMC development board is approximately
+> =E2=82=B95,000=E2=80=93=E2=82=B910,000.
+>
+> Could you recommend a specific development board or server motherboard
+> that is affordable, well documented, and preferably has an existing
+> upstream OpenBMC machine configuration?
+>
+> Ideally, I would like a platform that supports learning and testing:
+>
+> - OpenBMC image building using Yocto/BitBake.
+> - Hardware sensor monitoring and integration.
+> - Fan PWM/tachometer control and cooling failsafe behavior.
+> - Redfish and other BMC management interfaces.
+> - GPIO, host power control, and power sequencing.
+> - QEMU-based software testing followed by physical-board validation.
+>
+> My preference is for a platform with an existing reference implementation=
+,
+> accessible hardware documentation, and a reliable firmware recovery metho=
+d.
+> Used development boards or server motherboards would also be suitable if
+> they are available within my budget.
+>
+> My goal is to choose the most practical platform, build and validate an
+> initial OpenBMC image, and gradually learn the hardware integration proce=
+ss
+> before attempting to flash a physical BMC.
+>
+> I would be grateful for any recommendations on suitable hardware, existin=
+g
+> reference platforms, documentation, or practical guidance from developers
+> experienced in OpenBMC platform development.
+>
+> Thank you for your time and support.
+>
+> Best regards,
+> Kavya M M
 >
 
---000000000000c34f0c065eb6d71d
+--0000000000002595b2065ebc526d
 Content-Type: text/html; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-<div dir=3D"auto">Hello team,<div dir=3D"auto">I am new to  OpenBMC. I want=
- to  development image  for the machine using the OpenBMC/Yocto build syste=
-m, available firmware information, and readings from the existing BMC.</div=
-><div dir=3D"auto"><br></div><div dir=3D"auto">Since the original BMC firmw=
-are has limited access and the motherboard schematic is not available to me=
-, I would appreciate your guidance on the recommended approach for developi=
-ng and validating a reliable OpenBMC image for this board.</div><div dir=3D=
-"auto"><br></div><div dir=3D"auto">I have the following questions:</div><di=
-v dir=3D"auto"><br></div><div dir=3D"auto">1. Hardware documentation requir=
-ed</div><div dir=3D"auto">=E2=80=A2 What documents are normally required be=
-fore starting an OpenBMC port for a new motherboard?</div><div dir=3D"auto"=
->=E2=80=A2 Is the motherboard user manual sufficient, or do we also need th=
-e motherboard schematic, BMC datasheet, hardware design guide, component da=
-tasheets, and board-specific signal mappings?</div><div dir=3D"auto">=E2=80=
-=A2  for example the CPU schematic and AST(BmC) reference schematic are ava=
-ilable but the motherboard schematic is missing, how much of the required h=
-ardware configuration can be established from them?</div><div dir=3D"auto">=
-=E2=80=A2 Since my target board uses the ASTs BmC, which specific datasheet=
-s or hardware design documents should I obtain?</div><div dir=3D"auto"><br>=
-</div><div dir=3D"auto">2. Extracting information from existing BMC firmwar=
-e</div><div dir=3D"auto">=E2=80=A2 If the original BMC firmware is availabl=
-e only as a binary and its Linux shell or source code is restricted, what i=
-nformation can reliably be extracted from the image?</div><div dir=3D"auto"=
->=E2=80=A2 Can we identify the flash layout, device tree, GPIO configuratio=
-n, I=C2=B2C devices, sensor definitions, fan configuration, Ethernet settin=
-gs, and board identity?</div><div dir=3D"auto">=E2=80=A2 Which details can =
-be confirmed from firmware, and which require the motherboard schematic or =
-physical measurements?</div><div dir=3D"auto"><br></div><div dir=3D"auto">3=
-. GPIO and hardware configuration</div><div dir=3D"auto">=E2=80=A2 How can =
-we verify GPIO connections, signal polarity, direction, timing, and safe in=
-itial states without the motherboard schematic?</div><div dir=3D"auto">=E2=
-=80=A2 How can we identify the actual I=C2=B2C bus routing, multiplexers, d=
-evice addresses, and peripheral protocols?</div><div dir=3D"auto">=E2=80=A2=
- What is the recommended method for verifying voltage-divider values, ADC s=
-caling, and temperature sensor configuration?</div><div dir=3D"auto">=E2=80=
-=A2 How should fan PWM/tachometer mappings, fan zones, minimum safe speeds,=
- and failsafe behavior be established?</div><div dir=3D"auto">=E2=80=A2 How=
- can the LED wiring, Ethernet PHY address/reset configuration, and NCSI con=
-nections be verified?</div><div dir=3D"auto"><br></div><div dir=3D"auto">4.=
- OpenBMC image development</div><div dir=3D"auto">=E2=80=A2 What is the rec=
-ommended workflow for creating a new OpenBMC machine configuration, device =
-tree, Yocto layer, sensor configuration, and required services?</div><div d=
-ir=3D"auto">=E2=80=A2 Are there existing OpenBMC reference boards or portin=
-g guides that would be useful for this type of project?</div><div dir=3D"au=
-to">=E2=80=A2 Can we proceed with firmware analysis and QEMU testing while =
-some hardware details remain unknown?</div><div dir=3D"auto">=E2=80=A2 Whic=
-h functions can be validated in QEMU, and which must be tested on the physi=
-cal motherboard?</div><div dir=3D"auto"><br></div><div dir=3D"auto">5. Flas=
-hing and recovery</div><div dir=3D"auto">=E2=80=A2 If the original BMC firm=
-ware source code is unavailable, can a custom OpenBMC image still be develo=
-ped and flashed safely?</div><div dir=3D"auto">=E2=80=A2 How should the ori=
-ginal SPI flash be backed up, the flash layout and image size verified, and=
- a recovery procedure prepared?</div><div dir=3D"auto">=E2=80=A2 What check=
-s should be completed before writing the image to the physical BMC?</div><d=
-iv dir=3D"auto">=E2=80=A2 If the image boots but networking, fan control, s=
-ensors, or other hardware functions do not work correctly, what is the reco=
-mmended debugging and recovery process?</div><div dir=3D"auto"><br></div><d=
-iv dir=3D"auto">6. Validation and safety</div><div dir=3D"auto"><br></div><=
-div dir=3D"auto">=E2=80=A2 What validation checklist should be completed be=
-fore enabling host power control or testing other GPIO outputs?</div><div d=
-ir=3D"auto">=E2=80=A2 How should fan control and cooling failsafe behavior =
-be validated before using the image on a live server?</div><div dir=3D"auto=
-">=E2=80=A2 What are the minimum hardware details that must be verified bef=
-ore proceeding with physical-board testing?</div><div dir=3D"auto"><br></di=
-v><div dir=3D"auto">My current goal is to continue testing the image in QEM=
-U, document the confirmed and unverified hardware mappings, and determine t=
-he correct procedure before flashing the physical board.</div><div dir=3D"a=
-uto"><br></div><div dir=3D"auto">I would be grateful for any recommended do=
-cumentation, reference schematics, OpenBMC porting guides, practical experi=
-ence, or advice from engineers who have worked on similar BMC porting proje=
-cts .</div><div dir=3D"auto"><br></div><div dir=3D"auto">Thank you for your=
- time and guidance.=C2=A0 please response or guide anyone to take my step f=
-orward towards learning.</div><div dir=3D"auto"><br></div><div dir=3D"auto"=
->Best regards,</div><div dir=3D"auto">Kavya M M</div></div><br><div class=
-=3D"gmail_quote gmail_quote_container"><div dir=3D"ltr" class=3D"gmail_attr=
-">On Mon, 26 Oct, 2026, 9:05=E2=80=AFam Prasanth, &lt;<a href=3D"mailto:pra=
-santh.padarthi10@gmail.com">prasanth.padarthi10@gmail.com</a>&gt; wrote:<br=
-></div><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-=
-left:1px #ccc solid;padding-left:1ex">Hi,<br>
-<br>
-A gentle follow-up on the B650D4U BMC device-tree series posted on October =
-2.<br>
-<br>
-Could you please let me know whether any further changes or validation<br>
-are needed before this series can be picked up?<br>
-<br>
-Thanks,<br>
-Prasanth<br>
-<br>
-On Fri, Oct 2, 2026 at 11:59=E2=80=AFAM Prasanth Kumar Padarthi<br>
-&lt;<a href=3D"mailto:prasanth.padarthi10@gmail.com" target=3D"_blank" rel=
-=3D"noreferrer">prasanth.padarthi10@gmail.com</a>&gt; wrote:<br>
-&gt;<br>
-&gt; Add the device tree for the ASRock Rack B650D4U BMC, which is<br>
-&gt; based on the ASPEED AST2600 SoC.<br>
-&gt;<br>
-&gt; Describe the BMC memory, SPI NOR flash layout, UART console,<br>
-&gt; GPIO line names, video framebuffer memory, I2C EEPROM, and MAC0<br>
-&gt; connected to an RTL8211F Ethernet PHY.<br>
-&gt;<br>
-&gt; Use the EEPROM on I2C7 as the NVMEM provider for the MAC0 address.<br>
-&gt;<br>
-&gt; Configure MAC0 to use the RTL8211F in RGMII-ID mode.<br>
-&gt;<br>
-&gt; Reviewed-by: Andrew Lunn &lt;<a href=3D"mailto:andrew@lunn.ch" target=
-=3D"_blank" rel=3D"noreferrer">andrew@lunn.ch</a>&gt; # MAC0 and MDIO nodes=
- only<br>
-&gt; Signed-off-by: Prasanth Kumar Padarthi &lt;<a href=3D"mailto:prasanth.=
-padarthi10@gmail.com" target=3D"_blank" rel=3D"noreferrer">prasanth.padarth=
-i10@gmail.com</a>&gt;<br>
-&gt; ---<br>
-&gt;=C2=A0 arch/arm/boot/dts/aspeed/Makefile=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0|=C2=A0 =C2=A01 +<br>
-&gt;=C2=A0 .../dts/aspeed/aspeed-bmc-asrock-b650d4u.dts=C2=A0 | 135 +++++++=
-+++++++++++<br>
-&gt;=C2=A0 2 files changed, 136 insertions(+)<br>
-&gt;=C2=A0 create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-b6=
-50d4u.dts<br>
-&gt;<br>
-&gt; diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/asp=
-eed/Makefile<br>
-&gt; index 6b68671f9379..b109491d5c8f 100644<br>
-&gt; --- a/arch/arm/boot/dts/aspeed/Makefile<br>
-&gt; +++ b/arch/arm/boot/dts/aspeed/Makefile<br>
-&gt; @@ -10,6 +10,7 @@ dtb-$(CONFIG_ARCH_ASPEED) +=3D \<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0aspeed-bmc-ampere-mtmitchell.dtb \<br=
->
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0aspeed-bmc-arm-stardragon4800-rep2.dt=
-b \<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0aspeed-bmc-asrock-altrad8.dtb \<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0aspeed-bmc-asrock-b650d4u.dtb \<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0aspeed-bmc-asrock-e3c246d4i.dtb \<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0aspeed-bmc-asrock-e3c256d4i.dtb \<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0aspeed-bmc-asrock-paul-ipmi-card.dtb =
-\<br>
-&gt; diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-b650d4u.dts b/=
-arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-b650d4u.dts<br>
-&gt; new file mode 100644<br>
-&gt; index 000000000000..a4e384588a54<br>
-&gt; --- /dev/null<br>
-&gt; +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-b650d4u.dts<br>
-&gt; @@ -0,0 +1,135 @@<br>
-&gt; +// SPDX-License-Identifier: GPL-2.0<br>
-&gt; +/dts-v1/;<br>
-&gt; +<br>
-&gt; +#include &quot;aspeed-g6.dtsi&quot;<br>
-&gt; +<br>
-&gt; +/ {<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0compatible =3D &quot;asrock,b650d4u-bmc&qu=
-ot;, &quot;aspeed,ast2600&quot;;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0model =3D &quot;ASRock Rack B650D4U BMC&qu=
-ot;;<br>
-&gt; +<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0aliases {<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0serial0 =3D &a=
-mp;uart5;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0};<br>
-&gt; +<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0chosen {<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0stdout-path =
-=3D &quot;serial0:115200n8&quot;;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0};<br>
-&gt; +<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0memory@80000000 {<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0device_type =
-=3D &quot;memory&quot;;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0reg =3D &lt;0x=
-80000000 0x20000000&gt;;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0};<br>
-&gt; +<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0reserved-memory {<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0ranges;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0#address-cells=
- =3D &lt;1&gt;;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0#size-cells =
-=3D &lt;1&gt;;<br>
-&gt; +<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0gfx_memory: fr=
-amebuffer {<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0compatible =3D &quot;shared-dma-pool&quot;;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0alignment =3D &lt;0x01000000&gt;;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0reusable;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0size =3D &lt;0x01000000&gt;;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0};<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0};<br>
-&gt; +};<br>
-&gt; +<br>
-&gt; +&amp;fmc {<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0status =3D &quot;okay&quot;;<br>
-&gt; +<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0flash@0 {<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0compatible =3D=
- &quot;jedec,spi-nor&quot;;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0reg =3D &lt;0&=
-gt;;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0label =3D &quo=
-t;bmc&quot;;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0spi-max-freque=
-ncy =3D &lt;50000000&gt;;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0spi-rx-bus-wid=
-th =3D &lt;4&gt;;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0m25p,fast-read=
-;<br>
-&gt; +<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0status =3D &qu=
-ot;okay&quot;;<br>
-&gt; +<br>
-&gt; +#include &quot;openbmc-flash-layout-64.dtsi&quot;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0};<br>
-&gt; +};<br>
-&gt; +<br>
-&gt; +&amp;gfx {<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0memory-region =3D &lt;&amp;gfx_memory&gt;;=
-<br>
-&gt; +<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0status =3D &quot;okay&quot;;<br>
-&gt; +};<br>
-&gt; +<br>
-&gt; +&amp;gpio0 {<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0gpio-line-names =3D<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0/* A0-A7 */=C2=
-=A0 =C2=A0 =C2=A0&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;=
-&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0/* B0-B7 */=C2=
-=A0 =C2=A0 =C2=A0&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;=
-&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0/* C0-C7 */=C2=
-=A0 =C2=A0 =C2=A0&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;=
-&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0/* D0-D7 */=C2=
-=A0 =C2=A0 =C2=A0&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;=
-&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0/* E0-E7 */=C2=
-=A0 =C2=A0 =C2=A0&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;=
-&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0/* F0-F7 */=C2=
-=A0 =C2=A0 =C2=A0&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;=
-&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0/* G0-G7 */=C2=
-=A0 =C2=A0 =C2=A0&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;=
-&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0/* H0-H7 */=C2=
-=A0 =C2=A0 =C2=A0&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;=
-&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0/* I0-I7 */=C2=
-=A0 =C2=A0 =C2=A0&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;=
-&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0/* J0-J7 */=C2=
-=A0 =C2=A0 =C2=A0&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;=
-&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0/* K0-K7 */=C2=
-=A0 =C2=A0 =C2=A0&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;=
-&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0/* L0-L7 */=C2=
-=A0 =C2=A0 =C2=A0&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;=
-&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0/* M0-M7 */=C2=
-=A0 =C2=A0 =C2=A0&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;=
-&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0/* N0-N7 */=C2=
-=A0 =C2=A0 =C2=A0&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;=
-&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0/* O0-O7 */=C2=
-=A0 =C2=A0 =C2=A0&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;=
-&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0/* P0-P7 */=C2=
-=A0 =C2=A0 =C2=A0&quot;button-reset-n&quot;,&quot;control-reset-n&quot;,<br=
->
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0&quot;button-p=
-ower-n&quot;,&quot;control-power-n&quot;,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0&quot;button-n=
-mi-n&quot;,&quot;control-nmi-n&quot;,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0&quot;&quot;,&=
-quot;&quot;,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0/* Q0-Q7 */=C2=
-=A0 =C2=A0 =C2=A0&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;=
-&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0/* R0-R7 */=C2=
-=A0 =C2=A0 =C2=A0&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;=
-&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0/* S0-S7 */=C2=
-=A0 =C2=A0 =C2=A0&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;=
-&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0/* T0-T7 */=C2=
-=A0 =C2=A0 =C2=A0&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;=
-&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0/* U0-U7 */=C2=
-=A0 =C2=A0 =C2=A0&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;=
-&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0/* V0-V7 */=C2=
-=A0 =C2=A0 =C2=A0&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;=
-&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0/* W0-W7 */=C2=
-=A0 =C2=A0 =C2=A0&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;=
-&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0/* X0-X7 */=C2=
-=A0 =C2=A0 =C2=A0&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;=
-&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0/* Y0-Y7 */=C2=
-=A0 =C2=A0 =C2=A0&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;=
-&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0/* Z0-Z7 */=C2=
-=A0 =C2=A0 =C2=A0&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;=
-&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;;<br>
-&gt; +};<br>
-&gt; +<br>
-&gt; +&amp;i2c7 {<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0status =3D &quot;okay&quot;;<br>
-&gt; +<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0eeprom@57 {<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0compatible =3D=
- &quot;atmel,24c128&quot;;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0reg =3D &lt;0x=
-57&gt;;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0pagesize =3D &=
-lt;16&gt;;<br>
-&gt; +<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0nvmem-layout {=
-<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0compatible =3D &quot;fixed-layout&quot;;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0#address-cells =3D &lt;1&gt;;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0#size-cells =3D &lt;1&gt;;<br>
-&gt; +<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0eth0_macaddress: macaddress@3f80 {<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0reg =3D &lt;0x3f80 6&gt;;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0};<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0};<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0};<br>
-&gt; +};<br>
-&gt; +<br>
-&gt; +&amp;mac0 {<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0nvmem-cells =3D &lt;&amp;eth0_macaddress&g=
-t;;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0nvmem-cell-names =3D &quot;mac-address&quo=
-t;;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0phy-handle =3D &lt;&amp;ethphy0&gt;;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0phy-mode =3D &quot;rgmii-id&quot;;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0pinctrl-0 =3D &lt;&amp;pinctrl_rgmii1_defa=
-ult&gt;;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0pinctrl-names =3D &quot;default&quot;;<br>
-&gt; +<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0status =3D &quot;okay&quot;;<br>
-&gt; +};<br>
-&gt; +<br>
-&gt; +&amp;mdio0 {<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0status =3D &quot;okay&quot;;<br>
-&gt; +<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0ethphy0: ethernet-phy@0 {<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0compatible =3D=
- &quot;ethernet-phy-ieee802.3-c22&quot;;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0reg =3D &lt;0&=
-gt;;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0};<br>
-&gt; +};<br>
-&gt; +<br>
-&gt; +&amp;uart5 {<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0status =3D &quot;okay&quot;;<br>
-&gt; +};<br>
-&gt; --<br>
-&gt; 2.47.3<br>
-&gt;<br>
-<br>
+<div dir=3D"auto">Hi Kavya,<div dir=3D"auto"><br></div><div dir=3D"auto">Th=
+anks for sharing your platform details and starting a separate thread.</div=
+><div dir=3D"auto"><br></div><div dir=3D"auto">I am also Working On OpenBMC=
+ through ASRock Rack B650D4U enablement. My work is still in progress, and =
+I have not worked on the Gigabyte MZ32-AR0 or evaluated development boards =
+within your budget, so I cannot recommend a specific platform confidently.<=
+/div><div dir=3D"auto"><br></div><div dir=3D"auto">For the vendor-restricte=
+d shell, I would suggest contacting Gigabyte support about supported debugg=
+ing access and recovery procedures.</div><p>My practical recovery experienc=
+e is limited to the ASRock Rack B650D4U that I am currently working on. I u=
+se a CH341A external SPI flash programmer for BMC firmware recovery.</p><p>=
+I have not worked on the Gigabyte MZ32-AR0, so I cannot confirm its recover=
+y procedure or programmer compatibility. Please verify the flash device, re=
+quired voltage, and board-specific recovery instructions before attempting =
+external programming.=C2=A0</p><div dir=3D"auto"><br></div><div dir=3D"auto=
+">Regards,</div><div dir=3D"auto">Prasanth</div></div><br><div class=3D"gma=
+il_quote"><div dir=3D"ltr" class=3D"gmail_attr">On Mon, 26 Oct, 2026, 4:07=
+=E2=80=AFpm KAVYA M M, &lt;<a href=3D"mailto:kavyamadarsh@gmail.com" target=
+=3D"_blank" rel=3D"noreferrer">kavyamadarsh@gmail.com</a>&gt; wrote:<br></d=
+iv><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left=
+:1px #ccc solid;padding-left:1ex"><div dir=3D"ltr"><div dir=3D"ltr">Hello O=
+penBMC Team,<br><br>I am new to OpenBMC development and would appreciate yo=
+ur guidance on getting started with developing and validating an OpenBMC im=
+age for a server platform.<br><br><b>I have a few general questions:</b><br=
+><br>1. What hardware documentation is normally required to develop a relia=
+ble OpenBMC image for a new motherboard? Are the user manual and BMC refere=
+nce schematic sufficient, or are the complete motherboard schematic and boa=
+rd-specific signal mappings essential?<br>2. If the original BMC firmware i=
+s available only as a binary and the motherboard schematic is unavailable, =
+what is the recommended approach for identifying the hardware configuration=
+ and developing the initial image?<br>3. Which existing OpenBMC reference p=
+latforms are suitable for beginners who want to learn the Yocto/BitBake bui=
+ld system, device trees, machine configuration, sensor integration, and req=
+uired services?<br>4. Which hardware platforms provide good support for tes=
+ting sensor monitoring, fan PWM/tachometer control, Redfish, GPIO, host pow=
+er control, and power sequencing?<br>5. Which functions can be tested in QE=
+MU, and what hardware documentation and recovery facilities are necessary b=
+efore proceeding with physical-board testing?<br><p><strong>Request for Gui=
+dance on Restricted BMC SSH Access</strong></p><p>I would also like to unde=
+rstand how to access the underlying Linux shell on a BMC when SSH access is=
+ restricted by the vendor firmware.</p><p>For example, some BMCs provide SS=
+H access but expose only a restricted interface, such as SMASH-CLP, instead=
+ of a standard Linux shell. In such cases, what is the recommended and auth=
+orized method for accessing the underlying Linux environment for debugging,=
+ inspecting system configuration, and understanding the running services?</=
+p><p>Are there standard OpenBMC debugging methods or configuration options =
+for enabling SSH shell access during development? If access is restricted b=
+y the vendor firmware, what documentation or permissions would be required =
+to investigate this further?</p><b>My current hardware</b><br><br>I current=
+ly have access to a Gigabyte MZ32-AR0-00 motherboard with an ASPEED AST2500=
+ BMC.<br><br>I am considering using this board for my OpenBMC development. =
+However, I do not have access to the complete motherboard schematic, and so=
+me board-specific hardware mappings are difficult to confirm from the avail=
+able documentation and original vendor firmware.<br><br>I would appreciate =
+your advice on whether this is a suitable platform for learning and develop=
+ing OpenBMC, or whether a different, better-documented development platform=
+ would be a more practical starting point.<br><br><b>Request for developmen=
+t-board recommendations</b><br><br>My budget for purchasing a BMC developme=
+nt board is approximately =E2=82=B95,000=E2=80=93=E2=82=B910,000.<br><br>Co=
+uld you recommend a specific development board or server motherboard that i=
+s affordable, well documented, and preferably has an existing upstream Open=
+BMC machine configuration?<br><br>Ideally, I would like a platform that sup=
+ports learning and testing:<br><br>- OpenBMC image building using Yocto/Bit=
+Bake.<br>- Hardware sensor monitoring and integration.<br>- Fan PWM/tachome=
+ter control and cooling failsafe behavior.<br>- Redfish and other BMC manag=
+ement interfaces.<br>- GPIO, host power control, and power sequencing.<br>-=
+ QEMU-based software testing followed by physical-board validation.<br><br>=
+My preference is for a platform with an existing reference implementation, =
+accessible hardware documentation, and a reliable firmware recovery method.=
+ Used development boards or server motherboards would also be suitable if t=
+hey are available within my budget.<br><br>My goal is to choose the most pr=
+actical platform, build and validate an initial OpenBMC image, and graduall=
+y learn the hardware integration process before attempting to flash a physi=
+cal BMC.<br><br>I would be grateful for any recommendations on suitable har=
+dware, existing reference platforms, documentation, or practical guidance f=
+rom developers experienced in OpenBMC platform development.<br><br>Thank yo=
+u for your time and support.<br><br>Best regards,<br>Kavya M M</div>
+</div>
 </blockquote></div>
 
---000000000000c34f0c065eb6d71d--
+--0000000000002595b2065ebc526d--
 
