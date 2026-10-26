@@ -2,139 +2,92 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 43CC0606A31A
-	for <linux-aspeed@archiver.kernel.org>; Mon, 26 Oct 2026 22:43:40 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A188A606A31A
+	for <linux-aspeed@archiver.kernel.org>; Mon, 26 Oct 2026 22:43:55 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=baylibre.com header.i=@baylibre.com header.a=rsa-sha256 header.s=google header.b=ovDlljDR
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=FLtFfRNo
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jD7vG4XfPz2ySl;
-	Tue, 27 Oct 2026 09:43:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::329"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793032173;
-	cv=none; b=c+c1ZPm6SQEdiAhRrHGF0deof3ifx1x4UwTYaL8/+IVo7ligFh8buKghVJNb0Q5pXrSy1JBUxpjAo1wOYgAL+GhUcwvF9I2dDP2IfXGb8ihedNc/I8y7mjPK4uqnf8DhaLD6gb6uNTtQpKZmhsH6HHyH+JcUKaqU000b6wUaTRxIRFgwCW/C/8s4clfuxHNr5Nox1/M3pHFBF7gIyHridE5ognxc6HPZYL7leP4kGlsBfB6RaTd9pCatYP8FKfSLyfu0zgtfdfp4JhtR66k5UFPtyGsAmAdyTJW//qfa7JX97qJ2IUiwuwnb8kIFO8ggu07Zvgzq1QvHxJwa67iHiQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793032173; c=relaxed/relaxed;
-	bh=ITqbDSTjwjfbrrpkyujx4v8CTbfspgT4IGjU+cO6egY=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=aFdKq1BpyuTSBiCmVhxkwqVnGpDbm3X7YlXXCiqy/qrrVHpbaX3tvVRv/k1vetf/pR0h+uEPgELMPIuH4zydMjsIu0N2EPFjc4zvHSUtGQ5wY13v5KbDAJmjuL3ZG3p/CigKZ+8h4P8DB/qI8DY5NuRL9fXGc4zh5lanENP1f2/kd8l1xyB3q6TZZOVnZ6qH11TQJ5kInk0qu6CzvTYjNTvxqwwrkaJLK8PuaVgkjgK/leVz38Me9EzfM/4YKrMS/qlagRgJ/HqF6XsDXk/FAqy0TXsh4CIBT6c4bZUSQ1DjfUs1FhTSWy2GVpRbvuBHwretE4nw2zQE2oIpuIkVCw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=baylibre.com; dkim=pass (2048-bit key; secure) header.d=baylibre.com header.i=@baylibre.com header.a=rsa-sha256 header.s=google header.b=ovDlljDR; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::329; helo=mail-wm1-x329.google.com; envelope-from=ukleinek@baylibre.com; receiver=lists.ozlabs.org) smtp.mailfrom=baylibre.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jD7vS1dQ4z2xnM;
+	Tue, 27 Oct 2026 09:43:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::532" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793015098;
+	cv=pass; b=CIVaKH8EIRQ9Dxp3QFHVPSV4KmwtRpxne/jlegI9+oPV/Tmv+YkjPNVKvPuTtflcT9/S5p41agS8wtxnFHb5RYzpegPHomAbRZjRJRM9Xcb9okKTiVWeS7jwQn5D8TCuJMJjylbzajX9PW7W/B7F8NKk0MlCG1Coxh2YsainfyarkmfwBq/arS/3ruK3ge5GTS0VhIV5OhfIoioGP6qHYjhNNNyarzfNaWi50E+11yvuNpWDYR1H/83aIGshnywPoo+XtASCq+FLPd/l5NTXoxP5r279LHi+pfMa/NdJsiZrDEPt8IWUVGp5zR6doNVwMuOjvYcP4U0TTUUtNsqhvA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1793015098; c=relaxed/relaxed;
+	bh=XKElveE2tmhD80Dc1VoKGJkJ+BgCeb4wmjmDRCfM5v0=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=h8H04A5/iVAr3ZS+4kLNaBcDmHzIRJDS1f2UH/GQoUTU5soD+T0rqUa/YhPVNfHd31jbkvG+F51Yr1SZCORPl4Bye4CoRzkBE+yiJVoMSbqjTdte3Ommf1AazZcMzNJ2IqS7jGycSX90OuJZ8V4um4jgwfKxqTivyMs6uH86D3/cgW7m3duNG4u4yywYRojMnZhsVT6fUS0nmFjq0W/QflUuCMoYLG3Hs+O096uo0yF0tB/viBaL18oK92dwgwhjjhsLXqDX3J80oSOJqTf6qIJurRXOmaPnHZi19nIXPc+d6G/y1AMjz2InhKy6vQDNRCHH/MhsbYnJou8e6UmZ/w==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=FLtFfRNo; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::532; helo=mail-ed1-x532.google.com; envelope-from=kavyamadarsh@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=baylibre.com header.i=@baylibre.com header.a=rsa-sha256 header.s=google header.b=ovDlljDR;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=FLtFfRNo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=baylibre.com (client-ip=2a00:1450:4864:20::329; helo=mail-wm1-x329.google.com; envelope-from=ukleinek@baylibre.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x329.google.com (mail-wm1-x329.google.com [IPv6:2a00:1450:4864:20::329])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::532; helo=mail-ed1-x532.google.com; envelope-from=kavyamadarsh@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ed1-x532.google.com (mail-ed1-x532.google.com [IPv6:2a00:1450:4864:20::532])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jCzbr74znz2yRn
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 27 Oct 2026 03:29:27 +1100 (AEDT)
-Received: by mail-wm1-x329.google.com with SMTP id 5b1f17b1804b1-4a5087a5348so13862925e9.0
-        for <linux-aspeed@lists.ozlabs.org>; Mon, 26 Oct 2026 09:29:26 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jCsHW4VlCz2xSF
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 26 Oct 2026 22:44:54 +1100 (AEDT)
+Received: by mail-ed1-x532.google.com with SMTP id 4fb4d7f45d1cf-6b1aa4d71e7so3059975a12.0
+        for <linux-aspeed@lists.ozlabs.org>; Mon, 26 Oct 2026 04:44:54 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1793015087; cv=none;
+        d=google.com; s=arc-20260327;
+        b=hH5EWLO1egy920W/DgkvNueLsNdH7VE0rIvrGtybYfG7ismeJsTdkrfopKWDZKXs+x
+         f5BxVvOl0k17J6o8S+TAWJ7NYyUqQnvQ3rwVDA99wK8r/MzJeVyk5dF6Tu3fpI37yTv0
+         CDyCk3OotfZyxPXUxswQ7yZdP+e9OtZ2V5YmLqk55avFhix/09bQxPpwBx5vAkkluxBW
+         T7Xxwxf975jPAYSMhrZsS2sA8AvCb1/WVYg/NoTf18TFiV0/GmKS3gpSbrP9ZZkh3vvt
+         NA5J4PD0rjlXPYP/C7bOywudYQoFlhYv/kQDDIfH39+66dTKejR0VfNL+xuTgvCsuUox
+         IHxA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=XKElveE2tmhD80Dc1VoKGJkJ+BgCeb4wmjmDRCfM5v0=;
+        fh=gmfaf8ZskMY+NAxxVi1v3Jp/eyC93KD1TKj2ACVxJ5c=;
+        b=LQi9A9FT8av/7D8IjJ4jCCwhYK82Cw8RNe6XgIElAG94PQPA4/5XwTSw9QjuBi3T+L
+         bIG84/CVcO/RJk5M9Iut8+F9HktHPoFx5Vk8nuJth9J3NY43EajL82FKa1a3zpsI1jzE
+         0TUP5OWuthonbTpVFYg9Qb70Q+3OyBc5Ki+xSqIlV7S2gs/s+BPT4QRBITwTD3sRF/nX
+         WLzdk4KiNQIlmSS2FqGqNYGmGDf6CLBwPJcv+N7yWs3fF9zPDaed6fSmNmNGvT2RUftf
+         5g4lhLb73HPIM/DI1PgJtrL5OJ+nZrDtBY78WcNsRa4+DVx9QbVlyIMRPH582L5mXyFv
+         CltQ==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre.com; s=google; t=1793032163; x=1793636963; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to
+        d=gmail.com; s=20251104; t=1793015087; x=1793619887; darn=lists.ozlabs.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=ITqbDSTjwjfbrrpkyujx4v8CTbfspgT4IGjU+cO6egY=;
-        b=ovDlljDRL+H/teeQ9l6U4KYBzpmhJbaM5CxjsdQMTbw7cWP+DJ+LvC/iE40c82yvns
-         wnllhg0X9/582KqrW5a3yUqB403rloyMN1t4eLHm1z+50twLUJ3F3gDgpMPfHibzBRXr
-         +na0dP1g3OSMRmRCIRYErj+3fzbM+tYEE3Vh4wAI4GfWV10mPEIZyoixMEPbj6OcQIqA
-         EjrLyT1xbYAFd8CNA9+WWMW2roAx78kLXmzbYXHUN2TurTvKrH4bWNpUeluPV0xUozka
-         DV9Vve9nzZzpJ3aLKK2pcD0765gGbtWFvLU4CrUBEkEb7Rm2Iq1EzKPnPEUgnHIK5HBq
-         aBTg==
+        bh=XKElveE2tmhD80Dc1VoKGJkJ+BgCeb4wmjmDRCfM5v0=;
+        b=FLtFfRNoJQRovSaXyaBfz4z4vctP93h/dgj8P8uJWu0kMsKapCQ/5qTmkcjjVnBPoa
+         bo8gudUT+X6Ur2lQ6VZS4oGNQihO6ttRTPL5xsdcsLQcxJ7lmxMsYs9z9M4WHUlit4XU
+         E7umOHgJQDeg0kI9Zj/39JCnWzh3llX2X6KidxLO5THmIw1i7wcgCBFeYlUcUJC3oMG/
+         jnfxxNYJ/SGQpweAwj9Yi9ThlxSQU8lA4uW4AWhGWdOY6dj/M3PN+trLqDM4Lexfix8a
+         JA9mGdAdmyS48yB9hpymECYBQL7qvJNtjTwKz3OYeO26W0fA06xbTZWoJfTuRgRDYogx
+         UNew==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793032163; x=1793636963;
-        h=content-transfer-encoding:content-type:mime-version:message-id:date
-         :subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=ITqbDSTjwjfbrrpkyujx4v8CTbfspgT4IGjU+cO6egY=;
-        b=YpyRMQi25AaQDTpCG9ssYNS0b3fBLTYm0sQFjd4Gwy08isHjZ1rg+2ExkQv3vTnd7k
-         BPP30pBt7Fjbwc8WAjc2OsQ8jkDfdABTSGHKd9D9V5M68dF0xUmBHkINUbaIZ88MGko4
-         TXkj6k5YmMjPt9ldXQFm4RbpxU7b3gpTnr4ONBv6flFruEzIDQ/zfs+WtfALGz5VSbY7
-         FP4vtZEH2oiK9WGIn5AjEi7TqKS8KGJIxBFNVQsPwQ0VQXFTxSrYQpNzK+3MuxgwvEee
-         XpwRqKkpOmEXrkQBPrIoZ3sLIreldGH19cxhnqQhuTJjFcP6jFUA8DE+baK4w2Dqw4R4
-         IMUA==
-X-Forwarded-Encrypted: i=1; AKwUvBxuNANB3o0Y7aZOPezwwxx89PBUhY1b7upgeUeMgqHeqlJn6BcNMP4xb/fn/rE9Zd14mUbxTgjg0QvnJuU=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYLLMKMwZOXsjcOjLHun/626Yh/+MeHCuoQV9SYDLm4RBiFx3Q5x
-	gkLQdARqUWFzzANZLlxcPvTdHl0aB9g30TL/znmybQ8Zg7plcQ+2/zzoDY163VHmkdk=
-X-Gm-Gg: AYBFou23o5mjunrqcJki3R3WSFmT1AivzYsz872nPvf2fW5GobMZXoKsV0WYs9+vISi
-	aLyNoniwN0urkzL3dMbbQMnqs71GNTGi5KLS7AEvSsLlg5dCoNd+62fqh3Ycr+4bQ3Tu3aXz9E8
-	IacBcTJS/1NikAEZudHKekBukwBaRLXByJyvxmkBseku8R+LjI6o7aqI3VPtAn1n+iJ4ekOmb+3
-	Y/DUW2JblRlELu+5OFdyGpfJR5q8yFR6A6Gdg6pQjyX+vgYkaUpZk2pXuD/yv3SkDQMvHTmxU4L
-	OQnKwAFzjrO3bzaJ/9vR7MI7f3c0YdUs0GFDhPErmdGvliK/1ro6ZxOPHew06tNQ0Hom9WOBrf/
-	mXcQct4IOqeMqw+EEhhyE/zr/iX2rswQjRcYlpS87PdPe8X/VyXBq6a+nLK+RlUOaS/76XT06dM
-	2J4UIzrLmVNZeUfNjazHWFdxneqS61WQkJt9hnZaOJLL+W0QwBhM8cA9iVY8PvPM4OOJvcT0hUf
-	sBAZdDkdvp3le+FW2azD3bnD8AQCEUo2MQtt1f58a3s4qdjMB2Kw2xdBuj5xItAQwI1QqOfaT9y
-	J4mo7HZUOguDg4DV+2YnVXWo6Kx2wBCiyDD9jvmtEyk=
-X-Received: by 2002:a05:600c:474a:b0:4a1:78c5:79f5 with SMTP id 5b1f17b1804b1-4a35acb9afamr139448685e9.33.1793032162560;
-        Mon, 26 Oct 2026 09:29:22 -0700 (PDT)
-Received: from localhost (p200300f65f19a904cbccaa7a4d73ac15.dip0.t-ipconnect.de. [2003:f6:5f19:a904:cbcc:aa7a:4d73:ac15])
-        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-48e3ecd8dcfsm17304483f8f.50.2026.10.26.09.29.21
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 26 Oct 2026 09:29:21 -0700 (PDT)
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig=20=28The=20Capable=20Hub=29?= <u.kleine-koenig@baylibre.com>
-To: Linus Walleij <linusw@kernel.org>,
-	Bartosz Golaszewski <brgl@kernel.org>
-Cc: Andy Shevchenko <andy@kernel.org>,
-	linux-gpio@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Yang Shen <shenyang39@huawei.com>,
-	Lixu Zhang <lixu.zhang@intel.com>,
-	Sakari Ailus <sakari.ailus@linux.intel.com>,
-	Ray Jui <rjui@broadcom.com>,
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
-	Florian Fainelli <florian.fainelli@broadcom.com>,
-	Scott Branden <sbranden@broadcom.com>,
-	Eugeniy Paltsev <Eugeniy.Paltsev@synopsys.com>,
-	Frank Li <Frank.Li@nxp.com>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>,
-	Imre Kaloz <kaloz@kernel.org>,
-	Conor Dooley <conor.dooley@microchip.com>,
-	Valentina Fernandez <valentina.fernandezalanis@microchip.com>,
-	Daire McNamara <daire.mcnamara@microchip.com>,
-	Daniel Palmer <daniel@thingy.jp>,
-	Romain Perier <romain.perier@gmail.com>,
-	Robert Jarzmik <robert.jarzmik@free.fr>,
-	imx@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org,
-	linux-riscv@lists.infradead.org,
-	Hoan Tran <hoan@os.amperecomputing.com>,
-	Alan Borzeszkowski <alan.borzeszkowski@linux.intel.com>,
-	Mika Westerberg <westeri@kernel.org>,
-	Israel Cepeda <israel.a.cepeda.lopez@intel.com>,
-	Hans de Goede <hansg@kernel.org>,
-	Matti Vaittinen <mazziesaccount@gmail.com>,
-	"Enrico Weigelt, metux IT consult" <info@metux.net>,
-	Viresh Kumar <vireshk@kernel.org>,
-	virtualization@lists.linux.dev,
-	Yinbo Zhu <zhuyinbo@loongson.cn>,
-	Thierry Reding <thierry.reding@kernel.org>,
-	Jonathan Hunter <jonathanh@nvidia.com>,
-	linux-tegra@vger.kernel.org,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	Srinivas Neeli <srinivas.neeli@amd.com>,
-	Michal Simek <michal.simek@amd.com>,
-	linux-aspeed@lists.ozlabs.org,
-	asahi@lists.linux.dev,
-	linux-mediatek@lists.infradead.org,
-	openbmc@lists.ozlabs.org,
-	linux-omap@vger.kernel.org,
-	linux-renesas-soc@vger.kernel.org,
-	linux-unisoc@lists.infradead.org,
-	linux-rockchip@lists.infradead.org,
-	linux-stm32@st-md-mailman.stormreply.com,
-	Michael Buesch <m@bues.ch>,
-	William Breathitt Gray <wbg@kernel.org>,
-	Robert Richter <rric@kernel.org>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	linux-acpi@vger.kernel.org
-Subject: [PATCH v3 00/22] gpio: Improvements around device-id arrays
-Date: Mon, 26 Oct 2026 17:28:11 +0100
-Message-ID: <cover.1793030820.git.u.kleine-koenig@baylibre.com>
-X-Mailer: git-send-email 2.56.0.rc1
+        d=1e100.net; s=20260707; t=1793015087; x=1793619887;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=XKElveE2tmhD80Dc1VoKGJkJ+BgCeb4wmjmDRCfM5v0=;
+        b=tTSb94Kk5ZxLc7KmVHW7biZaLIwAn288hcjvPXWuJv87c2iz323gBafD4ogoWY8W9l
+         FcHpxciIGr/hbr/jUEgBuwTIaycAD2iP14SXK4jr4rj0UIzJz4OUuHTUNHV5/7Nxf9xa
+         dvGBx6a/5sUouHL6gbPBjvAdID8QtvhR37YiEXCw/XgmwsaAeLgfVyJQ5nawLakmaISI
+         +GtoZWmKAhMJgs4f9MPI7sFIYjzzcOFLdu8T/7otCZ9HvxGmeJ54ZS5IZlaFeGmqk3P5
+         HHHl6v/DLkXB2vRKZ4HIrnaUE0x+SB0A+Qe4ZTm8K0e5lLOsoxAhGtL4J62PCYJSfzBp
+         +hGw==
+X-Gm-Message-State: AFq9FYJM3+q0Aq/njnf9EJrsTSON8tWUZ9ojZfGEU5Fo77WrYvC2cE1a
+	gDWhw2kztZJgSIgVGqtS+zpFDpKcPsjSAOVMFAfBu7HwuNQsHGC52c2YkOTxWmz7DI0dUEF0bKz
+	156F2E1cWYiy55Q4cB1PbmF53tO4mRRI=
+X-Gm-Gg: AYBFou2paDXk7UiyPGLOSxTbupzNrqfujKNvK+AawnsA6fOWrB+i4HWI08d9QymIxDG
+	6ZkRxqIJhrONdgzNTrY6/dgwVXdJuBVvnMgMi5jSR7n0zNK8DeK6vNAwL0+wqsRPsKNoTzW/jpd
+	MEn/41uX9Xnb1MQ6MFMBW+EGvMwalg2xbgMkGRr7qy88iCNof0GN6YkkafZt+R4YTPeEP1iMCwM
+	nSOtBJP05yiVTvGgJ7UG/QKvYR57TMzTghrkx/g0C/l7yKYZTJOgYei3VYgJNCcliqB0PhFzh2B
+	3c7ULj4mPn3kbaBk2Mwa5aDFkz4NL9vbW7o/5YKCfSgvE/UZNJrgNG4BauMssVL2210dhXhefSQ
+	VeNE3xOnpy6y2UUkmCknkdzQzZ+St+3mf6LnZ
+X-Received: by 2002:a17:906:f5a4:b0:c29:5b0c:1b44 with SMTP id
+ a640c23a62f3a-c46bde8ad37mr810399366b.37.1793015086263; Mon, 26 Oct 2026
+ 04:44:46 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -148,191 +101,329 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=8375; i=u.kleine-koenig@baylibre.com; h=from:subject:message-id; bh=/oBogVX4W/l/tSbRcbLeyK5GzZPZsHFXHxISWg2r7FU=; b=owEBbQGS/pANAwAKAY+A+1h9Ev5OAcsmYgBq33+c3CfzXRBmptFu1GW2GtVslcFR47MrFB6ag QI8Xzy686OJATMEAAEKAB0WIQQ/gaxpOnoeWYmt/tOPgPtYfRL+TgUCat9/nAAKCRCPgPtYfRL+ TixACACdtBFK6kNYWLMcAtstDryOYl7PdfPG1N2WQbOF3hzVRHuidZJEElOlxQOHOxjmH5QxfjG oK6tEHPvQpPYGNE6X2ddRlR3vKhFUQXZie3uQhpRkFU+T2B/9DaN4bQiSXUkhXTzFYvqdfGt+bx UbRl8w0O3UDWE1J1O3+WraRa9pLQ1EiCUZzbGW6h1FRI28X6Atl+O3zYxu2WImvV46mPVm5T7XZ b0jHMwW4knA+B/zWMTvL7A92KmAeoLFPWwfaif9ujRL8DnOG5TkQO7aEpnmwLg6WGA9ruZ09COA LKAAW+CtN1A3UjlRp4pFGny5ogYUqSyfQs1hycndKa4RLwtW
-X-Developer-Key: i=u.kleine-koenig@baylibre.com; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
-Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=4.0.1
+References: <CAD_a9macSzuBsmmoLu2Cu1doLADvcpASFi-6ADnOvmMdgDEfHA@mail.gmail.com>
+ <CAMFFDGgygzu3OdFkq6+ztZOzaFMMTdYFqtkvmOtHNovQvabXQA@mail.gmail.com>
+In-Reply-To: <CAMFFDGgygzu3OdFkq6+ztZOzaFMMTdYFqtkvmOtHNovQvabXQA@mail.gmail.com>
+From: KAVYA M M <kavyamadarsh@gmail.com>
+Date: Mon, 26 Oct 2026 17:14:34 +0530
+X-Gm-Features: AclHuK-ZuZMpJmy0NhpfcoTdHqA8e01rSGWRNsBcn8NXtkWJWjar_gpncgquiRA
+Message-ID: <CAD_a9mY6MHZxNgoy1TeasO5dRFsGHjbngNhDNyVsxT=OLTW=QQ@mail.gmail.com>
+Subject: Re: [OpenBMC] Guidance on Getting Started with OpenBMC and Choosing a
+ Development Board
+To: openbmc@lists.ozlabs.org
+Cc: linux-aspeed@lists.ozlabs.org, andrew@codeconstruct.com.au, 
+	changhuang.liang@starfivetech.com, Shuah Khan <skhan@linuxfoundation.org>, 
+	Jani Nikula <jani.nikula@intel.com>, Vitaly Lubart <lubvital@gmail.com>, 
+	Hanjun Guo <guohanjun@huawei.com>, Andrew Morton <akpm@linux-foundation.org>, 
+	Alexander Usyskin <alexander.usyskin@intel.com>, Jason Gunthorpe <jgg@ziepe.ca>, 
+	Breno Leitao <leitao@debian.org>, Philipp Zabel <p.zabel@pengutronix.de>, 
+	James Morse <james.morse@arm.com>, Paolo Abeni <pabeni@redhat.com>, 
+	Stephen Hemminger <stephen@networkplumber.org>, Dave Penkler <dpenkler@gmail.com>, 
+	Jakub Kicinski <kuba@kernel.org>, Jonathan Cameron <jic23@kernel.org>, Dan Williams <djbw@kernel.org>, 
+	Mukesh Rathor <mrathor@linux.microsoft.com>, Vladimir Oltean <vladimir.oltean@nxp.com>, 
+	Alexandra Winter <wintera@linux.ibm.com>, Julian Braha <julianbraha@gmail.com>, 
+	Karthikeyan KS <karthiproffesional@gmail.com>, Pengpeng Hou <pengpeng@iscas.ac.cn>, 
+	linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Jonathan Corbet <corbet@lwn.net>, Joel Stanley <joel@jms.id.au>, 
+	Chia-Wei Wang <chiawei_wang@aspeedtech.com>, Oskar Senft <osk@google.com>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Prasanth <prasanth.padarthi10@gmail.com>
+Content-Type: multipart/alternative; boundary="0000000000004b32ce065ebcdbaf"
+X-Spam-Status: No, score=0.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hello,
+--0000000000004b32ce065ebcdbaf
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-as with v1 and v2 the original motivation for this series are the
-patches that convert the arrays to use named initializers, see
-https://lore.kernel.org/all/cover.1780048925.git.u.kleine-koenig@baylibre.com/
-for the idea behind it. Then by not closing the eyes for small issues
-spotted while working on that, this series grew a bit.
+Thank you for your response.
 
-Changes since v2 (available at
-https://lore.kernel.org/all/cover.1784133987.git.u.kleine-koenig@baylibre.com/)
+I have doubt  if I want to work on developing  OpenBMC  image for the
+machine . do I really need schematics information or the firmware .bin
+alone  file give the exacted all the information .
+ What are all the tests need to done before uploading the generated image
+into the physical chip.
 
- - Rebase to current next/master (new changes to
-   drivers/gpio/gpio-mlxbf.c, drivers/gpio/gpio-mlxbf2.c,
-   drivers/gpio/gpio-74x164.c)
- - Fix a few commit logs to reference the right *_device_id names
- - Drop all tags for Andy
- - Drop a questionable MODULE_DEVICE_TABLE(acpi, ...) for drivers/gpio/gpio-usbio.c
-
-Checkpatch only reports two undocumented device-tree compatibles:
-
-	WARNING: DT compatible string "apm,xgene-gpio-v2" appears un-documented -- check ./Documentation/devicetree/bindings/
-	WARNING: DT compatible string "marvell,pxa1928-gpio" appears un-documented -- check ./Documentation/devicetree/bindings/
-
-I felt free to ignore these as this is a pre-existing issue and
-out-of-context for this series.
-
-Andy didn't like how this series is split into patches before, I do. I
-think it's not possible to please everyone's opinion regarding minimal
-changes per patch vs grouping similar changes in patches and about what
-is considered churn. I'm happy about every patch in this series that
-goes in, so feel free to apply patches that you like and that don't get
-resistance even if other's do. If patches don't apply, just drop them,
-I'll catch up on them eventually.
-
-Best regards
-Uwe
-
-Uwe Kleine-König (The Capable Hub) (22):
-  gpio: Remove __maybe_unused annotations from acpi_device_id arrays
-  gpio: fxl6408: Remove __maybe_unused annotations from of_device_id
-    array
-  gpio: Drop unused assignment of acpi_device_id driver data
-  gpio: max7301: Drop unused assignment of spi_device_id driver data
-  gpio: mmio: Drop unused assignment of platform_device_id driver data
-  gpio: ljca: Drop unused assignment of auxiliary_device_id driver data
-  gpio: xgene: Add missing ACPI module annotation
-  gpio: sodaville: Add missing PCI module annotations
-  gpio: Add missing OF module annotations
-  gpio: pxa: Add missing platform module annotations
-  gpio: pl061: Use empty initializer for amba_id terminator
-  gpio: Use named initializers for acpi_device_id array
-  gpio: pcf857x: Use named initializers for of_device_id array
-  gpio: bd73800: Use named initializers for platform_device_id array
-  gpio: Use named initializers for spi_device_id array
-  gpio: virtio: Use a named initializer for virtio_device_id array
-  gpio: Unify style of acpi_device_id arrays
-  gpio: Unify style of of_device_id arrays
-  gpio: max77620: Unify style of platform_device_id array
-  gpio: Unify style of spi_device_id arrays
-  gpio: Unify style of pci_device_id arrays
-  gpio: Unify style of various *_device_id arrays
-
- drivers/gpio/gpio-74x164.c          |  4 ++--
- drivers/gpio/gpio-adnp.c            |  4 ++--
- drivers/gpio/gpio-aggregator.c      |  2 +-
- drivers/gpio/gpio-altera-a10sr.c    |  2 +-
- drivers/gpio/gpio-altera.c          |  4 ++--
- drivers/gpio/gpio-amd8111.c         |  2 +-
- drivers/gpio/gpio-amdpt.c           |  8 ++++----
- drivers/gpio/gpio-aspeed-sgpio.c    | 10 ++++-----
- drivers/gpio/gpio-aspeed.c          | 10 ++++-----
- drivers/gpio/gpio-ath79.c           |  2 +-
- drivers/gpio/gpio-bcm-kona.c        |  1 +
- drivers/gpio/gpio-bd73800.c         |  4 ++--
- drivers/gpio/gpio-blzp1600.c        |  4 ++--
- drivers/gpio/gpio-brcmstb.c         |  2 +-
- drivers/gpio/gpio-bt8xx.c           |  2 +-
- drivers/gpio/gpio-cadence.c         |  6 +++---
- drivers/gpio/gpio-creg-snps.c       |  5 +++--
- drivers/gpio/gpio-davinci.c         |  8 ++++----
- drivers/gpio/gpio-dwapb.c           | 14 ++++++-------
- drivers/gpio/gpio-em.c              |  4 ++--
- drivers/gpio/gpio-ep93xx.c          |  1 +
- drivers/gpio/gpio-ftgpio010.c       |  3 ++-
- drivers/gpio/gpio-fxl6408.c         |  2 +-
- drivers/gpio/gpio-graniterapids.c   |  4 ++--
- drivers/gpio/gpio-grgpio.c          |  2 +-
- drivers/gpio/gpio-gw-pld.c          |  4 ++--
- drivers/gpio/gpio-hisi.c            |  6 +++---
- drivers/gpio/gpio-hlwd.c            |  4 ++--
- drivers/gpio/gpio-imx-scu.c         |  1 +
- drivers/gpio/gpio-ixp4xx.c          |  4 ++--
- drivers/gpio/gpio-ljca.c            |  4 ++--
- drivers/gpio/gpio-loongson-64bit.c  |  4 ++--
- drivers/gpio/gpio-lp3943.c          |  2 +-
- drivers/gpio/gpio-lpc32xx.c         |  4 ++--
- drivers/gpio/gpio-macsmc.c          |  4 ++--
- drivers/gpio/gpio-max3191x.c        | 12 +++++------
- drivers/gpio/gpio-max7301.c         |  2 +-
- drivers/gpio/gpio-max7360.c         |  8 ++++----
- drivers/gpio/gpio-max77620.c        |  4 ++--
- drivers/gpio/gpio-max77759.c        |  2 +-
- drivers/gpio/gpio-mb86s7x.c         |  2 +-
- drivers/gpio/gpio-ml-ioh.c          |  2 +-
- drivers/gpio/gpio-mlxbf.c           |  6 +++---
- drivers/gpio/gpio-mlxbf2.c          |  6 +++---
- drivers/gpio/gpio-mlxbf3.c          |  4 ++--
- drivers/gpio/gpio-mm-lantiq.c       |  2 +-
- drivers/gpio/gpio-mmio.c            |  3 +--
- drivers/gpio/gpio-mockup.c          |  4 ++--
- drivers/gpio/gpio-moxtet.c          |  4 ++--
- drivers/gpio/gpio-mpc5200.c         |  9 ++++----
- drivers/gpio/gpio-mpc8xxx.c         | 25 +++++++++++-----------
- drivers/gpio/gpio-mpfs.c            |  1 +
- drivers/gpio/gpio-mpsse.c           |  3 +--
- drivers/gpio/gpio-msc313.c          |  1 +
- drivers/gpio/gpio-mt7621.c          |  2 +-
- drivers/gpio/gpio-mvebu.c           | 13 ++++++------
- drivers/gpio/gpio-mxc.c             |  2 +-
- drivers/gpio/gpio-mxs.c             |  4 ++--
- drivers/gpio/gpio-nomadik.c         |  7 ++++---
- drivers/gpio/gpio-novalake-events.c |  4 ++--
- drivers/gpio/gpio-npcm-sgpio.c      |  6 +++---
- drivers/gpio/gpio-octeon.c          |  2 +-
- drivers/gpio/gpio-omap.c            |  2 +-
- drivers/gpio/gpio-palmas.c          | 10 ++++-----
- drivers/gpio/gpio-pca953x.c         |  4 ++--
- drivers/gpio/gpio-pca9570.c         |  2 +-
- drivers/gpio/gpio-pcf857x.c         | 26 +++++++++++------------
- drivers/gpio/gpio-pci-idio-16.c     |  3 ++-
- drivers/gpio/gpio-pcie-idio-24.c    |  8 +++++---
- drivers/gpio/gpio-pisosr.c          |  4 ++--
- drivers/gpio/gpio-pl061.c           |  2 +-
- drivers/gpio/gpio-pmic-eic-sprd.c   |  2 +-
- drivers/gpio/gpio-pxa.c             | 20 ++++++++++--------
- drivers/gpio/gpio-qixis-fpga.c      |  3 +--
- drivers/gpio/gpio-rcar.c            |  2 +-
- drivers/gpio/gpio-rda.c             |  2 +-
- drivers/gpio/gpio-realtek-otto.c    |  2 +-
- drivers/gpio/gpio-rockchip.c        |  4 ++--
- drivers/gpio/gpio-sama5d2-piobu.c   |  2 +-
- drivers/gpio/gpio-sifive.c          |  2 +-
- drivers/gpio/gpio-sl28cpld.c        |  2 +-
- drivers/gpio/gpio-sodaville.c       |  3 ++-
- drivers/gpio/gpio-spear-spics.c     |  3 ++-
- drivers/gpio/gpio-sprd.c            |  2 +-
- drivers/gpio/gpio-stmpe.c           |  2 +-
- drivers/gpio/gpio-stp-xway.c        |  2 +-
- drivers/gpio/gpio-tegra.c           |  6 +++---
- drivers/gpio/gpio-tegra186.c        | 32 ++++++++++++++---------------
- drivers/gpio/gpio-thunderx.c        |  3 +--
- drivers/gpio/gpio-tps65218.c        |  2 +-
- drivers/gpio/gpio-ts4800.c          |  4 ++--
- drivers/gpio/gpio-ts4900.c          |  2 +-
- drivers/gpio/gpio-twl4030.c         |  4 ++--
- drivers/gpio/gpio-usbio.c           | 12 +++++------
- drivers/gpio/gpio-vf610.c           |  4 ++--
- drivers/gpio/gpio-virtio.c          |  4 ++--
- drivers/gpio/gpio-visconti.c        |  2 +-
- drivers/gpio/gpio-waveshare-dsi.c   |  2 +-
- drivers/gpio/gpio-xgene-sb.c        |  6 +++---
- drivers/gpio/gpio-xgene.c           | 10 +++++----
- drivers/gpio/gpio-xgs-iproc.c       |  2 +-
- drivers/gpio/gpio-xilinx.c          |  4 ++--
- drivers/gpio/gpio-xlp.c             |  6 +++---
- drivers/gpio/gpio-xra1403.c         |  6 +++---
- drivers/gpio/gpio-zevio.c           |  5 +++--
- drivers/gpio/gpio-zynqmp-modepin.c  |  2 +-
- drivers/gpio/gpiolib-acpi-quirks.c  |  2 +-
- 107 files changed, 269 insertions(+), 252 deletions(-)
+Best regards.
+Kavya
 
 
-base-commit: 20a33c6b6cbe7e4805dfb6cd68816937443aa148
--- 
-2.56.0.rc1
 
+
+
+On Mon, 26 Oct, 2026, 4:38=E2=80=AFpm Prasanth, <prasanth.padarthi10@gmail.=
+com>
+wrote:
+
+> Hi Kavya,
+>
+> Thanks for sharing your platform details and starting a separate thread.
+>
+> I am also Working On OpenBMC through ASRock Rack B650D4U enablement.
+> My work is still in progress, and I have not worked on the Gigabyte
+> MZ32-AR0 or evaluated development boards within your budget, so I
+> cannot recommend a specific platform confidently.
+>
+> For the vendor-restricted shell, I would suggest contacting Gigabyte
+> support about supported debugging access and recovery procedures.
+>
+> My practical recovery experience is limited to the ASRock Rack B650D4U
+> that I am currently working on. I use a CH341A external SPI flash
+> programmer for BMC firmware recovery.
+>
+> I have not worked on the Gigabyte MZ32-AR0, so I cannot confirm its
+> recovery procedure or programmer compatibility. Please verify the
+> flash device, required voltage, and board-specific recovery
+> instructions before attempting external programming.
+>
+> On Mon, Oct 26, 2026 at 4:07=E2=80=AFPM KAVYA M M <kavyamadarsh@gmail.com=
+> wrote:
+> >
+> > Hello OpenBMC Team,
+> >
+> > I am new to OpenBMC development and would appreciate your guidance on
+> getting started with developing and validating an OpenBMC image for a
+> server platform.
+> >
+> > I have a few general questions:
+> >
+> > 1. What hardware documentation is normally required to develop a
+> reliable OpenBMC image for a new motherboard? Are the user manual and BMC
+> reference schematic sufficient, or are the complete motherboard schematic
+> and board-specific signal mappings essential?
+> > 2. If the original BMC firmware is available only as a binary and the
+> motherboard schematic is unavailable, what is the recommended approach fo=
+r
+> identifying the hardware configuration and developing the initial image?
+> > 3. Which existing OpenBMC reference platforms are suitable for beginner=
+s
+> who want to learn the Yocto/BitBake build system, device trees, machine
+> configuration, sensor integration, and required services?
+> > 4. Which hardware platforms provide good support for testing sensor
+> monitoring, fan PWM/tachometer control, Redfish, GPIO, host power control=
+,
+> and power sequencing?
+> > 5. Which functions can be tested in QEMU, and what hardware
+> documentation and recovery facilities are necessary before proceeding wit=
+h
+> physical-board testing?
+> >
+> > Request for Guidance on Restricted BMC SSH Access
+> >
+> > I would also like to understand how to access the underlying Linux shel=
+l
+> on a BMC when SSH access is restricted by the vendor firmware.
+> >
+> > For example, some BMCs provide SSH access but expose only a restricted
+> interface, such as SMASH-CLP, instead of a standard Linux shell. In such
+> cases, what is the recommended and authorized method for accessing the
+> underlying Linux environment for debugging, inspecting system
+> configuration, and understanding the running services?
+> >
+> > Are there standard OpenBMC debugging methods or configuration options
+> for enabling SSH shell access during development? If access is restricted
+> by the vendor firmware, what documentation or permissions would be requir=
+ed
+> to investigate this further?
+> >
+> > My current hardware
+> >
+> > I currently have access to a Gigabyte MZ32-AR0-00 motherboard with an
+> ASPEED AST2500 BMC.
+> >
+> > I am considering using this board for my OpenBMC development. However, =
+I
+> do not have access to the complete motherboard schematic, and some
+> board-specific hardware mappings are difficult to confirm from the
+> available documentation and original vendor firmware.
+> >
+> > I would appreciate your advice on whether this is a suitable platform
+> for learning and developing OpenBMC, or whether a different,
+> better-documented development platform would be a more practical starting
+> point.
+> >
+> > Request for development-board recommendations
+> >
+> > My budget for purchasing a BMC development board is approximately
+> =E2=82=B95,000=E2=80=93=E2=82=B910,000.
+> >
+> > Could you recommend a specific development board or server motherboard
+> that is affordable, well documented, and preferably has an existing
+> upstream OpenBMC machine configuration?
+> >
+> > Ideally, I would like a platform that supports learning and testing:
+> >
+> > - OpenBMC image building using Yocto/BitBake.
+> > - Hardware sensor monitoring and integration.
+> > - Fan PWM/tachometer control and cooling failsafe behavior.
+> > - Redfish and other BMC management interfaces.
+> > - GPIO, host power control, and power sequencing.
+> > - QEMU-based software testing followed by physical-board validation.
+> >
+> > My preference is for a platform with an existing reference
+> implementation, accessible hardware documentation, and a reliable firmwar=
+e
+> recovery method. Used development boards or server motherboards would als=
+o
+> be suitable if they are available within my budget.
+> >
+> > My goal is to choose the most practical platform, build and validate an
+> initial OpenBMC image, and gradually learn the hardware integration proce=
+ss
+> before attempting to flash a physical BMC.
+> >
+> > I would be grateful for any recommendations on suitable hardware,
+> existing reference platforms, documentation, or practical guidance from
+> developers experienced in OpenBMC platform development.
+> >
+> > Thank you for your time and support.
+> >
+> > Best regards,
+> > Kavya M M
+>
+
+--0000000000004b32ce065ebcdbaf
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"auto">Thank=C2=A0you for your response.<div dir=3D"auto">=C2=A0=
+</div><div dir=3D"auto">I have doubt=C2=A0 if I want to work on developing=
+=C2=A0 OpenBMC=C2=A0 image for the machine . do I really need schematics in=
+formation or the firmware .bin alone=C2=A0 file give the exacted all the in=
+formation .=C2=A0</div><div dir=3D"auto">=C2=A0What are all the tests need =
+to done before uploading the generated image into the physical chip.</div><=
+div dir=3D"auto"><br></div><div dir=3D"auto">Best=C2=A0regards.</div><div d=
+ir=3D"auto">Kavya=C2=A0</div><div dir=3D"auto"><br></div><div dir=3D"auto">=
+<br></div><div dir=3D"auto"><br></div><div dir=3D"auto"><br></div></div><br=
+><div class=3D"gmail_quote gmail_quote_container"><div dir=3D"ltr" class=3D=
+"gmail_attr">On Mon, 26 Oct, 2026, 4:38=E2=80=AFpm Prasanth, &lt;<a href=3D=
+"mailto:prasanth.padarthi10@gmail.com">prasanth.padarthi10@gmail.com</a>&gt=
+; wrote:<br></div><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .=
+8ex;border-left:1px #ccc solid;padding-left:1ex">Hi Kavya,<br>
+<br>
+Thanks for sharing your platform details and starting a separate thread.<br=
+>
+<br>
+I am also Working On OpenBMC through ASRock Rack B650D4U enablement.<br>
+My work is still in progress, and I have not worked on the Gigabyte<br>
+MZ32-AR0 or evaluated development boards within your budget, so I<br>
+cannot recommend a specific platform confidently.<br>
+<br>
+For the vendor-restricted shell, I would suggest contacting Gigabyte<br>
+support about supported debugging access and recovery procedures.<br>
+<br>
+My practical recovery experience is limited to the ASRock Rack B650D4U<br>
+that I am currently working on. I use a CH341A external SPI flash<br>
+programmer for BMC firmware recovery.<br>
+<br>
+I have not worked on the Gigabyte MZ32-AR0, so I cannot confirm its<br>
+recovery procedure or programmer compatibility. Please verify the<br>
+flash device, required voltage, and board-specific recovery<br>
+instructions before attempting external programming.<br>
+<br>
+On Mon, Oct 26, 2026 at 4:07=E2=80=AFPM KAVYA M M &lt;<a href=3D"mailto:kav=
+yamadarsh@gmail.com" target=3D"_blank" rel=3D"noreferrer">kavyamadarsh@gmai=
+l.com</a>&gt; wrote:<br>
+&gt;<br>
+&gt; Hello OpenBMC Team,<br>
+&gt;<br>
+&gt; I am new to OpenBMC development and would appreciate your guidance on =
+getting started with developing and validating an OpenBMC image for a serve=
+r platform.<br>
+&gt;<br>
+&gt; I have a few general questions:<br>
+&gt;<br>
+&gt; 1. What hardware documentation is normally required to develop a relia=
+ble OpenBMC image for a new motherboard? Are the user manual and BMC refere=
+nce schematic sufficient, or are the complete motherboard schematic and boa=
+rd-specific signal mappings essential?<br>
+&gt; 2. If the original BMC firmware is available only as a binary and the =
+motherboard schematic is unavailable, what is the recommended approach for =
+identifying the hardware configuration and developing the initial image?<br=
+>
+&gt; 3. Which existing OpenBMC reference platforms are suitable for beginne=
+rs who want to learn the Yocto/BitBake build system, device trees, machine =
+configuration, sensor integration, and required services?<br>
+&gt; 4. Which hardware platforms provide good support for testing sensor mo=
+nitoring, fan PWM/tachometer control, Redfish, GPIO, host power control, an=
+d power sequencing?<br>
+&gt; 5. Which functions can be tested in QEMU, and what hardware documentat=
+ion and recovery facilities are necessary before proceeding with physical-b=
+oard testing?<br>
+&gt;<br>
+&gt; Request for Guidance on Restricted BMC SSH Access<br>
+&gt;<br>
+&gt; I would also like to understand how to access the underlying Linux she=
+ll on a BMC when SSH access is restricted by the vendor firmware.<br>
+&gt;<br>
+&gt; For example, some BMCs provide SSH access but expose only a restricted=
+ interface, such as SMASH-CLP, instead of a standard Linux shell. In such c=
+ases, what is the recommended and authorized method for accessing the under=
+lying Linux environment for debugging, inspecting system configuration, and=
+ understanding the running services?<br>
+&gt;<br>
+&gt; Are there standard OpenBMC debugging methods or configuration options =
+for enabling SSH shell access during development? If access is restricted b=
+y the vendor firmware, what documentation or permissions would be required =
+to investigate this further?<br>
+&gt;<br>
+&gt; My current hardware<br>
+&gt;<br>
+&gt; I currently have access to a Gigabyte MZ32-AR0-00 motherboard with an =
+ASPEED AST2500 BMC.<br>
+&gt;<br>
+&gt; I am considering using this board for my OpenBMC development. However,=
+ I do not have access to the complete motherboard schematic, and some board=
+-specific hardware mappings are difficult to confirm from the available doc=
+umentation and original vendor firmware.<br>
+&gt;<br>
+&gt; I would appreciate your advice on whether this is a suitable platform =
+for learning and developing OpenBMC, or whether a different, better-documen=
+ted development platform would be a more practical starting point.<br>
+&gt;<br>
+&gt; Request for development-board recommendations<br>
+&gt;<br>
+&gt; My budget for purchasing a BMC development board is approximately =E2=
+=82=B95,000=E2=80=93=E2=82=B910,000.<br>
+&gt;<br>
+&gt; Could you recommend a specific development board or server motherboard=
+ that is affordable, well documented, and preferably has an existing upstre=
+am OpenBMC machine configuration?<br>
+&gt;<br>
+&gt; Ideally, I would like a platform that supports learning and testing:<b=
+r>
+&gt;<br>
+&gt; - OpenBMC image building using Yocto/BitBake.<br>
+&gt; - Hardware sensor monitoring and integration.<br>
+&gt; - Fan PWM/tachometer control and cooling failsafe behavior.<br>
+&gt; - Redfish and other BMC management interfaces.<br>
+&gt; - GPIO, host power control, and power sequencing.<br>
+&gt; - QEMU-based software testing followed by physical-board validation.<b=
+r>
+&gt;<br>
+&gt; My preference is for a platform with an existing reference implementat=
+ion, accessible hardware documentation, and a reliable firmware recovery me=
+thod. Used development boards or server motherboards would also be suitable=
+ if they are available within my budget.<br>
+&gt;<br>
+&gt; My goal is to choose the most practical platform, build and validate a=
+n initial OpenBMC image, and gradually learn the hardware integration proce=
+ss before attempting to flash a physical BMC.<br>
+&gt;<br>
+&gt; I would be grateful for any recommendations on suitable hardware, exis=
+ting reference platforms, documentation, or practical guidance from develop=
+ers experienced in OpenBMC platform development.<br>
+&gt;<br>
+&gt; Thank you for your time and support.<br>
+&gt;<br>
+&gt; Best regards,<br>
+&gt; Kavya M M<br>
+</blockquote></div>
+
+--0000000000004b32ce065ebcdbaf--
 
