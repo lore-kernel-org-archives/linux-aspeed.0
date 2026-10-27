@@ -2,76 +2,77 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 680A5606A31A
-	for <linux-aspeed@archiver.kernel.org>; Tue, 27 Oct 2026 03:49:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E74C4606A31A
+	for <linux-aspeed@archiver.kernel.org>; Tue, 27 Oct 2026 03:49:59 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=nqQNAX7J
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=dZYUkUeu
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jDGhY3Dnlz2yVT;
-	Tue, 27 Oct 2026 14:49:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793072973;
-	cv=none; b=fPyqb3E7rt4C501jhv4s0vYlmTh+TNyx5FfvlXH0uv5fuHPVareMbnNSa9CeYmAL7l76bW+N9Quk6H302ADC9ySr72/EA6hnls17Tf3/lUg+3P6P87SEVemZs02tmeKEuodIoM6VWK8yNkypOam0RYky/GpIZ+uvHMaZw8SkEUGXqGIcvTUIn8tfVZWWsDF1rRKR85oceULJ9cCNx9fltYqik+E6rpHB4bc1FQW7IgHmHS8uwGI3iYBGlDzNBWvl2DlC1TQbt0siY4oH4YEKcgVi7hMVOCSFlLwD3YulYUPC397uyQNh1G3FvXO4WHooviCJL/fLy+q59v+6GtjurQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jDGhj2NvQz2yWy;
+	Tue, 27 Oct 2026 14:49:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::122e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793072981;
+	cv=none; b=kgJEkbNai9BD+9eZps5WvJJR5wIUZwlkLSgdqJtzaLUvQv9A2DEIOozLUH/rMwLf7LbNQmTxqJDYqmdr67SikhhR0r/QszX+mpK8fcVj3iG3SNhW4fQFJHWJG4XSZPhTtM1PlQIGhQlv8vGMcLMKccPKGUREUY0ylsUug/3T2Oq/TVJ7vrKtAmbHKWmNZvkE0trde59ovQ5EgN34taVEESGFTNQsPj3CPjG+rB5wWeuBgOW208m5kMn9iqZMhAhS4qusQW47kekSXDVUiiLVE5Z0BVp98yPMSSPdbnjCAXFwk+dwMPQtGPDbU/UkpBNbSRkhx0F8rObmV7Z5g9ekGw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793072973; c=relaxed/relaxed;
-	bh=bVKdd+rg0dOMU+J41LGwwuebdjS7SkBQhNfNvVlqcdA=;
+	t=1793072981; c=relaxed/relaxed;
+	bh=ayFq1I1PgE7HlCuF6H4wPpUQ+/WQM35PTFr519q3M/U=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=GgKJI/BXLovsis1raGJhcaTCuizf36+MsQzO6RWEltjOilDRzfR885AJl0gn7sQyKrm3EiFfbN25iudpY5n53/ryUsEKZdZCbLvtABCaTQaiVvKUEti7Qjp2zEZV9JWZU2L/bGjvWd9FTFatOR4/zgNKATC1QSoE9SIGLNMkqCJ22n1K9F8jJneyGs6gK3afMzbTNun7kNT5dP7bLI19WgUjwPUXHYSN3Ym42c8zNw+qhdNtkKMGhAE50Z8RytqnPnqUbz2ZD47loYr/pKiuA6Ywsj/hmsBBt8rmaVJUutiARoEgI5NXKg3rVEUI/gOL+Phuy3KkdXDvRpy9lgjhHQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=nqQNAX7J; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132f; helo=mail-dy1-x132f.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=GYb8e8or2umwHnxquHCFEXfifybIz1wFyIvmlU8Dp76kiBM2LBywQ/9cjwRK0TGyWEnTUxXV/pLkKjccvnA6fihxeFbClX3ct4k0e8pHwrwbrN8VJn+68a2QnZTPNmQVSs/RmocYqLXnzaajJioCZG4IMieJ7qxldRCyu4GdG3P06ReRCOTCuxuSllnjdC+6MZYcf6mTL3GFC6yUuORf6IuR/epQUctY4LyUzGM82Upq91ZjICnPZnmbfgmiv3uQ0nELkYvHYygsnRk0yVpALEoP1CBiTUShldlnCCrY6UeHuE5e7rvGBiZ0D7vyWE6S3OMsfDm72qQ9Lfz454v/BA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=dZYUkUeu; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::122e; helo=mail-dl1-x122e.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=nqQNAX7J;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=dZYUkUeu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132f; helo=mail-dy1-x132f.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x132f.google.com (mail-dy1-x132f.google.com [IPv6:2607:f8b0:4864:20::132f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::122e; helo=mail-dl1-x122e.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dl1-x122e.google.com (mail-dl1-x122e.google.com [IPv6:2607:f8b0:4864:20::122e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jDGhX5Jcwz2yTK
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 27 Oct 2026 14:49:32 +1100 (AEDT)
-Received: by mail-dy1-x132f.google.com with SMTP id 5a478bee46e88-35d0be18c71so700795eec.1
-        for <linux-aspeed@lists.ozlabs.org>; Mon, 26 Oct 2026 20:49:32 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jDGhg6Wc3z2xjQ
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 27 Oct 2026 14:49:39 +1100 (AEDT)
+Received: by mail-dl1-x122e.google.com with SMTP id a92af1059eb24-18cdcfc05ffso4544574c88.1
+        for <linux-aspeed@lists.ozlabs.org>; Mon, 26 Oct 2026 20:49:39 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1793072970; x=1793677770; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1793072978; x=1793677778; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=bVKdd+rg0dOMU+J41LGwwuebdjS7SkBQhNfNvVlqcdA=;
-        b=nqQNAX7Jotwnb7EWnDgeXu2Vxn4JQ8BoQ6C3EKYC1VKFzb6oZCvxZEMFVk3eql7XBM
-         nm8uYD0AFRmy0D+FstW219esd1sHACgs4CDgHuL2H3XkZbD1FnfcRXhWh04h+1Ug/wm5
-         k0qM4Q0vBC5YC+qbg32hQGy3sObB8vSqByLj4Zo6aWzs3Y9ib6CjOnDuIq52u5CHY2PH
-         d6IswfBxUlOv6B9jkfwmzppAUsRW10WGP+8ECBXJrE7RX9I8TVhYH2ypTTm2uzPdlu7k
-         rKAcvfYfH1WkCYMp25orMVADaIYJGEI4TTQ3qdRsB2pU9A8sTpfOHoHihIoI5lvLRGlM
-         kVQw==
+        bh=ayFq1I1PgE7HlCuF6H4wPpUQ+/WQM35PTFr519q3M/U=;
+        b=dZYUkUeu5KFy+pOJiDb9eLomzvJdNdA10VzfSx4262nihAca8ZwVlSdR6kQ7h+4wQw
+         x7RtzqHH/yUEs8CYgi+etitX0iCWtPtY3ExvAMHKJebKJC0O76+WzKcjwJ8JeZ9LgOTr
+         qhv6ZHBdotsrU6V6ZvW2yS6UsNIXOGSkQ5gr3HtRoY5lzhGhSZJPRRtEre+UAckWgQDm
+         Gc0yrezBVzVZvP5hNDqmbUv+enh28c4bRtVV2PORURJ7ND2Oo7oa0b2Cvd5tp8JVOwva
+         kt2CejhJ36FwNznUVOfjLhzMA9ib0UzeOVH4IxBbpd7om/GbfB545J5N0hZLZR3txDgB
+         DCjg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793072970; x=1793677770;
+        d=1e100.net; s=20260707; t=1793072978; x=1793677778;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=bVKdd+rg0dOMU+J41LGwwuebdjS7SkBQhNfNvVlqcdA=;
-        b=2pfSyW+oAZkneenFWKCG0RcRyznraR5HCKI97jmoYEMSJrVImp0tRhzT34uuOhpXyw
-         Eae63aVvqiItxrjOO6G+S6vupaCiEUCD/A0WejUwer1gTBSbqqjYj3bX6hfl/it/7WNK
-         EwairkNWNDxcy45i9KCv4uNXwdMMoA9dh1vfJsglq5KcSMX/voveM9CcueidlaB5DmNv
-         Rm23JV6d7xxKRBaw4aM3WDTbJrXLW5aMq1OO77WWABB1f7yY9bJBRaGr3QkE5UGL4kb0
-         zd+zWtVYQzoHOoTME0COjtruD9jJiTKNcJt8gn8LgVtfSJHSkAuV617VRmnQK9oyF1lh
-         3k5Q==
-X-Forwarded-Encrypted: i=1; AKwUvByjGQikE0YcDYAokYJd1CNYw4aLtFWzt8eJ6+NsR4835scm8ES8gDAU3soFdPPKwoxWc18VssgCGSmT3xs=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYKR2LmazNZXW+eA8S7zYDnSwxORaIkwlYDr1ZKCYIE/1d7ZdcBo
-	IC//nqB4QNO6YuhDbcdoNSJe7Ow69skp0KSrlCVX2tu6PGuR556Nv/ZE
-X-Gm-Gg: AYBFou3HgBPWm6eozIo0sFxNzDU5Ty7KqT+Loj5fxoEw90W6GJOFSmk6VfBa7ZMfFOQ
-	b+oEo4xdvr4tz3ma+5Rx8MGZ17wFrJbcJX3eH76df3U5pkWvPNCTfbQpcYGxSo5zN7WzqPa2Wo+
-	i9l6P6tNvB2QuY6HCMR6Q8u0GDfb1zyj/dJPVO7RuzzZl8I8zFG2e/J4IEURARnEWYuPYcJJmQy
-	sP3V0FKwRTVZuoOhm5ZefP9JUSCRMK+z8s2BXxx5U4Gg6tcSMuCtVszG8bfqgTeZqaNV2j4bxGz
-	Iubht2h8BrGo9zDqPe7FZ3x4G6F3EXUTkraXDapAig3gpHnZaylnRGNMj4w/l3qxomzOpphpeaF
-	BpU9PRxxD7YptAqLyQ6VUpXKa3Q2jFUKE5ph/M52a2AuUpZQIpuKJh8CPI7xUwPcj/iP13rZ5Dw
-	AfmmLN0GA6sFWg0w9vDa1X0/LpnGPTyW/PH8YXgl7bT5xUoz3kL55J++FybrVetxBk3lVDVGrcD
-	IoNw1+Am1cIfoNcP7QxPBvDod2eCnVdgt+myq/uQciP7mbAG3VJpgEg261tvvqt4IbU8qo=
-X-Received: by 2002:a05:7022:47:b0:14e:5e6b:e6e2 with SMTP id a92af1059eb24-1a3c904cc2fmr2284657c88.18.1793072970015;
-        Mon, 26 Oct 2026 20:49:30 -0700 (PDT)
+        bh=ayFq1I1PgE7HlCuF6H4wPpUQ+/WQM35PTFr519q3M/U=;
+        b=x5rRmWYtpNRot7eQMiazpCzgrZotKUn0/ibt6uVCBuc7P4bN3pc8LtPWfChlBrED25
+         A70Dn2V4qtmZMuVJGqAm0KTdLzxBBBpa7eFxZxKWM54pSnoGkBLgMCIdovwctwwE9vj5
+         Czl3AFm8RlNhAkrdwgcre3e4NcA0b6pOI99CBLYF2oN1jAzL57dsCd3qetxm2PqbrDKu
+         MrawQGoSePSc18eyCiVGBvozioNiWAxEA+z+gJN+S/FQbq0zy339gab10U9/BuDlHqVH
+         FFzKKb9i0sjbzaqsZ7I2RNYFuuvNjf4OkJ8Bo/kARNmak19KViY/ZqnLh7cv5Wu5dTwP
+         N79w==
+X-Forwarded-Encrypted: i=1; AKwUvByKVycLXSiOFBlx+0qHx9QjkhUi9pYpPqFLkG5AuESbqWdyEYtisaHLPD8SQYwFPFgtJ+mqAIFfC+jbBWk=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYLapMk0FyIG+CsNKn5ITS/XhwLvEmAb5+WuR0JUAAXcKFPgvQj1
+	blTRXq5t5c3BSUgyuEGMd2ialHRodP2q13MOFI7WQUAA8bFcjUGa/NT+
+X-Gm-Gg: AYBFou2Agn/e1+KiaJNhh677XfBtP6gBU2xIZvzT0npdQBem0IpKkDqL/ELoAvlR4uP
+	tfwcCuDH+FWqhJLhpADDGdL5yk86I9E7bjPqmTeth34QHg/2BwbleQNb+hbGTPx+rFhpLd5cN9b
+	ZSUoL549tSKP3Nje9I20+8BRVoGg833yoqcckYOhXP3lNleCFHWBGb+8LpplPzmmBOP/VFXsnoc
+	vky4NBPAVhD45jsf5vL/c2j/nyFrGgz463bHvZZHzyHH8Plq11sUPoyYduOgsguKrOwrg3Hqm6B
+	R/XYgw764v0lyrX+1XmVvJmG5/bPrAVGXnKYtbfXNWdzajrSk3cHb/nS0fmn/oyUtolyakUj3li
+	srZRqpDqJHsnF9lj7X1we1r1AXa+sYVaPDofeudVDrKfvWE0B1wEOvOEq+7QVxe5hHFIjeRq3wY
+	2zntWwNivKJBEB5ML2AQT9gTOwy8UsgcUC3ZloxCunOAPhLwO2/U9lok2fr0yK/zqL6GAeKK1hj
+	eiY/5nK130KkH/YhDHzcmbSg+7XJ1gg96Y/7iW/8DjP3jnSITDkc4h2KubM7wPGjEsBg78b/tc/
+	bKtQzlIZeYgZTvmm
+X-Received: by 2002:a05:7022:1407:b0:1a2:1a28:9348 with SMTP id a92af1059eb24-1a21a289389mr4067703c88.37.1793072977517;
+        Mon, 26 Oct 2026 20:49:37 -0700 (PDT)
 Received: from debian.prasanth ([103.177.82.12])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-198a2a5a515sm26430012c88.19.2026.10.26.20.49.24
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-198a2a5a515sm26430012c88.19.2026.10.26.20.49.32
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 26 Oct 2026 20:49:29 -0700 (PDT)
+        Mon, 26 Oct 2026 20:49:37 -0700 (PDT)
 From: Prasanth Kumar Padarthi <prasanth.padarthi10@gmail.com>
 To: joel@jms.id.au,
 	andrew@codeconstruct.com.au
@@ -87,9 +88,9 @@ Cc: robh@kernel.org,
 	openbmc@lists.ozlabs.org,
 	andrew@lunn.ch,
 	Prasanth Kumar Padarthi <prasanth.padarthi10@gmail.com>
-Subject: [PATCH v9 1/2] dt-bindings: arm: aspeed: Add ASRock Rack B650D4U
-Date: Tue, 27 Oct 2026 09:19:10 +0530
-Message-ID: <20261027034911.99482-2-prasanth.padarthi10@gmail.com>
+Subject: [PATCH v9 2/2] ARM: dts: aspeed: Add ASRock Rack B650D4U BMC
+Date: Tue, 27 Oct 2026 09:19:11 +0530
+Message-ID: <20261027034911.99482-3-prasanth.padarthi10@gmail.com>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20261027034911.99482-1-prasanth.padarthi10@gmail.com>
 References: <20261027034911.99482-1-prasanth.padarthi10@gmail.com>
@@ -110,30 +111,232 @@ Content-Transfer-Encoding: 8bit
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=4.0.1
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Document the ASRock Rack B650D4U BMC, which uses an ASPEED AST2600.
+Add the device tree for the ASRock Rack B650D4U BMC, based on the
+ASPEED AST2600 SoC.
 
+Describe memory, SPI NOR partitions, the UART console, GPIO line
+names, framebuffer memory, and the EEPROM on I2C7. Use the EEPROM
+as the NVMEM provider for the MAC0 address and configure MAC0 with
+an RTL8211F PHY in RGMII-ID mode.
+
+Enable both ADC engines with 2.5 V internal references and their
+pin groups. Expose the sixteen channels through an IIO-to-hwmon
+bridge for board voltage monitoring.
+
+The DTB compiles with aspeed_g5_defconfig. Binding validation with
+dtschema 2026.9 completes without diagnostics. Board validation
+reports unmatched schemas for inherited AST2600 LHC and I3C-global
+nodes, with no board-specific errors in the reported output.
+
+ADC readings and recovery after BMC restart were tested using the
+same ADC configuration in a locally patched OpenBMC image. That
+image uses a different flash layout and separate power-control
+changes; this complete upstream DTS has not been boot-tested.
+
+Reviewed-by: Andrew Lunn <andrew@lunn.ch> # MAC0 and MDIO nodes only
 Signed-off-by: Prasanth Kumar Padarthi <prasanth.padarthi10@gmail.com>
 ---
- Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
- 1 file changed, 1 insertion(+)
+ arch/arm/boot/dts/aspeed/Makefile             |   1 +
+ .../dts/aspeed/aspeed-bmc-asrock-b650d4u.dts  | 173 ++++++++++++++++++
+ 2 files changed, 174 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-b650d4u.dts
 
-diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-index b7e70868e..3e6133e2b 100644
---- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-+++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-@@ -79,6 +79,7 @@ properties:
-           - enum:
-               - ampere,mtjefferson-bmc
-               - ampere,mtmitchell-bmc
-+              - asrock,b650d4u-bmc
-               - aspeed,ast2600-evb
-               - aspeed,ast2600-evb-a1
-               - asus,ast2600-kommando-ipmi-card
+diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
+index 6874b621d..fcb94e62c 100644
+--- a/arch/arm/boot/dts/aspeed/Makefile
++++ b/arch/arm/boot/dts/aspeed/Makefile
+@@ -10,6 +10,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+ 	aspeed-bmc-ampere-mtmitchell.dtb \
+ 	aspeed-bmc-arm-stardragon4800-rep2.dtb \
+ 	aspeed-bmc-asrock-altrad8.dtb \
++	aspeed-bmc-asrock-b650d4u.dtb \
+ 	aspeed-bmc-asrock-e3c246d4i.dtb \
+ 	aspeed-bmc-asrock-e3c256d4i.dtb \
+ 	aspeed-bmc-asrock-paul-ipmi-card.dtb \
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-b650d4u.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-b650d4u.dts
+new file mode 100644
+index 000000000..630588dcb
+--- /dev/null
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-b650d4u.dts
+@@ -0,0 +1,173 @@
++// SPDX-License-Identifier: GPL-2.0
++/dts-v1/;
++
++#include "aspeed-g6.dtsi"
++
++/ {
++	compatible = "asrock,b650d4u-bmc", "aspeed,ast2600";
++	model = "ASRock Rack B650D4U BMC";
++
++	aliases {
++		serial0 = &uart5;
++	};
++
++	chosen {
++		stdout-path = "serial0:115200n8";
++	};
++
++	memory@80000000 {
++		device_type = "memory";
++		reg = <0x80000000 0x20000000>;
++	};
++
++	reserved-memory {
++		ranges;
++		#address-cells = <1>;
++		#size-cells = <1>;
++
++		gfx_memory: framebuffer {
++			compatible = "shared-dma-pool";
++			alignment = <0x01000000>;
++			reusable;
++			size = <0x01000000>;
++		};
++	};
++};
++
++&fmc {
++	status = "okay";
++
++	flash@0 {
++		compatible = "jedec,spi-nor";
++		reg = <0>;
++		label = "bmc";
++		spi-max-frequency = <50000000>;
++		spi-rx-bus-width = <4>;
++		m25p,fast-read;
++
++		status = "okay";
++
++#include "openbmc-flash-layout-64.dtsi"
++	};
++};
++
++&gfx {
++	memory-region = <&gfx_memory>;
++
++	status = "okay";
++};
++
++&gpio0 {
++	gpio-line-names =
++		/* A0-A7 */     "", "", "", "", "", "", "", "",
++		/* B0-B7 */     "", "", "", "", "", "", "", "",
++		/* C0-C7 */     "", "", "", "", "", "", "", "",
++		/* D0-D7 */     "", "", "", "", "", "", "", "",
++		/* E0-E7 */     "", "", "", "", "", "", "", "",
++		/* F0-F7 */     "", "", "", "", "", "", "", "",
++		/* G0-G7 */     "", "", "", "", "", "", "", "",
++		/* H0-H7 */     "", "", "", "", "", "", "", "",
++		/* I0-I7 */     "", "", "", "", "", "", "", "",
++		/* J0-J7 */     "", "", "", "", "", "", "", "",
++		/* K0-K7 */     "", "", "", "", "", "", "", "",
++		/* L0-L7 */     "", "", "", "", "", "", "", "",
++		/* M0-M7 */     "", "", "", "", "", "", "", "",
++		/* N0-N7 */     "", "", "", "", "", "", "", "",
++		/* O0-O7 */     "", "", "", "", "", "", "", "",
++		/* P0-P7 */     "button-reset-n", "control-reset-n",
++		"button-power-n", "control-power-n",
++		"button-nmi-n", "control-nmi-n",
++		"", "",
++		/* Q0-Q7 */     "", "", "", "", "", "", "", "",
++		/* R0-R7 */     "", "", "", "", "", "", "", "",
++		/* S0-S7 */     "", "", "", "", "", "", "", "",
++		/* T0-T7 */     "", "", "", "", "", "", "", "",
++		/* U0-U7 */     "", "", "", "", "", "", "", "",
++		/* V0-V7 */     "", "", "", "", "", "", "", "",
++		/* W0-W7 */     "", "", "", "", "", "", "", "",
++		/* X0-X7 */     "", "", "", "", "", "", "", "",
++		/* Y0-Y7 */     "", "", "", "", "", "", "", "",
++		/* Z0-Z7 */     "", "", "", "", "", "", "", "";
++};
++
++&i2c7 {
++	status = "okay";
++
++	eeprom@57 {
++		compatible = "atmel,24c128";
++		reg = <0x57>;
++		pagesize = <16>;
++
++		nvmem-layout {
++			compatible = "fixed-layout";
++			#address-cells = <1>;
++			#size-cells = <1>;
++
++			eth0_macaddress: macaddress@3f80 {
++				reg = <0x3f80 6>;
++			};
++		};
++	};
++};
++
++&mac0 {
++	nvmem-cells = <&eth0_macaddress>;
++	nvmem-cell-names = "mac-address";
++	phy-handle = <&ethphy0>;
++	phy-mode = "rgmii-id";
++	pinctrl-0 = <&pinctrl_rgmii1_default>;
++	pinctrl-names = "default";
++
++	status = "okay";
++};
++
++&mdio0 {
++	status = "okay";
++
++	ethphy0: ethernet-phy@0 {
++		compatible = "ethernet-phy-ieee802.3-c22";
++		reg = <0>;
++	};
++};
++
++&uart5 {
++	status = "okay";
++};
++
++/ {
++	iio-hwmon {
++		compatible = "iio-hwmon";
++		io-channels = <&adc0 0>, <&adc0 1>, <&adc0 2>, <&adc0 3>,
++			      <&adc0 4>, <&adc0 5>, <&adc0 6>, <&adc0 7>,
++			      <&adc1 0>, <&adc1 1>, <&adc1 2>, <&adc1 3>,
++			      <&adc1 4>, <&adc1 5>, <&adc1 6>, <&adc1 7>;
++	};
++};
++
++&adc0 {
++	status = "okay";
++	aspeed,int-vref-microvolt = <2500000>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_adc0_default>,
++		    <&pinctrl_adc1_default>,
++		    <&pinctrl_adc2_default>,
++		    <&pinctrl_adc3_default>,
++		    <&pinctrl_adc4_default>,
++		    <&pinctrl_adc5_default>,
++		    <&pinctrl_adc6_default>,
++		    <&pinctrl_adc7_default>;
++};
++
++&adc1 {
++	status = "okay";
++	aspeed,int-vref-microvolt = <2500000>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_adc8_default>,
++		    <&pinctrl_adc9_default>,
++		    <&pinctrl_adc10_default>,
++		    <&pinctrl_adc11_default>,
++		    <&pinctrl_adc12_default>,
++		    <&pinctrl_adc13_default>,
++		    <&pinctrl_adc14_default>,
++		    <&pinctrl_adc15_default>;
++};
 -- 
 2.47.3
 
