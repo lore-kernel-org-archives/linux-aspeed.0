@@ -1,90 +1,140 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 76342606A31A
-	for <linux-aspeed@archiver.kernel.org>; Mon, 26 Oct 2026 22:43:57 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 94F82606A31B
+	for <linux-aspeed@archiver.kernel.org>; Tue, 27 Oct 2026 01:18:59 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=DBfePErf
+	dkim=pass (2048-bit key, unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=Liqf86rz
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jD7vY2YvBz2ySk;
-	Tue, 27 Oct 2026 09:43:37 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::62c" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793011080;
-	cv=pass; b=Q7n0+jyEWjk/i2ZtuGbJ5Xy7okZsqJOrzxnXus4wfEs5zLncWS2DExLHGknSuT8nwarvEJoATToUFw0MbxpI1BsPY3Ul9QlJa9tAkmXvDROcHFjdFM9IEitkICFq4mnW9cFy2khkTdcoRxLb6ifrdmsnfXQz7dhGQLyAXbAds+HHPIFGIU2ozfnjlpUEdJyQJ0PSM6wArtK2dZRVmPHyKcF3m9ACEmJsm21HQfKiFA92e2s11LI+w+R9Pa0WlV9ukCKpkT3bV74Fc1T1MgrBaoNzC4HMQtL8Robjv23A02CTkjgfUrD+0OiMgT8Mb8xtRxy+sSUrewleBtjd23/w8w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jDCLn4Hl1z2xH9;
+	Tue, 27 Oct 2026 12:18:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c40f::6" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793063937;
+	cv=pass; b=PE+SsRN3uLpx8qDUjw8jcTTLF+2NJbvFHDcSMvDkuGO50ZGMcxXy77SjsVmCcdmIM6+044tRJqF66TmxYtAKErR4mzsmcQiVkDig245452+gsh9724KCX6S9OHx2Gq9A8xAGyflKQ4ptmI/jUNcK51CvS2dynvKFxxBVcLhVX0uowF7TYl3uKby0ZCE5ceCiD0PGB+dtxl9FYEVuL5g0NgOuh9r2GQ8rTOSM7JUckvd+CyXcoJJ+/8zJrD5mb+qTxXAQZmGUs31z2WCypgkZhJwoBnZN6O9oTY3IF1xDQ0/LDwA7456uaLO65nC+X8Oz70Dez/y/zi6XpIjpzCQzXg==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793011080; c=relaxed/relaxed;
-	bh=nyoRHdpnLelYoEsc3Y/xoVZUSJAqYxJf2UwQ17UQ4oM=;
-	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=ZvCiktk9D2hLfkGBc4xbUdhO+NULxnzwIOErIWbiF3jbTVOc6VwIjt7jcOqDMzSb3HA8/qavdA59j8uqNr+z3cU8BJ0/cBrT+XKRuL1q5qVOFK4W7xoh5ZxWXsGKH78h5aVIwh/ZBfSClQDK81Hxz72uXg5kgSNWo8lhiFO+IfeDLL43Eko/tV2aLHIiR1aYoj+rb7hRf7CqRgZgsJXz1Ow69SzLLvUk6npE8D0Npo2+N1I0ZuHPOK0lQIZeqioRcbTf++lBqX6ss+VDu+xO9ZOQ+bi3ovg/9CcVNY+NQaaP24x9JXRx33LK44Vinhh18hn4JoG9Yix4pePa3jg+Zw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=DBfePErf; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::62c; helo=mail-ej1-x62c.google.com; envelope-from=kavyamadarsh@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1793063937; c=relaxed/relaxed;
+	bh=46RyXzphrtiMJVv/JdvEnsr8L3f+Kw5Rh+2EnVJkTGE=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=JzAJsnNWWt8Mn9yjBeoybaJ1dVHmlo7HPcg2WyNmzEIQxNDFd9o8i19T1L8RMsJR52uZTFPi7wo7VKoDWu/4cc2GFdHsx3B3niq24XV2E0k8WinMka1dF6WE+CM9HJdxNt9zQy7fY3IC7HK+ri3ii6+8zFSOscsU0/9iAXTy3QNuzIK6HS3gwaHQgiHhvdhlvzFqzruhEXd8RcYZeJWvVRqLrEuF8YvLL7FGnqJjfrUPshRDf9sKe9D+CXPfW7Bw8PdAv/R8ivX8baXIh6ZRNMta/AcUF/y3GnQgWKStfJlp82tQYbg855yIO9VvcKMOTNosh4WYSx0kI6tFmJxzLw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=Liqf86rz; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c40f::6; helo=seypr02cu001.outbound.protection.outlook.com; envelope-from=jammy_huang@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=DBfePErf;
+	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=Liqf86rz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::62c; helo=mail-ej1-x62c.google.com; envelope-from=kavyamadarsh@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x62c.google.com (mail-ej1-x62c.google.com [IPv6:2a00:1450:4864:20::62c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:c40f::6; helo=seypr02cu001.outbound.protection.outlook.com; envelope-from=jammy_huang@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from SEYPR02CU001.outbound.protection.outlook.com (mail-koreacentralazlp170130006.outbound.protection.outlook.com [IPv6:2a01:111:f403:c40f::6])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jCqpF4F5Qz2xM9
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 26 Oct 2026 21:37:56 +1100 (AEDT)
-Received: by mail-ej1-x62c.google.com with SMTP id a640c23a62f3a-c4203bbb1e9so389955266b.3
-        for <linux-aspeed@lists.ozlabs.org>; Mon, 26 Oct 2026 03:37:56 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1793011071; cv=none;
-        d=google.com; s=arc-20260327;
-        b=acutNzxeHvZSVhoCPSRh2IJaoCpXFftBQiE+8U9ihHjUvZVi1IZV355a96fZEynCcn
-         /fa1TQ6TlDspqR6VssivXlAx8am9Kjy6Hb6CesgY24a6bEh47uikzq0IMK2Nzwz1vHc9
-         IWuQPMDOOPKgOl7tRsc+bdaVhjcmIs/Z794/pmwtm8NWJVA+h7i4dXR1lLiYtjRrdp1L
-         wOprmcZJoYaMxCwX6hxkI35KwOw3R6yBDqlx+w9snI1PtZLYuMbzMcQkP6IymxlftyJy
-         XLfn/OAIc8Foh4+Telxc5WRNTi4PybwsNlTxXTrJgXsoJ4mht9siHmR+FUFkXLc1mb7d
-         VZLA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:mime-version:dkim-signature;
-        bh=nyoRHdpnLelYoEsc3Y/xoVZUSJAqYxJf2UwQ17UQ4oM=;
-        fh=NXhTl1i4bUqWtU9ZYEwdUALr95Z3c7b1eKTXSJemeCg=;
-        b=fQz78CsPmdx8Pxnuf+OVmOUtEOW4HLFi4AP3IzhTOiwNhd4XsqL3qK42GXtBppVmvX
-         avgVjPNI9u4k8/j5u0EZWdccAoEWROs5DKW8ABzTHCSESSHl8pujPVSv0y6h0jbgym6J
-         R4nKBI50H/TuSoJyKwrmCvKXoyZQYsWDcUc488nNfbI6ZoguuyHvEKp1PzEsRb6QK01v
-         0WbuKJ3LVx0Lih+dJKZOVUmV8X9itrOYAmvWq3gYEIalwGhZNV+fV8+Q6lqlh2gSowax
-         NhGm5cx4orFm/zG6yZhfGqOy6y3QLvDTUOxGHopBEdqsAB9zX6qixqYBW+aDuvBWLqAE
-         pHiA==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1793011071; x=1793615871; darn=lists.ozlabs.org;
-        h=content-type:cc:to:subject:message-id:date:from:mime-version:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=nyoRHdpnLelYoEsc3Y/xoVZUSJAqYxJf2UwQ17UQ4oM=;
-        b=DBfePErfa7NW2RtazIkr1eb1meuxPCXi3HHBbU+uHshDRO+Bg18GoiJdMJGTAAzBST
-         v/TW7kX90JoaPGqAzkXaQgAQHX9OQ3AVafSL8W26gguHVEklKFsf4fnryYAwDETI5DlI
-         /D7mBBYy+q7udFwAtWg5QoXBIGon8nBAtx5sMXhJkhij64f9L8jNkAKTqr6cepwu2js2
-         NYQgwqjUh2ASBiSa8aAGdRhHoJdmJ9yfBW1o1chghmo2dHF0GqUBlZWQbbPxvOq+WeOA
-         lSfZ3BPetQWGcbAplbIlaDAnolhXDNYuKg/CbR4WDOixJrMdhNz/M/o4yaCEE305oKKJ
-         2TQQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793011071; x=1793615871;
-        h=content-type:cc:to:subject:message-id:date:from:mime-version
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=nyoRHdpnLelYoEsc3Y/xoVZUSJAqYxJf2UwQ17UQ4oM=;
-        b=Jrw1Oo6BRymA8y52tSNZhNBsNV4Z6LIUy1gYGlKH9BwBTkzuWN279kFTcq2ZJj19Se
-         EtlK89SL/RxqT8UZa5sRenXAsa+25pQJXZrwdHSJqLjNX8tmZcdsi+hxmopup49+ww+8
-         8dP/IFE+zwlwQaxOb3XrgkPh+lQjPikYRe3RJfLnK7f3KaS0TUK5kLp5K6SDnyDVz1Tl
-         3lj6Vu+9Ck1e70X9UTDCUKnKmLluVunhWVD7zMGIGfV8pNk7LihkOgOBNMLtrAtPRRcP
-         6Ec7FQdJaP+1rnytLOXqhgL33+FNAbMsfgDASGL0qXU+++bVWxc0p0HJ8ze1x/RstcFB
-         twTw==
-X-Gm-Message-State: AFq9FYKxZNFId/LOhzpMm01neMNaF8yiuKwdiW3YHVw8iGPM5fJcqZFA
-	YBZsuffTTw/5+Nn+qyb/MkmV30W7iWKK05wj3J0/OwAnCRM25XRq30dqFhUGwPwXhwKgsZlkW+R
-	z5RszRselZWpdSUJt/E0BhXm0nW4SXyk=
-X-Gm-Gg: AYBFou1wKuI2IiF2hkD91LBBy/HM9ZhuZCLaNKlI1rl0ZSAcSulnux16OTYf5Jp/ke5
-	KYX+qx38BYksZb6J6x9dV45ZN7QrmGVif2iMxz8TFW5OrLoIp9o0c/YGkyTkuf7Qp3sUhU5PYCd
-	65CQlcA5R3GciJX7ciZqvT9IupuNexWUccF4B02IpIoeAUx7QoistDaEHrCWR/G7UYs/DkiQcIq
-	iYwzrhPipynaAPDCykg1NGWYaquEkOWa9KCH5/dg+mLibnOIJ5ifmher3fqV7sPmdeMIRHbvsfs
-	3Etd0AKg9HTSFXptkRnuliha9dXJ6UQRLFG5L9dVYXp7/PywEG6UUOnG7rRk9HWlbQVYPhzt1pU
-	o7srWGMFyM+B36xMEHDfybeASwxVyLXySPF/N
-X-Received: by 2002:a17:906:9f8a:b0:c40:560a:462 with SMTP id
- a640c23a62f3a-c46bde78972mr786509366b.32.1793011071150; Mon, 26 Oct 2026
- 03:37:51 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jDCLk4gGbz2xH7;
+	Tue, 27 Oct 2026 12:18:53 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=rFVG07y2kYn2R567znWuKHYtVnk5sOOX1Bwt+vmIppQ5QEDdSHm4n019szyfyfoAUFYsH6NW38LIK2Wl04FkJxPNiUqZocGIVpHOeC6QZEwbHugN3oXvYqC8bMJxu5hLy2X3TxObFitGzHsQcxNgLynyB9q86CsZ649+N4rEuF44IEbx+0524V22Jk1Vjv/QiBzRtfZJAMXpsNdrWN2oCOsEC0Q4CaDn4JvRemq7kCKWvStvtjvBPr4E+V1Yvzy6oCUTxrtL4+8DuZE7FlPrwrcU5JeNOgPupqXVOmsxAtsETAdKi9OYCr4frXlLYXeI+3e4GgCuln0mNH2es7VW7g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=46RyXzphrtiMJVv/JdvEnsr8L3f+Kw5Rh+2EnVJkTGE=;
+ b=nvNfINLRRVSSJ/NUow+XgmJrtiIhD16UnaitR0Gm1Wsx4748UQr8eeZO55fbziTkfQRDmnHGyvgHwnn9A7Ymc8hO75f8V239lbXB50uRWQhgiOkuhlF3CWiZokJqg+tZrw4s4VZCMSYNqp5XLPqtWmJwzFG8YPvUtj2DLl0gCH8P6q6Ho2AUKinhxMk6kkb1pTZR2VawOIvG7/fy9C358FGw86btg9eqfWtRugsN9afKr8ALPcEig7bgLOs0Gs4PC1Ajgq+ZMoZwgOg5EoGu8isy9PX61f+8JubWmIMrW2B0G7mw1sM0iAQLnmGbo381D7TPsx6n2y6IOoYuUZVBIA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
+ header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=46RyXzphrtiMJVv/JdvEnsr8L3f+Kw5Rh+2EnVJkTGE=;
+ b=Liqf86rznAcZLTj+TRteaiKaM4o9OYhHcaKhQ9Sfy2izS5/A1BiuCMAnynMoVMeiLmze9TXWsuI92kzIPqss5eEI/ltow/IZDTeBlN8b5skN0bHE+430cSLBUCjI90zPFsDPce0fxWznbm7nHtUwAOBkP+AZEE6ga/QRiRslgGT8f1mmItqJM7PjAhMI74WjFYNI+KOs+2Qk81Vn7vP0BnmdvBrGfEZdtKKhqw9Scl7LbOxJScxy8te7H4d1eaC2fZ8eeajDdrLX3Je3yPXW4hlx5rmSG2Gi+SF3iFnXulF0scg3sA456gUabEDv2a5HX/CWEC9RdPdOR8twopxlxw==
+Received: from KL1PR06MB6942.apcprd06.prod.outlook.com (2603:1096:820:129::9)
+ by TYNPR06MB8958.apcprd06.prod.outlook.com (2603:1096:405:3c2::17) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.569.7; Tue, 27 Oct
+ 2026 01:18:24 +0000
+Received: from KL1PR06MB6942.apcprd06.prod.outlook.com
+ ([fe80::5058:b315:12b6:d44f]) by KL1PR06MB6942.apcprd06.prod.outlook.com
+ ([fe80::5058:b315:12b6:d44f%6]) with mapi id 15.21.0569.006; Tue, 27 Oct 2026
+ 01:18:24 +0000
+From: Jammy Huang <jammy_huang@aspeedtech.com>
+To: Myeonghun Pak <mhun512@gmail.com>, "eajames@linux.ibm.com"
+	<eajames@linux.ibm.com>, "mchehab@kernel.org" <mchehab@kernel.org>,
+	"joel@jms.id.au" <joel@jms.id.au>, "andrew@codeconstruct.com.au"
+	<andrew@codeconstruct.com.au>
+CC: Ryan Chen <ryan_chen@aspeedtech.com>, Billy Tsai
+	<billy_tsai@aspeedtech.com>, "linux-media@vger.kernel.org"
+	<linux-media@vger.kernel.org>, "openbmc@lists.ozlabs.org"
+	<openbmc@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
+	<linux-aspeed@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH] media: aspeed: acquire IRQ after reset and clock
+ resources
+Thread-Topic: [PATCH] media: aspeed: acquire IRQ after reset and clock
+ resources
+Thread-Index: AQHdXQyRS1tkx3VxgEqGzyuPc3PKjrcQokkA
+Date: Tue, 27 Oct 2026 01:18:24 +0000
+Message-ID:
+ <KL1PR06MB694295F7F33B8FEDA284C65DF1602@KL1PR06MB6942.apcprd06.prod.outlook.com>
+References: <gm-top10-20261015191529-g65-295aa0ac5211@mhun512.gmail.com>
+In-Reply-To: <gm-top10-20261015191529-g65-295aa0ac5211@mhun512.gmail.com>
+Accept-Language: zh-TW, en-US
+Content-Language: zh-TW
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=aspeedtech.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: KL1PR06MB6942:EE_|TYNPR06MB8958:EE_
+x-ms-office365-filtering-correlation-id: b0548828-f459-45c4-7f9a-08df33c8327c
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|23010399003|7416014|366016|1800799024|376014|261026121527099003|38070700021|5023799004|56012099006|261021121427099003|261022105027099003|261021123027099003|261009223027099003|10067099003|18002099003|22082099003|6133799003|261026140227099003;
+x-microsoft-antispam-message-info:
+ t5fl7G2MwyeY+K+5qiHuu/lBnpO9+8UMpg96OysSEt1qsptaknr7nZ8d8IE0B9bqfFPOXtf8LzVKIeQmiuqS0VeFCQTcFazKI64oDZU/Cm9ibSUSRNBw8ndeGT6KafnrIaEQbXBgtYID5uKp8HqGT89epI/3hR9A4IZfItyoy2RoBFyJgz4Yz+pAvib/VP0sRH5bnBKZSnw/j0H6o90YP/osuOdaTHIPOTkQtDs5H0qYnwqKfTc5NTf2S8ZVnJp+DZhHMTQWTg3n3yfNDxQ0kt3vgObJw6JFqrlAncRZf40CtuOJz/cMaVzGBymxVx3v5aGuMK37rKKU59UbKImTbxpwzNA/VYvrQY69s5PIlUVmktrviIUyPZMiDF+FnPPC+rLZFR7Z1w6movwygSj/s//92jsEvg871Zr9Cd1Ezo6Hk24+LEjUTyYw5Vpl/eAiX6W2/lIM742Sir4R1afCIwZkSxp8a53tSlkvmL8Zu9IKuk+O8cj8ZtdkeG4LO4/ImxnTxT6rpv8H41OEt/RjjG4a+zQCIFU/lD0XyKfAClbc6xlU6vSzSNvSvEEQt9qqIiMkpy20Ljk8GPkzbyDaHRC38Js6EP8IO7Oy1AuYCDQqp5PIntk3iYBPKme8WxVzPgJLuigAKnEtk8noIafdU8V/iHcrFUylDZIx/Yftyki+G3+2Fs/tOicuauVbLa46Oh7hGpH8UoMCtJ18C4G+iizQNtcAiNe6yKD9b53glnM=
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:zh-tw;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:KL1PR06MB6942.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(7416014)(366016)(1800799024)(376014)(261026121527099003)(38070700021)(5023799004)(56012099006)(261021121427099003)(261022105027099003)(261021123027099003)(261009223027099003)(10067099003)(18002099003)(22082099003)(6133799003)(261026140227099003);DIR:OUT;SFP:1102;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?utf-8?B?a1pTNVg2ZlI5TTRZR1ZyMzBBRXlybG8wU2dZNXB0MVhzb25xb29CdmNCUEZ0?=
+ =?utf-8?B?TGk0MHlweU9MMEg3YzV4UHgrTjN4eVNFVmpXdlBGdk5PanN0ZGdrL0lZYmFK?=
+ =?utf-8?B?ajVNb0xRekhZYThNVHFIdE13REFRaHZHVXk0NExER3l1cHFHSjFua09lNWFq?=
+ =?utf-8?B?cUpVeStFNi9zSXdZeDFJNGFFL3BLd0RQZWFSYTRjVHJDWjFxd3NWSm9qSmwx?=
+ =?utf-8?B?Mm1sMHJkU2xNcDcxN0dmSndCMDZhd2tKb2w2SzA3d2RsL2dWODF3bVlZNTNC?=
+ =?utf-8?B?bDVxaGRVbmxoSzFOQnBscXFiMFJFUDE1cGdzNm5EMG5pb29HY1dIck5qaVIw?=
+ =?utf-8?B?SmFpL2tzMWJiS3VRNHA3elBSZlVnbXFONmFuRkJieDFpREtCTnVUZGFHZzRZ?=
+ =?utf-8?B?UnptOUFDczdlcFZpSVc2T2V4ek9WUWFjRGJXeWJodnVzSTYzd3NrbTdBOVdT?=
+ =?utf-8?B?UFpnNStwMUZBT2tyVzhhUk1nQm5oRG0rOXdhSkwrZnlXMmhJYUpEOTBldDI3?=
+ =?utf-8?B?MldOazJobjc0aFM1RkpRT3FGSEdoRlFEUzRuZzlQWjlQaFd4cGpZbkxvMXhL?=
+ =?utf-8?B?REk4VWZwZC9ucG9ZS3NtOVRpZmp4UEtvMDFpNFd6NFh0aEY3QjdYUzNnVTY3?=
+ =?utf-8?B?Ry9FMkl1bTBsQnpSRWJuWUl2UkU5MnNGalovbDJZRk1ONHRzZDN0a1JwUkhM?=
+ =?utf-8?B?Q1YzVVpoMWZOWXlUaklVbS9xOHFlU2ttQ1RvZkJrZDJuS3pPa1V1RWh5Z3pv?=
+ =?utf-8?B?anl3bEdpWEtrUWtVNjJwOWVOS0dwYjRBcmpMdWxScjZXbG9WcHpWa3BIeTB2?=
+ =?utf-8?B?Um1nTGsyTENhZWdSdm94b1hHVTAwNU96U0U5NGwwUDNHZ3NZWjBaYzE5OHZC?=
+ =?utf-8?B?WGpEdkZhaFd2N2JFWGFqK1cyd0RkSUp2ZVEyN0wrckcyYjljSURpZTdTQk1W?=
+ =?utf-8?B?SFd6VFFqdnlicmlSNTFuN2kwNHFRWGsvdTBJTEJZb3JnU0FuRXNHYnpkQ1Iv?=
+ =?utf-8?B?TGJ2dVpEOUwvQ1c1SmJHaUtUbHlqQ1k2eWg4NXJMNEhaNjNxMkx3UHJ3d0do?=
+ =?utf-8?B?N3hhREpwQU5MNlB0M3RVbkwrWmxMOVNZU1p2bmRrTGpOUjFncmtmL3cweHB3?=
+ =?utf-8?B?NUh1WW56N3NYVFk2bkcrdDhmSEp3ckcyRDhxS2RuWkVWV1Q1RkhQZE1kelFX?=
+ =?utf-8?B?UEYzb2ZmT3duenJ6WGEwTUZNSGNLM0srTjlpQVVoR0xFMGJxVmVqZDlYcTRB?=
+ =?utf-8?B?MjNHVTF2MkMzdzJuTFZ5QlF3L1AxT0I2NFRLa3o1WWhqeS9RYjNXaXJoM3Iz?=
+ =?utf-8?B?NXd1TDUzQWxDM3RJOXMxbi94Sm8wOXhpUTRPa2xvRDNYZTJ2N2x2MDB2N3Vl?=
+ =?utf-8?B?dmtKeDFsZGpOcUs1UTdPSzg5WUFjMzUxbmZUVmRFMS9zakxoeWdkQXBzRHRQ?=
+ =?utf-8?B?anZJWldJbzUrdzFncEZPYmhHcmR0QXJFRmZpaVhsNmVZT3c0TDg1WWtvaWs2?=
+ =?utf-8?B?Ym5XeWNLRWwyb2RXYXpUU1ZndFB2VVJialhRNUh1Z2hJanVxeE1ZS3UxTVNv?=
+ =?utf-8?B?NXNoMlROY1NNaVZub3lVMmZWbVpSMWdVZytYQm5wTUtuTGM4eE9jRE03Y3dD?=
+ =?utf-8?B?aThvOVhyWUtuT0E1cFZIajkwRHZmOHVHaTNNemZJb2N3bzA5OHpDWWQrQ0Y0?=
+ =?utf-8?B?aUNlVk5lRUYzZ0M5VDlJUDZMc2FYNmNpbjcxR2w3WkpEVkpsdjFjaVk2ak93?=
+ =?utf-8?B?R3U1RDgzVi8yNlhLbWlZYnBxQW0yQmN5ZXIvWWN1bFZheDA1K09RVjBnenZO?=
+ =?utf-8?B?T1U4cTAreXFDVzVJWG9yU1NxU3V3dURxaktwZWYrbDlhSnVRK1p2d096ZEVI?=
+ =?utf-8?B?T1pLdWRjVnVHdDliRERYWmxiQ3NvTnkxVWY2VGpiVEIvTWdya2E0eHZndFRn?=
+ =?utf-8?B?d2I2YXhwTDZWNlV1a0NESWFoZHg0QTd1WHYvdlAxQWhiR3ZZTDFuc2dGY2FZ?=
+ =?utf-8?B?TnpOSU9VQ3JwR2xEZXJNN21tZjZaWTJxUTVjdDRIT0Z5ZFVwMTNZUDBXR0Vl?=
+ =?utf-8?B?WDc2ZWxNdTg2WDVFZW40K1Rpb2xaTGFpSlB6NXMrTVJKSTVvL0NSNUlydk15?=
+ =?utf-8?B?NnRVSXBUWUQ0b1VOMlBTdUVLZXpqSEk2SkVZLzByS3JUcE9XN3hSaGFtQnd3?=
+ =?utf-8?B?eXdHZS8vVXFMbmJhZzZJM1lTM1JHRlZqQmlJOHVZckNyNE1PQU9hK2V2M01V?=
+ =?utf-8?B?eHNra1JRaUI1SllDcGhrbGtiUkptbmhXMjNnK3Qydi9hb2VRUlN6UVJBYUVk?=
+ =?utf-8?B?L2k5QW4zVGxwWHNTZ0ltYW9FaHIzWWlia2kvcXlMQUVGQTZOdGRQQT09?=
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -98,195 +148,89 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-From: KAVYA M M <kavyamadarsh@gmail.com>
-Date: Mon, 26 Oct 2026 16:07:19 +0530
-X-Gm-Features: AclHuK8LqQPbQnLPaECa0WbeYBxRUpNvgzNAC0qcUR0XS0yIEMNnKQBPgXr-ddM
-Message-ID: <CAD_a9macSzuBsmmoLu2Cu1doLADvcpASFi-6ADnOvmMdgDEfHA@mail.gmail.com>
-Subject: [OpenBMC] Guidance on Getting Started with OpenBMC and Choosing a
- Development Board
-To: openbmc@lists.ozlabs.org
-Cc: linux-aspeed@lists.ozlabs.org, Prasanth <prasanth.padarthi10@gmail.com>, 
-	andrew@codeconstruct.com.au, changhuang.liang@starfivetech.com, 
-	Shuah Khan <skhan@linuxfoundation.org>, Jani Nikula <jani.nikula@intel.com>, 
-	Vitaly Lubart <lubvital@gmail.com>, Hanjun Guo <guohanjun@huawei.com>, 
-	Andrew Morton <akpm@linux-foundation.org>, Alexander Usyskin <alexander.usyskin@intel.com>, 
-	Jason Gunthorpe <jgg@ziepe.ca>, Breno Leitao <leitao@debian.org>, Philipp Zabel <p.zabel@pengutronix.de>, 
-	James Morse <james.morse@arm.com>, Paolo Abeni <pabeni@redhat.com>, 
-	Stephen Hemminger <stephen@networkplumber.org>, Dave Penkler <dpenkler@gmail.com>, 
-	Jakub Kicinski <kuba@kernel.org>, Jonathan Cameron <jic23@kernel.org>, Dan Williams <djbw@kernel.org>, 
-	Mukesh Rathor <mrathor@linux.microsoft.com>, Vladimir Oltean <vladimir.oltean@nxp.com>, 
-	Alexandra Winter <wintera@linux.ibm.com>, Julian Braha <julianbraha@gmail.com>, 
-	Karthikeyan KS <karthiproffesional@gmail.com>, Pengpeng Hou <pengpeng@iscas.ac.cn>, 
-	linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Jonathan Corbet <corbet@lwn.net>, Joel Stanley <joel@jms.id.au>, 
-	Chia-Wei Wang <chiawei_wang@aspeedtech.com>, Oskar Senft <osk@google.com>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Content-Type: multipart/alternative; boundary="000000000000f96f6b065ebbeb12"
-X-Spam-Status: No, score=0.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,MAILING_LIST_MULTI,
-	SPF_HELO_PASS,SPF_PASS autolearn=no autolearn_force=no version=4.0.1
+X-Exchange-RoutingPolicyChecked:
+	x+lZ9VMWc7xKEfzTDsSLBzT4uKoU778eP9SFMYbeGbYGUnyuOD2Ey3FotbQXcsbne/sdKQKmiJOa7I/JpyRcLYO0CgC3WSPZFLIjbhgI5FJ4iL43dq18jBAFmF6+cmlburmqKcAJmjzsHJurUTPvwvr9nwJ0ru3x00RzTp+jmQDOlIEjs7NjzVKZwtiXEgydphOGcUpiJFSK9BpMWnKavqEGMvJKEWLtGLCPnU+6rCwpTj37vHxlBXbby4NdKIcz0m/v7Kfs2nFmh/5v3imaFKA9HY5Ly58AspSV3DfXd7dG7639Cl+8noraa82GwIJiqkFXWkAF+LIQmNUhVSMuyQ==
+X-OriginatorOrg: aspeedtech.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: KL1PR06MB6942.apcprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: b0548828-f459-45c4-7f9a-08df33c8327c
+X-MS-Exchange-CrossTenant-originalarrivaltime: 27 Oct 2026 01:18:24.3235
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: vnFKVkurR5I9iHN/KW++BkBvPofFlwuu61MDiMF7cztaDyQQcZ1NI8JK4Agnwy7GI+pRsXFyckUIZbE7pAC0UAlUZE1ZxHUT6RFVmcs6zFI=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: TYNPR06MB8958
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
---000000000000f96f6b065ebbeb12
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-Hello OpenBMC Team,
-
-I am new to OpenBMC development and would appreciate your guidance on
-getting started with developing and validating an OpenBMC image for a
-server platform.
-
-*I have a few general questions:*
-
-1. What hardware documentation is normally required to develop a reliable
-OpenBMC image for a new motherboard? Are the user manual and BMC reference
-schematic sufficient, or are the complete motherboard schematic and
-board-specific signal mappings essential?
-2. If the original BMC firmware is available only as a binary and the
-motherboard schematic is unavailable, what is the recommended approach for
-identifying the hardware configuration and developing the initial image?
-3. Which existing OpenBMC reference platforms are suitable for beginners
-who want to learn the Yocto/BitBake build system, device trees, machine
-configuration, sensor integration, and required services?
-4. Which hardware platforms provide good support for testing sensor
-monitoring, fan PWM/tachometer control, Redfish, GPIO, host power control,
-and power sequencing?
-5. Which functions can be tested in QEMU, and what hardware documentation
-and recovery facilities are necessary before proceeding with physical-board
-testing?
-
-*Request for Guidance on Restricted BMC SSH Access*
-
-I would also like to understand how to access the underlying Linux shell on
-a BMC when SSH access is restricted by the vendor firmware.
-
-For example, some BMCs provide SSH access but expose only a restricted
-interface, such as SMASH-CLP, instead of a standard Linux shell. In such
-cases, what is the recommended and authorized method for accessing the
-underlying Linux environment for debugging, inspecting system
-configuration, and understanding the running services?
-
-Are there standard OpenBMC debugging methods or configuration options for
-enabling SSH shell access during development? If access is restricted by
-the vendor firmware, what documentation or permissions would be required to
-investigate this further?
-*My current hardware*
-
-I currently have access to a Gigabyte MZ32-AR0-00 motherboard with an
-ASPEED AST2500 BMC.
-
-I am considering using this board for my OpenBMC development. However, I do
-not have access to the complete motherboard schematic, and some
-board-specific hardware mappings are difficult to confirm from the
-available documentation and original vendor firmware.
-
-I would appreciate your advice on whether this is a suitable platform for
-learning and developing OpenBMC, or whether a different, better-documented
-development platform would be a more practical starting point.
-
-*Request for development-board recommendations*
-
-My budget for purchasing a BMC development board is approximately
-=E2=82=B95,000=E2=80=93=E2=82=B910,000.
-
-Could you recommend a specific development board or server motherboard that
-is affordable, well documented, and preferably has an existing upstream
-OpenBMC machine configuration?
-
-Ideally, I would like a platform that supports learning and testing:
-
-- OpenBMC image building using Yocto/BitBake.
-- Hardware sensor monitoring and integration.
-- Fan PWM/tachometer control and cooling failsafe behavior.
-- Redfish and other BMC management interfaces.
-- GPIO, host power control, and power sequencing.
-- QEMU-based software testing followed by physical-board validation.
-
-My preference is for a platform with an existing reference implementation,
-accessible hardware documentation, and a reliable firmware recovery method.
-Used development boards or server motherboards would also be suitable if
-they are available within my budget.
-
-My goal is to choose the most practical platform, build and validate an
-initial OpenBMC image, and gradually learn the hardware integration process
-before attempting to flash a physical BMC.
-
-I would be grateful for any recommendations on suitable hardware, existing
-reference platforms, documentation, or practical guidance from developers
-experienced in OpenBMC platform development.
-
-Thank you for your time and support.
-
-Best regards,
-Kavya M M
-
---000000000000f96f6b065ebbeb12
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr"><div dir=3D"ltr">Hello OpenBMC Team,<br><br>I am new to Op=
-enBMC development and would appreciate your guidance on getting started wit=
-h developing and validating an OpenBMC image for a server platform.<br><br>=
-<b>I have a few general questions:</b><br><br>1. What hardware documentatio=
-n is normally required to develop a reliable OpenBMC image for a new mother=
-board? Are the user manual and BMC reference schematic sufficient, or are t=
-he complete motherboard schematic and board-specific signal mappings essent=
-ial?<br>2. If the original BMC firmware is available only as a binary and t=
-he motherboard schematic is unavailable, what is the recommended approach f=
-or identifying the hardware configuration and developing the initial image?=
-<br>3. Which existing OpenBMC reference platforms are suitable for beginner=
-s who want to learn the Yocto/BitBake build system, device trees, machine c=
-onfiguration, sensor integration, and required services?<br>4. Which hardwa=
-re platforms provide good support for testing sensor monitoring, fan PWM/ta=
-chometer control, Redfish, GPIO, host power control, and power sequencing?<=
-br>5. Which functions can be tested in QEMU, and what hardware documentatio=
-n and recovery facilities are necessary before proceeding with physical-boa=
-rd testing?<br><p><strong>Request for Guidance on Restricted BMC SSH Access=
-</strong></p><p>I would also like to understand how to access the underlyin=
-g Linux shell on a BMC when SSH access is restricted by the vendor firmware=
-.</p><p>For example, some BMCs provide SSH access but expose only a restric=
-ted interface, such as SMASH-CLP, instead of a standard Linux shell. In suc=
-h cases, what is the recommended and authorized method for accessing the un=
-derlying Linux environment for debugging, inspecting system configuration, =
-and understanding the running services?</p><p>Are there standard OpenBMC de=
-bugging methods or configuration options for enabling SSH shell access duri=
-ng development? If access is restricted by the vendor firmware, what docume=
-ntation or permissions would be required to investigate this further?</p><b=
->My current hardware</b><br><br>I currently have access to a Gigabyte MZ32-=
-AR0-00 motherboard with an ASPEED AST2500 BMC.<br><br>I am considering usin=
-g this board for my OpenBMC development. However, I do not have access to t=
-he complete motherboard schematic, and some board-specific hardware mapping=
-s are difficult to confirm from the available documentation and original ve=
-ndor firmware.<br><br>I would appreciate your advice on whether this is a s=
-uitable platform for learning and developing OpenBMC, or whether a differen=
-t, better-documented development platform would be a more practical startin=
-g point.<br><br><b>Request for development-board recommendations</b><br><br=
->My budget for purchasing a BMC development board is approximately =E2=82=
-=B95,000=E2=80=93=E2=82=B910,000.<br><br>Could you recommend a specific dev=
-elopment board or server motherboard that is affordable, well documented, a=
-nd preferably has an existing upstream OpenBMC machine configuration?<br><b=
-r>Ideally, I would like a platform that supports learning and testing:<br><=
-br>- OpenBMC image building using Yocto/BitBake.<br>- Hardware sensor monit=
-oring and integration.<br>- Fan PWM/tachometer control and cooling failsafe=
- behavior.<br>- Redfish and other BMC management interfaces.<br>- GPIO, hos=
-t power control, and power sequencing.<br>- QEMU-based software testing fol=
-lowed by physical-board validation.<br><br>My preference is for a platform =
-with an existing reference implementation, accessible hardware documentatio=
-n, and a reliable firmware recovery method. Used development boards or serv=
-er motherboards would also be suitable if they are available within my budg=
-et.<br><br>My goal is to choose the most practical platform, build and vali=
-date an initial OpenBMC image, and gradually learn the hardware integration=
- process before attempting to flash a physical BMC.<br><br>I would be grate=
-ful for any recommendations on suitable hardware, existing reference platfo=
-rms, documentation, or practical guidance from developers experienced in Op=
-enBMC platform development.<br><br>Thank you for your time and support.<br>=
-<br>Best regards,<br>Kavya M M</div>
-</div>
-
---000000000000f96f6b065ebbeb12--
+SGkgTXllb25naHVuLA0KDQpUaGFua3MgZm9yIHRoZSBwYXRjaC4gQSBmZXcgY29tbWVudHM6DQox
+LiBUaGlzIGRvZXNu4oCZdCBhcHBseSB0byBjdXJyZW50IG1haW5saW5lLiBhc3BlZWRfdmlkZW9f
+aW5pdCgpIG5vdyB1c2VzIA0KZGV2bV9vZl9yZXNlcnZlZF9tZW1fZGV2aWNlX2luaXQoKSBhbmQg
+ZXJyX3JlbGVhc2VfcmVzZXJ2ZWRfbWVtIG5vIGxvbmdlciBleGlzdHM7IA0KcGxlYXNlIHJlYmFz
+ZSBhbmQgZmFsbCB0aHJvdWdoIHRvIGVycl91bnByZXBhcmVfdmNsay4gVGhlIHJlc2VydmVkLW1l
+bW9yeSByb2xsYmFjayANCm1lbnRpb24gaW4gdGhlIGNvbW1pdCBtZXNzYWdlIHNob3VsZCBnbyBh
+cyB3ZWxsLg0KDQoyLiBUaGUgYW5hbHlzaXMgaXMgY29ycmVjdCwgYnV0IEkgZG9u4oCZdCB0aGlu
+ayB0aGUgd2luZG93IGlzIHJlYWNoYWJsZSBpbiBwcmFjdGljZTogDQpUaGUgaGFuZGxlciBtYXNr
+cyB0aGUgc3RhdHVzIHdpdGggVkVfSU5URVJSVVBUX0NUUkwuIGFzcGVlZF92aWRlb19yZW1vdmUo
+KSDihpINCiBhc3BlZWRfdmlkZW9fb2ZmKCkgemVyb2VzIHRoZSBjb250cm9sIHJlZ2lzdGVyIGFu
+ZCBjbGVhcnMgdGhlIHN0YXR1cyBiZWZvcmUgZGV2cmVzIHJ1bnMuIA0KT24gYSBwcm9iZSBmYWls
+dXJlIHRoZSByZWdpc3RlciBpcyBzdGlsbCBhdCBpdHMgcmVzZXQgZGVmYXVsdCBvZiAwLg0KDQoy
+LiBQbGVhc2UgZHJvcCB0aGUg4oCcb25nb2luZyByZXNlYXJjaOKAnSBzZW50ZW5jZSBmcm9tIHRo
+ZSBjb21taXQgbWVzc2FnZSwgYW5kIG5hbWUgDQp0aGUgYWN0dWFsIHRvb2wgaW4gQXNzaXN0ZWQt
+YnksIG9yIGp1c3QgcmVtb3ZlIGl0Lg0KPiANCj4gVGhlIHRocmVhZGVkIElSUSB1c2VzIHRoZSBy
+ZXNldCBhbmQgY2xvY2sgcmVzb3VyY2VzLCBidXQgaXQgaXMgcmVnaXN0ZXJlZCBiZWZvcmUNCj4g
+dGhvc2UgbWFuYWdlZCBoYW5kbGVzIGFyZSBhY3F1aXJlZC4gUmV2ZXJzZSBkZXZyZXMgY2xlYW51
+cCBjYW4gcmVsZWFzZSB0aGUNCj4gaGFuZGxlcyBiZWZvcmUgdGhlIElSUSBhY3Rpb24gaGFzIGJl
+ZW4gcmVtb3ZlZCBhbmQgam9pbmVkLg0KPiANCj4gT24gYSByZXNvbHV0aW9uLWNoYW5nZSBpbnRl
+cnJ1cHQsIGFzcGVlZF92aWRlb19pcnEoKSBjYWxscw0KPiBhc3BlZWRfdmlkZW9faXJxX3Jlc19j
+aGFuZ2UoKSwgd2hpY2ggaW52b2tlcyBhc3BlZWRfdmlkZW9fcmVzZXQoKSBhbmQNCj4gYWNjZXNz
+ZXMgdmlkZW8tPnJlc2V0IHRocm91Z2ggcmVzZXRfY29udHJvbF9hc3NlcnQoKSBhbmQNCj4gcmVz
+ZXRfY29udHJvbF9kZWFzc2VydCgpLg0KPiANCj4gUmVxdWVzdCB0aGUgSVJRIGFmdGVyIHJlc2V0
+LCBjbG9jayBhbmQgSlBFRy10YWJsZSBpbml0aWFsaXphdGlvbiBzbyBtYW5hZ2VkIElSUQ0KPiBy
+ZWxlYXNlIHByZWNlZGVzIHJlbGVhc2Ugb2YgdGhvc2UgaGFuZGxlcy4gQWRkIHJvbGxiYWNrIGZv
+ciB0aGUgSlBFRyBhbGxvY2F0aW9uLA0KPiByZXNlcnZlZC1tZW1vcnkgYXNzb2NpYXRpb24gYW5k
+IHByZXBhcmVkIGNsb2NrcyBpZiB0aGUgbGF0ZXIgSVJRIHJlcXVlc3QgZmFpbHMuDQo+IA0KPiBU
+aGlzIGlzc3VlIHdhcyBpZGVudGlmaWVkIGFzIHBhcnQgb2Ygb3VyIG9uZ29pbmcgcmVzZWFyY2gg
+d2hpbGUgcmV2aWV3aW5nDQo+IGtlcm5lbCBjb2RlLg0KPiANCj4gRml4ZXM6IGQyYjQzODdmM2Jk
+ZiAoIm1lZGlhOiBwbGF0Zm9ybTogQWRkIEFzcGVlZCBWaWRlbyBFbmdpbmUgZHJpdmVyIikNCj4g
+QXNzaXN0ZWQtYnk6IExMTQ0KPiBDby1kZXZlbG9wZWQtYnk6IElqYWUgS2ltIDxhZTg3ODAwMEBn
+bWFpbC5jb20+DQo+IFNpZ25lZC1vZmYtYnk6IElqYWUgS2ltIDxhZTg3ODAwMEBnbWFpbC5jb20+
+DQo+IFNpZ25lZC1vZmYtYnk6IE15ZW9uZ2h1biBQYWsgPG1odW41MTJAZ21haWwuY29tPg0KPiAt
+LS0NCj4gVGhpcyBmaXhlcyBtYW5hZ2VkIGhhbmRsZSBsaWZldGltZSBvbmx5Lg0KPiANCj4gQ29t
+cGlsZS10ZXN0ZWQgd2l0aCBDbGFuZyAyMi4xLjIsIFc9MS4gTm8gcnVudGltZSBvciBoYXJkd2Fy
+ZSB0ZXN0aW5nLg0KPiANCj4gQmFzZTogMGZjYjA1YjcyMzQ0ZjQwODA2Y2JlODEwZGU4ODcyZjE2
+OThiZjA1Mw0KPiANCj4gIGRyaXZlcnMvbWVkaWEvcGxhdGZvcm0vYXNwZWVkL2FzcGVlZC12aWRl
+by5jIHwgMTkgKysrKysrKysrKystLS0tLS0tLQ0KPiAgMSBmaWxlIGNoYW5nZWQsIDExIGluc2Vy
+dGlvbnMoKyksIDggZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9tZWRp
+YS9wbGF0Zm9ybS9hc3BlZWQvYXNwZWVkLXZpZGVvLmMNCj4gYi9kcml2ZXJzL21lZGlhL3BsYXRm
+b3JtL2FzcGVlZC9hc3BlZWQtdmlkZW8uYw0KPiBpbmRleCBhMjkyMjc1ZjZiN2IuLjIzNDAwMWE5
+M2FkNCAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy9tZWRpYS9wbGF0Zm9ybS9hc3BlZWQvYXNwZWVk
+LXZpZGVvLmMNCj4gKysrIGIvZHJpdmVycy9tZWRpYS9wbGF0Zm9ybS9hc3BlZWQvYXNwZWVkLXZp
+ZGVvLmMNCj4gQEAgLTIyMzIsMTQgKzIyMzIsNiBAQCBzdGF0aWMgaW50IGFzcGVlZF92aWRlb19p
+bml0KHN0cnVjdCBhc3BlZWRfdmlkZW8NCj4gKnZpZGVvKQ0KPiAgCQlyZXR1cm4gLUVOT0RFVjsN
+Cj4gIAl9DQo+IA0KPiAtCXJjID0gZGV2bV9yZXF1ZXN0X3RocmVhZGVkX2lycShkZXYsIGlycSwg
+TlVMTCwgYXNwZWVkX3ZpZGVvX2lycSwNCj4gLQkJCQkgICAgICAgSVJRRl9PTkVTSE9ULCBERVZJ
+Q0VfTkFNRSwgdmlkZW8pOw0KPiAtCWlmIChyYyA8IDApIHsNCj4gLQkJZGV2X2VycihkZXYsICJV
+bmFibGUgdG8gcmVxdWVzdCBJUlEgJWRcbiIsIGlycSk7DQo+IC0JCXJldHVybiByYzsNCj4gLQl9
+DQo+IC0JZGV2X2luZm8odmlkZW8tPmRldiwgImlycSAlZFxuIiwgaXJxKTsNCj4gLQ0KPiAgCXZp
+ZGVvLT5yZXNldCA9IGRldm1fcmVzZXRfY29udHJvbF9nZXQoZGV2LCBOVUxMKTsNCj4gIAlpZiAo
+SVNfRVJSKHZpZGVvLT5yZXNldCkpIHsNCj4gIAkJZGV2X2VycihkZXYsICJVbmFibGUgdG8gZ2V0
+IHJlc2V0XG4iKTsgQEAgLTIyODYsOCArMjI3OCwxOSBAQA0KPiBzdGF0aWMgaW50IGFzcGVlZF92
+aWRlb19pbml0KHN0cnVjdCBhc3BlZWRfdmlkZW8gKnZpZGVvKQ0KPiANCj4gIAlhc3BlZWRfdmlk
+ZW9faW5pdF9qcGVnX3RhYmxlKHZpZGVvLT5qcGVnLnZpcnQsIHZpZGVvLT55dXY0MjApOw0KPiAN
+Cj4gKwkvKiBSZWxlYXNlIHRoZSBJUlEgYmVmb3JlIHRoZSByZXNldCBhbmQgY2xvY2sgaGFuZGxl
+cyBvbiBkZXZyZXMgdW53aW5kLg0KPiAqLw0KPiArCXJjID0gZGV2bV9yZXF1ZXN0X3RocmVhZGVk
+X2lycShkZXYsIGlycSwgTlVMTCwgYXNwZWVkX3ZpZGVvX2lycSwNCj4gKwkJCQkgICAgICAgSVJR
+Rl9PTkVTSE9ULCBERVZJQ0VfTkFNRSwgdmlkZW8pOw0KPiArCWlmIChyYyA8IDApIHsNCj4gKwkJ
+ZGV2X2VycihkZXYsICJVbmFibGUgdG8gcmVxdWVzdCBJUlEgJWRcbiIsIGlycSk7DQo+ICsJCWdv
+dG8gZXJyX2ZyZWVfanBlZzsNCj4gKwl9DQo+ICsJZGV2X2luZm8odmlkZW8tPmRldiwgImlycSAl
+ZFxuIiwgaXJxKTsNCj4gKw0KPiAgCXJldHVybiAwOw0KPiANCj4gK2Vycl9mcmVlX2pwZWc6DQo+
+ICsJYXNwZWVkX3ZpZGVvX2ZyZWVfYnVmKHZpZGVvLCAmdmlkZW8tPmpwZWcpOw0KPiAgZXJyX3Jl
+bGVhc2VfcmVzZXJ2ZWRfbWVtOg0KPiAgCW9mX3Jlc2VydmVkX21lbV9kZXZpY2VfcmVsZWFzZShk
+ZXYpOw0KPiAgCWNsa191bnByZXBhcmUodmlkZW8tPnZjbGspOw0KDQo=
 
