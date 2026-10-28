@@ -2,96 +2,96 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 97377606A31A
-	for <linux-aspeed@archiver.kernel.org>; Wed, 28 Oct 2026 09:48:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F26A3606A31D
+	for <linux-aspeed@archiver.kernel.org>; Wed, 28 Oct 2026 09:49:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=a+sTGeHY
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=CgIsa3dJ
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jF2cp2M23z2xlj;
-	Wed, 28 Oct 2026 20:48:58 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::632" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793180938;
-	cv=pass; b=YezA/qUg927ismGxR+mvtf5hri1ae2ABO6qg+bf7bVZ5u3TMUWsBQfbVG7col9NY+LIdoVw/9VteDZGy+g0a7wMcWFStVLxZhVbiPiLhUB8jwf59G5tpwPwIkPVmi2RIXkD2OZ2OYW6/4Z3f317y12OhXMSh/WfzKnA20PDY21nmegeGyi0qFz6N4kU3EYyxVylwK1om6PDYNx6YjYWb78O+xloWvikGb30zB65VOIN2Vbungm0sPLtN8iKKUqIxmUJ6YRyfjzUaTyv57X2EL0q0KNP+FfLqP4G9+EiFIQVRWadVOQ1s7ZjaIEJdKGjYiKyXJ1wdaOZ7G/JO2D4o2A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jF2dj3Q9nz2yDr;
+	Wed, 28 Oct 2026 20:49:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::635" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793180985;
+	cv=pass; b=oi9Osp1ckGQvLd7D6yuSywPQAFjIcC5NGDmvlFq4wUjDEebIFcjNAjIWQAZygXiYCxw4tq9ZZb2XypsT6zAFE3Wt3iK5tpFLKZ9sFhJb9lUv5ryRyfgl7WvNMLsLkUNosAqBFQAb8ESK7gXBl+fGMTeeNXdAvrxg0yGrI0m07gx3hZHPv3CGnWSvOJzvlOXve3EV2unDJv9JcUGBB2U1dXIY88peoM/GovQndbr9FEGC8eAGJftraVwQ17LrO2IYErvTPTdZWqeSc3qPbADxA4k0AFwZTK/1z2PwbTQZgHSQiTZs9o/FWEeXIPFj4lkNcxf/CegFQiCp1GEviJm3mA==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793180938; c=relaxed/relaxed;
-	bh=dcY0Gi4dcvyxZkHDA78yGLoz9GDb1HPFjbtFx6GpqEs=;
+	t=1793180985; c=relaxed/relaxed;
+	bh=OncitmhmKPxQRhu8FlY/GIP5U4Gt08ht3PeyL8T2LDg=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=WVhv/uCzD+xY3xiFbiWOH/46ZxF5k6zvFFQdzDJQqg/E63TZE5rBJ6opFuIMHn72Dm4wCtHAzEor0DYmxk48/aogV6Xqa3jKyTLaLkNVxW7hyI+6HYZ20ud/bvq427rxH5UHr9Ga8ovaz0y+en44H4UJctOwo43iqe3BNhez8bqHCVjZfaHsXXu86BDT8RM7aN5xkR+seWr8bnlMHJfKmDmWjP/RLKjEkjVvGpyzqf8NpcaJVjhbj+UR7OwwjaBK+wgyMHtKkLO5jVhqXM1X+UqWQDPeMAl6v273BmJXRzaXX874PeT9z+3CeXeezVk8D/nlZKDPAxwxgf6ifelerg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=a+sTGeHY; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::632; helo=mail-ej1-x632.google.com; envelope-from=andy.shevchenko@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 To:Cc:Content-Type; b=CWGwf36yiHi61w8m/Gv960bSKFS1EX6g1MOMC61fYZTtafY/FoUVKRQYMwQpfdH5XLFz1mJ+q8puxpCLHNxB01RMerhEN5N+YfBx0VBaX0pv4cPPx/GeHlTpXsaTaHPCnvPlC7J3x64OjMPLqPPINgE/ze2gFEkGUSqhx35A945299iK+Q4yoGWt7Wp5ialeo5xWDJ13NzFVEXDpxjWbbynNpuM1RmrTFVwpJC3dnjrtV4ZTI2AEkKBRHFiwCfY53Vy64k3W+D7kbXJT+Z14C4S2+WE3ZyZ8N+AgC2gmzweiX8mZnY/ksERvBy3EibK/gHeOGE56hszNkj7c05VVtA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=CgIsa3dJ; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::635; helo=mail-ej1-x635.google.com; envelope-from=andy.shevchenko@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=a+sTGeHY;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=CgIsa3dJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::632; helo=mail-ej1-x632.google.com; envelope-from=andy.shevchenko@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x632.google.com (mail-ej1-x632.google.com [IPv6:2a00:1450:4864:20::632])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::635; helo=mail-ej1-x635.google.com; envelope-from=andy.shevchenko@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ej1-x635.google.com (mail-ej1-x635.google.com [IPv6:2a00:1450:4864:20::635])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jF2cn26hBz2xKx
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 28 Oct 2026 20:48:56 +1100 (AEDT)
-Received: by mail-ej1-x632.google.com with SMTP id a640c23a62f3a-c46d41f6af3so102026066b.1
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 28 Oct 2026 02:48:56 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1793180933; cv=none;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jF2dh3Sxdz2xlj
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 28 Oct 2026 20:49:44 +1100 (AEDT)
+Received: by mail-ej1-x635.google.com with SMTP id a640c23a62f3a-c414e5d282eso95504366b.1
+        for <linux-aspeed@lists.ozlabs.org>; Wed, 28 Oct 2026 02:49:44 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1793180981; cv=none;
         d=google.com; s=arc-20260327;
-        b=emcRwMONW8dgUBKgww7CmX1ULsXj/OxuPKr6+d9qg05A6G4dVyuBsExb6KxOyE9qXw
-         7BhGjbNB+jSCRXuDwuELf0ViWH+bW9XPlv/JsqLPG6XVG6XM5YJnTnyJNF4gjEIAtzxd
-         nNnck5Wc5QGB6KDCXDt4x8CBK0OuP4PIOTd0XHe6LLAwDvV3qlqZ7Vgv6aSM+6IO04+F
-         Bfrd6cYBLlEjY+LGEofIpNXoBpLBBUMb4E6MVlCohU0G3f+Wme203+Urm5ssQX+sAdPk
-         ii2M1V1tbGv8ZuUv0GcPY54BFD8hqOrzf3plPnElwWxJRPRdlfr3Ibgr0SSeureN2PBB
-         bcng==
+        b=RJ4bPraRk4Rbsijxmt92bV0cXtHe7+9Aq3BmMQdcbapdkwnrdJPd8psMEgMlnSvI1o
+         rnINDxhmB8BNe2vTMxiXUnaBzEBd9d88m+Bia0AO+aGRc4Aup3u2l3zOFjwPAdvroEaW
+         3nenCzPR3m7ow1wIa5/CTJom8fd28ewDkTmlH/vxlIJXLsM3xe1ZdBydu6qzkvoWLI7n
+         YJ0R1fxcCHoc12z+INYGfyGmz++uIAdv1a8NCNGUOIlRpsDDJTzNX/0LchZq3lkwXO5z
+         XNrGBc/c9S0ma5vfXhXlNVuZ2u/CvwkgnyqI+L8aw/+4uZLneyGMANAFeQHhAIrSAGi1
+         r+ZQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=dcY0Gi4dcvyxZkHDA78yGLoz9GDb1HPFjbtFx6GpqEs=;
-        fh=TRZDPpqptTI2zOE+r7kLdT/fg6gKt0Cxte1JFAmzVkU=;
-        b=l64DU6IDpToc+JeFd2CszqfSp2ZSgJRGNUvIAui1LNaE7AHvOAtIt6yUmS+MefF6Ld
-         NxhyjGX/x3GFKQ5VHTCdCdRuGbC8XHgViRZcR+Qj4VhU1kk+qHRfBYITp12+/k13ADcv
-         sdbZ8m5MYdb3A7Vollh3FEFFhQG1YId8wwBoL+9eV2tpZi+/9hslXceursX6FAzbOQvN
-         4pqRS+LP9/wrgUzQXgyme58bnkLvr/gKORxMcmJDgTUgBEt6EUTiTTnLIg4TaTbCACSb
-         C6M7cqQG/YH53aVyO8iM/S3SV0KURMpZFxMSxCtIktet+fpQYrYRFUe4xsChbZVK6Upl
-         QrcA==;
+        bh=OncitmhmKPxQRhu8FlY/GIP5U4Gt08ht3PeyL8T2LDg=;
+        fh=mQX1hay92SVPop1OxmFdQr1Xh6U3DyxOgwzhhSn7q74=;
+        b=DON1splDQDd7pyIRBYVhp6dT9yPLbuwDyIw2oshBbd1/l7Xo1u84rnDn9nTTY9HxZ4
+         oqiqFHVzhKOmps2Y754z7AeYEnHGOmQgqACUJfRu0SQZ3WEcMJOJzVfZcDkqTEdUifYo
+         Ps7WWkSgqFbhn82kVsft6g/ThNyZkOJFzVE4IFdo3ulh9InnwSvL/yXFEoytTqk+GWyi
+         mmiKUASRKJn9yhzv2w1Ekw4NPvzMCyuSGbpfw8ZqY746lMhVSm1W7svFYScjgZnyfyla
+         y79ma9q6Mb46CKjY4/b/2bsVY3U1cPEwO2l/L28sFcoGf7j0ssK4AhwwHwUDvctvTJuq
+         iCSw==;
         darn=lists.ozlabs.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793180933; x=1793785733; darn=lists.ozlabs.org;
+        d=gmail.com; s=20260707; t=1793180981; x=1793785781; darn=lists.ozlabs.org;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=dcY0Gi4dcvyxZkHDA78yGLoz9GDb1HPFjbtFx6GpqEs=;
-        b=a+sTGeHY+x5wzOxbOTs4Or+iANVlhcv9FW8lUQiBplW1n2uFcUoRGtWV53svnsCnzK
-         hxrjniNJPbOpNZg+InwqyeUIv12s8c4v2T0DLGRdkfvyzxnsbMuRQ7a4FwZSkIo71hxX
-         bhHi6sW5ry+3GZrz7g1h9J9eNkLWJOaJqJlbeyKrpHW5nWJ2xM/CVJnO7oCfIPJWtOgF
-         b9LusH5zb2rnXhzhS1FjxBE0WYkuoVj9AtuJsDqbgF7C2u8kvHJrHh7/rV91AugnwkDS
-         fvbdDdhUS7gPZBIXp0oVjPFgy7drZwI7oGwmPWxry7k0rr1wtk3NUmCOdn9T1AQHWTYy
-         oLdg==
+        bh=OncitmhmKPxQRhu8FlY/GIP5U4Gt08ht3PeyL8T2LDg=;
+        b=CgIsa3dJXSox9BHw4q2efefJ9VLSeIjuZtoiTIZvGQn4pQL4H1KNHoFnze4oWiCA3K
+         Puyc5WeJo0uxbOB5Pw5gvCyNNWlJSes2LQejsTXVBvOLOi8oW86fi28/rFIIS8pZ/PB0
+         FLXFcOUR0UK6Y1ok1PAEn1kZnQ7767PM/MM6szqHJmQu/QzwegCeidfwB1zLMHS8HNZp
+         iWivlXFrOLdcSjXpzEY+aUgOYwmJPN9lb1ERV6pvNg6+04+nvnkWoCDGQHFpvh/l0yk4
+         oOihUbDlAd8gpau+kUv8O4/SYaMzFtX2bYBThVgzoDlSoForWMWoVWGe6TapV8d793kc
+         A8Dw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793180933; x=1793785733;
+        d=1e100.net; s=20260707; t=1793180981; x=1793785781;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=dcY0Gi4dcvyxZkHDA78yGLoz9GDb1HPFjbtFx6GpqEs=;
-        b=wLgGu7wXKb10VOZsizT8JShPSfUEOuI2beD0/bhSkDxyG5IcQ3S/4dnjrmKp+4+W5/
-         qrCfr2Udz867bW2uvilL8kptwciURJCbTvdRwfHfmKqmR8RGTrnfT7X5TGBWgUr1NQMQ
-         bvmBBYKwHdLyuwd4H6RkU48dUJTXolUeIZjBRHC3QqsPfu1jcE1LnGMg9AoOTJyH3xnA
-         h1cqwy06NrO3DzqDGmAMh2o0Ly5d8hClw0Bfrna3MWmvO9pojP08Bwm0aUPeleTmbP6g
-         sYjLsHtTxPo2x6JsPECL53dp4TMnoe+ZwdD2nShrguu1l863n26pVCVyupXb1nCZ2fTM
-         5FQw==
-X-Forwarded-Encrypted: i=1; AKwUvBzNssH0xDQycQnmLPxx7F05IBCrWT99fp3D+H1nKCZ59NfLCM5U66QZvWaO7v/8S+WmfwgTB16ryZNiHH0=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYIVwfnAvgSETK7I2X8eAOaup3/rEaWbSvxGQs7DEsz8PiDUkL0D
-	ioqSZQNxNKbFfhOWg8Xe9zAg8xIP7I2Y6AFKyIq/TBe6AL7Sk/R5wh93ijBEh/TFuO6iD1/Tx/J
-	AmJUXBVnLAqDEQnFS7JD7gojCUraF/+I=
-X-Gm-Gg: AYBFou0ju1lo/f45dJYvQI3x0oApBRvv5jR43Ki9w6WnUGfISslt71uYvIUEjed5HqX
-	HWdN71Js59j5hPdtuR/X7fM37nGCu5+QXihoEseBci1+fzgT6Dm6NB4FzQnOhlk0gCwPVFfUKym
-	q3QwZ6VddKiwuD8hclFSEKCeiv73xhuj4WpT5MhIY9sNZuZ7sALp39n44olhTB7qOnHFEMS6tUt
-	HCg5Wpw2QUz0IT0S8Ph0fXY8bl7xPdgRlSCzUTnWKVdBB8ApV8dAbyz8EWmWe/JmyB5hGXs0xfl
-	G333e7v9U1i9oIT4Lke/6OoV/PIrUEBbNnqjSgbtarmBisIAqzJryS9Bv3xfIMbKU0qKaeEW8Gd
-	NYZTlK4XS+9T4P/WidQY6AfJkONgWNhL4921msbe59L52PiiO2j9/cBbj2v8QxXN38HKQS3tzGl
-	L7isqXGONGbttOv78tiX9FqdLiSeWTGH5RhjG0KUVrx7w4GSONf4g9aBs1HiDt11IRyTKbrL0LJ
-	RkmUTfBUNRABnRGMM5Xiyvxww==
-X-Received: by 2002:a17:907:a893:b0:c46:8b51:c17c with SMTP id
- a640c23a62f3a-c49bdf394e6mr156034066b.17.1793180933042; Wed, 28 Oct 2026
- 02:48:53 -0700 (PDT)
+        bh=OncitmhmKPxQRhu8FlY/GIP5U4Gt08ht3PeyL8T2LDg=;
+        b=mPUN7/RHagZ69lsLfkhROdGIfYL8QuqqAVcEFvm76/FrjFmHjsIYqOzdWmE9WFWKEP
+         u1u8o/rXFhvk3uYzoHFG8Wok5q07qCE5c4Vl7V4oIiwHffLzzSdSQ0NH+GxD/mO2YO2H
+         80UVl42WX+1niPLzTFY6flyehAt0b15O0wkfgtEl1cmLD19dw7n0gCgMkJTvKxMCh6jS
+         e1dVSlipA+ibELWNWdVsbcJ4Jl0LRvxu9wkWYNjKsh7+cIAkUHdhpxo1G9jJqW9rVwyg
+         GzkOn6xMLGm3cVGdWq3CaaW6FgscrOVUOlqo9wDX1YwXKRvaSqX7Wxz+VHPT84QlhW9I
+         WqlA==
+X-Forwarded-Encrypted: i=1; AKwUvBytLTheFdUi+1nIi+QRGBPWLKGIBnOg2UOa6MQoKjHWNCcsVf3E8CvZY2UwHJrj7vecrBbfpc78e27cE4o=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYK0Mg+GFKK36ppT86cwPRJqsa/hPbkAbCU2vWSh+T0om/TIQ06l
+	zEDo3ycGlgSojg32eSNRWaT/CSBN3wf+NrCxuoYgkb0SkDsvyyUtbt2u7wSeo6AHMfuEadMZr2h
+	DDvb21zNRwIqLpRMM3A03JpZJJYmYzEs=
+X-Gm-Gg: AYBFou3jFvvjoWX+4cNaxLUPKuAjSUjeQG9vdexh7mH3L4Sw4yvOsHDROhAzaBh8LV0
+	ofJBCC8cKoxF1kcw+7wfr+OYS2h6WPxAmfHByye1JzZlyfDZMuO6xhVVg6nMyrzbV7la3+YPCPu
+	p4zNZownmnUmKG3xa5iWFHegKXZUiQryYR5IfcgFdBvo67ONHSvQsmpwuq3IdK59eHcNzrPAjBk
+	8HzYfPr1cS+Gvwj3nySRLcpoaprZc+MARlv1ypbzShYm6uP+DYt1yg89eovLi/tCdbvWM4+5W5+
+	fW+8rKZm3rsUpZxNWwPd1H9EL7p6m001SdUN9NERtM/74RnmYAhpvu1wftqlI7xvwbJoZTZ9M2c
+	n+UpT5oRN4ERdWRN30Z737BiYQ70VfmE+BJMTmty3fMsC4S+HE6l+ofa2FJPib3bR8CqapJ/zJY
+	Oa1LEohptJYP5hQVGU4izUOALvO8/l4YBBcTiwlO8TWaVk4RNZl25Ti3rOg9pswm+FlVw9ma+gg
+	dsnQkaULMBcSbhs7lLYFPLPczE=
+X-Received: by 2002:a17:907:d48d:b0:c42:82ac:b6a9 with SMTP id
+ a640c23a62f3a-c49bdf7de97mr167322666b.29.1793180980909; Wed, 28 Oct 2026
+ 02:49:40 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -105,13 +105,13 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-References: <cover.1793027261.git.d@ilvokhin.com> <f0d7b2f0dce916f4cde3dd466a5b51a4b88fbdd8.1793027261.git.d@ilvokhin.com>
-In-Reply-To: <f0d7b2f0dce916f4cde3dd466a5b51a4b88fbdd8.1793027261.git.d@ilvokhin.com>
+References: <cover.1793027261.git.d@ilvokhin.com> <ed2b0b67c306bb458ba389f16dc92904203a104b.1793027261.git.d@ilvokhin.com>
+In-Reply-To: <ed2b0b67c306bb458ba389f16dc92904203a104b.1793027261.git.d@ilvokhin.com>
 From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Wed, 28 Oct 2026 11:48:16 +0200
-X-Gm-Features: AclHuK9bqVSr5ebQZT2ja4gGk1wmv0GUJ0T7y7aJfJNVsg1OI_1bv2lVUKDS3Hk
-Message-ID: <CAHp75VfJ-L5ELAttN+Fz_Co2E1KHumwLZAEMXFMhRubzgVLqug@mail.gmail.com>
-Subject: Re: [PATCH 02/10] string: Switch to __nonnull_args() macro
+Date: Wed, 28 Oct 2026 11:49:04 +0200
+X-Gm-Features: AclHuK-kwXGKz5n7QFXQ4iO49tQbUX582-rj9xJLuSYR3NDY9XFvg2hsu7UGHjc
+Message-ID: <CAHp75Ve71BfcWr++PfQPiOc=OURNn1-cdJey=M1xBVCb0HhHQw@mail.gmail.com>
+Subject: Re: [PATCH 08/10] leds: pwm: Switch to __nonnull_args() macro
 To: Dmitry Ilvokhin <d@ilvokhin.com>
 Cc: Alex Deucher <alexander.deucher@amd.com>, 
 	=?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>, 
@@ -148,10 +148,9 @@ rote:
 > nonnull") added the macro __nonnull_args() to wrap raw compiler
 > attribute.
 >
-> Replace __attribute__((nonnull)) with __nonnull_args() to
-> standardize nonnull attribute usage across the tree and keep the
-> attribute's quirks in one place rather than open-coded at every call
-> site.
+> Replace __attribute__((nonnull)) with __nonnull_args() to standardize
+> nonnull attribute usage across the tree and keep the attribute's quirks
+> in one place rather than open-coded at every call site.
 
 Reviewed-by: Andy Shevchenko <andy@kernel.org>
 
