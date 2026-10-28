@@ -2,44 +2,44 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 28582606A31A
-	for <linux-aspeed@archiver.kernel.org>; Wed, 28 Oct 2026 23:12:21 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5B155606A31A
+	for <linux-aspeed@archiver.kernel.org>; Wed, 28 Oct 2026 23:12:22 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=ilvokhin.com header.i=@ilvokhin.com header.a=rsa-sha256 header.s=mail header.b=s1G4iNj7
+	dkim=pass (1024-bit key, unprotected) header.d=ilvokhin.com header.i=@ilvokhin.com header.a=rsa-sha256 header.s=mail header.b=csUWtQzw
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jFNR92Lxfz2ygd;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jFNR93hSsz2y1W;
 	Thu, 29 Oct 2026 10:11:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=178.62.254.231
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793176210;
-	cv=none; b=je/zcepcUq8QbNa7RR69O/mEluBvg2/4ahvtXo3nMd59+VkQvUbcL1pxwgZMEMS16/C3yS9Nxc1pmdUpa/BrOm34p0NkBi5yaY03JzR1n1kZ5eimmhyVEV2iQf5nfjd+HVxcHR5bwtZTFmC0xrdrGq6QiDL2/Uef6DgwxLyjCuf5rUT8BSUjD9JgTasCies4iHUJA0/NxtN/MsPwWYHOzyRYL6O+Rz/Y3RfQzVRtl/MfQk7zt3RiQAHAr3/W7WF4c5sNqe9qEid8QWGhnTGISI1hnrzir/KW5JO2fn/bGcfAWFtUIkhcVYOiWTrHY8YplXAjV/v6rEp04Acvk0yS4Q==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793176207;
+	cv=none; b=epI1aEzbQXx8vJzf7jatvdEr5cNFpsbS5r51XRhvKiuIB4Pe+ZkRuA9JvbyFyzjW1CtqulwniYIJs2RMNMJxqHYDLrgZ9mN4qa7ggzqLmxsCjMaq+F/0uDYFq0z/4q9B7P6npNs94NFcewlHdJLjyllX7/9sqIPignPJlXhgTRYmCF4PJ87GWOUxFo6OrDShRIoh93ZiqrZVEsqy9xGsUI1dGTEvNX7inBKfAa2f1tuL4Ry6Im2/MtEJhXlTfSTHcvd8eVGD9EkcvY4H+OKJHplrPDLPPZDfZDvT8Ik6tBei0zrSyp2/yeyjY+cGUdNV9/eilvp9zjSTM5H77dZT5g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793176210; c=relaxed/relaxed;
-	bh=DLae2gx4aGYIpiU/bvQJfKJhKs4nNCXiSW/qMDyeW24=;
+	t=1793176207; c=relaxed/relaxed;
+	bh=7iGwC/zgOWLrxX4ANiv2xF58zogBn71EZM14tRgOJbE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=XPM8zE78sTsoNoVmP1fOkSp8rpMWSw9P1m8fcWXRZ3kGDUFk79bVmHWAlRBQOa841TKWB/CFvgShQpKg6KtIc4LzNwBVXRucJoi9aTf/QnHlv+dioKI0AAFTiPtwy3VKbUQ/eeDeFIPVnFgpHdcQD8zuh4QeNLhwIfkOeUYrIeUCaaT4AWyKe+CwkkSgntnplnWX6Kakq1Nr60IeBhxliyTIg34acXMW++C7rYxTBuJmk5dH+q/PplybFr2cTra4FgPJPzdE0PElLD924UB0s9hepi2ZrUiMzhDiCLDEeGzL9gRzd4JDzW7UrsJ7Uob/4KMbpWuQzyBuuq9x21RUag==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=ilvokhin.com; dkim=pass (1024-bit key; unprotected) header.d=ilvokhin.com header.i=@ilvokhin.com header.a=rsa-sha256 header.s=mail header.b=s1G4iNj7; dkim-atps=neutral; spf=pass (client-ip=178.62.254.231; helo=mail.ilvokhin.com; envelope-from=d@ilvokhin.com; receiver=lists.ozlabs.org) smtp.mailfrom=ilvokhin.com
+	 MIME-Version; b=SN+NaaO2ujfMHXWtKcK2kPBv33vOYlz2nDhWrhQ090hgq//uesZHcQ1F14hK91oua2VZ0+Mv/SMGrlvZRS3JfYNmlA0LZw53u+1uYTAiYY2r2FaU25KQBU6aJQEEYO5i8DJN7P2H+0PVjTX8AZDTe+Br/hpfPcfCOHctqTfHzbSFtvgJuz/2Nqb/MKnwJ35PVsexmNPdIdhd9jN+mKru8ECbpOrxE9SI6JbxcNHzOzCKg5khvKbGdXYMf6G6/iVyHMHYolRv8Tjo5dPaYcNzWTHlVB+gY0C5cBHC9ZRI1uvxl8vMJMDPGSagCwIN/XqkDLTDYTTsM3PPItQfzQDzwg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=ilvokhin.com; dkim=pass (1024-bit key; unprotected) header.d=ilvokhin.com header.i=@ilvokhin.com header.a=rsa-sha256 header.s=mail header.b=csUWtQzw; dkim-atps=neutral; spf=pass (client-ip=178.62.254.231; helo=mail.ilvokhin.com; envelope-from=d@ilvokhin.com; receiver=lists.ozlabs.org) smtp.mailfrom=ilvokhin.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=ilvokhin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=ilvokhin.com header.i=@ilvokhin.com header.a=rsa-sha256 header.s=mail header.b=s1G4iNj7;
+	dkim=pass (1024-bit key; unprotected) header.d=ilvokhin.com header.i=@ilvokhin.com header.a=rsa-sha256 header.s=mail header.b=csUWtQzw;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ilvokhin.com (client-ip=178.62.254.231; helo=mail.ilvokhin.com; envelope-from=d@ilvokhin.com; receiver=lists.ozlabs.org)
 Received: from mail.ilvokhin.com (mail.ilvokhin.com [178.62.254.231])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jF0ss3dwZz2xwL
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 28 Oct 2026 19:30:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jF0sm5sJMz2yDr
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 28 Oct 2026 19:30:04 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ilvokhin.com;
-	s=mail; t=1793175635;
-	bh=DLae2gx4aGYIpiU/bvQJfKJhKs4nNCXiSW/qMDyeW24=;
+	s=mail; t=1793175638;
+	bh=7iGwC/zgOWLrxX4ANiv2xF58zogBn71EZM14tRgOJbE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=s1G4iNj7/OxMe3QEsIAEnZ0bhFm524AJi+UtsiJDNZZkymmDz57s/cSBMC+SkARw3
-	 i3VKwlDdDVQAtn3D0ok4bdXGCRiRr75QTXzaZRCjPUoxQd2Dwf/537SkAttNRm5m+i
-	 dIZin/56CDIf1Rz1jHjqkNsZ3h7kYtj+ZQxQXxGI=
+	b=csUWtQzwD2E/XlWZClH8qe1DSNmkf/BxgxVrI21nciRCwiVBnNkgR/QmWPWiXgOFf
+	 r7hvwbXh1TI+dwN3mfeJxPnh+wv9MNKw/OzT9SWuYLztFyR/10iP2qfxQuy6XpjkYc
+	 swD9LFS71C2gJ4LZM8Rqw6CkTpFxgtqHX1iTdRcg=
 Received: from localhost.localdomain (shell.ilvokhin.com [138.68.190.75])
 	(Authenticated sender: d@ilvokhin.com)
-	by mail.ilvokhin.com (Postfix) with ESMTPSA id 67144FBCF7;
-	Wed, 28 Oct 2026 08:20:35 +0000 (UTC)
+	by mail.ilvokhin.com (Postfix) with ESMTPSA id 91086FBD11;
+	Wed, 28 Oct 2026 08:20:37 +0000 (UTC)
 From: Dmitry Ilvokhin <d@ilvokhin.com>
 To: Alex Deucher <alexander.deucher@amd.com>,
 	=?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>,
@@ -80,9 +80,9 @@ Cc: amd-gfx@lists.freedesktop.org,
 	linux-doc@vger.kernel.org,
 	Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>,
 	Dmitry Ilvokhin <d@ilvokhin.com>
-Subject: [PATCH 05/10] drm/i915: switch to __nonnull_args() macro
-Date: Wed, 28 Oct 2026 08:19:44 +0000
-Message-ID: <33ec8080594f9f4ef1d50e36497339c9a6897393.1793027261.git.d@ilvokhin.com>
+Subject: [PATCH 09/10] soc: aspeed: lpc-snoop: Switch to __nonnull_args() macro
+Date: Wed, 28 Oct 2026 08:19:48 +0000
+Message-ID: <6b82201d601c23bf8545f8d581fd6632c36cd208.1793027261.git.d@ilvokhin.com>
 X-Mailer: git-send-email 2.56.0
 In-Reply-To: <cover.1793027261.git.d@ilvokhin.com>
 References: <cover.1793027261.git.d@ilvokhin.com>
@@ -119,51 +119,31 @@ in one place rather than open-coded at every call site.
 Suggested-by: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
 Signed-off-by: Dmitry Ilvokhin <d@ilvokhin.com>
 ---
- drivers/gpu/drm/i915/gem/i915_gem_object.h | 4 ++--
- drivers/gpu/drm/i915/i915_request.h        | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/soc/aspeed/aspeed-lpc-snoop.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/gpu/drm/i915/gem/i915_gem_object.h b/drivers/gpu/drm/i915/gem/i915_gem_object.h
-index a2f4b6758a65..648d0b4139cf 100644
---- a/drivers/gpu/drm/i915/gem/i915_gem_object.h
-+++ b/drivers/gpu/drm/i915/gem/i915_gem_object.h
-@@ -127,7 +127,7 @@ __deprecated
- struct drm_gem_object *
- drm_gem_object_lookup(struct drm_file *file, u32 handle);
- 
--__attribute__((nonnull))
-+__nonnull_args()
- static inline struct drm_i915_gem_object *
- i915_gem_object_get(struct drm_i915_gem_object *obj)
- {
-@@ -135,7 +135,7 @@ i915_gem_object_get(struct drm_i915_gem_object *obj)
- 	return obj;
+diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+index b09dca34099f..ee84a06a035e 100644
+--- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
++++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+@@ -226,7 +226,7 @@ static int aspeed_lpc_snoop_config_irq(struct aspeed_lpc_snoop *lpc_snoop,
+ 	return 0;
  }
  
 -__attribute__((nonnull))
 +__nonnull_args()
- static inline void
- i915_gem_object_put(struct drm_i915_gem_object *obj)
- {
-diff --git a/drivers/gpu/drm/i915/i915_request.h b/drivers/gpu/drm/i915/i915_request.h
-index b09135301f39..f559203c332d 100644
---- a/drivers/gpu/drm/i915/i915_request.h
-+++ b/drivers/gpu/drm/i915/i915_request.h
-@@ -437,12 +437,12 @@ void i915_request_cancel(struct i915_request *rq, int error);
- long i915_request_wait_timeout(struct i915_request *rq,
- 			       unsigned int flags,
- 			       long timeout)
--	__attribute__((nonnull(1)));
-+	__nonnull_args(1);
+ static int aspeed_lpc_enable_snoop(struct device *dev,
+ 				    struct aspeed_lpc_snoop *lpc_snoop,
+ 				    struct aspeed_lpc_snoop_channel *channel,
+@@ -279,7 +279,7 @@ static int aspeed_lpc_enable_snoop(struct device *dev,
+ 	return rc;
+ }
  
- long i915_request_wait(struct i915_request *rq,
- 		       unsigned int flags,
- 		       long timeout)
--	__attribute__((nonnull(1)));
-+	__nonnull_args(1);
- #define I915_WAIT_INTERRUPTIBLE	BIT(0)
- #define I915_WAIT_PRIORITY	BIT(1) /* small priority bump for the request */
- #define I915_WAIT_ALL		BIT(2) /* used by i915_gem_object_wait() */
+-__attribute__((nonnull))
++__nonnull_args()
+ static void aspeed_lpc_disable_snoop(struct aspeed_lpc_snoop *lpc_snoop,
+ 				     struct aspeed_lpc_snoop_channel *channel)
+ {
 -- 
 2.53.0-Meta
 
