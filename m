@@ -2,48 +2,49 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6D9FA606A31A
-	for <linux-aspeed@archiver.kernel.org>; Thu, 29 Oct 2026 22:32:34 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 21465606A31C
+	for <linux-aspeed@archiver.kernel.org>; Thu, 29 Oct 2026 22:32:35 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=ilvokhin.com header.i=@ilvokhin.com header.a=rsa-sha256 header.s=mail header.b=WUo05cr+
+	dkim=pass (1024-bit key, unprotected) header.d=ilvokhin.com header.i=@ilvokhin.com header.a=rsa-sha256 header.s=mail header.b=vALBjl5t
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jFzWK1N6lz30Sv;
-	Fri, 30 Oct 2026 09:32:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jFzWL0MNpz3048;
+	Fri, 30 Oct 2026 09:32:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=178.62.254.231
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793275753;
-	cv=none; b=bM2wTWivXu/ASTRXnxpbkQx8AN2/uawz5J4BgCV4qeYGduEtOPmZ1tmeQuR8KIxmvxVrjokWz8DqC/ytGB1JKTr7WTZFYsBN9uN/y5HfHOKb+WQfA/XdIE1jAQIE/pwf9isglBH6RKgmv0y8DbMrFXURV5gF2xR79SXmcfNCt6ZaeWoYoZR8ctaQDaweSaXOHzTelGzNLEQE6Blj61BRQ+MVVrUYhyi7gh0aLm6sUIeJD8l3qFQEwHCdAYTbtbgqyWsEjTq81y89Re6HLywdvkEI0BZyeuZ8aCcJL7aTCV8ym1kpc5wqldUK11gj0E9g+swZxUAqcF6i9ubQ1V8NzQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793279533;
+	cv=none; b=JvmFKU5Yt+o7oCpypW45jWHJB2WZf5g+lpWQBg6J7w8lWSm+Q9s2eqqX0nrgcmvEjiCayD8kQILkmGlkY16rJq/qqPXsU0H+avYYcJ9HJ8attAVBmvgHOysHdiQALpvMKqZwawdfHhOQV54oAlDMae9CLmHn2vi4CrmzaYB5VK6vBHkHaGdENmXH6xPJNrsSrztrq7WL6+RvPD9lhvSZIQo/pnsIO8WZSfQropHydtnuu7cBMtWPJMfl/cSqR48lK6OO/cyWhpnh28fGD54R6XcDDiGNtLVU7mNARWWrh0FSi6q1qxG532rnCb/WZLJ6BHLf0x6ul+j7TX8UUQ6n3A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793275753; c=relaxed/relaxed;
-	bh=RocjA1LFJ8nCgW+tO2y+Fh4wXXWjfdPFo024IhF5Wq8=;
+	t=1793279533; c=relaxed/relaxed;
+	bh=4cruogtXfNCOrJCvoodcyrTOzahFlsASVgaus3wd4bs=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=QqcWTlscZ1UcdyspxeClHd/8xzaGqREbLguKEjUyBgHoiZr5d9z4cJxlyhWQ0/5CAYKEbQO6qX8HuqKN5FaxfgoZodBGHmg0TL4OPTvH+xL1JYDbfAKPfYVozwLC/ySpDFWGiKczF4JtrDnCUWiM/fAi3+ioag2pfEU0Jbi69BxspSUTOVSXcaHbdNkxeu/peijFo/y8mGNeP7O3yieAQ/9qV03ZapjDVpTIDGx32cQC2WukxjOC7cEDrdLQAs22aDhSoq3ceS6mrO8iL+aHAwi3Vzj+JmW0ixDWoAWTfSXo2G1ljax8fFZ+o4bVdFeTrW2YouyDqWr1J/ph5qe2kA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=ilvokhin.com; dkim=pass (1024-bit key; unprotected) header.d=ilvokhin.com header.i=@ilvokhin.com header.a=rsa-sha256 header.s=mail header.b=WUo05cr+; dkim-atps=neutral; spf=pass (client-ip=178.62.254.231; helo=mail.ilvokhin.com; envelope-from=d@ilvokhin.com; receiver=lists.ozlabs.org) smtp.mailfrom=ilvokhin.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=T3P0IGDBqJfGTk+gwI67QIGLaSV7ZvWxPNgJ+7BiQxcWIJXEhdDagZvw+G/DJWZ1aacUa2mBstgEzEl1HcbpFPHQUMTejwAHC9hebHYVCamUIie2WX538qCrHAOvrE0bsfQIIlVhp17Z60vt+QNvpFtla1AaurqKsW1n9D1EfMbVZizNc3TILTUPH+3dVqtSRVfpiO5EaXjd0ua941k7p4zvkmlSiarkOWXHn30Us/K5euIZ7m7HXK1jwo1swf7KEdb0pw6aZMkIIXt0gav6PgqB6WuR0oTD3UIevOowiAS4ZdLmAYXVGXVRX8lb/FlzKT9GUlV+OMxyUUnlanYodg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=ilvokhin.com; dkim=pass (1024-bit key; unprotected) header.d=ilvokhin.com header.i=@ilvokhin.com header.a=rsa-sha256 header.s=mail header.b=vALBjl5t; dkim-atps=neutral; spf=pass (client-ip=178.62.254.231; helo=mail.ilvokhin.com; envelope-from=d@ilvokhin.com; receiver=lists.ozlabs.org) smtp.mailfrom=ilvokhin.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=ilvokhin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=ilvokhin.com header.i=@ilvokhin.com header.a=rsa-sha256 header.s=mail header.b=WUo05cr+;
+	dkim=pass (1024-bit key; unprotected) header.d=ilvokhin.com header.i=@ilvokhin.com header.a=rsa-sha256 header.s=mail header.b=vALBjl5t;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ilvokhin.com (client-ip=178.62.254.231; helo=mail.ilvokhin.com; envelope-from=d@ilvokhin.com; receiver=lists.ozlabs.org)
 Received: from mail.ilvokhin.com (mail.ilvokhin.com [178.62.254.231])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jFjh81Gydz3048
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 29 Oct 2026 23:09:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jFl4r2x7Cz30FB
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 30 Oct 2026 00:12:12 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ilvokhin.com;
-	s=mail; t=1793275747;
-	bh=RocjA1LFJ8nCgW+tO2y+Fh4wXXWjfdPFo024IhF5Wq8=;
+	s=mail; t=1793279528;
+	bh=4cruogtXfNCOrJCvoodcyrTOzahFlsASVgaus3wd4bs=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=WUo05cr+foO7RPlP7534YSiBgZ8CQPkwQY40XhGkYZY6+6/4j3XkS/IFDfGv+Pkoh
-	 y9zJIn2BFoMmtdWooRjNBcjjjJtArbTwyJLsxt66JLoWE/gVCnnA7sNVi3UolL8xve
-	 VDmnu4pCCOxy8JC/MQlwNqsBS6P1OvE3N85vIIf8=
+	b=vALBjl5tg/HLHwAe5LnWN0I+FZe/ilBHT2lZAbbXATHMbz98KZlNi97W3j84M5MIm
+	 EgXRxUJW0KRszvy4pqxbaKoourAWAFiwAZJY+Ct2Jbwg3k04WPlzyGUItH+c8SnyYr
+	 SQLCcctV6enovEyNRJB4QlV0k1lXcskW58pkHYoY=
 Received: from shell.ilvokhin.com (shell.ilvokhin.com [138.68.190.75])
 	(Authenticated sender: d@ilvokhin.com)
-	by mail.ilvokhin.com (Postfix) with ESMTPSA id 2E446101220;
-	Thu, 29 Oct 2026 12:09:07 +0000 (UTC)
-Date: Thu, 29 Oct 2026 12:09:03 +0000
+	by mail.ilvokhin.com (Postfix) with ESMTPSA id D6809101233;
+	Thu, 29 Oct 2026 13:12:07 +0000 (UTC)
+Date: Thu, 29 Oct 2026 13:12:06 +0000
 From: Dmitry Ilvokhin <d@ilvokhin.com>
-To: Randy Dunlap <rdunlap@infradead.org>
-Cc: Alex Deucher <alexander.deucher@amd.com>,
+To: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>,
+	Alex Deucher <alexander.deucher@amd.com>,
 	Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>,
 	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
 	Jani Nikula <jani.nikula@linux.intel.com>,
@@ -55,25 +56,25 @@ Cc: Alex Deucher <alexander.deucher@amd.com>,
 	Ryan Chen <ryan_chen@aspeedtech.com>,
 	Billy Tsai <billy_tsai@aspeedtech.com>,
 	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Kees Cook <kees@kernel.org>, Andy Shevchenko <andy@kernel.org>,
+	Maxime Ripard <mripard@kernel.org>, Kees Cook <kees@kernel.org>,
+	Andy Shevchenko <andy@kernel.org>,
 	Matthew Wilcox <willy@infradead.org>,
 	Andrew Morton <akpm@linux-foundation.org>,
 	Andy Whitcroft <apw@canonical.com>, Joe Perches <joe@perches.com>,
 	Jonathan Corbet <corbet@lwn.net>,
 	Shuah Khan <skhan@linuxfoundation.org>,
-	amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org,
-	linux-leds@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org, linux-hardening@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
-	linux-doc@vger.kernel.org,
-	Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Subject: Re: [PATCH 00/10] treewide: switch to __nonnull_args() macro
-Message-ID: <auM3XwWPnMHcPptM@shell.ilvokhin.com>
+	Randy Dunlap <rdunlap@infradead.org>, amd-gfx@lists.freedesktop.org,
+	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+	intel-gfx@lists.freedesktop.org, linux-leds@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+	linux-hardening@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+	linux-mm@kvack.org, linux-doc@vger.kernel.org
+Subject: Re: [PATCH 07/10] drm/gem: Switch to __nonnull_args() macro
+Message-ID: <auNGJhSe3tVi7rDy@shell.ilvokhin.com>
 References: <cover.1793027261.git.d@ilvokhin.com>
- <cce30180-c1c4-4b10-b681-8944057bc698@infradead.org>
+ <5bfdc1491d297b5e98cf42322c790f06481c28c7.1793027261.git.d@ilvokhin.com>
+ <fb3b6a24-74ca-4da8-8593-352afd515313@suse.de>
+ <CANiq72mMm75svCqevd8fHtVoczDpvpo4NwL0SC8=bWy030vQuQ@mail.gmail.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -87,9 +88,10 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <cce30180-c1c4-4b10-b681-8944057bc698@infradead.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CANiq72mMm75svCqevd8fHtVoczDpvpo4NwL0SC8=bWy030vQuQ@mail.gmail.com>
 X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
@@ -97,48 +99,23 @@ X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Wed, Oct 28, 2026 at 01:44:59PM -0700, Randy Dunlap wrote:
+On Thu, Oct 29, 2026 at 02:00:28PM +0100, Miguel Ojeda wrote:
+> On Thu, Oct 29, 2026 at 8:32 AM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> >
+> > Should gem.h now include <linux/compiler_attributes.h> ?
 > 
-> 
-> On 10/28/26 1:19 AM, Dmitry Ilvokhin wrote:
-> > Commit 22302af28d3f ("cleanup: Annotate guard constructors with
-> > nonnull") added the __nonnull_args() macro to wrap the raw compiler
-> > attribute, keeping the attribute's quirks in one place rather than
-> > open-coded at every call site.
-> > 
-> > This series replaces the remaining open-coded __attribute__((nonnull))
-> > users with __nonnull_args() to standardize nonnull attribute usage
-> > across the tree.
-> > 
-> > Each patch can be applied separately by the respective maintainers. The
-> > only dependency is kernel-doc: the string and lib/list_sort patches need
-> > patch 1 ("docs: xforms_lists: support __nonnull_args()") in the same
-> > release, otherwise strends() and list_sort() drop out of the generated
-> > documentation.
-> > 
-> > Latest Sparse release could not properly parse __nonnull_args() without
-> > arguments. Fix was proposed [1] and merged, but until updated version of
-> > Sparse will reach wide masses it might trip on __nonnull_args() without
-> > arguments.
-> > 
-> > There are few more instances of __attribute__((nonnull)) usages left in
-> > the tools subdirectory, they are perf related copied files and can
-> > (should?) be updated separately after this patchset lands.
-> > 
-> > Build-tested allmodconfig with GCC 11.5.0 and clang 22.1.8.
-> 
-> What ARCH(es)?
+> No, it should be included for you (unless you are doing something
+> custom with the compiler flags etc.).
 
-Fair point, I should have mentioned that I run this on x86_64 and
-aarch64.
+Just to add a bit more colour to Miguel's reply.
 
-> 
-> Did you mean to use such an "old" version of GCC?
+I believe idea behind include/linux/compiler_attributes.h is to make
+attribute wrappers as simple and transparent to use as native compiler
+attributes. In particular, this means they should be available in every
+kernel compilation unit without any additional effort.
 
-There is no grand plan behind that to be honest, I used it, because this
-is a version of GCC that comes with CentOS Stream 9 on the box I tested
-the change.
-
-To be on the safe side, I checked patchset still builds on GCC 16.2.1 on
-allmodconfig x86_64.
+For this reason, all the nessesary plumbing is handled at the build
+machinery level (see scripts/Makefile.lib:171), where '-include'
+compiler flag is used to pull in include/linux/compiler_types.h, which
+in turn pulls include/linux/compiler_attributes.h.
 
