@@ -1,65 +1,65 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 21183606A322
-	for <linux-aspeed@archiver.kernel.org>; Thu, 29 Oct 2026 13:21:39 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 90FAE606A31C
+	for <linux-aspeed@archiver.kernel.org>; Thu, 29 Oct 2026 13:23:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=TPGjIq84
+	dkim=pass (2048-bit key, unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=CCAJCwnp
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jFlHj1w9gz30RN;
-	Fri, 30 Oct 2026 00:21:37 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.13
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793280097;
-	cv=none; b=byAw/q2Gzv2/MhLFt+SLl5oUq1W/x366iViGxM4NofEAJdwP3ws1nJX+IfoGjHDp7bzbsqn5/kGhZ3vUm5SCEWeSrox5nGEWtGZfOlXN7QudWzI0/C27ui0t26EP/bhV0eoNb9I1C/U9QGiTxe+8jieFYjMbic08pIgJ44qnCtT8/1P1FlhDg4Cevq1Z4B6wTh/ObyLV04fqd/+h8VlJOYQlwruMFvyATRSfWl3TmGPg6pPsNb3Yymv+EFDONsk57pl2ow/WD20oOYryO/oR/5yVv/evLv/w9mWyAOXjUICmXOK0MGYOz8W9O/Oxkg/T8/VKtKBrzDj+JGFC3Xk57Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jFlKq07Lfz30NF;
+	Fri, 30 Oct 2026 00:23:27 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.11
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793280206;
+	cv=none; b=OcNV6m7JZW+QPOP1Q7PEPWkk7vwLYxPyevDtupTDfDWKwMgCYGqBiiTuhIuYEIIBDI/6dKxYYEIQ2RUw2a4GMvEDO/9Mx7lThQ4nNcBomiJcXatZmhCoS2lQxSE6sGhAwsPO8KqwUciL7IqY8dKxyWx5d2vOVWidQBLPEAw8ueP4R6ZWmUyLZTcgtFdvpMZVRpbfhtVLSrvXb5N/Y9ilNDBMlOmoxJXvhF92VMHeBDVZ4PRAR4hDkbVfPIfOhfiwdCiAb3cnUSLavJ1+8Mien89ejgDDQLqmgvxN2m6Xo0oiI5hvPTQ9TsMgBcXHILa5yDpIcJRcVYdNb7ABTmpMCA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793280097; c=relaxed/relaxed;
-	bh=SdAws15E4boPyFwiZCIHuT2z7R3eozeBP3yjVNgMrMs=;
+	t=1793280206; c=relaxed/relaxed;
+	bh=p+3Crhy2vTaTH2VP8Hqb2z/w7m3gLKgpAXgDIf/pTwE=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=RxI7MPUwRJnVdFGl+9+vtjoMsCgRgp0fawAs/2y1Y/ailu7j3MHnJtoKUGGV0rPABGY9GXA3kUfU2+E0zrczG2B2Ese1qOOuh2zXzvqf0haeNiOoJSDvkFGufmHp1nOFpXoMlFykaSMhj9JEJCaJYMDOZtuw2Ri9DCrWAbJjGNOyPxlZx6BOc4j+v2j9CTvk9VK8ltrrO+N+oGbjpNT6+7YFM2D56ODI04HLGCBVIGElO+n+Ht/iS0naqy28wR0UBZG3FCf0rx9Pfm3op0+f1sOebFdk5I8d55ogrowvAlLG+Ry872mQFVoIwz7qpsHi72icTZ2SyiaugOEWXMkAiQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=TPGjIq84; dkim-atps=neutral; spf=pass (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=Rf/4KoDnm4IPH+/0faEqyyovoAvbypZQmN/djqez7SG1QDD+nKoJTyCkQdwZeXua1Jmzv6mgS1X2015jH14zYC2bOOeZEwaxm/hGWG/6Qsv/ku58nNOWePlKxZTd1r3hAcoox3oHtqgEuDiY5SGvKi5Uf01EUhZUCXmMWXXmbNCZWFLgAWkbATCS0UTIlc/Iy28Q/sPu+SWbRhgikYDGUYzqdXmrUaMwNbJc1YrmeV1mrdEh2VKw73fIlXz8VMSEZ37BcUqWjRf6ioAl78R2FMedRJKUT5ydi/iSjVvOTHcUdKHvId9vs131LYFDPg41NphW/kFoXqCc9XAG+1eUvg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=CCAJCwnp; dkim-atps=neutral; spf=pass (client-ip=198.175.65.11; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=TPGjIq84;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=CCAJCwnp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.11; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jFlHf2FRZz30FB
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 30 Oct 2026 00:21:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jFlKn69Hqz30FB
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 30 Oct 2026 00:23:25 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1793280095; x=1824816095;
+  t=1793280207; x=1824816207;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:content-transfer-encoding:in-reply-to;
-  bh=tkpV40hGhO5XeSgRXjpBId5i/GBz5co0mYtfaR2uPHc=;
-  b=TPGjIq84G3VIr8PyF9XcHA6uz9ON68ipdVtJO7jSdJJ0o03FzqEZTqHa
-   Zv2mqiTgqAZT6PIb4+cCa2FEqduJAd8tAEzxC7BzqJDWsGocbF2dBl1Ab
-   Ag39TPiAl9bw61C952QmmVJ9rqnfZwVcC7D897l2I6S/TtX75hbSyOJFL
-   LqKU95dePVernYxTQFgtD/xPwNTtZXMeXVKzCllZN3apW6mbFYzQDd3uA
-   SK5hizrlNO0U1bj+gd+LcVNsDpNN/7nZ6jYQAhbZLgwFeLCpgjNoaGXDh
-   kTn3hBKUvHHyilJ6pJ7RrCL1gFnsMWqidrZdCO/sPBtD1QNovcmCtL1xA
-   w==;
-X-CSE-ConnectionGUID: GtGX2ZPjTZy0Fzza3jZepA==
-X-CSE-MsgGUID: HlSVcjFjSpWD3zeGDvJYNg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11949"; a="1899930"
+  bh=9Cz3qGxvThs0rl/GR84Oy3PnSJHjpp3B9x+qw2O+AJs=;
+  b=CCAJCwnpPY6z+BDmIjzneDB7t+Jq6tJC9CqR1ug8CKcPs+86rzrO8NXM
+   vOU15bFMGbJltqBYaN55NlXp0po0E0ByM8eM1BkbwwlSPskVezuzP4jDH
+   KyOlDML1yccXRLOr9EJxLnhZ0c3jIhhbnyGtPabihIPucPWb3Ql/E4ZaA
+   VkEmcjPVEfn5KrG7HjpQxEufWnRcGCPQou5JjWTZk6Eg+XKx5EmZbOauz
+   U5+KwehNPzsNLehS/zBgr55gwp5/o0nlpRHWrUTpZnTdgSJNhSTr2uTUo
+   zpIcpbXyvxsLFg411a6S9eCAGAkjchrqDFpBf8paQSjQpZpbyOLadoXnQ
+   Q==;
+X-CSE-ConnectionGUID: 2f2f1ogBQ5+AViZbIuuWhA==
+X-CSE-MsgGUID: 8PqNNiEtRMWr68e4Y6ecCg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11949"; a="1905312"
 X-IronPort-AV: E=Sophos;i="6.27,184,1787036400"; 
-   d="scan'208";a="1899930"
-Received: from fmviesa010.fm.intel.com ([10.60.135.150])
-  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Oct 2026 06:21:26 -0700
-X-CSE-ConnectionGUID: lcHCQ8oTT4+RWbV1aJm5jw==
-X-CSE-MsgGUID: gd6Ro2tCRA6pOUXdfheN3A==
+   d="scan'208";a="1905312"
+Received: from orviesa002.jf.intel.com ([10.64.159.142])
+  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Oct 2026 06:23:22 -0700
+X-CSE-ConnectionGUID: sK2vSRAjTAqdx5FXxpCvqg==
+X-CSE-MsgGUID: o1lYrOQHRt+E7suodbHRNQ==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.27,184,1787036400"; 
-   d="scan'208";a="5690610"
+   d="scan'208";a="5156292"
 Received: from ncintean-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.129])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Oct 2026 06:21:17 -0700
-Date: Thu, 29 Oct 2026 15:21:15 +0200
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Oct 2026 06:23:14 -0700
+Date: Thu, 29 Oct 2026 15:23:11 +0200
 From: Andy Shevchenko <andriy.shevchenko@intel.com>
-To: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Cc: Thomas Zimmermann <tzimmermann@suse.de>,
-	Dmitry Ilvokhin <d@ilvokhin.com>,
+To: Dmitry Ilvokhin <d@ilvokhin.com>
+Cc: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
 	Alex Deucher <alexander.deucher@amd.com>,
 	Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>,
 	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
@@ -86,11 +86,12 @@ Cc: Thomas Zimmermann <tzimmermann@suse.de>,
 	linux-hardening@vger.kernel.org, linux-fsdevel@vger.kernel.org,
 	linux-mm@kvack.org, linux-doc@vger.kernel.org
 Subject: Re: [PATCH 07/10] drm/gem: Switch to __nonnull_args() macro
-Message-ID: <auNIS5n2aUD9t7yB@ashevche-desk.local>
+Message-ID: <auNIv830Zu_1zWE5@ashevche-desk.local>
 References: <cover.1793027261.git.d@ilvokhin.com>
  <5bfdc1491d297b5e98cf42322c790f06481c28c7.1793027261.git.d@ilvokhin.com>
  <fb3b6a24-74ca-4da8-8593-352afd515313@suse.de>
  <CANiq72mMm75svCqevd8fHtVoczDpvpo4NwL0SC8=bWy030vQuQ@mail.gmail.com>
+ <auNGJhSe3tVi7rDy@shell.ilvokhin.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -107,7 +108,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CANiq72mMm75svCqevd8fHtVoczDpvpo4NwL0SC8=bWy030vQuQ@mail.gmail.com>
+In-Reply-To: <auNGJhSe3tVi7rDy@shell.ilvokhin.com>
 Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
  krs, Bertel Jungin Aukio 5, 02600 Espoo
 X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -117,17 +118,30 @@ X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Thu, Oct 29, 2026 at 02:00:28PM +0100, Miguel Ojeda wrote:
-> On Thu, Oct 29, 2026 at 8:32 AM Thomas Zimmermann <tzimmermann@suse.de> wrote:
-> >
-> > Should gem.h now include <linux/compiler_attributes.h> ?
+On Thu, Oct 29, 2026 at 01:12:06PM +0000, Dmitry Ilvokhin wrote:
+> On Thu, Oct 29, 2026 at 02:00:28PM +0100, Miguel Ojeda wrote:
+> > On Thu, Oct 29, 2026 at 8:32 AM Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> > >
+> > > Should gem.h now include <linux/compiler_attributes.h> ?
+> > 
+> > No, it should be included for you (unless you are doing something
+> > custom with the compiler flags etc.).
 > 
-> No, it should be included for you (unless you are doing something
-> custom with the compiler flags etc.).
+> Just to add a bit more colour to Miguel's reply.
+> 
+> I believe idea behind include/linux/compiler_attributes.h is to make
+> attribute wrappers as simple and transparent to use as native compiler
+> attributes. In particular, this means they should be available in every
+> kernel compilation unit without any additional effort.
+> 
+> For this reason, all the nessesary plumbing is handled at the build
+> machinery level (see scripts/Makefile.lib:171), where '-include'
+> compiler flag is used to pull in include/linux/compiler_types.h, which
+> in turn pulls include/linux/compiler_attributes.h.
 
-Usually it comes to the mere drivers via types.h, in rare cases (usually some
-more generic library headers, we do better granularity as it affects the almost
-entire kernel. Just double check that types.h is explicitly included.
+Ah, TIL! Please, discard my comment then. Perhaps we need to clean up all
+headers that pull compiler_types/compile_attributes directly (the same way
+we do for kconfig.h).
 
 -- 
 With Best Regards,
