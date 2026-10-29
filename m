@@ -2,75 +2,77 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 89F42606A31A
-	for <linux-aspeed@archiver.kernel.org>; Thu, 29 Oct 2026 23:13:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6469C606A31D
+	for <linux-aspeed@archiver.kernel.org>; Thu, 29 Oct 2026 23:14:14 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=IYAHHgzr
+	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=UE5XkuJw
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jG0R96Jz4z308H;
-	Fri, 30 Oct 2026 10:13:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793315637;
-	cv=none; b=lzQbvaQsyuCGa3dO3kvbzh5p17ucsU5BYkZmn3vZ4opO841/vqLHvrZJZKLG+BCvXQEF0sDKbXQNAUpJyIU1XXNTqLuL41Ir331YwFh/qTiw0pEISmMrxzDtELIbCC65pD69GwzOONE/W5LIDSQX6xo+qv86yNYtMbm4kLKEGnvfpRrNpkxgaLcbZ2lDIAxro4LqxZXIjccXEmccq7eqagXurMEF1AQ6QOYJk8QkJCX2J4SZbc+QhdgWpDN44Q5DfuE0Q12U02SYKfvn94HrgzvHfzLkbU+pre23HU8piOperbLrwmBVRk2/vbkOr0vXbDPDb8zXngayx3uZ30KfWg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jG0RH1wFJz30V0;
+	Fri, 30 Oct 2026 10:14:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1334"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793315643;
+	cv=none; b=SxWW/73YoOfowSPZiwrVOEuH799rNZXlaU1ECv5WRy0VR0Up1/1Ld1af5Rx76WmjwrMOgOH07QBbeXIqT17vnNautAi+fzWI61Qu/8wyME/2cN6UhAZqQVKlHN7PmHIz8s9sq8e/FZ294DCDakyV/84qW4zj6VTYGJrk1JaGMvh7722zP9z7gLFuuR60hHy6si8UkeLeng/BIq5F8ukRGaYRFom1Gkfppc81/+8yM31vPkwHVAhDyYu5brc8JfcG6uPV1YCq4rcdVKTq33IXB9NlTvM5l1RgTK86vGiJaQ3pJNlBc3e2YhvFNPyjEOeIqG5GBBelvDndyHR//rI6FQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793315637; c=relaxed/relaxed;
-	bh=Td9/mME215/4xVyAcQCSwVGtdaBr9meLthZDhvRiipQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=VQWOSGd8Qzdq05gyl0ncj9XPQMiAA7Pvr+EYWbODit0a9mGexWKKx+CUDncIpsmbduVRrd11kT+IUSyigOPy0KOKOcBGsx7WaR7xmpNmZZqDnDZ/q+hSir4LNxYrHBrJFhsBQy8lAVzk/3kp32GrscJ8ggy3uFkvaPOXis0F5N7ZqA/aNyupa8/gUUB7OxtyYBpNkOyE0Ukd7MMlO8TeUZdaemQRs+Aqf3+sJidOTpQ/DK/Mv7CG0ne4PH+ThBd9zOO44HejIfk+IGfFL2Z9FaznzGJ3JLLeUqy8Q4HY49aQxL3SrhjCC5JBOZlF38g+B7uS38gqwiQZNUyVvHjShQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=IYAHHgzr; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132d; helo=mail-dy1-x132d.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1793315643; c=relaxed/relaxed;
+	bh=g63FfAzTLK8IBBMlj2c2vg7SELBaIEsEoos/xU6UVh8=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=I1GBs7W4zL4Xah8diTIN7exa+5blfW6eou9wAH/rlCDrwYXzRhFmRtgmunEvvsPmVDmQpS1+DbXT3kcasHnv1Sqjim6As504co/ehe4DGgYpTvnDvcD/8KxYl4o4DjNln2oP5H9tGDIA3j3irjQGUyHw65slpZcwReRU3x3S3Q7X+js+nE/tP9VoCTa7C0EiWzYtDc009m4oOipVbVR57gvOKFR1nIQOZUkIC5O7mgK5r6HW7DFwH1/DDWjvAj7uugE+OIqBkQ/W5LYFvN8QjKkPk+dwZqQlrcKSBO86h25RJN8actQdu3baZg/Wc4UwTf7N4jDtjdQ4HXNNm3UZeA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=UE5XkuJw; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1334; helo=mail-dy1-x1334.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=IYAHHgzr;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=UE5XkuJw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132d; helo=mail-dy1-x132d.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x132d.google.com (mail-dy1-x132d.google.com [IPv6:2607:f8b0:4864:20::132d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1334; helo=mail-dy1-x1334.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x1334.google.com (mail-dy1-x1334.google.com [IPv6:2607:f8b0:4864:20::1334])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jG0R74mS2z3048
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 30 Oct 2026 10:13:55 +1100 (AEDT)
-Received: by mail-dy1-x132d.google.com with SMTP id 5a478bee46e88-3514b90bb89so324703eec.1
-        for <linux-aspeed@lists.ozlabs.org>; Thu, 29 Oct 2026 16:13:55 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jG0RG4QWBz30Tp
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 30 Oct 2026 10:14:02 +1100 (AEDT)
+Received: by mail-dy1-x1334.google.com with SMTP id 5a478bee46e88-36a0f27c9f4so289808eec.1
+        for <linux-aspeed@lists.ozlabs.org>; Thu, 29 Oct 2026 16:14:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1793315632; x=1793920432; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=Td9/mME215/4xVyAcQCSwVGtdaBr9meLthZDhvRiipQ=;
-        b=IYAHHgzrURa0agHQAUib8vB0OBiLA4kFRy3N+KdVyDXkfrRBjmjxFmBOlNYnqhte9P
-         0N4Y10ARNWXySaYWF3E26iDjxK7bUsXOt2WeRsmM5rYHeeDRosF7TguEbp7NcgukUZbp
-         lgdtipUOGrJUZAUa7rZUs3EtjAgCicUnb2+fYBy3YSPt+GWYRx24vFWvCMAnhobEKwJ1
-         qXsB8NXWsAxXcbB+ua0tH6VrRu83EspkmwXiKhxRVI/SOGmzuu5QDmWY2iRQ/eQDK5iP
-         UMdg4nXv00ImIkJB6kl3IdmUiYawTSQghXZwofTGJodEgmwOKefpkYu2Prml/KOls0nY
-         NaHQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793315632; x=1793920432;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20260707; t=1793315640; x=1793920440; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=Td9/mME215/4xVyAcQCSwVGtdaBr9meLthZDhvRiipQ=;
-        b=KNVIi0hS8J4aGt2LAW4q/JLN+5TXPepXefc79rBiXd6I3XqeBvczGedgbo1YtiwPWP
-         7tkG+z4b+/kGwuXg5czU0kbGisUAsxjLV7pc4zfgo7wJLuganHUN3l/+AWbRwGyjLdgi
-         zs5Vlg9UTcDRI1qIFj4W3LxXBUqUAhfgLlBdAIU3WHelP7jCfDwU9GdjOloHTu7B1dy0
-         4z9/nhFqNDo2p849PfOZAzvF+N+CHPyPS3ehP6vukTezDJ19Pbbd4A/4DzZCPOgGI1p6
-         NaTG1OaxEOkiyt532ey1dWIW3Iy4X+nQhkEQIDRZo4yVE1NcpTfunBW8H8Bgi5gRr6wK
-         UQrw==
-X-Forwarded-Encrypted: i=1; AKwUvBxUKXndR7I6wFQaP1yo2gar8ffD4oSo7XJcwR7BTquoaUQwUbkoThuwaicq3PpcO77T+YQnMu8XyCOXIeM=@lists.ozlabs.org
-X-Gm-Message-State: AFq9FYKDqlFeBYACqvo0kkXM4+SmUjKjQ4EOLHs7icxMaCSZiXHn9u/O
-	1nvDPRgPZprR7k4WUnv4/PXRPIFmwMlrXxHe/wX+XnMkEjuBMXf5P5xe
-X-Gm-Gg: AYBFou2aDn5MCJjAre7SRxIXs9KEowQ61Q/jmmJlbnUZXOAlw1FGRXR/zq7ANh2demo
-	4vrUMZQbQ/gUiX0rxRTz7Rs7wuSCei+zvHRNS8W2h0JuXayTSzj2d1A2hMClwQvY+74wN3YoV1N
-	l6ptQ3xrc1LUh5HuBWRrm4+nGHaHvcw734BaNQQQScT9+cMTradWzAUolcXNPJQo9hffeZDad1L
-	1cJXsaXs6Z9gAozp+0Lr8jbHvF+DdchDDjudsoxgE1l4IGr1/4oGHrZ0QrUavDoNwAuBmuJFs8v
-	SpDeOuF7+2qoww5Y5uHF3in8u5mRYVoMUcmEcHKtM30NmfB3noQQXlZgT45XBcNpbHrSe0As6rJ
-	78t64V+LDLLc2dPLyJEGUHekARfqq9Cyeobg18doNT5fe/4LvybcWyvW7kTDlaigPW58KdnvqHt
-	0WLSP2ig/FG2+7dmWgA66TOBzO4V+9j6s95j9JjOUYtkHFUcYPTr2Dijd4EcKlVN9j1JDJ3dWcr
-	IYh3m/9+Jhy1X1fgW4XkJsSwfY618Bu0WxClTcK/XOLnl/ROhKsZ20mQZE/QgeUod84bcdNKi4g
-	pPxhzitidYCAR3aVkWBJfhKDGm7apfKols+FyaUKAjGS
-X-Received: by 2002:a05:693c:6087:b0:369:f420:8679 with SMTP id 5a478bee46e88-36a42440304mr1174873eec.38.1793315631951;
-        Thu, 29 Oct 2026 16:13:51 -0700 (PDT)
+        bh=g63FfAzTLK8IBBMlj2c2vg7SELBaIEsEoos/xU6UVh8=;
+        b=UE5XkuJwZ0V27PZ9S5ADdWnN2eDJyrUq+A8PdsKCT6QYTYZIr1q89SVONtUQfygNY9
+         +tgERYCwUC6PUGCzKaIAYfwWwDDbk4nz7wIQa4TdfvIQT29QCn6oT+wNqVL/rJtNB+1Z
+         gOKswbTz1DL5dGPjzPRWBKET2+HU2I/cQ02Rl7/Kk+xziENZGPAH4poHxAHudrGuarlH
+         U6ttFjgdJKrNcyRJKD6q/Zb/DJcAm6Wzsbxyi1suMQtYpo7idBK9A7YvQwA5XfeBLQVN
+         gJbidNyPOk99opAY3mYZvJCubF7K5ru6JwrvPH8YF+cv35qnJLmQhYvvEAE4Dk0V5r4q
+         grVw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793315640; x=1793920440;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=g63FfAzTLK8IBBMlj2c2vg7SELBaIEsEoos/xU6UVh8=;
+        b=lQVOPg9I36pM/zPofTYri9s80p76ZKRh0eaBVx7St8QNJ+g4Mxp2By81Nu1a7MBhVp
+         IAU8UlSd6g8vBiXAX4d4tyUhuF4YRC9KfPaq6Ev0zpj3W+sezZWPhH6whxS2w5+TR4Xq
+         ZV9EOjxSYWVbUS1rlEZxTHNVIqeaAd09XxpsSPksRAtfpUt6nA0aO4PHiUWNJd6s4W4j
+         rNQVe8gOKtuFwRT29O/Dou47eQhqTy4PVAOM9vZcFkXf6mBgrjTQyeq+44o6AQZQ/E4J
+         EQ8YkbWZf4c7paj+MslBbiKCW4qyi4r+H/b2DxfNZac0uRIwzWUVKY9nDnWD16NwGq0u
+         ezRA==
+X-Forwarded-Encrypted: i=1; AKwUvBybBxIGzvHiXIZjphXb3sWajQP3y2LwrXHJ+vlAi85KLC5yy2p2MOq9KscwWUwbXEy8oUmVM6f72z6NFzI=@lists.ozlabs.org
+X-Gm-Message-State: AFq9FYIQ4j9hh4YP9SfaJWO0eww6biefsOWghDJqmNUFhNxVKBmFs2qM
+	w2RYyL9LK6F8CJFwf0rWjmTiJMljuhq5WXYrXOy7JZ/EuVrfplgPLnum
+X-Gm-Gg: AYBFou05SwwNJYn8pu24e3C3J0U99qtBfJ6wey4K2vNi5pfimIY9RwcjpNxbtNKby5a
+	8HAp+VlIwuSOSoD82+zljKoS2qfqEnELfO8mW8uu7FczRLNG4c77Q2jUFU4of6LrHLLopUlUYWL
+	akt7kdJ8E6DrU5YMyoCZ5q0jx2jLRU5OkCh1TBEe9ZuMcyAdxWX6E6kniU1OxaEZ0zTMiLBf88E
+	fG+EsL00od9ZYUIqDjIH8JIX+XNlm2JSvez7lSDR+ICsAgUBfnKhHr6DMbYJpXLx9bnqQCRmhHn
+	7M7ZWRxXSBpnSLtEhNph3rWnQ7mrREhqnIaIIUPzcjwq8BOXPogQkgGdkZZg/9pXHcrPcamSrfe
+	ey9cgw/kqh+0CXhcC5NV9318bEOjvGTpxcDotW9xsQ2p60ZfTuVnNa3YsKXclCTIsr95e2nOe9w
+	j7zRotmU2265GBnPBjnRDt8oH1gdf66tf3K4i4t9sQL87julVwphHKAkGj6J/ROCvyGVbOoGNAH
+	AmnfCs820UFgvTTkFSbnZyx/ySYOYFIn9T7X64l8xVfzjuHhovcDMZbwOOpfhVEZj9IHtzZiGE/
+	3UF9yyXVT3D7bmO/KQeLSQmgMU4xroCP7Cybt5s3/lkoSI9RejiB+tQJBo2DyxImaA==
+X-Received: by 2002:a05:7301:4246:b0:368:7c2d:a612 with SMTP id 5a478bee46e88-36a42345878mr1118524eec.10.1793315640398;
+        Thu, 29 Oct 2026 16:14:00 -0700 (PDT)
 Received: from debian.prasanth ([103.177.82.12])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-36a428af1dfsm1662742eec.7.2026.10.29.16.13.46
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-36a428af1dfsm1662742eec.7.2026.10.29.16.13.54
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 29 Oct 2026 16:13:51 -0700 (PDT)
+        Thu, 29 Oct 2026 16:14:00 -0700 (PDT)
 From: Prasanth Kumar Padarthi <prasanth.padarthi10@gmail.com>
 To: joel@jms.id.au,
 	andrew@codeconstruct.com.au
@@ -86,11 +88,14 @@ Cc: robh@kernel.org,
 	linux-kernel@vger.kernel.org,
 	openbmc@lists.ozlabs.org,
 	andrew@lunn.ch,
-	Prasanth Kumar Padarthi <prasanth.padarthi10@gmail.com>
-Subject: [PATCH v10 0/2] ARM: dts: aspeed: Add ASRock Rack B650D4U BMC
-Date: Fri, 30 Oct 2026 04:43:37 +0530
-Message-ID: <20261029231339.9497-1-prasanth.padarthi10@gmail.com>
+	Prasanth Kumar Padarthi <prasanth.padarthi10@gmail.com>,
+	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Subject: [PATCH v10 1/2] dt-bindings: arm: aspeed: Add ASRock Rack B650D4U
+Date: Fri, 30 Oct 2026 04:43:38 +0530
+Message-ID: <20261029231339.9497-2-prasanth.padarthi10@gmail.com>
 X-Mailer: git-send-email 2.47.3
+In-Reply-To: <20261029231339.9497-1-prasanth.padarthi10@gmail.com>
+References: <20261029231339.9497-1-prasanth.padarthi10@gmail.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -107,130 +112,40 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=4.0.1
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Add the board compatible and device tree for the ASRock Rack B650D4U
-AST2600 BMC. The DTS describes memory, SPI NOR, UART5, GFX memory,
-GPIO names, the I2C7 EEPROM/NVMEM MAC provider, MAC0/MDIO, and both
-ADC engines with an ordered IIO-to-hwmon bridge.
+Add the compatible string for the ASRock Rack B650D4U BMC,
+which is an AST2600-based server motherboard.
 
-This revision corrects regressions in v9's compatible ordering and
-binding acknowledgement, restores the revision history, and addresses
-the UART alias and DTS-style feedback. No new hardware is added.
-
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Signed-off-by: Prasanth Kumar Padarthi <prasanth.padarthi10@gmail.com>
+---
 Changes in v10:
-- Restore the binding Acked-by from Krzysztof's earlier review [R1].
-- Place asrock,b650d4u-bmc after the aspeed entries, as in v7/v8.
-- Drop the serial0 override and use the inherited serial4/UART5 alias
-  for stdout. Bootloader console arguments and getty must use ttyS4.
-- Consolidate the root node and order peripheral references and ADC
-  properties according to the strict DTS-style check.
-- Restore the earlier history and discussion links below.
+- Restore the original Acked-by and the alphabetical compatible position.
+- Revisions v7/v8 already carried both; their loss in v9 was accidental.
+Previous series and full history: see the cover letter.
+Prior binding review:
+https://lore.kernel.org/all/20260518-rustling-watchful-viper-b9c4b4@quoll/
 
-Changes in v9 [9]:
-- Enable ADC0 and ADC1 with 2.5-V internal references and pin groups.
-- Add the sixteen-channel IIO-to-hwmon bridge.
-- Rebase onto the Aspeed ARM DT maintainer branch and normalize GPIO
-  comma spacing. This revision inadvertently lost the binding Acked-by
-  and regressed compatible ordering; both are corrected in v10.
+ Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-Changes in v8 [8]:
-- Correct the validation report to multi_v7_defconfig with ARCH_ASPEED
-  and MACH_ASPEED_G6 enabled; retain the DTS and scoped review trailer.
-
-Changes in v7 [7]:
-- Correct GPIOP reset/power/NMI button/control names and remove the
-  obsolete F5 reset name; leave the binding unchanged.
-- Subsequent review requested the validation correction and carrying
-  Andrew's review tag forward [R4].
-
-v6:
-- Prepared locally only; no public submission. The sent version number
-  moved from v5 to v7.
-
-Changes in v5 [5]:
-- Add I2C7 EEPROM/NVMEM for MAC0 and select rgmii-id.
-- Use the standard OpenBMC 64-MiB flash layout.
-- Add initial GPIO names and the reusable 16-MiB graphics pool.
-- Drop the previous RX-delay-only justification.
-- Follow-up review requested GPIO mapping/style and threading fixes
-  [R2, R3]. Andrew's Reviewed-by applies only to MAC0/MDIO.
-
-Changes in v4 [4]:
-- Correct memory size to 512 MiB and add explicit flash partitions.
-- Report RGMII traffic tests and select rgmii-rxid; that delay rationale
-  was challenged and superseded by the rgmii-id selection in v5.
-- Order peripheral nodes alphabetically by label.
-
-Earlier public submissions:
-- v3 [3]: board-compatible/DTS series. Krzysztof supplied the binding
-  Acked-by and requested preservation of review tags [R1].
-- v2 [2]: early board DTS, including UART5 via serial4. Its complete
-  per-version changelog was not recovered; the archived patch is linked
-  rather than inferring an unsupported change list.
-- Initial submission [1]: board binding/DTS, with QEMU console and
-  board-identification testing reported in the cover.
-
-Review tags:
-The binding carries Krzysztof's original Acked-by address. Andrew's
-Reviewed-by remains explicitly restricted to MAC0 and MDIO nodes;
-no complete-board review is claimed.
-
-Validation:
-- Compiled and schema-checked the v10 board DTB with multi_v7_defconfig,
-  CONFIG_ARCH_ASPEED=y and CONFIG_MACH_ASPEED_G6=y, using
-  arm-linux-gnueabi-gcc and dtschema 2026.9.
-- dt_binding_check for arm/aspeed/aspeed.yaml completed without
-  diagnostics in the reported output.
-- CHECK_DTBS=y reported no board-specific errors. Two unmatched-schema
-  diagnostics remain for inherited aspeed,ast2600-lhc and
-  aspeed,ast2600-i3c-global nodes.
-- Strict dt-check-style and whitespace checks passed. Checkpatch reports
-  no errors and one MAINTAINERS reminder for the new board file, covered
-  by the existing Aspeed directory entry.
-
-These are DTB/binding checks, not a complete kernel build or boot test.
-
-Both ADC engines, twelve configured voltage rails and recovery after BMC
-restart were tested in a custom Linux 6.18.24 OpenBMC image with the same
-ADC settings. That image has separate power-control changes, a different
-flash layout and ttyS0 console configuration. The complete upstream DTS,
-including v10's ttyS4 console selection, has not been boot-tested.
-Voltage scaling is userspace configuration outside this series.
-
-Base: 8db593481c8669eddb8b4e21ea44f3fa11d9f030, aspeed/arm/dt
-https://git.kernel.org/pub/scm/linux/kernel/git/bmc/linux.git
-
-Previous submissions and review discussions:
-[1] https://lore.kernel.org/all/20260512175019.47548-1-prasanth.padarthi10@gmail.com/
-[2] https://lists.infradead.org/pipermail/linux-arm-kernel/2026-May/1129461.html
-[3] https://lore.kernel.org/all/20260518033440.17569-1-prasanth.padarthi10@gmail.com/
-[4] https://lore.kernel.org/all/20260830182036.284736-1-prasanth.padarthi10@gmail.com/
-[5] https://lore.kernel.org/all/20260915013110.4780-1-prasanth.padarthi10@gmail.com/
-[7] https://lore.kernel.org/all/cover.1790079398.git.prasanth.padarthi10@gmail.com/
-[8] https://lore.kernel.org/all/20261002062933.26497-1-prasanth.padarthi10@gmail.com/
-[9] https://lore.kernel.org/all/20261027034911.99482-1-prasanth.padarthi10@gmail.com/
-[R1] https://lore.kernel.org/all/20260518-rustling-watchful-viper-b9c4b4@quoll/
-[R2] https://lkml.iu.edu/2609.2/00630.html
-[R3] https://lkml.iu.edu/2609.2/00642.html
-[R4] https://lists.openwall.net/linux-kernel/2026/09/22/1982
-
-Prasanth Kumar Padarthi (2):
-  dt-bindings: arm: aspeed: Add ASRock Rack B650D4U
-  ARM: dts: aspeed: Add ASRock Rack B650D4U BMC
-
- .../bindings/arm/aspeed/aspeed.yaml           |   1 +
- arch/arm/boot/dts/aspeed/Makefile             |   1 +
- .../dts/aspeed/aspeed-bmc-asrock-b650d4u.dts  | 169 ++++++++++++++++++
- 3 files changed, 171 insertions(+)
- create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-b650d4u.dts
-
-
-base-commit: 8db593481c8669eddb8b4e21ea44f3fa11d9f030
+diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+index b7e70868e..c2275d7f4 100644
+--- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
++++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+@@ -81,6 +81,7 @@ properties:
+               - ampere,mtmitchell-bmc
+               - aspeed,ast2600-evb
+               - aspeed,ast2600-evb-a1
++              - asrock,b650d4u-bmc
+               - asus,ast2600-kommando-ipmi-card
+               - asus,x4tf-bmc
+               - facebook,anacapa-bmc
 -- 
 2.47.3
 
