@@ -2,88 +2,92 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 96ACC606A31A
-	for <linux-aspeed@archiver.kernel.org>; Wed, 28 Oct 2026 23:21:44 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3B578606A31D
+	for <linux-aspeed@archiver.kernel.org>; Thu, 29 Oct 2026 04:59:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=ilvokhin.com header.i=@ilvokhin.com header.a=rsa-sha256 header.s=mail header.b=scmphY3W
+	dkim=pass (2048-bit key, unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=Qtheivpq
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jFNfX37qlz2yMn;
-	Thu, 29 Oct 2026 10:21:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=178.62.254.231
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793176206;
-	cv=none; b=FZJwtgZnPc49RLOMYZT+/rJ6JUI2Hg6apxy4C2j0yMYqaDY39o+49uqOmdBfPpKeVBqNHKYTwQPx7A76j42ftykf1AmDqifUyyoOTEpwySg8kl+MLra4jsKxa3g+uBd34kVZD0FpGCuMwYRhxk6ov4zgRxEy15mfEFZMS2L4rQWlnr8fmhKSyYfMtJwgH8O+Ddlh5eJefme9wz8L4Zec4rBbeEL+EJ8d13mbIO0xVWlGTMmEDQp9/zP7l5E8N0G2hRF/B+RGAG4Q+SmLut6t0afAi1SM3uPJJcy3dbiSFsVP4c2dzluK7xF1JrY/85sx2x7FOjODyptlxCaTrbGTlQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793176206; c=relaxed/relaxed;
-	bh=K5LKyQgYKwl4SQBjA15TdSBAX9bbXAc3tVQHLRXEih8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=UAjD4H/mNdTLQEtD/Ad3yB8MoQkEvZkbJAV3aa8bGl2mW0sPBIgjPmHCQHicECh3CeGMbICbpK77ZH16LhbEACsXAq4PogCEgTcpOE8KlHBjF+ra8DIdgcZNZLuUfIKzs4MjsCZlQaqYDUW/wEDcUNVj6+CBDi8GenqnFqinyNBbbOXEjWeU+qtJu2YrEQywwwZS96LDP3NUQeVwezEP5gc3A/WK56O+yw+6ojUj0CLT7ikrZdViOoNavfWCYlzheqFYenCfLQu2cK5/hR3W3NdbH9aLP2Xnhr5k2bpxmfoTbMepH8DTtDlmW2EzLmSfIPhv2oueV6BkRDWwbjEfrQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=ilvokhin.com; dkim=pass (1024-bit key; unprotected) header.d=ilvokhin.com header.i=@ilvokhin.com header.a=rsa-sha256 header.s=mail header.b=scmphY3W; dkim-atps=neutral; spf=pass (client-ip=178.62.254.231; helo=mail.ilvokhin.com; envelope-from=d@ilvokhin.com; receiver=lists.ozlabs.org) smtp.mailfrom=ilvokhin.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=ilvokhin.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jFX8D35nGz30C6;
+	Thu, 29 Oct 2026 15:59:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c007::2" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793249964;
+	cv=pass; b=ZZ/zg1leGBtXkTHezDInGpqRt+cT/M8vahdfjoQocN5oBcTZUcQLKdLy3D1Pt7ikKcbaIG2YcQcBlSG+Kqi5Sf1oEaPmsb0UVGhd1qUueJ1K4PnS00PkV+Ui2SVMk9ceT+JmPfZW/b6oAHGXba5Aw9J3oWNZHrfKlibkC8PIOf5FIhQWs85QA2/ZhLKUAlMRc7z6E8ghivPe8Fh6MKTreV1RQ4B82RnvkYI1XzN86OYE68/mto5wYHhZ4YXRaUHx5Lbr+Ao726qfgaUhfg++B7EIyEdU0Jy5XII2+O7x2vmMRz1dD2PmPYil39U16id+mzkgK2SgXcezOyI6dvJ0Ig==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1793249964; c=relaxed/relaxed;
+	bh=cFlJpceVItKyObnWcTEixdVpHBpJQ8aAvP74E0iNDtk=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=LokSbvpYllls/BD9VU8vIrPqcL9cRQbtkJLv6zIjkOegnx5BYIrDQIRNegsJ3bDumW2y6Kch8+aTk3+JZ2MmGJo4fO2LpQxiR7VIhZXDVMZI7ZzjgE8zHmQbGb78qoy1SXKp5aFaQXbD+1Bl45Sf4LCaex2Clo80DiLEEJxzJEjYbnX871G9X+NUwK/uTgVjoO8QztHNABzKYpycZvEkucQn+2zxk0ypfIqfRI0H7ApqWprUY/M17I5c0oxuk172VagTGmqlYA76w43Ucxgc5wW1TbmlbzW78p0uPNk5yT6offMe+P6pUVx8JWrNyVqhF+/kXvl3L6VyRL2jmm0qOA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=Qtheivpq; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c007::2; helo=mw6pr02cu001.outbound.protection.outlook.com; envelope-from=jackyhuang@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=ilvokhin.com header.i=@ilvokhin.com header.a=rsa-sha256 header.s=mail header.b=scmphY3W;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=Qtheivpq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ilvokhin.com (client-ip=178.62.254.231; helo=mail.ilvokhin.com; envelope-from=d@ilvokhin.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 567 seconds by postgrey-1.37 at boromir; Wed, 28 Oct 2026 19:30:04 AEDT
-Received: from mail.ilvokhin.com (mail.ilvokhin.com [178.62.254.231])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c007::2; helo=mw6pr02cu001.outbound.protection.outlook.com; envelope-from=jackyhuang@nvidia.com; receiver=lists.ozlabs.org)
+Received: from MW6PR02CU001.outbound.protection.outlook.com (mail-westus2azlp170120002.outbound.protection.outlook.com [IPv6:2a01:111:f403:c007::2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jF0sm1qq4z2xPB
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 28 Oct 2026 19:30:04 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ilvokhin.com;
-	s=mail; t=1793175633;
-	bh=K5LKyQgYKwl4SQBjA15TdSBAX9bbXAc3tVQHLRXEih8=;
-	h=From:To:Cc:Subject:Date;
-	b=scmphY3Wunrsmp+34WEVPizPYNuER4OuyqQN+7wcAk8b243s6Ql6ZgZzt2Q3H2Zn3
-	 fwtCXvfv3lUFbjuEGdD5xIfcK8QirvUz/AoB8DzMfhdVnF9ZGl/3QyMwT3LvSHQOfV
-	 tYEhcDcVdgbtrWL1qNZRxMyUJGS6xrDDGVIAFe9A=
-Received: from localhost.localdomain (shell.ilvokhin.com [138.68.190.75])
-	(Authenticated sender: d@ilvokhin.com)
-	by mail.ilvokhin.com (Postfix) with ESMTPSA id E3225FBCE3;
-	Wed, 28 Oct 2026 08:20:32 +0000 (UTC)
-From: Dmitry Ilvokhin <d@ilvokhin.com>
-To: Alex Deucher <alexander.deucher@amd.com>,
-	=?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>,
-	David Airlie <airlied@gmail.com>,
-	Simona Vetter <simona@ffwll.ch>,
-	Jani Nikula <jani.nikula@linux.intel.com>,
-	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
-	Rodrigo Vivi <rodrigo.vivi@intel.com>,
-	Tvrtko Ursulin <tursulin@ursulin.net>,
-	Lee Jones <lee@kernel.org>,
-	Pavel Machek <pavel@kernel.org>,
-	Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Ryan Chen <ryan_chen@aspeedtech.com>,
-	Billy Tsai <billy_tsai@aspeedtech.com>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Kees Cook <kees@kernel.org>,
-	Andy Shevchenko <andy@kernel.org>,
-	Matthew Wilcox <willy@infradead.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Andy Whitcroft <apw@canonical.com>,
-	Joe Perches <joe@perches.com>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Shuah Khan <skhan@linuxfoundation.org>,
-	Randy Dunlap <rdunlap@infradead.org>
-Cc: amd-gfx@lists.freedesktop.org,
-	dri-devel@lists.freedesktop.org,
-	linux-kernel@vger.kernel.org,
-	intel-gfx@lists.freedesktop.org,
-	linux-leds@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org,
-	linux-hardening@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org,
-	linux-mm@kvack.org,
-	linux-doc@vger.kernel.org,
-	Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>,
-	Dmitry Ilvokhin <d@ilvokhin.com>
-Subject: [PATCH 00/10] treewide: switch to __nonnull_args() macro
-Date: Wed, 28 Oct 2026 08:19:39 +0000
-Message-ID: <cover.1793027261.git.d@ilvokhin.com>
-X-Mailer: git-send-email 2.56.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jFX8B1MZbz3048;
+	Thu, 29 Oct 2026 15:59:21 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=VOU0RmTVogo4o7kU5jiJgg1DKa2ERF/RWmnnKD4drvd1AWxDT1We7EzwB0N5SSArgc0PUTbJw522mJsigIoQV2XhphdR26xDAU6Fc86B6E7cgUFmYB4Tn2SOX7KdPEqXykiTGP/zpl1rxWfSyI62z8cNq4nhnwvh8f2l6i39oZPI3p2AF+grKLwBeKbmYwX4MYckHJq+AQgk0ASS7+8xK/VWAjPMTwJUWUQYKfMhtcoZKGMiOF69ZJub5IWF4e8ro5J360us35nQp2uAXdIT94VqQyfufBpBDGGXPfhUiDheOjl7Wd51hsHU/59Nw02OZY7peQtBReTlWxAkkpIO6A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=cFlJpceVItKyObnWcTEixdVpHBpJQ8aAvP74E0iNDtk=;
+ b=b1k46ZMyHXeFrYapRPXJALb3WptMWB6BKe7SqvRSNI8FVqLvX3plSLiz6HkzaqtY4x8/7E53ysCjtVnJjiwymTj50WLer5Jo0M3Fni+wyaU/RzeQjq40kq+0ePikU9PPuMDFG+lZ2jbKhPA12lCXU2TgW101WLiMigCNkUOyXuPSeFS0xNbSzWfySgvI3OnCxQm/n9KRChjEh1D5dLZdJc/kKCragHbHuxpJbu8BXTPVByMLoCP2brpoQ7ES3jp13Z0uCLPjVX+pTQPdEgprfyeN/BvClsI+1VtjPvRltsEyE2rBjX0OTlRYbXhQ9PLaJdC2ZnnkD07HYZ5KkiHxjw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 216.228.117.161) smtp.rcpttodomain=codeconstruct.com.au
+ smtp.mailfrom=nvidia.com; dmarc=pass (p=reject sp=reject pct=100) action=none
+ header.from=nvidia.com; dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=cFlJpceVItKyObnWcTEixdVpHBpJQ8aAvP74E0iNDtk=;
+ b=QtheivpqweHzW1SAJ9BYxk99tWFMjXvT2BewZlwGcILi1dv0GWGxRt8fJBSXzpTHG7CvBzTGFEg09Ph2jBFDmR6Tw7Hb59dlrK3mkuA2kyn8njasE5TR1WuwM3bX3tRE/uOTBpW/DeHZ+R8LjFT9aM7elR7HICkhTgkH3iemFgyUDgRE2BCNiJMNfivALy1z8r+0Zi9uzG796mHdtYYWm9x9qoUATzzQFeTHmCwTX96UCVlAgY4C9ZCjLr1E/3yl/+fRqhZH8MdpkEfwZYplHonef4YP4xmWMpgxbr0U41yZd8ST/c35W+3fA7pU4e5OuTHAhO6Ng2gaVsesP9CJkw==
+Received: from BN1PR12CA0012.namprd12.prod.outlook.com (2603:10b6:408:e1::17)
+ by SJ1PR12MB6146.namprd12.prod.outlook.com (2603:10b6:a03:45b::6) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.569.8; Thu, 29 Oct
+ 2026 04:59:02 +0000
+Received: from BN5PEPF00046989.namprd02.prod.outlook.com
+ (2603:10b6:408:e1:cafe::26) by BN1PR12CA0012.outlook.office365.com
+ (2603:10b6:408:e1::17) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.21.546.22 via Frontend Transport; Thu,
+ 29 Oct 2026 04:59:02 +0000
+X-MS-Exchange-Authentication-Results: mx.microsoft.com 1; spf=pass (sender IP
+ is 216.228.117.161) smtp.mailfrom=nvidia.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=nvidia.com;
+Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
+ 216.228.117.161 as permitted sender) receiver=protection.outlook.com;
+ client-ip=216.228.117.161; helo=mail.nvidia.com; pr=C
+Received: from mail.nvidia.com (216.228.117.161) by
+ BN5PEPF00046989.mail.protection.outlook.com (10.167.245.38) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.21.569.4 via Frontend Transport; Thu, 29 Oct 2026 04:59:01 +0000
+Received: from rnnvmail201.nvidia.com (10.129.68.8) by mail.nvidia.com
+ (10.129.200.67) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.56; Wed, 28 Oct
+ 2026 21:58:43 -0700
+Received: from nvidia.com (10.126.231.37) by rnnvmail201.nvidia.com
+ (10.129.68.8) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.56; Wed, 28 Oct
+ 2026 21:58:41 -0700
+From: Jacky Huang <jackyhuang@nvidia.com>
+To: Andrew Jeffery <andrew@codeconstruct.com.au>, Joel Stanley
+	<joel@jms.id.au>
+CC: <devicetree@vger.kernel.org>, <linux-aspeed@lists.ozlabs.org>,
+	<linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
+	<openbmc@lists.ozlabs.org>, Jacky Huang <jackyhuang@nvidia.com>, Rob Herring
+	<robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+	<conor+dt@kernel.org>, Ryan Chen <ryan_chen@aspeedtech.com>, Billy Tsai
+	<billy_tsai@aspeedtech.com>
+Subject: [PATCH 1/2] dt-bindings: arm: aspeed: Add NVIDIA MGX Vera C2 BMC
+Date: Thu, 29 Oct 2026 13:58:07 +0900
+Message-ID: <ed348a94c9432eeea53f50448a61d93f99de7821.1793243187.git.jackyhuang@nvidia.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <cover.1793243187.git.jackyhuang@nvidia.com>
+References: <cover.1793243187.git.jackyhuang@nvidia.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -98,71 +102,64 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=4.0.1
+Content-Type: text/plain
+X-ClientProxiedBy: rnnvmail202.nvidia.com (10.129.68.7) To
+ rnnvmail201.nvidia.com (10.129.68.8)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BN5PEPF00046989:EE_|SJ1PR12MB6146:EE_
+X-MS-Office365-Filtering-Correlation-Id: 48033f11-d62b-4830-20cd-08df35795997
+X-LD-Processed: 43083d15-7273-40c1-b7db-39efd9ccc17a,ExtAddr
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+ BCL:0;ARA:13230040|36860700016|1800799024|23010399003|376014|7416014|82310400026|11063799006|56012099006|261009223027099003|10067099003|261026121527099003|261021121427099003|18002099003|22082099003;
+X-Microsoft-Antispam-Message-Info:
+ aySiOG7QOAa4YEMacHp7KS5E4qPalYWY0W8N3MM2rQGofnjQyxAmSd6TMvz4QLsh912ho3LJUenlTW6kqgnrzkJgirFaxcpcobJdDLkdTglOToKGLlzOXwuC3yn99lnawIF1LtFbsnumLsLSeaR8qagCdjjHCYqxQ/M144YgxZ0illZEX1PLbp+5ykI9im5OM81D8CYwDJ+E5Xo2q+uWdR2YAawM8ZUN3SMPONxzeTD35U8HnZk4k2bM9FEEg/gNUgSmJfaYt4xgZhJhmpcxk0Iss2qNbYHrsLB94KanZGtGZdBnySeuE2mS+bvWF6fc7lZJTIv9JeMTpKZVeRObInCJ07+GnZFRYoCeNKj9ivqTONJTupt/4E2v+IJYf/ereuY1PB+r5PXoIpf09pi3cY/n0BqCPjajHUuii1/kr1Bt7aC1wX4VddToAK0fdVTQwYwEGP59Yt+dygJzJnW3ltFHCIn+v8ZQnw4kArLsdjOywV8R8FWcq6WqLhd5ib9LSuCf2/icS9N235Jaq1dUO31zcva2g/1W0moID4ii8WyNhI5LTAAK8xaGSNBENfNRw0iudUGvsfHupOcKo9O5martG9i/c9Mg/O/uZvAMDxxiLpm0Obv/rTQjmUSkM6E5y3TI2gLCmtYxFVsncc/xEQrjDoyIwJWjaATOORqWxn5YLXhjWBJQvUnTyC7m3VLLRGXdfYFMjuYSscSiMzeP9Q==
+X-Forefront-Antispam-Report:
+ CIP:216.228.117.161;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:dc6edge2.nvidia.com;CAT:NONE;SFS:(13230040)(36860700016)(1800799024)(23010399003)(376014)(7416014)(82310400026)(11063799006)(56012099006)(261009223027099003)(10067099003)(261026121527099003)(261021121427099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+ ITV1s70leoQTOs4ruS/pWun5YPgMp/UJ66IgZJqglGNJhhz6MnX+zgURvfC7Eef/XSX9fkTqq2vU3rFXGS1kuAqNF0oDB9n/cwZUDOQW+g9tXUuGQjGOKid4deQqzGQHss8lZ46VravdyJ7e0XUsDHYgEWBdh1ATgsFGcWEpRcEeQ2QzV1lFOlldeCjFv6GltldmCTAnza+CosedZ36dW+2QezsIBEy3rd9FOPNWCT35GMrPu7nMCYoNca1uM1in8oXFy1pZuDbqVaACW2yv6lVO6L9ER/d5/Sc9rzaf42Q9rakwbN2K1XO5yg1GEOdIq6cniWrd9ZLEWXu5T/x9IcKEsLc+W/nb/mxJv8zqoMAR/g68DKL884vTWhLa3yZyGCSvGcdOoLutApTXXz9/81Un5iYTnIB16jhaQN0TD12+8f0EDYU9D1rHCvqsyRsG
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Oct 2026 04:59:01.8443
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 48033f11-d62b-4830-20cd-08df35795997
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[216.228.117.161];Helo=[mail.nvidia.com]
+X-MS-Exchange-CrossTenant-AuthSource: BN5PEPF00046989.namprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ1PR12MB6146
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Commit 22302af28d3f ("cleanup: Annotate guard constructors with
-nonnull") added the __nonnull_args() macro to wrap the raw compiler
-attribute, keeping the attribute's quirks in one place rather than
-open-coded at every call site.
+Add the board compatible for the NVIDIA MGX Vera C2 BMC, which is
+based on the ASPEED AST2600 SoC.
 
-This series replaces the remaining open-coded __attribute__((nonnull))
-users with __nonnull_args() to standardize nonnull attribute usage
-across the tree.
+Signed-off-by: Jacky Huang <jackyhuang@nvidia.com>
+---
+ Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-Each patch can be applied separately by the respective maintainers. The
-only dependency is kernel-doc: the string and lib/list_sort patches need
-patch 1 ("docs: xforms_lists: support __nonnull_args()") in the same
-release, otherwise strends() and list_sort() drop out of the generated
-documentation.
-
-Latest Sparse release could not properly parse __nonnull_args() without
-arguments. Fix was proposed [1] and merged, but until updated version of
-Sparse will reach wide masses it might trip on __nonnull_args() without
-arguments.
-
-There are few more instances of __attribute__((nonnull)) usages left in
-the tools subdirectory, they are perf related copied files and can
-(should?) be updated separately after this patchset lands.
-
-Build-tested allmodconfig with GCC 11.5.0 and clang 22.1.8.
-
-[1]: https://lore.kernel.org/all/20261019175633.415493-19-bvanassche@acm.org/
-
-Dmitry Ilvokhin (10):
-  docs: xforms_lists: support __nonnull_args()
-  string: Switch to __nonnull_args() macro
-  lib/list_sort: Switch to __nonnull_args() macro
-  xarray: switch to __nonnull_args() macro
-  drm/i915: switch to __nonnull_args() macro
-  drm/amdgpu: switch to __nonnull_args() macro
-  drm/gem: Switch to __nonnull_args() macro
-  leds: pwm: Switch to __nonnull_args() macro
-  soc: aspeed: lpc-snoop: Switch to __nonnull_args() macro
-  checkpatch: suggest nonnull attribute conversion
-
- drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c    | 2 +-
- drivers/gpu/drm/i915/gem/i915_gem_object.h | 4 ++--
- drivers/gpu/drm/i915/i915_request.h        | 4 ++--
- drivers/leds/leds-pwm.c                    | 2 +-
- drivers/soc/aspeed/aspeed-lpc-snoop.c      | 4 ++--
- include/drm/drm_gem.h                      | 2 +-
- include/linux/list_sort.h                  | 4 ++--
- include/linux/string.h                     | 2 +-
- include/linux/xarray.h                     | 4 ++--
- lib/list_sort.c                            | 6 +++---
- scripts/checkpatch.pl                      | 3 +++
- tools/include/linux/compiler.h             | 4 ++++
- tools/lib/python/kdoc/xforms_lists.py      | 1 +
- 13 files changed, 25 insertions(+), 17 deletions(-)
-
-
-base-commit: 6b4b543fa18757297ac756a6fe6e64f506b7844a
+diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+index b7e70868e..92127d7c4 100644
+--- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
++++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+@@ -115,6 +115,7 @@ properties:
+               - jabil,rbp-bmc
+               - nvidia,gb200nvl-bmc
+               - nvidia,msx4-bmc
++              - nvidia,vr-c2-bmc
+               - qcom,dc-scm-v1-bmc
+               - quanta,s6q-bmc
+               - ufispace,ncplite-bmc
 -- 
-2.53.0-Meta
+2.43.0
 
 
