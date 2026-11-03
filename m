@@ -1,62 +1,81 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A0D4C606A31B
-	for <linux-aspeed@archiver.kernel.org>; Tue,  3 Nov 2026 20:40:40 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E0D2E606A31B
+	for <linux-aspeed@archiver.kernel.org>; Tue,  3 Nov 2026 23:01:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=rnplus.nl header.i=@rnplus.nl header.a=rsa-sha256 header.s=dkim header.b=sKmCYXkY
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Y2DPOtoe
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jK0nv01lDz2xdX;
-	Wed, 04 Nov 2026 07:40:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=178.251.25.70
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793738434;
-	cv=none; b=H4DGDRLWn9eHvbyNyOrdh9rkULt+XM4RilSdTT5lXxy1tXY/m2ppstGoBmRNkUjPCV7z3KcVlHx5S7ncaeng4MQIipRMnddIa3OLCXZm1eRUlaLazFnLMLEyoTZa5dSpG2X7NzekX4xO5w1eyHbYJ0IW2JRrQjB2GRjL/rCxI3F13OMrfJWoH1BdxyMiHN+AYC8r1TlBl+ReivFWGtvd7+lXOlnf11VHh7XiB3oGrEyj1S5WW+TcmrwHBrH9bTuOqRk6wIXy/BvpnNslMIV03U23hUZ2f7SDscKhrFpjKZCcAcr2nHhhOzCoq2Te25IZSyVAMgIHsFJlLhG50x+JXg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jK3vz2X0Pz2y2B;
+	Wed, 04 Nov 2026 10:01:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793708688;
+	cv=none; b=RRjZ9w+xQvasuxdo7rBVOSu3SpNZXqZFn5uVmbvJhv+jGw4eNte1jMq0cbgmZICIOxPyuLRjLW89R9yuMWKOu/97kcec+jc7Vd4zSY590lju488NEr1J6YORM3/uo69Pb70KacrYTw7JP7Gontq69BmvXzqiYO/rcZ5mY0OkF1IZwslJJ20esuW6tAXIzYm4DW77APkg8brTzowgQCyTT6HFDdga0w2k17wcwJUAd6+sx43RITyM6v1t3x5BImDxdXhOh0FbhO4W+U1rDx4F/JOU37DcdjyOtmNvUNUsuFqaydL25s8ooqE2YIJh7DH556iTdDC8jr/Z/oUq8r3PTw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793738434; c=relaxed/relaxed;
-	bh=MwHtqe686HLLhg33s9GZ+hUKCHbjkbGAfCD5MLRkHsE=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=jcQRd8wcVw0wdlmvKhtGYyo+SiBcjY1ZKfzb2nBTZLVjSpaP9n1BJ2WCKIIpPJQPufRPLpJLj1ALlpUg9/tgPvy6wkJAg5/p1F2kl9oCKYeGW0t8hY9qI68osKevQzhJFyGllvbI/LH6KLH00JmVVy0D6Y1Mgz3fgVz99yEYSsTF2h7tHJpAF9SzN09hXjsH89S6TgljkO9SmnRyldA4CYo2WfkbwgyuG9Ob7Sevxb3aCmJ/9RM22VIQAzdoc1qLUKbyu2V7XtjC/1jBwUXmNliGuqL6Epi8wpj08G5ms7g4TTDlVoYDbnBz53bvfoBmqYDiVG1GQH6xkgzLMFJiPw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=rnplus.nl; dkim=pass (1024-bit key; unprotected) header.d=rnplus.nl header.i=@rnplus.nl header.a=rsa-sha256 header.s=dkim header.b=sKmCYXkY; dkim-atps=neutral; spf=pass (client-ip=178.251.25.70; helo=mail.rnplus.nl; envelope-from=renze@rnplus.nl; receiver=lists.ozlabs.org) smtp.mailfrom=rnplus.nl
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=rnplus.nl
+	t=1793708688; c=relaxed/relaxed;
+	bh=2DQ96R/0ulhMhCPuDty/w5YNIxZWO7PXWDO3bMU5BOI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=A+N1XxepybAqdLT3iMk+TBxNzByy2+yNf5YtaNRrYKaXDjafXOUttPITlq7Yea/l0npgGg+V5cGKhbdWgR/UCTBAfMqHWEPx/WoZ8V4o+iZtJAs5OmSUG+Q2DdmMP9HUKjh+kD4zO1r9ppdyyvqWm4yGP9YwMFS37D4xgwaYXFiZ8D8u248hD8yq+QQt+WmQLIcOYdAMLCv7ok9RogpZMes8uDW+6uYMvOXpMbP0EVEIeFhr+DeDuLisVYBSC5SqfD3nU7Jh/LvMoOlmTDJ67sQwUfeC3RuKiLxjiQ+pS0xVoyou2qmbON3NDzDJsy4AMU0/gEepORFFq5Vt+q0E7g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Y2DPOtoe; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brgl@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=rnplus.nl header.i=@rnplus.nl header.a=rsa-sha256 header.s=dkim header.b=sKmCYXkY;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Y2DPOtoe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=rnplus.nl (client-ip=178.251.25.70; helo=mail.rnplus.nl; envelope-from=renze@rnplus.nl; receiver=lists.ozlabs.org)
-Received: from mail.rnplus.nl (mail.rnplus.nl [178.251.25.70])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brgl@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jK0nn3ZnDz2xlY
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 04 Nov 2026 07:40:28 +1100 (AEDT)
-Received: from localhost (unknown [127.0.0.1])
-	by mail.rnplus.nl (Postfix) with ESMTP id 12DA5379780
-	for <linux-aspeed@lists.ozlabs.org>; Tue,  3 Nov 2026 20:33:44 +0000 (UTC)
-X-Virus-Scanned: amavisd-new at rnplus.nl
-Received: from mail.rnplus.nl ([127.0.0.1])
-	by localhost (mail.rnplus.nl [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Qvq7y09XGkZA for <linux-aspeed@lists.ozlabs.org>;
-	Tue,  3 Nov 2026 21:33:42 +0100 (CET)
-Received: from E595 (unknown [185.10.157.158])
-	by mail.rnplus.nl (Postfix) with ESMTPSA id 45CC737963A;
-	Tue,  3 Nov 2026 21:33:39 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=rnplus.nl; s=dkim;
-	t=1793738020; bh=dZ4MqU5UF2diSUFxnmeqIV/vngMvCegRDFqFTjout1g=;
-	h=From:To:Cc:Subject:Date;
-	b=sKmCYXkY8tZ6nSXpHUqoJ64JTJxCtzSCMqPqL+GYDRKYpp5zRKtSTeRQXXZlVx5f5
-	 ofj5qRnZN0zZjdH0xCRfiXOub5URoOaht+YxgNzLb7sqXuFcveqUBrl7WrSfVbO3zw
-	 BfG/42nLc+bVyu2D7RD5aKyDHcixKKtl5VHgxN+Q=
-From: Renze Nicolai <renze@rnplus.nl>
-To: Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: Renze Nicolai <renze@rnplus.nl>,
-	devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH 0/4] ARM: dts: aspeed: x570d4u: devicetree fixes and cleanups
-Date: Tue,  3 Nov 2026 21:33:01 +0100
-Message-ID: <20261103203308.54789-1-renze@rnplus.nl>
-X-Mailer: git-send-email 2.56.0
+	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4jJnnq1Vh3z2xGg;
+	Tue, 03 Nov 2026 23:24:47 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with UTF8SMTP id A7BD340B58;
+	Tue,  3 Nov 2026 12:24:44 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with UTF8SMTPSA id 5D33F1F00919;
+	Tue,  3 Nov 2026 12:24:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1793708684;
+	bh=2DQ96R/0ulhMhCPuDty/w5YNIxZWO7PXWDO3bMU5BOI=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=Y2DPOtoeBhQC9H3iDa32ycCqijeUsQyOWUtRGHIYLH0dXLxZUgEjv6SLfXFJy1+yx
+	 REGyvcQMfuo3sZnBFrDxClG/MkMaDIKnK90l7RtK0PDTXjGL6CaKqpsTGr1H383bgl
+	 4TyhCnpi2mmiJ18g5WO9YEH6HMlaMgnH5EIfxQ78ETdDfCbW0Nq7FnvPdbMq/lkRzu
+	 YVxjlkUTO+w5EzhvM5yynGpZ7GDn2zzh6C78NzGOnNAyoUN8QGMgJIfas682UgvcoY
+	 za6RIYThdNdxsriG9j3+KBkt/9fGZF5z8OM8R3azJs/Dg4hZMYuSZR8c3Kxw2uTAo8
+	 Un2lK6ZcYoQzw==
+Date: Tue, 3 Nov 2026 13:24:40 +0100
+From: Bartosz Golaszewski <brgl@kernel.org>
+To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig_=28The_Capable_Hub=29?= <u.kleine-koenig@baylibre.com>
+Cc: Linus Walleij <linusw@kernel.org>, Andy Shevchenko <andy@kernel.org>, 
+	linux-gpio@vger.kernel.org, linux-kernel@vger.kernel.org, Lixu Zhang <lixu.zhang@intel.com>, 
+	Sakari Ailus <sakari.ailus@linux.intel.com>, 
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, Florian Fainelli <florian.fainelli@broadcom.com>, 
+	Eugeniy Paltsev <Eugeniy.Paltsev@synopsys.com>, Frank Li <Frank.Li@nxp.com>, 
+	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
+	Fabio Estevam <festevam@gmail.com>, Imre Kaloz <kaloz@kernel.org>, 
+	Conor Dooley <conor.dooley@microchip.com>, Valentina Fernandez <valentina.fernandezalanis@microchip.com>, 
+	Daire McNamara <daire.mcnamara@microchip.com>, Daniel Palmer <daniel@thingy.jp>, 
+	Romain Perier <romain.perier@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, imx@lists.linux.dev, 
+	linux-arm-kernel@lists.infradead.org, linux-riscv@lists.infradead.org, 
+	Hoan Tran <hoan@os.amperecomputing.com>, Alan Borzeszkowski <alan.borzeszkowski@linux.intel.com>, 
+	Mika Westerberg <westeri@kernel.org>, Hans de Goede <hansg@kernel.org>, 
+	Nuno =?utf-8?B?U8Oh?= <nuno.sa@analog.com>, linux-hwmon@vger.kernel.org, 
+	Matti Vaittinen <mazziesaccount@gmail.com>, "Enrico Weigelt, metux IT consult" <info@metux.net>, 
+	Viresh Kumar <vireshk@kernel.org>, virtualization@lists.linux.dev, Yinbo Zhu <zhuyinbo@loongson.cn>, 
+	Thierry Reding <thierry.reding@kernel.org>, Jonathan Hunter <jonathanh@nvidia.com>, 
+	linux-tegra@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Srinivas Neeli <srinivas.neeli@amd.com>, 
+	Michal Simek <michal.simek@amd.com>, linux-aspeed@lists.ozlabs.org, asahi@lists.linux.dev, 
+	linux-mediatek@lists.infradead.org, openbmc@lists.ozlabs.org, linux-omap@vger.kernel.org, 
+	linux-renesas-soc@vger.kernel.org, linux-unisoc@lists.infradead.org, 
+	linux-rockchip@lists.infradead.org, linux-stm32@st-md-mailman.stormreply.com, 
+	Michael Buesch <m@bues.ch>, William Breathitt Gray <wbg@kernel.org>, 
+	Robert Richter <rric@kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
+	linux-acpi@vger.kernel.org
+Subject: Re: [PATCH v4 00/23] gpio: Improvements around device-id arrays
+Message-ID: <oiwdi2r7fbay3dsghfaqzejpv7d5dpuerh5jy2vsw3kjyhvhdm@hyrpff5ytihz>
+References: <cover.1793097104.git.u.kleine-koenig@baylibre.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -70,41 +89,44 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=4.0.1
+In-Reply-To: <cover.1793097104.git.u.kleine-koenig@baylibre.com>
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-A handful of independent fixes and cleanups for the ASRock X570D4U
-BMC devicetree, found while working on OpenBMC support for the board:
+On Tue, Oct 27, 2026 at 11:48:37AM +0100, Uwe Kleine-König (The Capable Hub) wrote:
+> Hello,
+> 
+> the original motivation for this series are the patches that convert the
+> arrays to use named initializers, see
+> https://lore.kernel.org/all/cover.1780048925.git.u.kleine-koenig@baylibre.com/
+> for the idea behind it. Looking left and right a bit while implementing
+> that, the series grew a bit.
+> 
+> Changes since v3 (available at
+> https://lore.kernel.org/all/cover.1793030820.git.u.kleine-koenig@baylibre.com):
+> 
+>  - Picked up review tags (b4 even found some from v2)
+>  - Add a 2nd MODULE_DEVICE_TABLE(of, ...) in drivers/gpio/gpio-mpc5200.c
+>    (My grep didn't handle >1 driver per file well), noticed by Sashiko
+>  - New patch to use named initializers for auxiliary_device_id arrays
+>  - Fix code style of of_device_id array in drivers/gpio/gpio-grgpio.c
+>    (My script doesn't handle of_device_id::name) and
+>    drivers/gpio/gpio-ppc44x.c (didn't exist yet when I sent v2 and
+>    failed to notice that for v3)
+>  - Fix code style of auxiliary_device_id array in
+>    drivers/gpio/gpio-shared-proxy.c, missed as I didn't have a script
+>    for auxiliary_device_id before.
+>  - Dropped a few broken email addresses from Cc:
+> 
 
- - Remove the w83773g temperature sensor node, which is only present
-   on 10GbE variants of the board and should not be instantiated
-   unconditionally.
- - Fix the tachometer channel assignments for FAN4-FAN6, which did
-   not match the board's actual PWM wiring and produced incorrect
-   fan speed readings.
- - Give the eth0/eth1 MAC address nvmem cells unique node names, since
-   they previously both resolved to the same NVMEM cell name once the
-   unit address is stripped.
- - Add gpio-line-names entries for a few GPIO lines (NMI, BIOS
-   chip-select, LPC reset, hard power-off) that were previously
-   unnamed.
+If there are no objections, I'll queue it by the end of this week.
 
-Renze Nicolai (4):
-  ARM: dts: aspeed: x570d4u: Remove w83773g temperature sensor
-  ARM: dts: aspeed: x570d4u: Fix fan tach channel assignments
-  ARM: dts: aspeed: x570d4u: Give unique names to MAC address nvmem
-    cells
-  ARM: dts: aspeed: x570d4u: Add some GPIO line names
-
- .../dts/aspeed/aspeed-bmc-asrock-x570d4u.dts  | 25 ++++++++-----------
- 1 file changed, 10 insertions(+), 15 deletions(-)
-
--- 
-2.56.0
-
+Bart
 
