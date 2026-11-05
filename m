@@ -2,94 +2,94 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 538CD606A31B
-	for <linux-aspeed@archiver.kernel.org>; Thu,  5 Nov 2026 23:27:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B0596606A31B
+	for <linux-aspeed@archiver.kernel.org>; Thu,  5 Nov 2026 23:36:47 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=paul-moore.com header.i=@paul-moore.com header.a=rsa-sha256 header.s=google header.b=V5SU1EJR
+	dkim=pass (2048-bit key, unprotected) header.d=paul-moore.com header.i=@paul-moore.com header.a=rsa-sha256 header.s=google header.b=AoCACtb7
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jLJPg02wYz2xH7;
-	Fri, 06 Nov 2026 10:27:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::1035" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793920346;
-	cv=pass; b=njWVq6K0hOuaW+wMKEDzijZ13/vSO4flCu2YLuhjR9ij8RvM6SARP0TabF/NBvvxXGugTW3W5OU1L3Wft5Dn3iWQIWw8IZq2mA6miaJKp6J0c8vpHEEwAgAvDFgj0qIpLXKWIRFrdTbC4mnCeghCD4yuNk5zoP2UVNrRLo6QsnjgP17uen4fwCLNDOx3jaDDTIyLQVhCbcspiJQ6DueMl3fK5ENuFcIlIQzqFxLWH4/DyQfJ05g4B9l7Jy4jQuyM9BhMF5TY06aOJayBnOsJbui4F3g18LK1dRK337/VlP3gYxpwRK9c2q1SdIUijvTBSFVTyIgMzTeov4ZtTUhrow==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jLJcF5lx7z2xHP;
+	Fri, 06 Nov 2026 10:36:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::532" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793920459;
+	cv=pass; b=A+69YIfwpjUmYyRAiAesy2r27rwnDIeN8O9oDRgQ325ksKzEgFCWMgW0dntOtG8SmzSrw+VhpbyJNB1KDedTm0ZsTS5S4UculdG99SlHBw/e7iau2xInEAPJRSu8iid89SauiJPbypWVVitO5GrgNVRVnCxb8tODs2ScRjkzTLbXq+N6yl+Z52hbcySzALt57Glb/zmDKcT91jnAozuf8JUgYhcmEkLHz0Z5m3uytoV9JcnLyAgcD1FlCqLjzsUT08r+ZfmNv9DKlgWTbRW4E9guV5Ass71oTmYi2OFtbBk/2RaeTQyU04boy8535weIBcSpW0BJLfnpQM4EqYzPOQ==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793920346; c=relaxed/relaxed;
-	bh=w+g0xKR97zcXC//9XGcArRTzIRGbaLo0LA3je3jFgFY=;
+	t=1793920459; c=relaxed/relaxed;
+	bh=mGiD8zQqMuzCkGXAZBtgumh8HlT9rNPiWNa35MXqkeQ=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=c/NspDpPD8sPyy1eC9w5GnNCAkpzlW9xAQxP6jPHRdqGs+igz9MfckcnT2VpOK9mRQyljqT7HvCh5km5yMiRXmIXfefKCfjIHTQ0zSUyR6RX8RXKN71RKOr2qmvbgrC0z1ZZFU4ZIH623H4JuMi3/3u5FmZCLagn7V9YjzEs84RdbNjWBl1ncSWuUaRWYR3vNx+7FNcqOW8Db9Dp/KCqy2iVnkXhW+8ddMMji4alA3bh7ep0pxsqKO8eWCTjNpILb89NYhNelAXvvcLKDPMtz40qBYbzxmQOMFW26MyTcUvV++TVNvyArmNuqTNXR826eD/LZkKE1BR9vq6yxYWI4A==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=paul-moore.com; dkim=pass (2048-bit key; unprotected) header.d=paul-moore.com header.i=@paul-moore.com header.a=rsa-sha256 header.s=google header.b=V5SU1EJR; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1035; helo=mail-pj1-x1035.google.com; envelope-from=paul@paul-moore.com; receiver=lists.ozlabs.org) smtp.mailfrom=paul-moore.com
+	 To:Cc:Content-Type; b=a43Z8B/oyVPhzT1HdK/s23EJ82Z5BEZQqt0wm0rmE/THE4QIqrMVa4SUcoRlbxRpzx9+LxAebu5CFZOwgNyOOoaFos6SFlj1JHi2VEyarqZGK37iSroEkd0e80cgFIJgFqIAlxx11QFIZaiTkNnJnJw5VkQICxX3CIUiYPNySEOqiKrGd3IKG+ndawDpPEUzCW53R+tjOCDQgRKNzhPXdX1FyTQkCqi/IzYxFGCe/AvG2B1Tu4VA/UEJp2aNi224ZErEoj2qm9WgG/zLARmJpbHyl+VBnKCsZb6KsFS4U8I8hTdeSYF9w0nCxzwiwQ3I3C2hxSDPCbvKN+0IYv3Hmg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=paul-moore.com; dkim=pass (2048-bit key; unprotected) header.d=paul-moore.com header.i=@paul-moore.com header.a=rsa-sha256 header.s=google header.b=AoCACtb7; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::532; helo=mail-pg1-x532.google.com; envelope-from=paul@paul-moore.com; receiver=lists.ozlabs.org) smtp.mailfrom=paul-moore.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=paul-moore.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=paul-moore.com header.i=@paul-moore.com header.a=rsa-sha256 header.s=google header.b=V5SU1EJR;
+	dkim=pass (2048-bit key; unprotected) header.d=paul-moore.com header.i=@paul-moore.com header.a=rsa-sha256 header.s=google header.b=AoCACtb7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=paul-moore.com (client-ip=2607:f8b0:4864:20::1035; helo=mail-pj1-x1035.google.com; envelope-from=paul@paul-moore.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1035.google.com (mail-pj1-x1035.google.com [IPv6:2607:f8b0:4864:20::1035])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=paul-moore.com (client-ip=2607:f8b0:4864:20::532; helo=mail-pg1-x532.google.com; envelope-from=paul@paul-moore.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x532.google.com (mail-pg1-x532.google.com [IPv6:2607:f8b0:4864:20::532])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLJ483VZgz2xBK
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 06 Nov 2026 10:12:23 +1100 (AEDT)
-Received: by mail-pj1-x1035.google.com with SMTP id 98e67ed59e1d1-3ace1f3897cso37366a91.0
-        for <linux-aspeed@lists.ozlabs.org>; Thu, 05 Nov 2026 15:12:23 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1793920341; cv=none;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLJ6L70k8z2xBK
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 06 Nov 2026 10:14:18 +1100 (AEDT)
+Received: by mail-pg1-x532.google.com with SMTP id 41be03b00d2f7-cdaefe02d5dso25704a12.1
+        for <linux-aspeed@lists.ozlabs.org>; Thu, 05 Nov 2026 15:14:18 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1793920456; cv=none;
         d=google.com; s=arc-20260327;
-        b=JUhdxhNnhCsFO09JyFbq0pkfL/EOoRXKnt8UZIaYYTomfiHt3LVX3SCMYtg7o7ZyWJ
-         Fa7Nct5bVYKmCWyK9Ja7YyMV+Cw0tBx4LWuJjG3AOq8wOC0PmBGU7InfafJyKwKgrhcw
-         BiNqzGzlaodYT779FFV/+q4sj+aeqFA0sAXtR6kL8ZMDO50ZetRMbiWK6nOTnhf6vDIG
-         dnVAl4BzWB9AGppgUoxlO8t/HA3Xo/N7ug8P7O9/MB2Evqws7j0sfkopELR8EOvUY2p/
-         xqrxIaCq6+Skf/BPAXdJfc8Su4cPZW6YBBNrOcMsSPLktaVmJ4rkBvmn7zLwhpvRz3cB
-         gQfA==
+        b=MlHEu4fTFwo8pw2K6P3l3li272V3fqyKpBDUGGbCOBDjKghxhT7lzPykuQeqjnkh15
+         0bU3XhncJI7ZWqHoOa0l4pruCGSylICQ2C/+SkVGZhPDirKlYGWLtLrrK8HhwgyJ6P4B
+         dkxRNmxRAp8+u3xjZtNaWr9c75yxPwpysJycxxDqJoUY4BMkPi1tukoM1zuLbaEihNtb
+         0ginrjuhtwyw5jZ4ZIyBXxuEGucd5bZpW6h6uutLIPLz0vuQaVteyapl6ReLaPk0Fy+t
+         JCXsGGuVavsl/UmVxK4zzFFvyR4I7Lo8JSsimDq39dMHqXmnBfyRfyMKr25c77twJa4k
+         /Tqw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=w+g0xKR97zcXC//9XGcArRTzIRGbaLo0LA3je3jFgFY=;
-        fh=+ili4eOSmXwV9ZEZ92iEE4z138baT/Lz9QQLXP7BtvE=;
-        b=e7sZfq48NiVSensr9Bokf/Yd1dDjkhLrfAK+QQoNwIFMnbGf8rNcC9GkbxWjVIyYVA
-         mbninnsUFD5Eib4hr+eFUbD6F6YA9GGLcBcimmukSZaVD2xiGODnbQnLkmcrTkL5vZMZ
-         J0S1NVVl+BV8C3zVd40xe6gZF3eKYcBud1sfPvsATdLEXGXJE9JlOu0/PZofeQw7nnwh
-         TKATkeyZPu56ojAs6QJ/cBtF/z19mQMOiPfPVBC5sAhxqnkiPPsL+TrqLMGEIrrZ24Y5
-         7MwUOylVc+v6wY86YuMNdQVsmVHcNyT3j9yRgV1GjTfn7JmR5YNzfcoHxJ6tpCtDSUby
-         utRg==;
+        bh=mGiD8zQqMuzCkGXAZBtgumh8HlT9rNPiWNa35MXqkeQ=;
+        fh=Vt3rYWS71Uaj+s0dAfApOw8OdQNh8hDi3ldVIoNVnzY=;
+        b=aJcWxxJrh4h1IFIjwPdbGjssGsMXR7z3ikx1Ywp7Y+r8aTvpUYfBkxw3x36YRwv5hT
+         9pLs/M/yAeJetTnn1MJ9Ff2/4ZbsxEqZvcokgkKB4TAj6zIQLTUVV4GN0fQ11gs6BYrV
+         VokViPF9wbNsnMO9DOBYMBhqN1aRsoQR8zxgjqZQRW3D001ukHyho1CZjqs9xMuh5YaF
+         5ooJiOo1Vjv10/X6Q+mCWIV+nkLbKvsXV2UU1IWnaYE51Vfn7LrdshVe/XRy9BPwLcjg
+         4dWOs6++/ujA3J5HBqzdHMTJqFN0Nbt2oPIe/TTWugHtDknrKOQAqic/mbSUZ1c1PSCU
+         ca5g==;
         darn=lists.ozlabs.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=paul-moore.com; s=google; t=1793920341; x=1794525141; darn=lists.ozlabs.org;
+        d=paul-moore.com; s=google; t=1793920456; x=1794525256; darn=lists.ozlabs.org;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=w+g0xKR97zcXC//9XGcArRTzIRGbaLo0LA3je3jFgFY=;
-        b=V5SU1EJRaxnmF4es/Q10Y9jvYNFxMuRIrFalZAmWj1FxpPA5vRIGf7BoKAz+vBADwp
-         hSGO4B+1in/pBtpht2PdVSVibG2s/ioMxSi1JihRz0hHuaVigjiFTNFk6+GXZOc1YzS0
-         gojfL5cEB1x5qUh0tED4Yq3Dx7j0jiGZVo/x8ZD4Ei+ANH+rESwMbltgEyZzuaaGZT4/
-         SVNMRcWBYWRpM2UNrrx2XWlqYksGm3dM17Oj8dHyefnS+hFM8mPqpciVZiatl+S3r/K/
-         PzKVyNw5R00x9Rf948C29l0nQ6nOgdmU2usspO7xs2o+qu1M3w2X/qV9XKqmbSiX4qiS
-         jmNA==
+        bh=mGiD8zQqMuzCkGXAZBtgumh8HlT9rNPiWNa35MXqkeQ=;
+        b=AoCACtb7tXEVlMa3AfVjoh6GG2UagPSYNuEU50lil9ChBzkaqfYlxX5+y5WchUd1d5
+         MQoGODWUmL44O2RWgkMJTDDX/AwnYHejo5V9MhvzMPF9Pz2HqFo1gNyi576ZAi3kxQjE
+         fAZU9Ihq7m22mP5HpIWmtjt15QWybX3xDWsh2797oozel2AP8nK69mYntNBGPlsd509V
+         KF76GJS2Up2n4z1DYqwtufcWlof8rkpCgtVF/Uu8T7deFFKb+Hybl+rqe8S/RqfMEVcY
+         3d4sVUnXtA1QPIxTQBLMyXQG7itm54CZptVDXBcuqXuugh4xxITf7jlSIUlQQxbrlrOI
+         zBNA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1793920341; x=1794525141;
+        d=1e100.net; s=20260707; t=1793920456; x=1794525256;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=w+g0xKR97zcXC//9XGcArRTzIRGbaLo0LA3je3jFgFY=;
-        b=FUzBHCQTJKLgWs56kFlZe2ktHodSuaBN4mPLJP9/oyUtiz1au3j31V+naY1tln52wi
-         C6K8jo/DUUQW8eCyh2LYcXbu2/mSGH5V1tqLqh5LZrKzituiCfJbw4kiYvvKC/JwQDkX
-         D88Dd21086o1nxB7rgxBlXOiADET0+F65MJ226RD9XYFgYlb12Kre+LaphCQXOA0xKef
-         jjHmMyVyn2nybDgCONGxZNgGRJM+k8zhiCCjw0eW6jFyGU13yHIQF1BIQVCh/NOkdgFU
-         0AdvcCTt6lWFP3r5RF0ZXRL+02jhhtthw5exuff/SGyybPs7KNhfSnCVpfou9TWrtFjt
-         +LZA==
-X-Forwarded-Encrypted: i=1; AKwUvBw0BYx5l46qaJ3e4TQV/q3VJ0OhpaTYMm28FB1KmfssNu7y7/OGrgjhJTih3hBPShGl0pKzJR39RIISo64=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z9XKVjga+bWvhM5wdvtrnMXmQyvWp0Sgen/xvkGD8yxotPraefE
-	SciGo1JBDgzN2Bq+Vv7eiVRTwhxtGRuEAaqHzp4HLjpwSt8AFORicLWuquJLJgHEH+/xX+su2Bh
-	0GaluTexQ+ppi2OMGlqSTofi6bNb36AIzxjAgVjYz
-X-Gm-Gg: AYBFou3PBkyWTW9Q+6eR+DfqvuMdaQb1DydNuDRmjQ426mN5GrTzgMK7agSAT+a4OP/
-	aQXzTgVuo+OZdl90Er98qVz4S/oJ/P20GVXIQv1IGpbf8jxC8Ygnrmbz4SkszTnW4Aq7tKK+zmb
-	f7xZrJEfOwH2WXJN7D9yZgVTKkYXdeLzwqBDw9/8EWt0n+gNV8kjuZ1InpfZJ97WviR6c9Kr39S
-	hMhZVvCcDTznbPE9FDmzRbbEVBnetSCputIPvvjrJyQi3RB98TRG+Xd24cuCvHO9t769clOf1kB
-	kokLmiLWyjSHXQuUbuwQ3++gUQRpyvCFHYnQiMgJxx8dhJf2eZ2DvCskbUwMLLAnIHY15kGbEcb
-	nyG2D89fhuBt81azjYsYSxdHrfCpLyIXCsL4IhtsGLCnO3S1AA01nNXlqjOmOi3RJXGVw
-X-Received: by 2002:a17:90a:d88f:b0:3ac:b867:81df with SMTP id
- 98e67ed59e1d1-3b0db6fbe69mr555739a91.39.1793920341210; Thu, 05 Nov 2026
- 15:12:21 -0800 (PST)
+        bh=mGiD8zQqMuzCkGXAZBtgumh8HlT9rNPiWNa35MXqkeQ=;
+        b=Fkm73ul/NHvcx0Dp2P2NF/K94JevRRdq7BzZfa4qlCu5kwBdVKTOVYn/AEty+FevR/
+         eXj/+2QG9HLVf6OI36x+mHE8wxoPFqu8ny4z7K+1SyfA2JzUZES7szbQG50sB7W0njSS
+         M1obpWEPWFgJtYSiHTHCavazbVO5h7bhpfemNEk7pRQH/vrc3x1wOGNKSAu4ByXYBOSr
+         bU7bmbulc5cDqJdFhGUCtbvQgytOq6mVAcnmfuhresReAUknJR259tNPvcTQ8GpRXZu6
+         8p0dY5ZZGgdMeG9B2yc4m6jb68N95BEOK6z1dsOpuWIPwdbQ1BO8Cd1YtVDanrOh1lsk
+         yRrQ==
+X-Forwarded-Encrypted: i=1; AKwUvByeWlpQ0TLPwnHKwPB+aUYVqzIEEz8eFBLZgSkMPyI2CsHzn/RgugWSslNyfZPN9jnB1b+v2z6J0fw+mkc=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z8fnqyCyaPklx+oXmkoLa/BnW3YsxBCpK6pLoIfXGCNoBvh+aK4
+	/rhcYj4W7ujlx0ArlwCG9AhiqWvWIVYrZMV3qx9x6+KCZPjqtO9qEwKk0DLCOFkHGlYVgI+QDQT
+	tCWb+CWTJdonyzJkN2VuFVZ0OekUTkb8fDSU1wn8z
+X-Gm-Gg: AYBFou3+TWeA3JLK4z7bolbdZUqoadrYGXJLazB/HugDX0J5pEF/pDPnXBSqrzzeEZf
+	29JpcsA1lHjgB+fRKYURdscib59wVIo1nV7L7pNhGOAfZkxpQMgmPfbQZPtr3I+wF9AtfcXlACm
+	ur0+iYBxC84D8j6hSBFKtPcCs4AKcQoRMeSgi358kdpY29FVHP4DDCGetYMkb5t2fQG8l7mZJwd
+	gUZt8CRZw3kJni1zhc2aawQEWuc0Kuvom+yeNL+4hKLnZXmnkgGQbvjTTqcOeGtfpTqfT4EokKq
+	vrhkcb6fc8PnqVxcE9MnutdRiD31b9E8I5vXnlly6SCZZK4NBaYhuTsV9C+RZJoI7BEJ5aFDGUt
+	gdpzmVtyl3hTY1gzDiLNPvyGW0dPCh5GTZK3F9ByyvPt+JbcbOUdT0Hql1CfmAyH7kY15
+X-Received: by 2002:a17:90b:48cf:b0:3ad:a462:f07f with SMTP id
+ 98e67ed59e1d1-3b0db6e8ca3mr534231a91.45.1793920456567; Thu, 05 Nov 2026
+ 15:14:16 -0800 (PST)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -103,13 +103,13 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-References: <20261105-late-2026-mmap_prepare-v1-0-c56aadfbab8a@kernel.org>
-In-Reply-To: <20261105-late-2026-mmap_prepare-v1-0-c56aadfbab8a@kernel.org>
+References: <20261105-late-2026-mmap_prepare-v1-0-c56aadfbab8a@kernel.org> <20261105-late-2026-mmap_prepare-v1-7-c56aadfbab8a@kernel.org>
+In-Reply-To: <20261105-late-2026-mmap_prepare-v1-7-c56aadfbab8a@kernel.org>
 From: Paul Moore <paul@paul-moore.com>
-Date: Thu, 5 Nov 2026 18:12:09 -0500
-X-Gm-Features: AclHuK9SAmQ1s59IzUj_GoyUW49QmobrDei9zDR78OY4d10Tcv8mWs8d-l1JUg8
-Message-ID: <CAHC9VhQvpFeEJaEyPDaqj8_S752puSaNe0Rn-hxjh=ugCoFsxA@mail.gmail.com>
-Subject: Re: [PATCH 00/14] mm: convert further simple mmap hooks to mmap_prepare
+Date: Thu, 5 Nov 2026 18:14:04 -0500
+X-Gm-Features: AclHuK-Yq9Ya_gmjsTlhf760be1vg51BQVbAOtNinoyo6VpZvAmG2k73A1wV2Mc
+Message-ID: <CAHC9VhQcmX09Do8BmY-HYJEWKiw7Tf-ZB=EEr9K6t5dBzk0SSQ@mail.gmail.com>
+Subject: Re: [PATCH 07/14] selinuxfs: convert mmap hooks to mmap_prepare
 To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 Cc: Juergen Gross <jgross@suse.com>, Stefano Stabellini <sstabellini@kernel.org>, 
 	Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
@@ -142,71 +142,34 @@ Cc: Juergen Gross <jgross@suse.com>, Stefano Stabellini <sstabellini@kernel.org>
 	op-tee@lists.trustedfirmware.org, netdev@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Thu, Nov 5, 2026 at 4:06=E2=80=AFPM Lorenzo Stoakes (ARM) <ljs@kernel.or=
+On Thu, Nov 5, 2026 at 4:07=E2=80=AFPM Lorenzo Stoakes (ARM) <ljs@kernel.or=
 g> wrote:
 >
-> Continue the conversion of users of the deprecated f_op->mmap callback to
-> f_op->mmap_prepare. Keep things gentle this cycle by targeting simple
-> cases.
+> Move from the deprecated mmap hook to the new mmap_prepare hook for the
+> policy and status files.
 >
-> No functional change intended.
+> The policy file only sets VMA flags and operations. The status file remap=
+s
+> a single page, so use the PFN remap mmap action to do so.
 >
-> Build tested on x86-64 (allmodconfig, each patch individually), i386,
-> arm64 and ppc64le.
->
-> <<>>
->
-> David, Andrew - I wonder whether one of you guys could take this series
-> through your tree? Since it's kernel-wide it seems sensible to take it
-> through an mm tree.
+> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+> ---
+>  security/selinux/selinuxfs.c | 24 +++++++++++-------------
+>  1 file changed, 11 insertions(+), 13 deletions(-)
 
-Granted I've only properly looked at the SELinux patch (7/14), the
-rest I've just skimmed through, but these are all independent patches,
-right?  Is there any reason why individual subsystem maintainers
-shouldn't just pick up their associated patch?  Yes, perhaps chasing
-down individual maintainers is a bit more work, but isn't that the way
-this should work?
+See my comment in the cover letter.  I'd prefer to take this via the
+SELinux tree so it can be included in all of our SELinux testing for
+v7.5, but if this has to go through a single tree with the rest of the
+changes, here is my ACK.
 
-> Lorenzo Stoakes (ARM) (14):
->       xen/privcmd: convert mmap hook to mmap_prepare
->       KVM: PPC: Book3S: convert spapr TCE mmap hook to mmap_prepare
->       mshv_vtl: convert mmap hooks to mmap_prepare
->       vduse: convert IOVA domain mmap hook to mmap_prepare
->       x86/sgx: convert vepc mmap hook to mmap_prepare
->       udf: convert mmap hook to mmap_prepare
->       selinuxfs: convert mmap hooks to mmap_prepare
->       xen: convert xenstore interface mmap hooks to mmap_prepare
->       soc: aspeed: convert LPC and P2A control mmap hooks to mmap_prepare
->       soc: qcom: rmtfs_mem: convert mmap hook to mmap_prepare
->       tee: convert shm mmap hook to mmap_prepare
->       misc: bcm-vk: convert mmap hook to mmap_prepare
->       ptp: vmclock: convert mmap hook to mmap_prepare
->       vhost-vdpa: convert mmap hook to mmap_prepare
->
->  arch/powerpc/kvm/book3s_64_vio.c        |  6 +++---
->  arch/x86/kernel/cpu/sgx/virt.c          | 15 ++++++++-------
->  drivers/hv/mshv_vtl_main.c              | 14 +++++++-------
->  drivers/misc/bcm-vk/bcm_vk_dev.c        | 20 ++++++++++----------
->  drivers/ptp/ptp_vmclock.c               | 19 +++++++++----------
->  drivers/soc/aspeed/aspeed-lpc-ctrl.c    | 20 +++++++++-----------
->  drivers/soc/aspeed/aspeed-p2a-ctrl.c    | 22 ++++++++--------------
->  drivers/soc/qcom/rmtfs_mem.c            | 22 ++++++++++------------
->  drivers/tee/tee_shm.c                   | 14 +++++++-------
->  drivers/vdpa/vdpa_user/iova_domain.c    | 12 ++++++------
->  drivers/vhost/vdpa.c                    | 23 ++++++++++++-----------
->  drivers/xen/privcmd.c                   | 11 +++++------
->  drivers/xen/xenbus/xenbus_dev_backend.c | 14 ++++++--------
->  drivers/xen/xenfs/xenstored.c           | 14 ++++++--------
->  fs/udf/file.c                           |  8 ++++----
->  security/selinux/selinuxfs.c            | 24 +++++++++++-------------
->  16 files changed, 121 insertions(+), 137 deletions(-)
+Acked-by: Paul Moore <paul@paul-moore.com>
 
 --=20
 paul-moore.com
