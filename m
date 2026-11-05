@@ -2,80 +2,114 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C1139606A334
-	for <linux-aspeed@archiver.kernel.org>; Thu,  5 Nov 2026 22:34:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A498606A326
+	for <linux-aspeed@archiver.kernel.org>; Thu,  5 Nov 2026 22:34:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bTYMuv1C
+	dkim=pass (2048-bit key, unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=VQY9vFS+;
+	dkim=pass (2048-bit key, unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=MPMqS9cS
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jLHDW3JxFz2xKx;
-	Fri, 06 Nov 2026 09:34:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=172.105.4.254 arc.chain=kernel.org
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793872167;
-	cv=pass; b=FuogrxD02w23E0z3yfL6RCsOHLpw0pXQLvq4tGSfIhy46oof0Fn8W8vLRG6Gt5Q5UUrbhddYTrXM/lmURewDAMSsUovYMWm4lBG4QNCwlg5Wq7cg3gfSjIKtDueGuE9uta8tC9ebjo9R04pYD7EXoF8VQnlcbseNLd9vramqkxSSFwhqZS1wpNCVQIsZGmH86ApcEbAndk2BjOm3BaOw/+Kj8jxMb+Fxg6BeE7MGZtKjalPiqWO/aupvMLszlkgVsh73EyC2aRMtvdeZoLJolW9SeseoZardWxSyRmUuSeBf2TCKVgTjBizj8yE25Ln/4F4e/NRQi3wgBgVx0L4X5g==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793872167; c=relaxed/relaxed;
-	bh=xklg3CjbZrUzyh4Xo0rBGxi7VDiGIt84+18sPwP1vr8=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=TY2ew92Nxd54EqzkF4pn/39oXqNSytgvtuHZ/EA+DuXUOZw69J7A1YuqAxuAbWU1oRlfwsD7jw0t0hAGLYeKaLfgEZPvi7FK/vctvwoV5soiyOLZzLsyjoTOZTHd/ZuKfUTyNHynX+2uSz/pwJtul26/sSReFcz1OOHUGUGNTuQZYNqMMzK1HcKFPpYt/NVxLNUIjBuCMCK0Tk3Oa3qhiPN9xDl68nN+AuUypFT28ytUrWzI7b+tjZY8SDr2xdb73/Xe4vf5uzkiY1RWxdC9rhZXkJbq3N3cm/zWZIAuARE/SjPec6cDAlszS6Gck58YhzFkOFc4H+0/4SQKRxbPfA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bTYMuv1C; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=devnull+eric.yang.wiwynn.gmail.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jLHDc6Tbzz2x9c;
+	Fri, 06 Nov 2026 09:34:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.180.131
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793869999;
+	cv=none; b=YpES+c2cpONWsIacX1nmfzvX1hJYQkhEsxQgNJmyEKmIeKg/iQIT2BFkwrmLCjGiaQQMDHBk8wNt9oPVDlEXw9ZQmqv14KDXVDkA2t+0oj/yLVJ+ET4hzpXuYmOXaId1+65z+nsfCDmEdLpUaAKxdIVvmH++jSQIGZV1bOvs49ksQgs3jMHIR0CfysXXlzivJZjnPVXg31zwtXCXnDzm0R8VqGENQ1bwWZNPo6Yd0oflx4sJTIsq+c0UPYKbHcsXcVcbb7A7pb2iAMk2zB2dGBwDXdsy7URmDHcOrNDE3ni2GjZhXkMMyHM2I/UJQ3vUzixkhZocYgNJn75VL271KQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1793869999; c=relaxed/relaxed;
+	bh=q9yfY+/I3R7K6u83bmbStsO2lPmehAVb28U13aAr0q4=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=TR19ENL3cxOqtDls/ZxLKpWD2TybwipZAAfbIWTZqzSlushXgUOS+eE+ILhB9K/JFwC7N30arkGIQdfwGQgmj5l848HVBjbGH1aloizKav09CCyNmpSRAXvB6cf6DOv4+P6INaXrmdyS4xseGnA4dnR9ECfi3YpxXq4wQzRvwRwM1ci9Af4jPKiLimKfvGpoS4ujDkImBs3qqSskHmif9oo/bCLbCpK16UBp/u4T63PSc/l/8PUbb52lzRS+nNis6gVRWQtZ96CM0s4rxitrzeVpauV5XWE+u2kWfsasbY2qwgJSFyYYyzXzIFDatnT7NMBtqcHUdvPPQw91TFGabA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=VQY9vFS+; dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=MPMqS9cS; dkim-atps=neutral; spf=pass (client-ip=205.220.180.131; helo=mx0b-0031df01.pphosted.com; envelope-from=bartosz.golaszewski@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bTYMuv1C;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=VQY9vFS+;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=MPMqS9cS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=devnull+eric.yang.wiwynn.gmail.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.180.131; helo=mx0b-0031df01.pphosted.com; envelope-from=bartosz.golaszewski@oss.qualcomm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKyFf3kKrz2xGr
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 05 Nov 2026 20:49:26 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 2AB2B60D90;
-	Thu,  5 Nov 2026 09:49:23 +0000 (UTC)
-Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
-ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1793872162;
-	b=k6PNlmSXBSlArn+tCnzDgrPUy4GWcHKtOJtK0gViGki9l0CwJgRcLvt3oTuLswEqLDIr
-	 Nd0AnSCjO4H0Yhb4E/XM8eS26IfHimbDikinWDqri1StKGP6o95bsCzst69td1Emmk0SB
-	 85FSYjv36igYeJhvOg5ZIKEyoF0rOCvMh7638r2z387WrGNhFfwSTMAnbZ+O9rCM41A5x
-	 Vgd7GIAdsB3cnYkQQ9Yd/2244T5VLx/LVdPKSN4/oQKFhyJq/8LMaorO6CWBxBFQ/EZln
-	 VapOD26Bjf+w7fZhNpSADq/1OXRuMn/dcxB80CVzbYn8IMslF2gdVdTNukDlmN5uj1g==
-ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1793872162;
-	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding:Message-Id:X-B4-Tracking:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To;
-	bh=xklg3CjbZrUzyh4Xo0rBGxi7VDiGIt84+18sPwP1vr8=;
-	b=aBWqPXSj65S5ntVjv7NFFiM65IoEVRbkLzQhaJ/FkGEK6fjGF3316GVglvQW1o/0aMYQ
-	 7eFo3Mng8sD6CBpCC1uRLVDfNGfx5B261og0BeD85dMNptf5Rs4PE4OlAFPrtONkgaYYL
-	 xR3nqW88CEAmTvnYsdrzwCXblDg2PA+mQkyndwFFj2P23L/mWT59KT1mHSK0nIYCL4JII
-	 m4ciTca8mq/Hwtgzt5nyBRbYVDw3TkRMCD12gQsESx3B3ac8JyHjqSbj7H5Li8cYIhmG6
-	 bNzJA5QEl4xLcAetIGyOLcDd9Oqjoa5xbboaZtVp7Zxi2jAall/28VTaeBVNk/aFefQ==
-ARC-Authentication-Results: i=1; smtp.kernel.org; 
-	arc=none smtp.remote-ip=100.80.115.77
-Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id 4221D1F000C1;
-	Thu,  5 Nov 2026 09:49:22 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793872162;
-	bh=xklg3CjbZrUzyh4Xo0rBGxi7VDiGIt84+18sPwP1vr8=;
-	h=From:Date:Subject:To:Cc:Reply-To;
-	b=bTYMuv1CC/lOhj7xCXmd/z+E6F6qXaHfVZmkFzTZQlaf0SrOIGa1uPna5H3VhTpUX
-	 +TUw2rPOlN89xq1BlW+L1P2tD2bBYnpPe0hV/r7fDa0O49rEi24An/sMEvmz2RFpHl
-	 kuc4NZEITO+dYQ4dQERIgYPwG1RFlMR0Qhu0PDoNJ73mCxnM25hKJ93lVTEFMI0oRe
-	 DBUHHvxkMrXEroO026uRElgwVzRpj5juade5Bp6ZpmvqnP+oiQyDo3ufaB6Ig/4z5H
-	 h0pqBBmtcsJHcU7iRT5oeiu47nnK2IGZWlj6o+9La8dMmRxKafC0EaUAmVH5XvDqlJ
-	 FRG3ukbJmH4TQ==
-Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id 9750E471A6;
-	Thu,  5 Nov 2026 09:49:21 +0000 (UTC)
-From: Eric Yang via B4 Relay <devnull+eric.yang.wiwynn.gmail.com@kernel.org>
-Date: Thu, 05 Nov 2026 09:49:21 +0000
-Subject: [PATCH] ARM: dts: aspeed: yosemite4: Remove Floating Falls board
- nodes
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jKxRx4Py0z2xGr
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 05 Nov 2026 20:13:16 +1100 (AEDT)
+Received: from pps.filterd (m0279870.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6A58RQB5247869
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 5 Nov 2026 09:13:13 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	q9yfY+/I3R7K6u83bmbStsO2lPmehAVb28U13aAr0q4=; b=VQY9vFS+f916fsBm
+	rX3P5iE9IbgB/XThZDvdwekJ7uK6K5qkEEV/GOdy++Ybca0QLidKN3svnWQjIFuL
+	e/sz8tVl5tbtUIEcZ4UNlG9au0DU5Kmq5aXsfIGhSmnn1vDPZ9rHxjUgt7uxhmGz
+	vpJnyA3qo4Cv5bY+cZ0xVctvGrEbRZqgPWkyC0hVrK8MJ+Q+r+zejMh5GdfyPxCm
+	g65/vC6yBgHSZByj+mjuZNByeCLUy49DmrLweKGzv2YsfzeLxooAvVsa/GMa7s7m
+	zZfgkrDd1yaAEHWh+P2wJ+7/VkdCuHDoQx/CT0BKuBKe3D0mnR+aXtr3FqAi7tsx
+	i5WkEQ==
+Received: from mail-ua1-f72.google.com (mail-ua1-f72.google.com [209.85.222.72])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4hrpaag66y-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 05 Nov 2026 09:13:13 +0000 (GMT)
+Received: by mail-ua1-f72.google.com with SMTP id a1e0cc1a2514c-9907539aff7so1158767241.2
+        for <linux-aspeed@lists.ozlabs.org>; Thu, 05 Nov 2026 01:13:13 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1793869993; x=1794474793; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=q9yfY+/I3R7K6u83bmbStsO2lPmehAVb28U13aAr0q4=;
+        b=MPMqS9cSeKHXr4F7oUdsvpgRvFd087GZGmQs85juOJSMC5/oPWPCrLZ48+HTIOzPga
+         ZBOc10f/CasXvCNHOsbGa1gVdsdqvO0CUknZ2s/M5oA3v6wYmJBlLiS/kiBVOjoP/Pme
+         8biQBIpLW39A/ShBucrU3VZabQ0109bzYUvM5s+Ut9sWpmKcTTFITabJzHG9b5bRs7Iw
+         NRL2qMRdk4JepIMt7Gh79TG7uDs3DLMzgg6aCg1DmJpdPEKa4caWE1Ns484Ayj4wUxRO
+         STS1Xpx5sdfhst12PtMfuNLHSVqq//grikjHD1ghwbBul9g+v9tTL7z2QOfnZhQaXPvj
+         9gYQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1793869993; x=1794474793;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=q9yfY+/I3R7K6u83bmbStsO2lPmehAVb28U13aAr0q4=;
+        b=fN8cSnVozvqo8TVAvlQIZwULFuRyVKcO9qVa84iI8Njsz0WW9D086/dVM+xYfhC9uk
+         aoQr11yvabg5jd2/hVuKTTXMjk5wb4ErpjBnJf1DsEdOFx3mU+E5n/2LatwMH0SjHK2C
+         Z/WPDk6ttwaN7b4I8Vts2Z9lH6a5Z5jKLr1pWEpNy/USTEVND858kIDYOiX/StfF03fc
+         adoqWxKJ5vucdu+sQeeGgjgewWMFcPDP56cKrGAGUpa7+6Qj7V5MFx2TY0lV/3aNX1tU
+         ikqn2Ekc65wYcCpkWtiEKCeKNN4lQhAuqrlgDlYCthmHlJw/hIX1wOo1WOknTXLvnJKO
+         JyeQ==
+X-Forwarded-Encrypted: i=1; AKwUvBwxaUiTyLgW8gDCIEyOpvn0HTzXlEqJITgQJHcq7HNYvo3SCS4k6GuXOXsUNziioWUdy8G0+d1WD5+cSZY=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z9k7VzsspGv9obUfnve45/IYGzIah1Q81Q9NwPeYanULMwvnN6v
+	T4IPPlrnluaUJcKGe/X68M95+YzFXMXt1LV3Q7itwaTxeQWwArRWhwfON9qIQgQ1waKRLsuYo2L
+	0FHqGIkT9+yjnLeXgqwNC+9tuB/lGNLT+kllBETuSxtNi1mz0Iog69E/IOCQhjsc9o8cN
+X-Gm-Gg: AYBFou0dFoEjSiHGE6YRn0boSewkCaTS4lZxFZ0zlhabHoXjyuR1fvrVg+/fRM3zply
+	rt9AmNRZkzHmBkjNINSzQGpJUf2IdVbxk0egqrQ6jbEJJAZDrzGrPnFfp2R0IFM0RaAvvZhTbdU
+	XdyBc76di72ZiGaTg7oxV9K18apQdy92MSnSb4tzFfwICn4jr2dd5QUPhJuLcDeuWu+oi2qq00c
+	ExwyYRyzYgt6CO728IqStKk3AuOP+Xr7s9qAmkpbcDJfDHWpf5V+PoPWCPi4JKi5GDdapNTNmUH
+	T6VJS6NHToiZFFKIHM2hR3ANcpOevQV5zSP3wrcJ6Y6LqrQWTA2Vm5xPdJ9pB7HVdhJOayxqqFQ
+	iY5dx4Ts9SLdcoqqkRmPOPow/rysmDzD8s/UvDnmt6lkTwSaWeT72bR9D3VqwUFFm7rh1oFdeG9
+	03
+X-Received: by 2002:a05:6102:5243:b0:7cc:115:ddf4 with SMTP id ada2fe7eead31-7d072cafbdamr8260486137.25.1793869992557;
+        Thu, 05 Nov 2026 01:13:12 -0800 (PST)
+X-Received: by 2002:a05:6102:5243:b0:7cc:115:ddf4 with SMTP id ada2fe7eead31-7d072cafbdamr8260470137.25.1793869992117;
+        Thu, 05 Nov 2026 01:13:12 -0800 (PST)
+Received: from brgl-qcom.home ([2a01:cb1d:dc:7e00:8916:7b9b:97a2:6c96])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-48fea18175bsm8523052f8f.7.2026.11.05.01.13.10
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 05 Nov 2026 01:13:11 -0800 (PST)
+From: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+To: Linus Walleij <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>,
+        Joel Stanley <joel@jms.id.au>,
+        Andrew Jeffery <andrew@codeconstruct.com.au>,
+        Ryan Chen <ryan_chen@aspeedtech.com>,
+        Billy Tsai <billy_tsai@aspeedtech.com>
+Cc: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
+        linux-gpio@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+        stable@vger.kernel.org, Aaron Antone <aae@amazon.com>
+Subject: Re: [PATCH 0/2] gpio: aspeed: Fix lost interrupts from write-1-to-clear status bits
+Date: Thu,  5 Nov 2026 10:13:09 +0100
+Message-ID: <179386998646.14190.12898260042958043905.b4-ty@oss.qualcomm.com>
+X-Mailer: git-send-email 2.47.3
+In-Reply-To: <20261104-gpio-aspeed-irq-status-v1-0-9805645f856d@aspeedtech.com>
+References: <20261104-gpio-aspeed-irq-status-v1-0-9805645f856d@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -90,228 +124,65 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261105-yv4-remove-ff-nodes-v1-1-aa707a9577b7@gmail.com>
-X-B4-Tracking: v=1; b=H4sIACBR7GoC/x3MQQqDMBBG4auEWXcgGUWwVxEXxfxpZ2FSEghK8
- O4Gl9/ivUYFWVHobRplVC2aYod7Gdp+n/gFq+8msTI5Zwc+68gZe6rgEDgmj8IzxDo7ehkmoV7
- +M4Iez3VZr+sGsiT61WUAAAA=
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- Andrew Jeffery <andrew@codeconstruct.com.au>, 
- Ryan Chen <ryan_chen@aspeedtech.com>, 
- Billy Tsai <billy_tsai@aspeedtech.com>, patrick@stwcx.xyz
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- Sean He <sean.he.wiwynn@gmail.com>, Eric Yang <eric.yang.wiwynn@gmail.com>
-X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1793872161; l=4662;
- i=eric.yang.wiwynn@gmail.com; s=20260911; h=from:subject:message-id;
- bh=T4XeuvV+KGamPG2baiyhX3Us0yn42pCuMdWIPVBaYz8=;
- b=L/oFlGYm96Adbk9JS+0cKrrf3+UCzEcvN0mp8Rny3aSD0XxKxLi5JYtosxQ6OaB05Ra+llXYm
- vmNZ0Uw3r65CjqW8GIlH6H/vGm8XPD3/HCNcfF8oaSDnA0xgoNGXcAX
-X-Developer-Key: i=eric.yang.wiwynn@gmail.com; a=ed25519;
- pk=XYQiwgPZNUCt1JCbsO7zX8ODEiRKocz7fYwt+aWnXBs=
-X-Endpoint-Received: by B4 Relay for eric.yang.wiwynn@gmail.com/20260911
- with auth_id=1023
-X-Original-From: Eric Yang <eric.yang.wiwynn@gmail.com>
-Reply-To: eric.yang.wiwynn@gmail.com
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=4.0.1
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTA1MDAzNiBTYWx0ZWRfX43F9n4kihto1
+ TgpbSovXTyw0OEYzhzysl/ffDADDWV8ptIuB0FEq12X4gm4oIYg4/ffBamxoYwcVpWsv8w29TJN
+ Af+MlMZEV3v1ixKbIoK4EV/zbg4yYpggWOOUdkr8/O51YQv+pbQbTQzny1KoL2maF3CVJIUtsvF
+ kzhsp+xw4KHI2GCu67w+SrzHfeh/sBEFVn0bgktlwE1NeFeJweTZXaeMplfHZ2q8l8323hrkdH1
+ DV8ZWUIADX397o8AGEh1+tXxeBsbs2LxfHPzNYDa8/JpZFI1XTgCnJTk+MwtctKX6oGQsJeKMQx
+ 0lAF7ZqGa7rMu+fYWkcwgt9L9ogWLuL+iik/HIB9l+ZBenx8IGscfcL2mxh9v9ozrwP/j6PAsL6
+ 0D3YFp8CqQD9ObucPA36H3Od5VFv+qwU2BXOUMeegGg0a/KiX/biV0UJe8LrdOMwK7hHmaEacgr
+ 1HYOICLVNQXNZ3xbv5A==
+X-Proofpoint-GUID: ABaGojP5IoU1YJyIfYnpc6XR8m-GUSan
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTA1MDAzNiBTYWx0ZWRfX0cQ8nHkcOoaj
+ fk5U4+AqJAvMtPoMiEFufKNKvXerWlv99o5wDW/eRocltsSeroBL0zJdOTITgXZTeHguMW0tHJD
+ rbZ5fFFy/yiVzAb4G/1r0qGFoU1Gy30=
+X-Proofpoint-ORIG-GUID: ABaGojP5IoU1YJyIfYnpc6XR8m-GUSan
+X-Authority-Analysis: v=2.4 cv=WOXqzXsR c=1 sm=1 tr=0 ts=6aec48a9 cx=c_pps
+ a=ULNsgckmlI/WJG3HAyAuOQ==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+ a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=gowsoOTTUOVcmtlkKump:22 a=VwQbUJbxAAAA:8
+ a=EUspDBNiAAAA:8 a=voHqOY2aTaljLMbC2lEA:9 a=QEXdDO2ut3YA:10
+ a=1WsBpfsz9X-RYQiigVTh:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-05_02,2026-11-04_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 clxscore=1015 spamscore=0 phishscore=0 suspectscore=0
+ impostorscore=0 adultscore=0 priorityscore=1501 malwarescore=0
+ lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2610300000
+ definitions=main-2611050036
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-From: Sean He <sean.he.wiwynn@gmail.com>
 
-The Floating Falls (FF) board carries a pca9537 GPIO expander at address
-0x49 and a FRU EEPROM at address 0x50 on each slot I2C bus. FF was
-planned in the early Yosemite 4 design but has not been used since the
-DVT stage, so these addresses never acknowledge. The pca953x driver
-fails to probe all eight pca9537 nodes on every boot, and the at24
-driver does not bind to the eight EEPROM nodes either. Remove the nodes
-for both devices.
+On Wed, 04 Nov 2026 11:58:34 +0800, Billy Tsai wrote:
+> The Aspeed GPIO interrupt status bits are write-1-to-clear on every
+> generation, but the driver updates them with read-modify-write helpers
+> that write a pending status bit back as 1. Each write therefore clears
+> interrupts that have not been handled yet.
+> 
+> Patch 1 fixes G4 (AST2400/AST2500/AST2600), where the status register
+> covers a 32-line bank. Acking one line clears every interrupt pending
+> in the bank, and an edge that latches after the handler has read the
+> status register is lost. This was observed on an AST2600 BMC with two
+> lines of the same bank toggling together at host power-off.
+> 
+> [...]
 
-Signed-off-by: Sean He <sean.he.wiwynn@gmail.com>
-Signed-off-by: Eric Yang <eric.yang.wiwynn@gmail.com>
----
-The changelog was drafted with an AI assistant (Claude Code) and
-reviewed by the submitter.
+Applied, thanks!
 
-Tested on two Yosemite 4 BMCs, baseline vs patched image: the eight
-pca9537 nodes and the sixteen 0x49/0x50 slot-bus clients are gone, while
-the 0x51/0x54 clients, gpio chips and FRU objects are unchanged.
-CHECK_DTBS=y W=1 shows no new warnings and the DTB diff is exactly the
-sixteen removed nodes.
----
- .../dts/aspeed/aspeed-bmc-facebook-yosemite4.dts   | 96 ----------------------
- 1 file changed, 96 deletions(-)
-
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index e4172be84..4c7c96ce4 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -604,18 +604,6 @@ imux16: i2c@0 {
- 			reg = <0>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
--			gpio@49 {
--				compatible = "nxp,pca9537";
--				reg = <0x49>;
--				gpio-controller;
--				#gpio-cells = <2>;
--			};
--
--			eeprom@50 {
--				compatible = "atmel,24c128";
--				reg = <0x50>;
--			};
--
- 			eeprom@51 {
- 				compatible = "atmel,24c128";
- 				reg = <0x51>;
-@@ -631,18 +619,6 @@ imux17: i2c@1 {
- 			reg = <1>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
--			gpio@49 {
--				compatible = "nxp,pca9537";
--				reg = <0x49>;
--				gpio-controller;
--				#gpio-cells = <2>;
--			};
--
--			eeprom@50 {
--				compatible = "atmel,24c128";
--				reg = <0x50>;
--			};
--
- 			eeprom@51 {
- 				compatible = "atmel,24c128";
- 				reg = <0x51>;
-@@ -658,18 +634,6 @@ imux18: i2c@2 {
- 			reg = <2>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
--			gpio@49 {
--				compatible = "nxp,pca9537";
--				reg = <0x49>;
--				gpio-controller;
--				#gpio-cells = <2>;
--			};
--
--			eeprom@50 {
--				compatible = "atmel,24c128";
--				reg = <0x50>;
--			};
--
- 			eeprom@51 {
- 				compatible = "atmel,24c128";
- 				reg = <0x51>;
-@@ -685,18 +649,6 @@ imux19: i2c@3 {
- 			reg = <3>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
--			gpio@49 {
--				compatible = "nxp,pca9537";
--				reg = <0x49>;
--				gpio-controller;
--				#gpio-cells = <2>;
--			};
--
--			eeprom@50 {
--				compatible = "atmel,24c128";
--				reg = <0x50>;
--			};
--
- 			eeprom@51 {
- 				compatible = "atmel,24c128";
- 				reg = <0x51>;
-@@ -726,18 +678,6 @@ imux20: i2c@0 {
- 			reg = <0>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
--			gpio@49 {
--				compatible = "nxp,pca9537";
--				reg = <0x49>;
--				gpio-controller;
--				#gpio-cells = <2>;
--			};
--
--			eeprom@50 {
--				compatible = "atmel,24c128";
--				reg = <0x50>;
--			};
--
- 			eeprom@51 {
- 				compatible = "atmel,24c128";
- 				reg = <0x51>;
-@@ -753,18 +693,6 @@ imux21: i2c@1 {
- 			reg = <1>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
--			gpio@49 {
--				compatible = "nxp,pca9537";
--				reg = <0x49>;
--				gpio-controller;
--				#gpio-cells = <2>;
--			};
--
--			eeprom@50 {
--				compatible = "atmel,24c128";
--				reg = <0x50>;
--			};
--
- 			eeprom@51 {
- 				compatible = "atmel,24c128";
- 				reg = <0x51>;
-@@ -780,18 +708,6 @@ imux22: i2c@2 {
- 			reg = <2>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
--			gpio@49 {
--				compatible = "nxp,pca9537";
--				reg = <0x49>;
--				gpio-controller;
--				#gpio-cells = <2>;
--			};
--
--			eeprom@50 {
--				compatible = "atmel,24c128";
--				reg = <0x50>;
--			};
--
- 			eeprom@51 {
- 				compatible = "atmel,24c128";
- 				reg = <0x51>;
-@@ -807,18 +723,6 @@ imux23: i2c@3 {
- 			reg = <3>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
--			gpio@49 {
--				compatible = "nxp,pca9537";
--				reg = <0x49>;
--				gpio-controller;
--				#gpio-cells = <2>;
--			};
--
--			eeprom@50 {
--				compatible = "atmel,24c128";
--				reg = <0x50>;
--			};
--
- 			eeprom@51 {
- 				compatible = "atmel,24c128";
- 				reg = <0x51>;
-
----
-base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
-change-id: 20261103-yv4-remove-ff-nodes-9e20104d2362
+[1/2] gpio: aspeed: Clear only the acked line's G4 interrupt status
+      https://git.kernel.org/brgl/c/5d362564bd2982def7e80d7f1e756a97440c7adb
+[2/2] gpio: aspeed: Preserve the pending G7 interrupt status on control writes
+      https://git.kernel.org/brgl/c/18cc1d1ad94df8a6760fff2617d3d6923550cba0
 
 Best regards,
 -- 
-Eric Yang <eric.yang.wiwynn@gmail.com>
-
-
+Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
 
