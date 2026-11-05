@@ -2,51 +2,52 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B5342606A31B
-	for <linux-aspeed@archiver.kernel.org>; Thu,  5 Nov 2026 22:36:45 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 42CE3606A329
+	for <linux-aspeed@archiver.kernel.org>; Thu,  5 Nov 2026 22:36:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=n8CRph5N
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gQXtnC+u
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jLHGz1zvVz2xWt;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jLHGz6HZ5z2x9c;
 	Fri, 06 Nov 2026 09:36:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793912935;
-	cv=none; b=OigqyVD3xv233DHJ+trPdmJ1gi6OA6H6ccUKz3zT0L0vSJmO9kbWbs3u9JW1FAEXTyVVFVMYJeOi8TYIKet55B7B82+zE+cAtxWbn4OV1zYPeR+vcpC+YWsxoJCHxt597EipwP4oaoqQsFkZwdjIERIDEOSg2wSkBiE/xecBOgL9rq0QvidxhR8aOeNvdUEVs8UZS6/SqrNr6O6IUX0coeUcG/bLfyLCsOhGSmiQe/cS4xkAEtKqqLUR4XQQR7Up54vJ57rMWSz+pkrT88gmLYaqH57dLh8dMXWsYQI7G9rGp9sodl0xjI8iKO81kz52if9aLDYUZKRFxmF1bpoBHw==
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793912887;
+	cv=none; b=ok4rsbihUbK+l5XmTRYNAlfp38l/0u1AIqsISWb1AOEp1P+NAZjJvFAz9862ttm9iSHrolLGlTaRJRMC2tD+XfEk+6rSQRedrP6IjpqMYzQpVcP+O58nxnQjQ7RRUm8qZxde0FMRZYDeaOVRkRcAB0ROolGlBDX6qUuM6jWx93/i/xlrIaztpKqHmXE8538CgxKixfi2mh46GnJON7aHXVTFnIDQL7qGJyUr6ui7L0MX80vp6RVsLzmZIr5N13UcmJhG+cHXCurkAb0osJgpLbTU6vnHz6Rkw9lNRy0lXIF/E3qKvj8u2yadlYgQxfv8q5d2Az6Ef/g70OsxNOWUjg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793912935; c=relaxed/relaxed;
-	bh=f5KzmK9Yc1O2UTKJiw6Ig75W/rQrebyZwa5yMpDxZPA=;
+	t=1793912887; c=relaxed/relaxed;
+	bh=AH46OuGdtEt1nsUri8AEqTjCIJ9jhn5rP+r92fYTTuo=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=oqbtvP7FZ2yeJNUYOj1MMo4BnkdXKOMl+rTLHvCMV3CvdJLfel3H6zPntoJQLrMgUwI/UPIJAQS0D6d7X2MjLOF9+5/xFlcuBvdNca18snJ/PJIK8qlL3JnLSYSNzAgkM9l0YAjwNWS7NCFZxYx6quWzBca/2pY3pebXr6Mp7NAx1byXhs0dHwv8NG/YsSayGUI5Ub178UNxye1yo8uZG3IQ1gNQph1SYnlVLL8sZGGAEofvwW8LvWUpkTI/evP6Ik3LHtpgXgIvSSrh8a4mncAZRhsXB9lCMHutigzTyEo3GzTnSlVunJu9m3rR1QTJXMkjbcNQBzZJBTO/LvUDHg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=n8CRph5N; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=i8MeSfUxXy66kU6pzbdKVDHqVj2qpNJrh1naoz2i3rEzQpnixTgeFmFzyKO8MVGfCU4TVoMGfCJ+mwzHLmb1Wkovx4FfP1Z8aW0Q/Cuwfqqtz1XCiUCzsbaglZKJOTuwtJgLIsIT69/7Wfr8pk+R+G70WBgnCChaCbUY/u8q2MzEuMNnJvkCNQz6hPO7ikLXXuKs+aqFugDWH3BljOo62iGjANzl+kJhZ4h08OF1gzSwDEN1z560kutfnLZJOCTXcIHciRuG2NVKfAVQSk+1c5xct+JKWGJkC/fPZ9sNBz4Ei5Mw94iDLnhB41bS8/87cFybwkotrTsTFl4MsuMPJg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gQXtnC+u; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=n8CRph5N;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gQXtnC+u;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLFKf5mN1z3c4V;
-	Fri, 06 Nov 2026 08:08:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLFJk1k9Hz30MY;
+	Fri, 06 Nov 2026 08:08:06 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 39C41431DF;
-	Thu,  5 Nov 2026 21:08:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 555ED1F008A2;
-	Thu,  5 Nov 2026 21:08:41 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 45D9843FE4;
+	Thu,  5 Nov 2026 21:08:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 40DBB1F008AB;
+	Thu,  5 Nov 2026 21:07:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793912933;
-	bh=f5KzmK9Yc1O2UTKJiw6Ig75W/rQrebyZwa5yMpDxZPA=;
+	s=k20260515; t=1793912884;
+	bh=AH46OuGdtEt1nsUri8AEqTjCIJ9jhn5rP+r92fYTTuo=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=n8CRph5N+6GvMpxdTIZcApabmYM00ArLewFL8fQnfylRd81N3dMFr0fH9tM4p+HtO
-	 aUidU5CiMimh6FJxpyYqMz3zczVFtpB2Rg8C6Cvpnenu7HefwcLf7SzXaei+nFpCsq
-	 g+IIikN+Wpf5xA5Iml3JdYU+nz+jxroAIVKnx8cAky1Mefm7dQRJYZr4fXxy8faV+B
-	 gKm7dUWZnjvRP+x3tKmFXknw94zv5xgigYJCPUGpqxlfNq5n3JmZ8HKLtFE8wxCIUp
-	 5Rf8140WFsZqvLSCfX0CiwE+wK86zC1db93JvTfAih23Aag2hbuzEZLeh7mzRE98Cl
-	 QUXlmqQj/bSaw==
+	b=gQXtnC+uGV3ca+q7ByIhTFttKWFz/mEPWtGFIHyr1U7eyA5UiL3F5di8hwOyKNKIF
+	 owKNBe70mg3Zo5esALsOGrB3Gu4dftp1gp/kDfIf8QLSYdragHGzq3le/t0ApgBOdt
+	 W9up1YKjS36n6toNIJ3j5acZKXZ8wWo1sMDx7UIrb0pziMl9w8OPwDPPoOYAZT36u2
+	 vi8ESoYJVVURVm/u4/xMe23aJwZSVnqx7/HIEZFlTMpz35L2uOhW7gv4mJl1kf17SO
+	 iv7fymeQuygUorjvcrauyoeA1G+MidvGijWcp/sEyevbIArziwLEOE45fNvfWtSV44
+	 zrRXpq/nRe5Qg==
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Thu, 05 Nov 2026 21:05:45 +0000
-Subject: [PATCH 14/14] vhost-vdpa: convert mmap hook to mmap_prepare
+Date: Thu, 05 Nov 2026 21:05:41 +0000
+Subject: [PATCH 10/14] soc: qcom: rmtfs_mem: convert mmap hook to
+ mmap_prepare
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -62,7 +63,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261105-late-2026-mmap_prepare-v1-14-c56aadfbab8a@kernel.org>
+Message-Id: <20261105-late-2026-mmap_prepare-v1-10-c56aadfbab8a@kernel.org>
 References: <20261105-late-2026-mmap_prepare-v1-0-c56aadfbab8a@kernel.org>
 In-Reply-To: <20261105-late-2026-mmap_prepare-v1-0-c56aadfbab8a@kernel.org>
 To: Juergen Gross <jgross@suse.com>, 
@@ -107,12 +108,12 @@ Cc: ljs@kernel.org, xen-devel@lists.xenproject.org,
  linux-aspeed@lists.ozlabs.org, linux-arm-msm@vger.kernel.org, 
  op-tee@lists.trustedfirmware.org, netdev@vger.kernel.org
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2490; i=ljs@kernel.org;
- h=from:subject:message-id; bh=JMVxOxpfFwzbko1Dkxmi/MhSfdurHV7XcSZNEQmi5LM=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLevF9bav5wk6fYrXOXd6ULZVa0TPfJ+Lg9MZfZ9diee
- +qG2zLOdJSyMIhxMciKKbI8/yK+P0gkbF7nBX83mDmsTCBDGLg4BWAiYXcY/qcUxNtcOqidzSK8
- Kjc5+rCJmY7SZFXp7BChe/6HDFawfmP473xkKtfXWhYbrcSmOwwT5rzNXJ5t/Wde6Okj54p0482
- qOAA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2040; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=VZRnIpM2wCvIjSh9P+PGr0d/uBMnYJCKqKQo3RqP51A=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLevF/DcEy9Yf31Kzsm7ZGRmTflc4KO8ympbO+gxpqId
+ 5e4dnYId5SyMIhxMciKKbI8/yK+P0gkbF7nBX83mDmsTGBDuDgFYCJ83owMN3b7GPFPClBsUdpb
+ 91BjyqODrGFXl9VPszke3LF79vZDiYwMd/fO2SCzWsEy+nRExp61KyZ+Xqt1rPVFwbrq23tKLII
+ esgIA
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -123,72 +124,61 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Move from the deprecated mmap hook to the new mmap_prepare hook. The hook
-only validates the request and sets the VMA flags, operations and page
-protection.
+Move from the deprecated mmap hook to the new mmap_prepare hook, using the
+PFN remap mmap action to map the region.
 
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- drivers/vhost/vdpa.c | 23 ++++++++++++-----------
- 1 file changed, 12 insertions(+), 11 deletions(-)
+ drivers/soc/qcom/rmtfs_mem.c | 22 ++++++++++------------
+ 1 file changed, 10 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/vhost/vdpa.c b/drivers/vhost/vdpa.c
-index ff7d90719171..993b2d7c8927 100644
---- a/drivers/vhost/vdpa.c
-+++ b/drivers/vhost/vdpa.c
-@@ -1573,19 +1573,19 @@ static const struct vm_operations_struct vhost_vdpa_vm_ops = {
- 	.fault = vhost_vdpa_fault,
+diff --git a/drivers/soc/qcom/rmtfs_mem.c b/drivers/soc/qcom/rmtfs_mem.c
+index 342c0845134e..5e2ac75f41d5 100644
+--- a/drivers/soc/qcom/rmtfs_mem.c
++++ b/drivers/soc/qcom/rmtfs_mem.c
+@@ -129,24 +129,22 @@ static const struct class rmtfs_class = {
+ 	.name           = "rmtfs",
  };
  
--static int vhost_vdpa_mmap(struct file *file, struct vm_area_struct *vma)
-+static int vhost_vdpa_mmap_prepare(struct vm_area_desc *desc)
+-static int qcom_rmtfs_mem_mmap(struct file *filep, struct vm_area_struct *vma)
++static int qcom_rmtfs_mem_mmap_prepare(struct vm_area_desc *desc)
  {
--	struct vhost_vdpa *v = vma->vm_file->private_data;
-+	struct vhost_vdpa *v = desc->file->private_data;
- 	struct vdpa_device *vdpa = v->vdpa;
- 	const struct vdpa_config_ops *ops = vdpa->config;
- 	struct vdpa_notification_area notify;
--	unsigned long index = vma->vm_pgoff;
-+	unsigned long index = desc->pgoff;
+-	struct qcom_rmtfs_mem *rmtfs_mem = filep->private_data;
++	struct qcom_rmtfs_mem *rmtfs_mem = desc->file->private_data;
  
--	if (vma->vm_end - vma->vm_start != PAGE_SIZE)
-+	if (vma_desc_size(desc) != PAGE_SIZE)
+-	if (vma->vm_end - vma->vm_start > rmtfs_mem->size) {
++	if (vma_desc_size(desc) > rmtfs_mem->size) {
+ 		dev_dbg(&rmtfs_mem->dev,
+ 			"vm_end[%lu] - vm_start[%lu] [%lu] > mem->size[%pa]\n",
+-			vma->vm_end, vma->vm_start,
+-			(vma->vm_end - vma->vm_start), &rmtfs_mem->size);
++			desc->end, desc->start, vma_desc_size(desc),
++			&rmtfs_mem->size);
  		return -EINVAL;
--	if ((vma->vm_flags & VM_SHARED) == 0)
-+	if (!vma_desc_test(desc, VMA_SHARED_BIT))
- 		return -EINVAL;
--	if (vma->vm_flags & VM_READ)
-+	if (vma_desc_test(desc, VMA_READ_BIT))
- 		return -EINVAL;
- 	if (!ops->get_vq_notification)
- 		return -ENOTSUPP;
-@@ -1598,12 +1598,13 @@ static int vhost_vdpa_mmap(struct file *file, struct vm_area_struct *vma)
- 		return -EINVAL;
- 	if (notify.addr & (PAGE_SIZE - 1))
- 		return -EINVAL;
--	if (vma->vm_end - vma->vm_start != notify.size)
-+	if (vma_desc_size(desc) != notify.size)
- 		return -ENOTSUPP;
+ 	}
  
--	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
--	vm_flags_set(vma, VM_IO | VM_PFNMAP | VM_DONTEXPAND | VM_DONTDUMP);
--	vma->vm_ops = &vhost_vdpa_vm_ops;
-+	desc->page_prot = pgprot_noncached(desc->page_prot);
-+	vma_desc_set_flags(desc, VMA_IO_BIT, VMA_PFNMAP_BIT, VMA_DONTEXPAND_BIT,
-+			   VMA_DONTDUMP_BIT);
-+	desc->vm_ops = &vhost_vdpa_vm_ops;
- 	return 0;
+-	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
+-	return remap_pfn_range(vma,
+-			       vma->vm_start,
+-			       rmtfs_mem->addr >> PAGE_SHIFT,
+-			       vma->vm_end - vma->vm_start,
+-			       vma->vm_page_prot);
++	desc->page_prot = pgprot_writecombine(desc->page_prot);
++	mmap_action_remap_full(desc, rmtfs_mem->addr >> PAGE_SHIFT);
++
++	return 0;
  }
- #endif /* CONFIG_MMU */
-@@ -1615,7 +1616,7 @@ static const struct file_operations vhost_vdpa_fops = {
- 	.write_iter	= vhost_vdpa_chr_write_iter,
- 	.unlocked_ioctl	= vhost_vdpa_unlocked_ioctl,
- #ifdef CONFIG_MMU
--	.mmap		= vhost_vdpa_mmap,
-+	.mmap_prepare	= vhost_vdpa_mmap_prepare,
- #endif /* CONFIG_MMU */
- 	.compat_ioctl	= compat_ptr_ioctl,
+ 
+ static const struct file_operations qcom_rmtfs_mem_fops = {
+@@ -156,7 +154,7 @@ static const struct file_operations qcom_rmtfs_mem_fops = {
+ 	.write = qcom_rmtfs_mem_write,
+ 	.release = qcom_rmtfs_mem_release,
+ 	.llseek = default_llseek,
+-	.mmap = qcom_rmtfs_mem_mmap,
++	.mmap_prepare = qcom_rmtfs_mem_mmap_prepare,
  };
+ 
+ static void qcom_rmtfs_mem_release_device(struct device *dev)
 
 -- 
 2.56.0
