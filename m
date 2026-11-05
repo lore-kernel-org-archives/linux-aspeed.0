@@ -2,51 +2,51 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB847606A326
-	for <linux-aspeed@archiver.kernel.org>; Thu,  5 Nov 2026 22:51:45 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 60842606A328
+	for <linux-aspeed@archiver.kernel.org>; Thu,  5 Nov 2026 22:51:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RnuBqofl
+	dkim=pass (2048-bit key, unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hyoADFGo
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jLHcJ21sVz2xNC;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jLHcJ25nMz2xPb;
 	Fri, 06 Nov 2026 09:51:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793912837;
-	cv=none; b=DY+8HrzFROFYiXfzh3hOkRgYrvPqxKgC0vnlxFxcVnrDuq265sfdfN2u/63t3wX+JmLgVg7eh7PwCesGTJA5EjEy9NhislYHIelAJ3LvcoU+J8q8huVw6jOwn1gBVbxNCclTsJ91KEMBbYlObMpWiNlszj9KT+zR0X8unkrkwLR2M+TWnaT4qrWO8I/k9EEeAggbkfOq4Gu+MzBdKEdZqpEVpZevbPOQiOPy9eyk5p3rgQRlpdO7RYy1VTIHQmEdE4Sg7HP1MjTJ7x9oUlsfW6jEsZXYcQOVml9R4RHJI/1NvZeovAk4R8fgdKwhGypFwNeGt94f595NNpFsY+EtwQ==
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793912813;
+	cv=none; b=cbDHfeLT8OzzOmI09OouCZuUIcUNb36N5XazKyWd5LGBxKY9hu7BCP8dmusmGne5ARTvPeQDV4OIEQjc/stodZ/i5XIOGkrkt+Da7x0MHKAqt5wAlAGxSDMw66k7KlHbINfa9Ke56QmIbXdqEa592OT3ziQ+1Gov9uju+5+Rb3P8gusjDYBZvY3i/phZVwkrQURAuxdpFRMZyORGNFEVo3pgYxOGs0f3qY5TLyxstljDomrycErz3beEEnN5eqKMoqVZfUCBi1+lvMlJz6qu8ge8OE/9uaDfgEw6cEFl5vNraBfqOvs5BBHgZdWbNjKd0u06quKt0LPTC3zTRzayyQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793912837; c=relaxed/relaxed;
-	bh=QKT0z8QtIRwzKrfDYLgpmoyX9J+/idevkgO1HnXZit4=;
+	t=1793912813; c=relaxed/relaxed;
+	bh=lMfCHuJWDITAzVX5MILlRUAfVtlxLQX6U8OJOyztS0Q=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=eAHDAkzNJsbvzMe48OsHBr9yGTXPBAYowT70UT8TmZUpok34G61j3ZcCV26B5yGyjlGeSmmxzEOHOVbE4LGKBANfSJcY+8tFIe3CnrSEF/+26AL+ukcOm2Fd93ZbGLsT6ILn1BzELQGpO2we8d/3IWcm9EwOEMd+A6lbKBeoGfNDdqXuWynB56mk7xNIfmAt4lV8qOl7J9HnlGIKHGcZo5zzHaesAwn0H91WwbHfcCL43DazVZwX3e7EiAcEfELG5h14uKtrZ+CZQjbifz0HpeikDiroSHkA/2tEcTSwJLdCTyStfPLFNyKr+cLXuBFrCctbRMFnUBaFYq7CD12QYQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RnuBqofl; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=R5lQnBih214i3GvprNwGa4AjyTcZtXE6OhOYq5PFVIx8/Ur0zkkTjC35ftla021ZCVjNbhSG+qt4LqAlWOpSzrjOUDAQacICM8cbygcFTWMcJs2zuhT3rZGI2fd/hbvNmVJhvnkLWH/TPfMCA58VOdxvQJ2e0uDSnpKO22WsmOUkTLThkkidD+omlnfVID6mDjDCt3JWeMM7G9RBZXOQHEwe3OnSJppf6VilRj+us9Fqz6/sK8x/e82eQtWbcIHycmMILFmXiwmZxPsk1tIHyzak0XfqAYuHdcGpiAxKByoRH1pTC+BbP2+xiLHhXdbZlQirEhqrLmV+eX5dnsBnwg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hyoADFGo; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=RnuBqofl;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hyoADFGo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLFHm5Kqjz2xKx;
-	Fri, 06 Nov 2026 08:07:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLFHJ4Pvkz2xKx;
+	Fri, 06 Nov 2026 08:06:52 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 3053B434E5;
-	Thu,  5 Nov 2026 21:07:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4C0881F008BE;
-	Thu,  5 Nov 2026 21:07:03 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id B47AC605F7;
+	Thu,  5 Nov 2026 21:06:50 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C70931F008A2;
+	Thu,  5 Nov 2026 21:06:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793912835;
-	bh=QKT0z8QtIRwzKrfDYLgpmoyX9J+/idevkgO1HnXZit4=;
+	s=k20260515; t=1793912810;
+	bh=lMfCHuJWDITAzVX5MILlRUAfVtlxLQX6U8OJOyztS0Q=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=RnuBqoflWBl9+my+oc0dxGf7vwqGAIPn/FsGegfNU3dHcec/WKV86s6Ur1Z7CgphR
-	 XKnhR+RNjTNO8xHOfu/7SF8YH25vN+805KwkJu0FanhjtyA5pyhvbbpwpubqNIFDqI
-	 0TVcpTKSq0Hbsoi1IvuBwqBkbcg2LUnI8ztcdNM7aUjh5w7hvqpQ6VfM7GqHQzO7sB
-	 P65idNuN5d5q0GV/XG9x/f4N6e/Z8fjyllKisCJ9sQgGmYELUKRoe5PiuZNsJh9pU5
-	 chtN+L8dJARPPHvocVhTuHejP5A11y7PUl2FEC/P7We+rpc+2vc3NxNzEGRFg75tiJ
-	 ON7wUjneXfb7Q==
+	b=hyoADFGoZhaTWJkzXcW3KcbEavv04p8OShbOv92vBdUSDNLHC33p5UKp1V2NVcrld
+	 kDlm4+Dh0N0ewg6c+CsYgrDJ3ZyQfeLnEMeGuWWhUOa1JWAqXOF3EIa9dU7hEYQurC
+	 UD8uUTqIpkS8973AB0tlJQaOj0TVHyTL25qiKUL5PD3kHvTGhvyIEbBHKWXDn6uHka
+	 RoxnfP2r7Ju1UsLJ3jtzSicq0aWOqHOlTJAt5o8ROmzR1tSO11ZVBsg+5OZeT4rkNp
+	 9MHuwVurtm4FxobT/XptLLk7AHWfQIwdo04JpdFyuH/BI40j4CP1PTKjHXSsUS4XXm
+	 oJDzW5rZ2ElnQ==
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Thu, 05 Nov 2026 21:05:37 +0000
-Subject: [PATCH 06/14] udf: convert mmap hook to mmap_prepare
+Date: Thu, 05 Nov 2026 21:05:35 +0000
+Subject: [PATCH 04/14] vduse: convert IOVA domain mmap hook to mmap_prepare
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -62,7 +62,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261105-late-2026-mmap_prepare-v1-6-c56aadfbab8a@kernel.org>
+Message-Id: <20261105-late-2026-mmap_prepare-v1-4-c56aadfbab8a@kernel.org>
 References: <20261105-late-2026-mmap_prepare-v1-0-c56aadfbab8a@kernel.org>
 In-Reply-To: <20261105-late-2026-mmap_prepare-v1-0-c56aadfbab8a@kernel.org>
 To: Juergen Gross <jgross@suse.com>, 
@@ -107,12 +107,12 @@ Cc: ljs@kernel.org, xen-devel@lists.xenproject.org,
  linux-aspeed@lists.ozlabs.org, linux-arm-msm@vger.kernel.org, 
  op-tee@lists.trustedfirmware.org, netdev@vger.kernel.org
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1166; i=ljs@kernel.org;
- h=from:subject:message-id; bh=DLdQ29COL0zGmxo/RqnqfZh7M8nmGGQT+1l47aYTRPY=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLevF+TVmThWvlNcPmraFeJkEjHwxYvPkgIt/wtrxeoz
- +A9ez2ho5SFQYyLQVZMkeX5F/H9QSJh8zov+LvBzGFlAhnCwMUpABO5fZvhn+2396kibN6ZSya4
- 8c9Md3ietX1BVNqe62l2F/Zvfvurg4nhf5JVc2LZzaRWi98fwrc7JT79lmb6P+mw/7Z3Hc9+hFT
- 68QIA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1527; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=f+7KpJr4q75MSHX3Bd7fDuPR7a/rNIIIf/bMN+NEgYc=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLLevF8du8y356wo75UohnvW1WmG2azZxoEG9l+mvHw8c
+ ZHxmh0fOkpZGMS4GGTFFFmefxHfHyQSNq/zgr8bzBxWJpAhDFycAjCRiBOMDB0R1y2sCsxZCz9d
+ WmjgP+cKZ4HBz+NXpWMcv1wV1woTUGNk+FWtznBzgiPz5WrBrQefRpSzaacb3N2dE78n6eYhful
+ ubgA=
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -124,40 +124,45 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 Move from the deprecated mmap hook to the new mmap_prepare hook. The hook
-only updates the access time and sets the VMA operations.
+only sets VMA flags, operations and private data.
 
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 ---
- fs/udf/file.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/vdpa/vdpa_user/iova_domain.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/fs/udf/file.c b/fs/udf/file.c
-index 02e9314818dc..d5e80c6cae96 100644
---- a/fs/udf/file.c
-+++ b/fs/udf/file.c
-@@ -190,10 +190,10 @@ static int udf_release_file(struct inode *inode, struct file *filp)
- 	return 0;
- }
+diff --git a/drivers/vdpa/vdpa_user/iova_domain.c b/drivers/vdpa/vdpa_user/iova_domain.c
+index b6c958224b7c..64465f690a4d 100644
+--- a/drivers/vdpa/vdpa_user/iova_domain.c
++++ b/drivers/vdpa/vdpa_user/iova_domain.c
+@@ -575,13 +575,13 @@ static const struct vm_operations_struct vduse_domain_mmap_ops = {
+ 	.fault = vduse_domain_mmap_fault,
+ };
  
--static int udf_file_mmap(struct file *file, struct vm_area_struct *vma)
-+static int udf_file_mmap_prepare(struct vm_area_desc *desc)
+-static int vduse_domain_mmap(struct file *file, struct vm_area_struct *vma)
++static int vduse_domain_mmap_prepare(struct vm_area_desc *desc)
  {
--	file_accessed(file);
--	vma->vm_ops = &udf_file_vm_ops;
-+	file_accessed(desc->file);
-+	desc->vm_ops = &udf_file_vm_ops;
+-	struct vduse_iova_domain *domain = file->private_data;
++	struct vduse_iova_domain *domain = desc->file->private_data;
+ 
+-	vm_flags_set(vma, VM_DONTDUMP | VM_DONTEXPAND);
+-	vma->vm_private_data = domain;
+-	vma->vm_ops = &vduse_domain_mmap_ops;
++	vma_desc_set_flags(desc, VMA_DONTDUMP_BIT, VMA_DONTEXPAND_BIT);
++	desc->private_data = domain;
++	desc->vm_ops = &vduse_domain_mmap_ops;
  
  	return 0;
  }
-@@ -202,7 +202,7 @@ const struct file_operations udf_file_operations = {
- 	.read_iter		= generic_file_read_iter,
- 	.unlocked_ioctl		= udf_ioctl,
- 	.open			= generic_file_open,
--	.mmap			= udf_file_mmap,
-+	.mmap_prepare		= udf_file_mmap_prepare,
- 	.write_iter		= udf_file_write_iter,
- 	.release		= udf_release_file,
- 	.fsync			= simple_fsync,
+@@ -606,7 +606,7 @@ static int vduse_domain_release(struct inode *inode, struct file *file)
+ 
+ static const struct file_operations vduse_domain_fops = {
+ 	.owner = THIS_MODULE,
+-	.mmap = vduse_domain_mmap,
++	.mmap_prepare = vduse_domain_mmap_prepare,
+ 	.release = vduse_domain_release,
+ };
+ 
 
 -- 
 2.56.0
