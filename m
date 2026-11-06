@@ -2,60 +2,60 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 26E4A606A326
-	for <linux-aspeed@archiver.kernel.org>; Fri,  6 Nov 2026 05:17:01 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 948CE606A329
+	for <linux-aspeed@archiver.kernel.org>; Fri,  6 Nov 2026 05:25:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=G64l78gU
+	dkim=pass (2048-bit key, unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=KbVDF/ZZ
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jLS8q5wKqz2xHG;
-	Fri, 06 Nov 2026 16:16:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jLSL80Qbqz2xHG;
+	Fri, 06 Nov 2026 16:25:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793942219;
-	cv=none; b=eGCiD0nYqp5fp85rzUy/ussSvzduAmZPKITool4Dw4XcWZy6ctgbL/60LnjAieVNRz1eLivscUrgij2qEoOPaeHKbMT6F3h2LsUF1dJX992RLS8jGj8ohbq4Qgi63wikFzt/qvhV9BenLzuIYWJ0VarR1FQtKC2SJaIgHClHFVINVd6J74K24xuSxZPgJpj5XoVLfaSbGZnhk0dSjprDE6L8g9Ym7tsoXuSSHQUs3RC9dMzYmIoObL9sjbOt4fDV7kpIRf3qZmlBDXkfjvKKw8oIqjfiz5hBGvpy7EM6JFdsGSxMmMf5krw9jW9KFMdKyZz3ABr2SaIgcgl3PTwyFQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793942703;
+	cv=none; b=oFuX4y0b4xAoOPTA9wlluW5xTZLyi15UJMYhNkiCuboP5+Vm3Ww0KQe+gF1vCeOX25+xhgR1y0SjyUSb59290tqHZJR5kwsupxxkWzi4/X2knDLTiyuNlmNMprGt+MIvmHCg1GVwcxoYFdRMYPAh/gTM1KpXKQGgHg4XchL6EZesdRiXA45UHSJ+4A1w83sM1aG93JvwwSFEGFQ9v5x6jhsxLUxGO2k15jJFUUMDvENWoda23GgGl3GvOosZnVE/xGkZ2cbqvZGslnTgq4NcUr6fVHmrUOclg6N95UdjNjDLFw1+zVUXU9jxf8XoQBNdRK50IgkIihTY7RJWpbYW9g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793942219; c=relaxed/relaxed;
-	bh=7nQnjeigU0D/Ve61Bm64NyUI5X1+1HOvlN3FLT7eQws=;
+	t=1793942703; c=relaxed/relaxed;
+	bh=rc1B5L9x4KU9XV5a9KjL0IyzS9SFrFYxX5fwdEU8zEU=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=ZAHT4UyjFCiR8S9/YZJkLXjNU55HwLgdRxQn9AyGuYK1BA0IPxpyG/imHO5sn/5DUDxYx7nomIC5/thpfUwtisgkg0wJrtipQWMW65dmNyVD+Nj5lxDPc57CRxAnoZHDUJ8+LyF02W8CCGOwXuhUs9FsNwqU9IHl4ZhGYJV4TH2tpfVN7SH9Ms77tXbInmbLEnsLKxWBapO9KOJ2gGFpcKn8P+jL0fn5U3g8enAbD5V4k0zBCNsgbUNNgTCYVM0memNw1Tm/Nk08torK1jPkHDiksfvqUv/0t5bwXX4YB6MN4HdfOC7/JTWuZXB3cnNv9j4LYCieNli1rwwmIbaT8g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=G64l78gU; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	 Content-Type:MIME-Version; b=QFKPrbBfHflu7TaGLNqX9YYfKAs2W5UqgAtPiDTd+a9JAGExbsN4Uhu3chf9eMrWKcD/OGfGMiJ0OH5pqAPmb0RyaPiPfuYtYlzZ7gbUemFv63aCnWKc9PgRrMyOqNwsuAjQPGsxDbi4FHr1T8OFK/J7Ehb4D7t3GgmxjWQtJ+UrqieRi3/tzsjcEiGCaYjtswjCwrLC3AW96ZQSsD3Fffpw1k2d6ah6wMZ36zXk3E2NS6dGeQKqBkNrHc2/vaZvQOzw18fBwYm1nAEEja5eDrS3tG7KHvSdZtexgUfmxUOdFmcbA2SoKvDUj9c/tfTp19F/Kd1MN+cmjmzFkJ64QA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=KbVDF/ZZ; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=G64l78gU;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=KbVDF/ZZ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLS8q1yTvz2xB1
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 06 Nov 2026 16:16:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLSL72GQcz2xGr;
+	Fri, 06 Nov 2026 16:25:03 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1793942218;
-	bh=7nQnjeigU0D/Ve61Bm64NyUI5X1+1HOvlN3FLT7eQws=;
+	d=codeconstruct.com.au; s=2022a; t=1793942702;
+	bh=rc1B5L9x4KU9XV5a9KjL0IyzS9SFrFYxX5fwdEU8zEU=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=G64l78gUR0IAlLTqhtV55R1Lb0orlCMZJq0U09Smi0VvQzm6H0sg0MuO+0ZDbw0Bh
-	 68LLXZ6W9vlek5PSzEXG4YuQERv7CSRERiZnqQmyn5dAVrRVQeaefh9e4zYqJDzMgW
-	 Mopav8bnBAWo71A7hDm0/39v4Wmdp94SWcYIuCWpb78GyL2NXJ2lrSan0fl0D7GPBg
-	 l5bbr/nRNFN2gRPR2s58wf0Y7R9u0gr7kara2GOhoGRN0pRAh66T2Eo4LBsXnG/w2p
-	 7pLFDrkzQL5xbg4Z9urIbaGcaUwPSGFrQF12jZxjcCbOvOrUqsrXmxRCKZ53be2KMp
-	 6Hh5+nWNR8GnQ==
+	b=KbVDF/ZZlKW+8X1Vp2xhdZH2JdZ3LdHuFkg7F0ExZz3B9V4shzzGT9MBmcdhE15A0
+	 rwHSBsy2yR3p+qiDcq2LPyXE2wvePRvsmBh6ty6wjvi5jNHIiQ4umHU8eOjB/k7TWe
+	 6JZhmgwkXkl+4HNSvAuqhn/fK3Q6cqxx6ti/kb1TsfBBj4SnWQr5h8jjPv+axoLuKr
+	 UtSvFIikSTMKKGzLeOQFjUkG8UBZhABXcMrtcWTsYTijokWRofu2bP5aeKZR79XU2p
+	 TgfhhjDipdr5JOrq2deYgHexwEDM8p9PyYj4dVOzUvx380bjRberr47UdzK6+kOeU3
+	 /RfaOavucwNag==
 Received: from [192.168.68.117] (unknown [180.150.112.139])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 773437127A;
-	Fri,  6 Nov 2026 13:16:57 +0800 (AWST)
-Message-ID: <4d149414902c2e7d2d8cbfb2cf741f6e6b21add0.camel@codeconstruct.com.au>
-Subject: Re: [PATCH] ARM: dts: aspeed: yosemite4: Remove Floating Falls
- board nodes
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 0978A64952;
+	Fri,  6 Nov 2026 13:25:02 +0800 (AWST)
+Message-ID: <69a28877e3ed57f9f248d31d1972b62446a4d230.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v4 0/2] Aspeed GPIOP handover with managed controller
+ lifetime
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: eric.yang.wiwynn@gmail.com, Rob Herring <robh@kernel.org>, Krzysztof
- Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel
- Stanley <joel@jms.id.au>,  Ryan Chen <ryan_chen@aspeedtech.com>, Billy Tsai
- <billy_tsai@aspeedtech.com>, patrick@stwcx.xyz
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, Sean He
-	 <sean.he.wiwynn@gmail.com>
-Date: Fri, 06 Nov 2026 15:46:57 +1030
-In-Reply-To: <20261105-yv4-remove-ff-nodes-v1-1-aa707a9577b7@gmail.com>
-References: <20261105-yv4-remove-ff-nodes-v1-1-aa707a9577b7@gmail.com>
+To: Prasanth Kumar Padarthi <prasanth.padarthi10@gmail.com>, 
+	linusw@kernel.org
+Cc: joel@jms.id.au, ryan_chen@aspeedtech.com, billy_tsai@aspeedtech.com, 
+	brgl@kernel.org, tan.siewert@9elements.com, linux-aspeed@lists.ozlabs.org, 
+	linux-gpio@vger.kernel.org, openbmc@lists.ozlabs.org, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Date: Fri, 06 Nov 2026 15:55:01 +1030
+In-Reply-To: <20261106022907.10735-1-prasanth.padarthi10@gmail.com>
+References: <20261105152348.8567-1-prasanth.padarthi10@gmail.com>
+	 <20261106022907.10735-1-prasanth.padarthi10@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.56.2-0+deb13u1 
@@ -72,56 +72,34 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
-	autolearn=ham autolearn_force=no version=4.0.1
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Thu, 2026-11-05 at 09:49 +0000, Eric Yang via B4 Relay wrote:
-> From: Sean He <sean.he.wiwynn@gmail.com>
+On Fri, 2026-11-06 at 07:59 +0530, Prasanth Kumar Padarthi wrote:
+> This series continues the AST2600 global-to-local GPIOP passthrough
+> handover work, rebased on v7.4-rc1. It adds a shared pinctrl lifetime
+> fix before the G6 handover change.
 >=20
-> The Floating Falls (FF) board carries a pca9537 GPIO expander at address
-> 0x49 and a FRU EEPROM at address 0x50 on each slot I2C bus.=C2=A0
+> The registration lifetime issue was identified by automated review:
+> the G6 callback data is devm-allocated, while the shared helper used
+> unmanaged pinctrl registration. Patch 1 switches registration to
+> devm_pinctrl_register(), ensuring unregister runs before earlier
+> devres allocations are freed. Patch 2 retains the v3 handover logic.
 >=20
+> Changes since v3:
+> - Add managed registration as a separate prerequisite patch.
+> - Keep the handover implementation unchanged.
+> - Add KASAN lifecycle testing in QEMU and on B650D4U hardware.
+> - Update validation statements to distinguish lifecycle and power tests.
 
-So the expander and EEPROM are on a pluggable board?
+Can you please re-send v4 so it's not threaded under v3?
 
-> FF was
-> planned in the early Yosemite 4 design but has not been used since the
-> DVT stage,
->=20
-
-That indicates they were used at some point, and the design has
-evolved. Which "stage" does the devicetree currently represent?
-
-Have you seen this discussion:
-
-https://lore.kernel.org/all/d7794f74b26bbc1ee0a70e39c5671acc018f80eb.camel@=
-codeconstruct.com.au/
-
->  so these addresses never acknowledge. The pca953x driver
-> fails to probe all eight pca9537 nodes on every boot, and the at24
-> driver does not bind to the eight EEPROM nodes either. Remove the nodes
-> for both devices.
->=20
-> Signed-off-by: Sean He <sean.he.wiwynn@gmail.com>
-> Signed-off-by: Eric Yang <eric.yang.wiwynn@gmail.com>
-> ---
-> The changelog was drafted with an AI assistant (Claude Code) and
-> reviewed by the submitter.
->=20
-> Tested on two Yosemite 4 BMCs, baseline vs patched image: the eight
-> pca9537 nodes and the sixteen 0x49/0x50 slot-bus clients are gone, while
-> the 0x51/0x54 clients, gpio chips and FRU objects are unchanged.
-> CHECK_DTBS=3Dy W=3D1 shows no new warnings and the DTB diff is exactly th=
-e
-> sixteen removed nodes.
-
-This kind of verification isn't terribly useful? Are we trying to prove
-that dtc has correctly translated the dts? This reads like it's AI
-fluff and is better left out.
+Also, I received the v4 cover letter twice. Something seems wrong with
+your mail setup.
 
 Andrew
 
