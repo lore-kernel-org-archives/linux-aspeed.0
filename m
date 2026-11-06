@@ -1,92 +1,127 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 65E9C606A326
-	for <linux-aspeed@archiver.kernel.org>; Sat,  7 Nov 2026 01:24:46 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E558606A32E
+	for <linux-aspeed@archiver.kernel.org>; Sat,  7 Nov 2026 02:36:26 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=BKATQmCP
+	dkim=pass (1024-bit key, unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=uiFsa2Bw;
+	dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=6UCJswdK;
+	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=LgjfvuMA;
+	dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=X0ai5JyZ
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jLyyN621Qz2y71;
-	Sat, 07 Nov 2026 12:24:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1230"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794014684;
-	cv=none; b=h1yxoNVLlWFaRNfKtHxGMzkMipaA5cfl4SFo/HwcJ8RS1tV0pvGIQWFCttg+pJ7D8VJMF3bBw1gc71FG0AWdgacLVBlo5Q1LzPl1ZfRcTsr0rQq5SeOhFDye5Px9vyAxGTAfCV1GGALO2ZxOdqg0NTl1cmOekjqbUa2Qr8m5LZ26rMGlldS5ZQi11c2PQmjDBwU/ua4vxqPKXOB/71fGdgiycx6ZaEdtBZNIBR3voyD4qURSdFO2V2b21A0YCDiyFAQOFMY4VW7JyszoX2Be+4MwiC8woMhJB1GWp0WjE20njxKWoygFPhuX7w6uc6QOwzV6b1XfD9SGQrKpl8rY2g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jM0Y45JM1z2xS6;
+	Sat, 07 Nov 2026 13:36:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793973531;
+	cv=none; b=UxyN5bMpOQ6nHqb+sFSrPvyKn/ZcwLZfwbbeHafmwWiEwJmsgGNW1KiTUeemcvCuAnxLKyRZVv9tcZgFwHHnjGkCUxsOs60lGN2/gsiUyYDQdkzw/2qudfNnhFYiIoIz1acs6UKVhV6wgV74Mf2Yi83sdxQgKjsyWjsZ9FyEOKqwrGKICbE9AE9dQG6gEf6OOvqIPVqftO6iuP/yikxzkDPgeX3dUrodRQABWqJIZ3RpvAqgVYklh42MdMEEr2zLTtHnbTdM7mYhLGJe9nAT9LQ/iGzLQfQOlh2Gl2S2ToICwHrBnvfA8bNzMm3P99EnZbuSVzB5pCYp2Re8Yk24tg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794014684; c=relaxed/relaxed;
-	bh=Le2Yx3zcrP74iTf6eGB+z3D+FEYMTB52lqn+/VIHlMY=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Fs0W1HFOPnfQXXlQ7nUlVA0MwuetNPjjkL5RxLn5lNwI0cSYe8CChiRaswEaeyMz3djo0omPIgAVeEev1EkfM8l0nGWJlBXDxhVsaFKyx840pEaosUlL3jVTy6PFP8zMxK+fvhOBQNz0MrOnVhBbf3DKndKTx3QKGLzmpHK1Jy96ZtPsZedfbGHHdF1xZ0aPCP7bms+1eS+pc3haORUXrpkpC4d0HIYMSLsaASR2mIP+7YxjE5KqZcn5xDRoBlSDTs64dG8H1/F3hx3YBRY5Q2Fcy/IALPyNWUxHVHeRK5HJQAjzL4XGNd6RsG95mm0Z9eL9EDFLE17zn1bkXSGLAQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=BKATQmCP; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1230; helo=mail-dl1-x1230.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1793973531; c=relaxed/relaxed;
+	bh=ItHvNO33pb8zb9UZ+LEb6x6bQbeF4DIAGvYYNsI45U8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=BcATD4gBsvfjRMHt+EcsK6/eJueoBFHrPeDVpvaX0VQbZ9fGkFUW+Js6JRMvPBUo82rXJg4uw7XBnW5g1FEa/ye6N25984d2RmV62u205ebo8+UvKOaFPzYlnO5cRkZ1iSEzUKuprSWfBvbg2vitTwUH6WS6w81O4Zeq4C4MuulckY0IBEiVGUroFukydnyTZs8PyCtZgzYXl3avpzwsCizSL8X2HiC+qsY0fXvS2HxmoMnetgLlrgyOq9KYgMjLE5vnMZcvTsOXciEXRPyVXDKNfqLSXpUFLuZlYUtznsglXyCxDSj5wFPvlFGVJAqSXFDOpwrBSh32p7qQhIOtbA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz; dkim=pass (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=uiFsa2Bw; dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=6UCJswdK; dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=LgjfvuMA; dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=X0ai5JyZ; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=jack@suse.cz; receiver=lists.ozlabs.org) smtp.mailfrom=suse.cz
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=BKATQmCP;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=uiFsa2Bw;
+	dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=6UCJswdK;
+	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=LgjfvuMA;
+	dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=X0ai5JyZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1230; helo=mail-dl1-x1230.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dl1-x1230.google.com (mail-dl1-x1230.google.com [IPv6:2607:f8b0:4864:20::1230])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=jack@suse.cz; receiver=lists.ozlabs.org)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2a07:de40:b251:101:10:150:64:1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLyyM2mS3z2xS6
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 07 Nov 2026 12:24:42 +1100 (AEDT)
-Received: by mail-dl1-x1230.google.com with SMTP id a92af1059eb24-170135e43c7so2143224c88.0
-        for <linux-aspeed@lists.ozlabs.org>; Fri, 06 Nov 2026 17:24:42 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794014680; x=1794619480; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=Le2Yx3zcrP74iTf6eGB+z3D+FEYMTB52lqn+/VIHlMY=;
-        b=BKATQmCPOl66ctIsElSERo0a9dc45IgBv+FazmnqkEA9J0895D+dnXgkVqNuCm4LM/
-         0l08jVv+0WxQiNN64vi4SqQlJ+XYtQXOeWud1qq3gTH8njYvADTCWl5MT9ShImmT6fM7
-         ZngKTPPYNyleE00x94RufghOkZOzFXlTbu6vQLdkwRmL2matO8cX3XtCPmU0PY47NKix
-         ugSM2ruJGkM8/rYGZ6DqQxB9hrS2At8SQpOFWDt2bytv1G1zYQHpeX3chW2tWUoqGjX0
-         JxPxsn+fSYnobA3RvViWg3BXOAKRoBZorcH7XXUeyfYdbC/tvp6jHT9LhjFp5NnISsD9
-         l9HQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794014680; x=1794619480;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=Le2Yx3zcrP74iTf6eGB+z3D+FEYMTB52lqn+/VIHlMY=;
-        b=p+wdeR9hHCxQ3FytxGtu4JfbHYsYAOr1eJd624e2VgkVE7blG9pOE6aUWA+Shuxj+k
-         vN+dqZrhimlW7DOiRzp/GXwjX7bfRGwlyd1SvSeWmIMa+io7gBZ4Gm8prowjMU0Td1A/
-         TbYoJ29wq52XB+xgVQUSdVqqtCyB9P0kFEtDw+V/8+KwSxf/mXznTQqWn/hIucDJrN0J
-         6KzAep++JOtnpMNM3MWko2+f5QbElD/wKmPvnwfXQ/K10iZHGCNQawBiXz5oB9WrwXga
-         HQyQS6r+XQNKW6DfUe2lz01sXrc7ozvb7F6KHAZcDkWYCK2rridKoPSZKS/8k/iCPr06
-         daWQ==
-X-Forwarded-Encrypted: i=1; AKwUvBw69IdoZKWrxsbVVlHOoqv+VNGuuRiQCd6tHFr3Mnp2W9qkeQ/UGmiW4W1x/mnBJgtxk9gDwPhBFXCeqBc=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z98KE5JLByNvPpAPmJ+vdRRVvY3IXVY43PSk3Fi52iKpI5j4Gk0
-	oxYmp9dloo6qdQ3XAUEY6xRgA+5yKTnBFpR2P5Tc+ky4Jw0UB2Adxszp
-X-Gm-Gg: AYBFou3NfocA+cvN66KQ0NitBA4sozioOyMLbBOj2HjYsq32GJvIZj15361WZgeWdDa
-	DPiH2PUafq3SGUgizzVXDBfSWEG8oHaytL+gs5UuMkSoLWrC7HkqcG6WhCobCc2NGJTQqXBdFQX
-	yb3PgDP7Tgc+sh0fHQiUASPsV0E4eNWOY0tlMEyKM8vL7vmqAsdt3Mf2kMTtKukY+VkUYjLNvC5
-	XscK073zZTpR4J8md5bi1GOlZQqBprstZsg/masdDW7xlGiDnoNod0U+vgmwqoFlx3L+5IIL+mY
-	mz2d1IrwCh4nL4Hr8r6zFpDe/+zn0ag+eF1dUQQ8wafLATRxF8L4gCQPOlZBS8cpi1ceF5hiCaD
-	G7skQZFmFchjca55tqRa0O2TWSKEjyei7y2NHAuqZx/z3+tVcdBmJmIJ0+pgv9uTpj5purgkqsL
-	OsTLhKHl4OJarvONd99CYOoGKYdYRWq2RN72sE6Z/d/D0N34feSJP8urSuu3YaLyiNGJKZvoO/1
-	TkQPzdqmS//lIyC8p9Bv2XZShSFOYhdNrr5BXjDyq2u3zsHbs/ceS0i3QzIpMjODe/UgQ3NITAY
-	bHc/ehqZ9aHanQz7gX/jUtBLxRLl9n6DxmuHxZnB88FjcA==
-X-Received: by 2002:a05:701b:2905:b0:16d:1e24:5cc3 with SMTP id a92af1059eb24-1b25d3190eemr4699302c88.19.1794014680193;
-        Fri, 06 Nov 2026 17:24:40 -0800 (PST)
-Received: from debian.prasanth ([103.183.205.43])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b25e4880dasm8436986c88.8.2026.11.06.17.24.35
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 06 Nov 2026 17:24:39 -0800 (PST)
-From: Prasanth Kumar Padarthi <prasanth.padarthi10@gmail.com>
-To: andrew@codeconstruct.com.au,
-	linusw@kernel.org
-Cc: joel@jms.id.au,
-	ryan_chen@aspeedtech.com,
-	billy_tsai@aspeedtech.com,
-	linux-aspeed@lists.ozlabs.org,
-	openbmc@lists.ozlabs.org,
-	linux-gpio@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	Prasanth Kumar Padarthi <prasanth.padarthi10@gmail.com>
-Subject: [PATCH] pinctrl: aspeed: Use managed pinctrl registration
-Date: Sat,  7 Nov 2026 06:52:36 +0530
-Message-ID: <20261107012236.28069-1-prasanth.padarthi10@gmail.com>
-X-Mailer: git-send-email 2.47.3
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLgky2FSvz2xRm;
+	Sat, 07 Nov 2026 00:58:49 +1100 (AEDT)
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id F315122154;
+	Fri,  6 Nov 2026 13:58:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
+	t=1793973524; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=ItHvNO33pb8zb9UZ+LEb6x6bQbeF4DIAGvYYNsI45U8=;
+	b=uiFsa2BwcYOxq2gi53CMvsQcPLhPjX3qEOfmyRG+MMW+i9UaggY9jJaa5wavXNFuLDRya0
+	b9bIk7d+ZGVpmXDC5GD2K4lSWXyUMEx1Xgkq2ZbP1QBkGfhdEqjgXpD2RQsoW8lER5KjM6
+	2nPPQOWWqm1KOh+/u7G+gDW1pky2kPE=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
+	s=susede2_ed25519; t=1793973524;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=ItHvNO33pb8zb9UZ+LEb6x6bQbeF4DIAGvYYNsI45U8=;
+	b=6UCJswdK0Z/DiwhrcdamgOXwZj9ItIC+/2kw90iroytJRvaOKpNnwu36Zgri1J7K0hnpW1
+	lNS/qFpJKVe0WBAA==
+Authentication-Results: smtp-out1.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
+	t=1793973523; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=ItHvNO33pb8zb9UZ+LEb6x6bQbeF4DIAGvYYNsI45U8=;
+	b=LgjfvuMAU87vP+sPHVFl3AgPTWwGTRrRaQzjksp+GUoFchaJHCJWRi3C7JriPqlaDS1xv0
+	xf0+UF6xyLfW5w2peCcDGzuPDj/KNox0QLmUkIz4npAwhjxdTcSyJLMVg3YL5GoQgLdgFJ
+	1Wd203yEyPmbh14aWkzxWl+puCMK0x8=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
+	s=susede2_ed25519; t=1793973523;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=ItHvNO33pb8zb9UZ+LEb6x6bQbeF4DIAGvYYNsI45U8=;
+	b=X0ai5JyZByGuYCrevlOApXcGyusGRiOAMLTwFWFDZ7nil+IaqW8n/M/kqrLHGa75L9F+9G
+	ed8IDOXKbujoFXBQ==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id C0677134E9;
+	Fri,  6 Nov 2026 13:58:42 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id 67kcJxLd7WqbVAAAD6G6ig
+	(envelope-from <jack@suse.cz>); Fri, 06 Nov 2026 13:58:42 +0000
+Received: by quack.suse.cz (Postfix, from userid 1000)
+	id 4E5B121B72; Fri, 06 Nov 2026 14:58:27 +0100 (CET)
+Date: Fri, 6 Nov 2026 14:58:27 +0100
+From: Jan Kara <jack@suse.cz>
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+Cc: Juergen Gross <jgross@suse.com>, 
+	Stefano Stabellini <sstabellini@kernel.org>, Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, 
+	Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>, 
+	"Michael S. Tsirkin" <mst@redhat.com>, Jason Wang <jasowangio@gmail.com>, 
+	Eugenio =?utf-8?B?UMOpcmV6?= <eperezma@redhat.com>, Xuan Zhuo <xuanzhuo@linux.alibaba.com>, 
+	Jarkko Sakkinen <jarkko@kernel.org>, Dave Hansen <dave.hansen@linux.intel.com>, 
+	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
+	x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, Jan Kara <jack@suse.com>, 
+	Paul Moore <paul@paul-moore.com>, Stephen Smalley <stephen.smalley.work@gmail.com>, 
+	Ondrej =?utf-8?B?TW9zbsOhxI1law==?= <omosnacek@gmail.com>, Joel Stanley <joel@jms.id.au>, 
+	Andrew Jeffery <andrew@codeconstruct.com.au>, Ryan Chen <ryan_chen@aspeedtech.com>, 
+	Billy Tsai <billy_tsai@aspeedtech.com>, Bjorn Andersson <andersson@kernel.org>, 
+	Konrad Dybcio <konradybcio@kernel.org>, Abel Vesa <abelvesa@kernel.org>, 
+	Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>, 
+	Scott Branden <scott.branden@broadcom.com>, 
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, Arnd Bergmann <arnd@arndb.de>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Richard Cochran <richardcochran@gmail.com>, 
+	David Woodhouse <dwmw2@infradead.org>, Andrew Lunn <andrew+netdev@lunn.ch>, 
+	"David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>, 
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, xen-devel@lists.xenproject.org, 
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
+	linux-hyperv@vger.kernel.org, virtualization@lists.linux.dev, linux-sgx@vger.kernel.org, 
+	selinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-aspeed@lists.ozlabs.org, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, 
+	netdev@vger.kernel.org
+Subject: Re: [PATCH 06/14] udf: convert mmap hook to mmap_prepare
+Message-ID: <6ve6dvcmmozqiv5zkkq57thm62rtsc43jlbsfoxm24qrm5bhkg@ygji3l2k2qxq>
+References: <20261105-late-2026-mmap_prepare-v1-0-c56aadfbab8a@kernel.org>
+ <20261105-late-2026-mmap_prepare-v1-6-c56aadfbab8a@kernel.org>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -100,41 +135,93 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261105-late-2026-mmap_prepare-v1-6-c56aadfbab8a@kernel.org>
+X-Spam-Level: 
+X-Spamd-Result: default: False [-15.30 / 50.00];
+	SUSE_INTERNAL_BYPASS(-9.00)[];
+	REPLY(-4.00)[];
+	BAYES_HAM(-3.00)[100.00%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	MID_RHS_NOT_FQDN(0.50)[];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	MISSING_XM_UA(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	TO_DN_SOME(0.00)[];
+	TAGGED_RCPT(0.00)[netdev];
+	RCVD_COUNT_THREE(0.00)[3];
+	DKIM_SIGNED(0.00)[suse.cz:s=susede2_rsa,suse.cz:s=susede2_ed25519];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[suse.com,kernel.org,epam.com,linux.ibm.com,gmail.com,ellerman.id.au,microsoft.com,redhat.com,linux.alibaba.com,linux.intel.com,alien8.de,zytor.com,paul-moore.com,jms.id.au,codeconstruct.com.au,aspeedtech.com,broadcom.com,arndb.de,linuxfoundation.org,infradead.org,lunn.ch,davemloft.net,lists.xenproject.org,vger.kernel.org,lists.ozlabs.org,lists.linux.dev,lists.infradead.org,lists.trustedfirmware.org];
+	R_RATELIMIT(0.00)[to_ip_from(RLyerg7kx5bdf6cnfzf33td54o)];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_TLS_LAST(0.00)[];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	RCPT_COUNT_GT_50(0.00)[61];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:email,suse.cz:email,imap1.dmz-prg2.suse.org:helo]
+X-Spam-Score: -15.30
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=4.0.1
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-The shared Aspeed probe helper registers its controller with
-pinctrl_register(), but does not unregister it on device unbind.
-The registration can therefore outlive device-managed data.
+On Thu 05-11-26 21:05:37, Lorenzo Stoakes (ARM) wrote:
+> Move from the deprecated mmap hook to the new mmap_prepare hook. The hook
+> only updates the access time and sets the VMA operations.
+> 
+> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 
-Use devm_pinctrl_register() to ensure the controller is unregistered
-during device teardown.
+Looks good. Feel free to add:
 
-Signed-off-by: Prasanth Kumar Padarthi <prasanth.padarthi10@gmail.com>
----
- drivers/pinctrl/aspeed/pinctrl-aspeed.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Reviewed-by: Jan Kara <jack@suse.cz>
 
-diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed.c b/drivers/pinctrl/aspeed/pinctrl-aspeed.c
-index 7e0ebf11af16..eb5f404af8c2 100644
---- a/drivers/pinctrl/aspeed/pinctrl-aspeed.c
-+++ b/drivers/pinctrl/aspeed/pinctrl-aspeed.c
-@@ -461,7 +461,7 @@ int aspeed_pinctrl_probe(struct platform_device *pdev,
- 
- 	pdata->pinmux.maps[ASPEED_IP_SCU] = pdata->scu;
- 
--	pctl = pinctrl_register(pdesc, &pdev->dev, pdata);
-+	pctl = devm_pinctrl_register(&pdev->dev, pdesc, pdata);
- 
- 	if (IS_ERR(pctl)) {
- 		dev_err(&pdev->dev, "Failed to register pinctrl\n");
+I'll leave it for MM guys to merge this.
+								Honza
+
+> ---
+>  fs/udf/file.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+> 
+> diff --git a/fs/udf/file.c b/fs/udf/file.c
+> index 02e9314818dc..d5e80c6cae96 100644
+> --- a/fs/udf/file.c
+> +++ b/fs/udf/file.c
+> @@ -190,10 +190,10 @@ static int udf_release_file(struct inode *inode, struct file *filp)
+>  	return 0;
+>  }
+>  
+> -static int udf_file_mmap(struct file *file, struct vm_area_struct *vma)
+> +static int udf_file_mmap_prepare(struct vm_area_desc *desc)
+>  {
+> -	file_accessed(file);
+> -	vma->vm_ops = &udf_file_vm_ops;
+> +	file_accessed(desc->file);
+> +	desc->vm_ops = &udf_file_vm_ops;
+>  
+>  	return 0;
+>  }
+> @@ -202,7 +202,7 @@ const struct file_operations udf_file_operations = {
+>  	.read_iter		= generic_file_read_iter,
+>  	.unlocked_ioctl		= udf_ioctl,
+>  	.open			= generic_file_open,
+> -	.mmap			= udf_file_mmap,
+> +	.mmap_prepare		= udf_file_mmap_prepare,
+>  	.write_iter		= udf_file_write_iter,
+>  	.release		= udf_release_file,
+>  	.fsync			= simple_fsync,
+> 
+> -- 
+> 2.56.0
+> 
 -- 
-2.47.3
-
+Jan Kara <jack@suse.com>
+SUSE Labs, CR
 
