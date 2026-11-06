@@ -2,48 +2,48 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C99CF606A31B
-	for <linux-aspeed@archiver.kernel.org>; Fri,  6 Nov 2026 04:44:45 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2849D606A329
+	for <linux-aspeed@archiver.kernel.org>; Fri,  6 Nov 2026 04:50:48 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=ORjN6Qaq
+	dkim=pass (2048-bit key, unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=VdVV4V5Y
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jLRRc3M6kz2xH7;
-	Fri, 06 Nov 2026 15:44:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jLRZZ5QCDz2xH7;
+	Fri, 06 Nov 2026 15:50:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793940284;
-	cv=none; b=KUytQPQU/41/kT/f9oEqYd+AszyMqjRpnI2o4z3oPlJ4Gl16bisiEsOZAZlLO2LFHlbZbIBY0uBnbNv++Hf0zwR6kxtTKlSDFZOB0bDhyInZ55abbGROEVBgPCcqrEy0fWV0zrbKjqZtaoXMUhOrXeu8IqqltJljAE0pKH5xlVBo6vL4I4n/XIbqfm13YdH9TkxbDw1mpdkaulP1nAXmQ+IuGG1cF+Zc0sKFRifubkr15+CwhxgrMDnfxUzT1Ruuez2dww4CA4nYoGO6Sj4a2up1Z0Q+fUnDcbwVvDPIwutY2MISQMjUkiLJF2035r5w1dh+UKGQ2cxyliRMTqBZ8g==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793940646;
+	cv=none; b=nY3Ox2W3OJN8MLDYr/yxde4CVcfD8kao6RtrcfZ/s5g194K3JOOuOKfhgdIBHdqoRAmbZvGqS1pMIcWac9+wXtah7n6auGEXy/sNQe5oKg7JVFRmxhgj5yVMdv+mcHeqWSIEimEotoMtpVCIZuALT3Z5MA8e+w5vNVADRB4LjvLZ93BkylZoud4Oj+MGE5Wj+SxWvbH3Iv8Sq7Wg7QjqqB38lei5tiX3qrn7GSbEksKEScJhaEBzh4eu02ruE2YmU2crP5nDv60MNHAvYK9uKmDtmW4fpwhQ+s2oSgIYONT2bhVkskmGkh+Ovy6kmligapI+lhf6PLZkdwnb3WCJpQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793940284; c=relaxed/relaxed;
-	bh=YFoZXU10IP230tleaiBGL1W+4BzMqJD5/OQifxbywPQ=;
+	t=1793940646; c=relaxed/relaxed;
+	bh=kxFpMtQbzKIRxEyj/jc+g0b9VDx9hp1+9az4E+nbn3U=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=TY3nOBX0468aFIFp9aXo4rS77bGwqnNZCt2pZWZ6mZRBc8jxQOiNroKSDVS6cb8GicMp1mRHH8LqTyE0slFxxFAjncaC3/C2Ra9DWQjzON80fC79woYqR6MrA15ZGCGW7KV8pcO+ikfQfZwE5tcgY6zM07bY6eLY4nYoWCiu8nh4Q0LXp1FcurifdZ/nobnMk438GctTQr/5TrStTusN/KAzL7zquKP8/yKLVSDovWmRh+PvhND160UGnoPN7FvxHbhPQGpBlnU2NqroF6oC/N8OMuh338VELZwp3Ad8754LcR2kIhXRoRrdYz1n0wOkMNVrO/qSZN6De/t0X7nIuw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=ORjN6Qaq; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	 Content-Type:MIME-Version; b=c5aw8yYQd9xTA84Dg0EvWtT4Mi6eBAiGeJ0smmBessMRjyBHHM0qwQAd7VOB61keP49b9SmjDM9biCU2iwctorRj+pJ+PxvtNRwBmljbRFkXWYpVRhcBHICG68TWI6QP1OqtYLXq287QuxTjc4R9baeAfEWq1Q2P3bhZAUdL/mGFQEk+di9y5SKXPxOJbZvHEMij3MmbMxk7NyUC5gEo4uU7KAzwBiWAGdPerLA8eLLqqpaYndOwyWmne62JAUPnxfMh33JCBi6ZKdE4o5dapnXv4P5PyqCo7F6LF7qIf7gSF6Go9YYGCKMZ5PQYD3Sa3EHjsXLkH0pYqsnMmo1U4Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=VdVV4V5Y; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=ORjN6Qaq;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=VdVV4V5Y;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLRRc0KGLz2xDD
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 06 Nov 2026 15:44:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLRZZ1pCMz2xDD
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 06 Nov 2026 15:50:46 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1793940283;
-	bh=YFoZXU10IP230tleaiBGL1W+4BzMqJD5/OQifxbywPQ=;
+	d=codeconstruct.com.au; s=2022a; t=1793940645;
+	bh=kxFpMtQbzKIRxEyj/jc+g0b9VDx9hp1+9az4E+nbn3U=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=ORjN6QaqOIz1opYhhwsBq8ZHWvenOnD/h7Pyt2qqBWAk4IWMV1kigIYqGjllF3ZJY
-	 G1bcFgU6+ExgM8Pwj1Qs1FiX2qRLh+YEIiJ1p2pnAJoR3MUfdMIFDl08Dd1/NHNq5g
-	 zvjGn9sH5VVm0LfVu5qHdmvqabPC3o5zJ/aD0sLsXyf8edV/z7Gt/ypFr81dXdj4Bh
-	 jYBmRyGU7qCJMUWzOCDYE535xqUGLUz2I2SyQSgpuxqeYmGN89bNT9JjF6viTDmJA2
-	 GwhkpJwNaRYNsi8mRn2wTkutRaZV/NGLpjLVENy8qwiDZwBdgU1PSQ6iEE1qlkpapd
-	 rmmmauy9Vda0Q==
+	b=VdVV4V5YyBeklNYMLlTDcpWHCtmgoy7lcLNQr36qF84kCLsoNnb/nc/Hd9v1lTf/W
+	 o7qbp9x44oun7kbQvUe1AOhr/28CoD/9ZLPqBuhRng+BHIx/JHeb6ciGFQoJxTeeJ5
+	 6uIXhQua2Lqsdmq12APk08T5vkuCOZib9/0JV6nZ0DSnQMto9gc1Wu0T8aXW2IVjyD
+	 4vXyYoPEoBWLrCr9l6ecnygTl2IFeqaZfamMw5da2cGnJiDGnq7Jc5yqLvuq7W4oRs
+	 RsM0t4sks6ZqXJ8i6dPi0oTJP+hNR7qCT98HzKgUy21OVHfLmENgNSWZsQUDj3efHO
+	 AmDX4/IYAwGBw==
 Received: from [192.168.68.117] (unknown [180.150.112.139])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id AB8BB64952;
-	Fri,  6 Nov 2026 12:44:42 +0800 (AWST)
-Message-ID: <971b14eb2ea35ae89b5517438435460bdc8385a3.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v4 2/3] ARM: dts: aspeed: add Intel AVCRP BMC
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 1C32964952;
+	Fri,  6 Nov 2026 12:50:45 +0800 (AWST)
+Message-ID: <7eda59ffde46142602c6d8e425fd4097872ee8c4.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v4 3/3] ARM: dts: aspeed: add Intel JNCRP BMC
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
 To: Dawid Glazik <dawid.glazik@linux.intel.com>, Rob Herring
  <robh@kernel.org>,  Krzysztof Kozlowski	 <krzk+dt@kernel.org>, Conor Dooley
@@ -51,10 +51,10 @@ To: Dawid Glazik <dawid.glazik@linux.intel.com>, Rob Herring
 Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
 	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
 	maciej.lawniczak@intel.com, Andrew Lunn <andrew@lunn.ch>
-Date: Fri, 06 Nov 2026 15:14:42 +1030
-In-Reply-To: <aa35e5bb8a3d49ea4d5bc245887aaf8ce0ce42b1.1792749922.git.dawid.glazik@linux.intel.com>
+Date: Fri, 06 Nov 2026 15:20:44 +1030
+In-Reply-To: <ffb7b028f317a3a2cd1a98b8f454b46a706cee42.1792749922.git.dawid.glazik@linux.intel.com>
 References: <cover.1792749922.git.dawid.glazik@linux.intel.com>
-	 <aa35e5bb8a3d49ea4d5bc245887aaf8ce0ce42b1.1792749922.git.dawid.glazik@linux.intel.com>
+	 <ffb7b028f317a3a2cd1a98b8f454b46a706cee42.1792749922.git.dawid.glazik@linux.intel.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.56.2-0+deb13u1 
@@ -80,11 +80,10 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 On Mon, 2026-10-26 at 17:40 +0100, Dawid Glazik wrote:
-> Add the initial AST2600 device tree for the Intel AVCRP BMC platform.
+> Add the initial AST2600 device tree for the Intel JNCRP BMC platform.
 
 Can you please provide more information about the platform design and
 its purpose?
-
 >=20
 > Signed-off-by: Dawid Glazik <dawid.glazik@linux.intel.com>
 > Reviewed-by: Andrew Lunn <andrew@lunn.ch>
@@ -96,44 +95,43 @@ its purpose?
 > =C2=A0 - Sorted properties per dts-coding-style
 > =C2=A0 - Removed lpc-snoop label
 > =C2=A0 - Removed &i3c_global since it's enabled by default
-> =C2=A0 - Removed GPIO line names for pins claimed by pinctrl
+> =C2=A0 - Added &kcs3 and replaced flash layout with 128MB one
 > =C2=A0 - Restored Reviewed-by from Andrew Lunn, dropped by mistake in v2
 > v2:
 > =C2=A0 - Reviewed-by: Andrew Lunn for nodes: &mdio1, &mac1
 > =C2=A0 - Replace bootargs console=3DttyS4,115200n8 with stdout-path =3D &=
 uart5
-> =C2=A0 - Remove the unreferenced video_memory reserved-memory node
 > ---
 > =C2=A0arch/arm/boot/dts/aspeed/Makefile=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
 =A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0=C2=A0 1 +
-> =C2=A0.../dts/aspeed/aspeed-bmc-intel-avcrp.dts=C2=A0=C2=A0=C2=A0=C2=A0 |=
- 322 ++++++++++++++++++
-> =C2=A02 files changed, 323 insertions(+)
-> =C2=A0create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-intel-avcrp.=
+> =C2=A0.../dts/aspeed/aspeed-bmc-intel-jncrp.dts=C2=A0=C2=A0=C2=A0=C2=A0 |=
+ 276 ++++++++++++++++++
+> =C2=A02 files changed, 277 insertions(+)
+> =C2=A0create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-intel-jncrp.=
 dts
 >=20
 > diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed=
 /Makefile
-> index 6874b621deb4..1e4154f12228 100644
+> index 1e4154f12228..5e685a625883 100644
 > --- a/arch/arm/boot/dts/aspeed/Makefile
 > +++ b/arch/arm/boot/dts/aspeed/Makefile
-> @@ -57,6 +57,7 @@ dtb-$(CONFIG_ARCH_ASPEED) +=3D \
-> =C2=A0	aspeed-bmc-ibm-rainier-4u.dtb \
+> @@ -58,6 +58,7 @@ dtb-$(CONFIG_ARCH_ASPEED) +=3D \
 > =C2=A0	aspeed-bmc-ibm-sbp1.dtb \
 > =C2=A0	aspeed-bmc-ibm-system1.dtb \
-> +	aspeed-bmc-intel-avcrp.dtb \
+> =C2=A0	aspeed-bmc-intel-avcrp.dtb \
+> +	aspeed-bmc-intel-jncrp.dtb \
 > =C2=A0	aspeed-bmc-intel-s2600wf.dtb \
 > =C2=A0	aspeed-bmc-inspur-fp5280g2.dtb \
 > =C2=A0	aspeed-bmc-inspur-nf5280m6.dtb \
-> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-intel-avcrp.dts b/arch/a=
-rm/boot/dts/aspeed/aspeed-bmc-intel-avcrp.dts
+> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-intel-jncrp.dts b/arch/a=
+rm/boot/dts/aspeed/aspeed-bmc-intel-jncrp.dts
 > new file mode 100644
-> index 000000000000..010ace09d90f
+> index 000000000000..e66ea7f00fed
 > --- /dev/null
-> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-intel-avcrp.dts
-> @@ -0,0 +1,322 @@
+> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-intel-jncrp.dts
+> @@ -0,0 +1,276 @@
 > +// SPDX-License-Identifier: GPL-2.0-or-later
-> +// Copyright 2026 Intel Corporation
+> +// Copyright 2025 Intel Corporation
 > +
 > +/dts-v1/;
 > +
@@ -141,8 +139,8 @@ rm/boot/dts/aspeed/aspeed-bmc-intel-avcrp.dts
 > +#include <dt-bindings/gpio/aspeed-gpio.h>
 > +
 > +/ {
-> +	compatible =3D "intel,avcrp-bmc", "aspeed,ast2600";
-> +	model =3D "Intel AVCRP BMC";
+> +	compatible =3D "intel,jncrp-bmc", "aspeed,ast2600";
+> +	model =3D "Intel JNCRP BMC";
 > +
 > +	aliases {
 > +		serial4 =3D &uart5;
