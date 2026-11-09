@@ -2,83 +2,63 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9D6A9606A33E
-	for <linux-aspeed@archiver.kernel.org>; Sun,  8 Nov 2026 23:21:41 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B0813606A320
+	for <linux-aspeed@archiver.kernel.org>; Mon,  9 Nov 2026 02:41:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=l2m6k6Gq
+	dkim=pass (2048-bit key, unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=DAcUw3xM
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jN87S2CBPz2yYd;
-	Mon, 09 Nov 2026 10:21:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1793960303;
-	cv=none; b=h4axXLrsxI5E+maLeH7lw72l2fuZmptURWbwL5Wai3Igvvlxc672bRxpe+oXj00npzTRT/zInXT5r1HfI3PwcC+9CvIzO1jkARuW9KWVkEgS0wcnPEMzDqUJa69fbqC7fje0nOLqallA0W3nzD7k7c9tBf+qqfE/ArCymih2lhdAiW8FWCCiEZ/65MEN8leMN1fPptVIz999D0CYt9d5TKOe2e5shcJlUwm51iqBUPH3189MwHHuQrELQPUwQcw9K1vG+YUEUwbv6+eVPu4hIkKnpGuxDyKRKfLS6Kouu0y2BnWW2gEg0xVxKtRljZSVPLPME6b96z+HK2/U3tL/Gg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jNDZD2xZJz2y8p;
+	Mon, 09 Nov 2026 13:41:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794192100;
+	cv=none; b=Wvw1PRcGnSdLMCp/E26yCAbiI69jgHXsn/i6S+ME49lDtjfN3dx9oAutAakzfmRp+umg4NjAhS+NCJnwHqiSkpJBT4//Q+BMSfeyTic/+4oAV2iDITVUTfN9dRprILxTu+GtNMCHsZYdCAii40kJuFvIo5CiQ2AA8gxODI7yHbtxmw7GjgFSWjTcCLeGZlp037Hi8ithMjFI4v/twUiuzLbJuSuwBmuphBk2Y/qJs/riENZ/qU9wQ0EeDzmRyTW0G5LzH1ZZeTyGsfy6btIHT39NSvL5DjH9WDC+5P1KkTGUD22gDCl1YaTonGDqhoY/7FvD2UlJ/OENSn2C4d9nJw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1793960303; c=relaxed/relaxed;
-	bh=WRJXIR3G73/bAoeCrNJcFgak4mvp+3ngQ+qpnIKUqWQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=jLebWebaDKzQs4IQ8iCQBb4oE+nbaoyWE50SgKXL04bVeMUCKz7nQK2FnJdZD/AZGuvwroEJHTy6cFDXqIvniLk2KcF2Sp+jhftvxgd65Yw+K/+VbNcNxcamUU0meDBMr6x5B3kLHw0eeMB4PenX/BA6KRRrG/ur6NPrKOe6OvgzQjN1hE5vuzZpfIR2w5e4tcW62KW8B3PIUewhfUIrqbVrtu0XEKyYJsMbKCZ0GlngnkVGLHFboAmzC+efKuEhB0G8p+q8n7Zjly//Qg6UTXV/uIGx93kBj1vaxxUbJsBpCabKmmgr/oVkv1v/UQug6x/uJDOsvc3RYrRBgefoPg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=l2m6k6Gq; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1794192100; c=relaxed/relaxed;
+	bh=OjFjDEv6r6cygeke1RGOx0xnQni07udazDvq2kGmw6Q=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=PIR93F7ERptUO5/JfTGDeUwqtULv1Au80nLyu/qpzHSRYDrDyvUSFs7W3nrnRZdcicKtkjf2PiojYU0AfMDCibEn04muLsbHj1f5j4xfeKi85o8aiZ+6s6hCfQqVqO+DR0yW1f2yEjCS4bXnygeleVuXi1I65bbNvWsIhE18XanhqjKWPsQcZ2W826PJyCuDrKSAkPRjkn0mCX5DkLeAe9FhEzMkuy6QjYlQjZkWql2lglpLg+82SrOpiJM7EdWSH1ZZkDPE0Mu8u6R0fSTy7y0/qEmXIqvmI9UcvU2I7lciZBmY6RGiVDd3MisS2ZGIdR8lpj/neXXjHp9CmfN1xg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=DAcUw3xM; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=l2m6k6Gq;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=DAcUw3xM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
+Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jLZrZ64jyz2xJR;
-	Fri, 06 Nov 2026 21:18:22 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 8C69A601BF;
-	Fri,  6 Nov 2026 10:18:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9CFC01F0089F;
-	Fri,  6 Nov 2026 10:18:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1793960300;
-	bh=WRJXIR3G73/bAoeCrNJcFgak4mvp+3ngQ+qpnIKUqWQ=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=l2m6k6GqXZKAI6ai2Tun1aF46awXpI/z2hhpm9C9mWFFrwb28EgYdeM12++TFdXHC
-	 tZPDcNtqorI1JgQeh4d/V0oUoA8wTmUuwUWJnczsn3SnNHjwPhjBcdo7A1YGDV2mTG
-	 KcYpC48NxWmRQWs88tJMsCh3bVG0uv6meLjHSwr1ICrXX3Vw/iw6HMzgoNOlCZ+Cr/
-	 4yqxl3LXfTuCElZyaokutxEyEknbHWSUP2DCjtT8OlSb46KYExKXDg1tVpuuXc3j/i
-	 oBl8kAvxU+cGtuwjokkyklXwgQ5yXoGFuePAoE1OqzN7B+weZmt4UCKvb6LGDNbMBE
-	 27H/f4pFzu1cw==
-Date: Fri, 6 Nov 2026 10:18:06 +0000
-From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-To: Paul Moore <paul@paul-moore.com>
-Cc: Juergen Gross <jgross@suse.com>, 
-	Stefano Stabellini <sstabellini@kernel.org>, Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, 
-	Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>, 
-	"Michael S. Tsirkin" <mst@redhat.com>, Jason Wang <jasowangio@gmail.com>, 
-	Eugenio =?utf-8?B?UMOpcmV6?= <eperezma@redhat.com>, Xuan Zhuo <xuanzhuo@linux.alibaba.com>, 
-	Jarkko Sakkinen <jarkko@kernel.org>, Dave Hansen <dave.hansen@linux.intel.com>, 
-	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
-	x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, Jan Kara <jack@suse.com>, 
-	Stephen Smalley <stephen.smalley.work@gmail.com>, Ondrej =?utf-8?B?TW9zbsOhxI1law==?= <omosnacek@gmail.com>, 
-	Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, 
-	Ryan Chen <ryan_chen@aspeedtech.com>, Billy Tsai <billy_tsai@aspeedtech.com>, 
-	Bjorn Andersson <andersson@kernel.org>, Konrad Dybcio <konradybcio@kernel.org>, 
-	Abel Vesa <abelvesa@kernel.org>, Jens Wiklander <jenswi@kernel.org>, 
-	Sumit Garg <sumit.garg@kernel.org>, Scott Branden <scott.branden@broadcom.com>, 
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, Arnd Bergmann <arnd@arndb.de>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Richard Cochran <richardcochran@gmail.com>, 
-	David Woodhouse <dwmw2@infradead.org>, Andrew Lunn <andrew+netdev@lunn.ch>, 
-	"David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>, 
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, xen-devel@lists.xenproject.org, 
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
-	linux-hyperv@vger.kernel.org, virtualization@lists.linux.dev, linux-sgx@vger.kernel.org, 
-	selinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-aspeed@lists.ozlabs.org, linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org, 
-	netdev@vger.kernel.org
-Subject: Re: [PATCH 00/14] mm: convert further simple mmap hooks to
- mmap_prepare
-Message-ID: <au2odtvEhpLJY4eD@gremlin>
-References: <20261105-late-2026-mmap_prepare-v1-0-c56aadfbab8a@kernel.org>
- <CAHC9VhQvpFeEJaEyPDaqj8_S752puSaNe0Rn-hxjh=ugCoFsxA@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jNDZB2Y8mz2xfK
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 09 Nov 2026 13:41:38 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=codeconstruct.com.au; s=2022a; t=1794192096;
+	bh=OjFjDEv6r6cygeke1RGOx0xnQni07udazDvq2kGmw6Q=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=DAcUw3xMa4qeJC1vFRGVhhYj1tSb0WLQ9EQbRR5f/o0vdPPNqQcoYpE6ZxBhUNULY
+	 5KF9zDQuoC3MtcxEayVxCfq1VRXVOQ0KjPMcz8+YhPW6Imo/0M8F4XV3irgDTvme+1
+	 7rvC/x+hNTHcp27znFou+cqgG8H67smYgDZjU78Ru8Iwh+p66c9XP47tn7yTyJLsXG
+	 Xfj1g+3owQrm6MHyrwM/9BvS7f1oqMQ/HtM7BsvyDNyNvcoxe8+rPZWIhzmwxhVxGH
+	 H0qrLlvfZTgwu+4d1D/eAOv63vQNgL8gqIilCnN5c3r0j72WQrOlk+p+QZ3HxO/sUf
+	 xHvau8a+rWNoQ==
+Received: from [192.168.68.117] (unknown [180.150.112.139])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id F2FBE64952;
+	Mon,  9 Nov 2026 10:41:32 +0800 (AWST)
+Message-ID: <245d0e9d4043c0957716a6a32985b6ea5a8cb9ef.camel@codeconstruct.com.au>
+Subject: Re: [PATCH 0/3] ARM: dts: aspeed: ventura2: Add LTC2305 ADCs and
+ GPIO line names
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+To: Kyle Hsieh <kylehsieh1995@gmail.com>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski
+	 <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel Stanley
+	 <joel@jms.id.au>, Ryan Chen <ryan_chen@aspeedtech.com>, Billy Tsai
+	 <billy_tsai@aspeedtech.com>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Date: Mon, 09 Nov 2026 13:11:31 +1030
+In-Reply-To: <20261106-ventura2-dts-update-v1-0-b085ece9bf57@gmail.com>
+References: <20261106-ventura2-dts-update-v1-0-b085ece9bf57@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.56.2-0+deb13u1 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -92,55 +72,39 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAHC9VhQvpFeEJaEyPDaqj8_S752puSaNe0Rn-hxjh=ugCoFsxA@mail.gmail.com>
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
 	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Thu, Nov 05, 2026 at 06:12:09PM -0500, Paul Moore wrote:
-> On Thu, Nov 5, 2026 at 4:06 PM Lorenzo Stoakes (ARM) <ljs@kernel.org> wrote:
-> >
-> > Continue the conversion of users of the deprecated f_op->mmap callback to
-> > f_op->mmap_prepare. Keep things gentle this cycle by targeting simple
-> > cases.
-> >
-> > No functional change intended.
-> >
-> > Build tested on x86-64 (allmodconfig, each patch individually), i386,
-> > arm64 and ppc64le.
-> >
-> > <<>>
-> >
-> > David, Andrew - I wonder whether one of you guys could take this series
-> > through your tree? Since it's kernel-wide it seems sensible to take it
-> > through an mm tree.
->
-> Granted I've only properly looked at the SELinux patch (7/14), the
-> rest I've just skimmed through, but these are all independent patches,
-> right?  Is there any reason why individual subsystem maintainers
-> shouldn't just pick up their associated patch?  Yes, perhaps chasing
-> down individual maintainers is a bit more work, but isn't that the way
-> this should work?
+On Fri, 2026-11-06 at 11:08 +0800, Kyle Hsieh wrote:
+> This series is a follow-up to the Ventura2 devicetree.
+>=20
+> Patch 1 describes the three LTC2305 ADCs fitted on Ventura2 and exposes
+> the valve voltages read by the bus 3 ADCs through iio-hwmon.
+>=20
+> The LTC2305 ADCs use their internal 4.096V reference, so no vref-supply
+> is described. Patch 1 therefore depends on "dt-bindings: iio: adc:
+> ltc2497: Make vref-supply optional for LTC2305/LTC2309"; without it,
+> dtbs_check reports a missing vref-supply for the LTC2305 nodes.
 
-I've no objection to people taking patches independently, the concern is people
-lagging on that and holding up a key conversion which is entirely mechanical, +
-generally tree-wide stuff like this has been via the mm tree.
+Can you provide a link to this patch? I am yet to find it on lore.
 
-The mmap_prepare stuff is actually important for security (pertinent given
-current AI fix storm) as it's by design super locked down vs. mmap which has
-caused several genuine issues including a nasty 0-day.
+>=20
+> Patch 2 names the presence detect GPIO of the optional COM Express
+> module so userspace can determine whether the module is present.
+>=20
+> Patch 3 names the reset GPIOs of the three USB-to-UART bridges so
+> userspace can reset the bridges.
 
-So am keen to keep that rolling!
+This isn't so much a summary as something self-evident from looking at
+the contained patches.
 
-In this case each patch is mechanical and simple, so little surface area for
-issues.
+In my opinion what you write here should identify broad patterns across
+the patch series (perhaps how you've grouped the patches and why, if
+necessary) and not rehash the commit messages.
 
---
-Cheers, Lorenzo
+Andrew
 
