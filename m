@@ -2,94 +2,61 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B2E11606A31C
-	for <linux-aspeed@archiver.kernel.org>; Tue, 10 Nov 2026 08:40:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BEEC1606A22D
+	for <linux-aspeed@archiver.kernel.org>; Tue, 10 Nov 2026 16:42:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=N3wGNZfn
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=nT0pKRNz
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jP0TX0XHzz2xwN;
-	Tue, 10 Nov 2026 19:40:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::12a" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794300015;
-	cv=pass; b=mGeWvG9Yk3l/9ECwsnG42gLWZlueA7vDLwLgqCdxiiwaOJYJvmKCPcvnodyxAiFhZCULrP8xqfp/QLIpynlFPqahO/qha9wZ1J0p/GZc+0p7yae+tBleuhLRSIzd4KFNH79ee/EmgWmsvnqCJ+knUA6FEhG3Z9XojuVPIlXp0wVVCliwTntkQftKTfTyuMBuR4C8iMJspKrPec7NEC2BwCw2AiPyYXm0RAZ0pufSqbGIokt64XwrkfKh5l/eNInTAoKKpuHD9hiVyhBdpjTItw6Nz0W8T33dc0NzTpQvnP365Bl783+5y2N/NyRZHFLc9/MKlJk+h1mHbfi9EkQAqQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794300015; c=relaxed/relaxed;
-	bh=vbdtEbm5LIRul3kqOHVd2p7iN83nh9BlOv0Le65cRbo=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=WMsVe5gaQgwr3csKdfmNLsb/lRgiDKqUlLlGwwWKdjdJtX2pRbnWzwRtN6qLV0UaCbZ8TRipwf4qgv7/sVePFGeqZtkn6JIh7jbUXAR7QHes4Pw6c+P6eWvbp1cG1spm/srgSJMT9JIY+owU6epg1Qk83DRUW17ORvEfJwF2T6MPIKIjBglMArNOIDjlWFPBacso/pJjxbrogDvhZL/cT8Y5GL50OEJ7U+Eer9F5BpSqDLuFbjs2YueG5/eEKlEjC8ZJj8H1g5o8BnWXmNZpxgAy8RWqWV17YToWGRe5d6ztRGwYVjUaNE4VlL6GjZzkS6fufdUTda2HroQAQi8l0Q==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=N3wGNZfn; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::12a; helo=mail-lf1-x12a.google.com; envelope-from=kylehsieh1995@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jPCBC2dKLz2y2h;
+	Wed, 11 Nov 2026 03:42:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.13
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794328963;
+	cv=none; b=nvjw4WNXKmmsm7ujMDLPGOVXWNaYIrXjET4ByVUckR6MYPVpHiOC4oLcHR+TAaI1pHV1Pu/pge4lwcWgarosaqDAoI6ZL4G2OSNxPX10UZWXg/F3ToDzKEh1vkcG8MLiFryEDhCtHx+dIzwp3H20aDpNXzypuKFKx97E/rmgFyoMAm6qzeWtalLOq3pxYphya+LWsiX8QM3RdS9vCJDqRD1Af2eYl3IKp/FtWepZaFTcFkQap5LFmQ0ifLjEGHAUnnzxJ/FYUHWW6DXCLVClQOQHGAeARXZtJlaOVrJCUOJbR1USgZWuILmcv+E3Jnt6RAXUR6Vvpi+uLZJ3zeh/WA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1794328963; c=relaxed/relaxed;
+	bh=cwTPehP0J/3J+Lb62G7yQ4FlvXwx6KiiQuir6lkIwb4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=K3L+yfXG0gp5k1aa31hSFNmAf0KRqSTsFEAhpH8V04LEJCIQe6fT9s9hTpbsbgater5sZt1HJSkiGY6CeWtAMKNDq1gql1Y3aQGG9cuia4AGSdDuYbTDSReHqr45rLCUm3PhZwZiZtgyfOg58kKzPVq1RVAqbHjefM3Rrh4IBS7qVBkTnz7VOLwPjj3Qy24XWrA7AYz+zVxifFMUOSpuARlHmCdULs4yL4KEbxtPA7tONOOxQwOA5Hg4WwoeZoFjkVvrJFcI2CsP3wG0F7YwSc3b0VLPlVZ2PGGlGPVVZrtpo3sxCo3OkJHhN4Pb+nfzluDqv+1ZCUbVgxDGkwnOnQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=nT0pKRNz; dkim-atps=neutral; spf=pass (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=dawid.glazik@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=N3wGNZfn;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=nT0pKRNz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::12a; helo=mail-lf1-x12a.google.com; envelope-from=kylehsieh1995@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-lf1-x12a.google.com (mail-lf1-x12a.google.com [IPv6:2a00:1450:4864:20::12a])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=dawid.glazik@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jP0TV462Cz2xrC
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 10 Nov 2026 19:40:13 +1100 (AEDT)
-Received: by mail-lf1-x12a.google.com with SMTP id 2adb3069b0e04-5c126fa1e3aso1130333e87.2
-        for <linux-aspeed@lists.ozlabs.org>; Tue, 10 Nov 2026 00:40:13 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1794300008; cv=none;
-        d=google.com; s=arc-20260327;
-        b=TgHjD86u+42OkX9dlr+/ImPAAH3XMIN+Qad4lwyWP+WR7tXPE8tYXc+bJLhPRNsqOF
-         1NPYr3wGq3c6ePBZlc4P99McJ1SXFzaFvDp0hB5J6a5zj+q9KwBaT+d7PgvXoLdafLPQ
-         C4e2cUlxBSgNSl5/ioYNQ/uzW2rQxmlnOUbrc+l8d5MXwGH54oYrUdx/sKeHhqYkC3Dp
-         QdzHoDsElV06TauHjcRizbW43Kgwdg37zBb7eLg+FeHXn4AOfoAqX56JhnO3qAScvXu1
-         oxSu9g2xsThAX5H7yPp5WN8o+JfRna8YF7T82UpZYoVL4fklHJIsEd5kpNsU3RucFt+b
-         WNCA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=vbdtEbm5LIRul3kqOHVd2p7iN83nh9BlOv0Le65cRbo=;
-        fh=5D+FdNnm2hezFO+gXav9GdXHHbHmVf9uC7RiFzN5G0I=;
-        b=VUvQzgRS8jjoDZEBXa7d31nsu3ye2R78QsHWujuw1OdD0+P4pvYC6lnl+MT35tKoka
-         BD3qq2G5GCpqiLwrglz1n6eEySomvG0wGnO2/apkujILlNNo7sCFr35tLo8/z4h7NGM5
-         MFprfxe4+q7dSn4Kry3rrA14N9bBsYQEUXyzN8Tr32Ko9BdAyXf+A9oUSg5qBhHfrySO
-         Zw49oYcxybjOVq1YcUsW5jV9gLj4luGj3BVWT7mX4nwp7KCbABQ2s9jhL7/56GI3Xjsa
-         qeYP5Yu4/7ZgQT0enmRVcIf5hy8+uuAK7TaPXXjkAEqKCkM8O7AQSWeIgpYlaFb+zQ/f
-         BPyQ==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794300008; x=1794904808; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=vbdtEbm5LIRul3kqOHVd2p7iN83nh9BlOv0Le65cRbo=;
-        b=N3wGNZfnXtYotcMWg/F0x+iS+ZqSdBuFwNifVM7+Qmp8HFgVYn/h+7iJdTGKt0NAZ7
-         fPNIIsv/MsMGiZSR/+LRG/ck189GZ+xKUJIbTSRAYztKM7gb+KYHT8BB6NWREGlqfXfU
-         uY9VkE5C/iL1j9to0inxv3jDVhKqfbGU60a7STm8EMhnLglPFC9P6smRLPdkt8gBpPYN
-         L34rP0/Q79yegUe20t71K/2Cprb4dg29jSV0xowh4GSEQnv0gDeYrWZYkBGzeZ8QW0Xh
-         5jJtW37gmTRuGD+pKQic5Q/VtU3i18gNuZvcoG2nWW4a4JXfiqyR58nI1GyY6gBAbbDP
-         gxSQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794300008; x=1794904808;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=vbdtEbm5LIRul3kqOHVd2p7iN83nh9BlOv0Le65cRbo=;
-        b=UZ51T7ia7ZdARU/1DCFyyU46+Wi8iytIC0zY6cBcUHedBPseQ5XPUPm+lTfrQN/M6G
-         /AsnYNpVSzVMU5KhXttOHiolhDi/SjP7xkmXbq4pmI98+e2U5O120QAceDzthEiZv6mf
-         zIIbBNnTx0F9zva6BuFU1ZAkf1dJlLDGAoIlcZajR0KUnFZONk91m3VDBrDuf5+Uicam
-         gzW1mBSNT/mGFiEP8+Qk3Dk90zj7mg5Fjw7oN7OtEueF1yYllpjeKalwzSz/5XchVy1r
-         LNnl0rIHaythQUekG6ZSNeqkxLcPmLPLiLqYrosXWnPbubQkZgIUmatokrg7yKuoTglf
-         jaSw==
-X-Forwarded-Encrypted: i=1; AL+hErEypCb1pMlFvakzYUxA2vYLifgoabgl+EEHyw5HfKCASVghheXdIsR4vgfFf3BFDtmrecpnRdNaRZFvHpY=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z/kr42846YrKU0W+qXnnHvnMirauBNmOBhjBc08/NkHhGRpUqXB
-	g3xAKHX6fj2GtEjESnHRoOtXrd0NHdQ4GZPXedCEyi6Q2NNEhR6DgSISnaj4Ig6hUG7yxju+8tI
-	ORiCT7/4zuE74XcAdce17V+bdmdikrF8=
-X-Gm-Gg: AYBFou1++BmnzGGzUT9HdsztUqe3sTipaHRW+ecFNt0Rij/P4NqVZWq1ZAzvdPUvAHp
-	vlMHKYPtKznP5ZxYmREfe+FOJOAi+UIMsRqpmLdLIfOKzL07CJZtYst1gwFPYP4pGyVhT5KGRKu
-	MY0P+B6S6LXWFqPWkMEtPEJdd/u4xMJdBdfIs7ofhaV7rVE9gkXuyw5iiaoOBs/2olrNMqn7igb
-	4J+/+blBVfw4q42T3fGkA9ppQZvQAWZn3T0iNDJiCzqvtXQ+U2bBcooOklrlPoODIxe1WW2vuNl
-	DYN+XQaA+7APxz0rL4OumAu24IQz4co8lP68SOY+Nqvlww3ydkqm5QAmwZxZzU3xYGOd537H2Jx
-	HKcu4TQo7IjqDUmGVlctlDULYZm5AMwiSj1qqgF8=
-X-Received: by 2002:a05:6512:1090:b0:5bf:c5e8:7451 with SMTP id
- 2adb3069b0e04-5c156ef6a9amr561697e87.65.1794300008049; Tue, 10 Nov 2026
- 00:40:08 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jPCB86qfFz2xmk
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 11 Nov 2026 03:42:39 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1794328962; x=1825864962;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=Ri0LQs7oxDDyfXBO67wcYZxb4TvsJ82811I+HyQ0eUA=;
+  b=nT0pKRNzxVOn5toPMyFmE3qrx0GSpU6L45hXr2xAyXC9M0gCBWlXSF6x
+   LbmS+Ip4jnkejcBzHpnHH9uGJfr2nENmImKcxhDx8EfpY92V8H/5d5ipz
+   Gdr4/J0UsJlIaiks96U0C0dq9Cw05jADhzb5LZYm7FNqQhjM90VIL5wsc
+   Xi/1/XDLfFJ6x2Z28k8LB/nzF7VPVbNoIpvYkDpG/6b4Y2H7eP+2uXDbT
+   sHIG11ht/5tx1/dJHicsvx5eaSJGUTrnw6r1eE0ytuBiSJTWCLgA3LVjE
+   CrwrWMiQab8xCGdUSQkSmfLsG0ijQr0pWdAtaUlbzUO0zNkkR4sLJVpL5
+   g==;
+X-CSE-ConnectionGUID: BfSvriFlS0milYZEmgIVIw==
+X-CSE-MsgGUID: 8iUQ7xg+To6hNYBcki7sFQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11962"; a="2960359"
+X-IronPort-AV: E=Sophos;i="6.27,206,1787036400"; 
+   d="scan'208";a="2960359"
+Received: from fmviesa013.fm.intel.com ([10.60.135.153])
+  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Nov 2026 08:42:36 -0800
+X-CSE-ConnectionGUID: uZASnqyqToWTIzEAEQatrA==
+X-CSE-MsgGUID: 0bpe4HZuSYm/ys1Z1/CWyg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,206,1787036400"; 
+   d="scan'208";a="10068575"
+Received: from dawidgla-mobl.ger.corp.intel.com (HELO [10.246.17.60]) ([10.246.17.60])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Nov 2026 08:42:33 -0800
+Message-ID: <599f1b31-f175-47df-b074-1915688eb390@linux.intel.com>
+Date: Tue, 10 Nov 2026 17:42:25 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -103,49 +70,73 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-References: <20261106-ventura2-dts-update-v1-0-b085ece9bf57@gmail.com> <245d0e9d4043c0957716a6a32985b6ea5a8cb9ef.camel@codeconstruct.com.au>
-In-Reply-To: <245d0e9d4043c0957716a6a32985b6ea5a8cb9ef.camel@codeconstruct.com.au>
-From: Kyle Hsieh <kylehsieh1995@gmail.com>
-Date: Tue, 10 Nov 2026 16:44:35 +0800
-X-Gm-Features: AclHuK_YmaCFjS3fljYs9klvoSNNKJV2oWD2Es6eIsNEQSomFv3bnXQjY-fu8gk
-Message-ID: <CAF7HswPYb3hOWA7P-d1zASvd1XzaVeuBkoqz5nXHuDeEAXDhrA@mail.gmail.com>
-Subject: Re: [PATCH 0/3] ARM: dts: aspeed: ventura2: Add LTC2305 ADCs and GPIO
- line names
-To: Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
-	Ryan Chen <ryan_chen@aspeedtech.com>, Billy Tsai <billy_tsai@aspeedtech.com>, 
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=no autolearn_force=no version=4.0.1
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v5 2/3] ARM: dts: aspeed: Add Intel AVCRP BMC
+To: Andrew Jeffery <andrew@codeconstruct.com.au>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ maciej.lawniczak@intel.com, Andrew Lunn <andrew@lunn.ch>
+References: <cover.1794242015.git.dawid.glazik@linux.intel.com>
+ <ee6958ba4b93cde4719fbac89c4027964c2236bc.1794242015.git.dawid.glazik@linux.intel.com>
+ <fff90721f7892c0285f4fed7fed460c7c1e183cb.camel@codeconstruct.com.au>
+Content-Language: en-US
+From: Dawid Glazik <dawid.glazik@linux.intel.com>
+Organization: Intel Technology Poland sp. z o.o. - ul. Slowackiego 173, 80-298
+ Gdansk - KRS 101882 - NIP 957-07-52-316
+In-Reply-To: <fff90721f7892c0285f4fed7fed460c7c1e183cb.camel@codeconstruct.com.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Mon, Nov 9, 2026 at 10:41=E2=80=AFAM Andrew Jeffery
-<andrew@codeconstruct.com.au> wrote:
-> On Fri, 2026-11-06 at 11:08 +0800, Kyle Hsieh wrote:
-> > The LTC2305 ADCs use their internal 4.096V reference, so no vref-supply
-> > is described. Patch 1 therefore depends on "dt-bindings: iio: adc:
-> > ltc2497: Make vref-supply optional for LTC2305/LTC2309"; without it,
-> > dtbs_check reports a missing vref-supply for the LTC2305 nodes.
->
-> Can you provide a link to this patch? I am yet to find it on lore.
+On 11/10/2026 6:53 AM, Andrew Jeffery wrote:
+> On Mon, 2026-11-09 at 18:41 +0100, Dawid Glazik wrote:
+>> AVCRP is an Intel x86 server platform equipped with an ASPEED
+>> AST2600 BMC. The BMC is used for out-of-band management, platform
+>> monitoring, and system control.
+> 
+> It's probably my fault to some degree for not providing a better
+> explanation of what I was after on v4, and for merging changes from
+> others in the past that were pretty lax on the description, but what I
+> was hoping for was something more like e.g:
+> 
+> - f28674fab34f ("ARM: dts: aspeed: Add NVIDIA MSX4 HPM"), or
+> - bc83b7353d2b ("ARM: dts: aspeed: Add Facebook Anacapa platform")
+> 
+> Are there more details you can provide? If there are, I'm fine if you
+> reply here with them, and if there are no further concerns I can update
+> the commit message while applying the patches.
+> 
+> This also applies to the JNCRP patch that follows.
+> 
+> Andrew
 
-Sorry, I should have sent it before this series. It is now posted at:
-https://lore.kernel.org/linux-iio/20261110-ltc2497-vref-optional-v1-1-35c96=
-57f3c0f@gmail.com/
+Hi Andrew,
 
-> In my opinion what you write here should identify broad patterns across
-> the patch series (perhaps how you've grouped the patches and why, if
-> necessary) and not rehash the commit messages.
+Thanks, that helps. I also found one more issue in v5 (uart-routing 
+issue), so I'll send a v6 with the fuller descriptions below
+instead of having you edit them. Please hold off applying v5.
 
-Understood, thanks. I'll rework the cover letter in v2 to describe the
-series as a whole instead of repeating the commit messages.
+AVCRP is an Intel x86 server platform. The BMC is an ASPEED 
+AST2600-based RunBMC module on the platform's DC-SCM. It supports the 
+platform's out-of-band management and exposes board management I/O such 
+as the system UARTs, status LEDs and control buttons, while integrating 
+with the host's telemetry and management infrastructure.
 
-Kyle Hsieh
+JNCRP is an Intel x86 server platform managed by an ASPEED AST2600 BMC.
+The BMC is the platform management controller for the host system and 
+supports platform power and reset control, while participating in 
+out-of-band monitoring and reporting for host faults during bring-up and 
+normal operation.
+
+Does this shape work for you?
+
+Best regards,
+Dawid
 
