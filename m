@@ -2,60 +2,61 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CFC6B606A31C
-	for <linux-aspeed@archiver.kernel.org>; Wed, 11 Nov 2026 01:23:21 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E9A25606A324
+	for <linux-aspeed@archiver.kernel.org>; Wed, 11 Nov 2026 01:49:51 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=POJCMNyn
+	dkim=pass (2048-bit key) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=lJPVZ0ab
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jPQkw439Nz2yDD;
-	Wed, 11 Nov 2026 12:23:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jPRKV291jz2xBb;
+	Wed, 11 Nov 2026 12:49:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794360200;
-	cv=none; b=EdDT9Tpzn/Mggv/4NVSqWbWW44jNQ6r5mWpv19JbTjGfMmozl6YqzGV57c1unW9zwWv4e/sOcXbTGOMmUsa5De5G3QNNxVEHOSAfq40O59lh39iTSWSY0NOqvizJDFtymLRLV2qT0778hQA/3foZZxeIzolu3cnp1egkpohBNgKbhpKpE5dflTTTXvjqWBdPJ1O7KJcmFDRliSPoP4eglju/3QZ/ckbn/kAdOvnXZ6cRfSuFAtjIHO2JVfC9Wxlv/62gWKONWSyZdH1dbY5p6jJZSfDL8Af0xHDeo0299TSJ7aUHv6kpt5EAidFNK09valJa9iZ/jUW6pLVF/Gq0Yg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794361790;
+	cv=none; b=fw7Ka8eUlxxlIStonNPXDhsd/ABoBIAH9I3cgxTdpkleuplMRqbOlw1DrlDQj02JgyLPULQV0ZbYuWZ9EsI9r1y8s8uKXvUI8gKb0NyS/5SEoSqlNX+qkkjqtH2MFbNOotx2sPCop/HBQhGgktSQIUaWH8BqZgt8ncM31X1bcSWJUOzq5/RHj5ooQbVwqpVAuCJRVQcvSGi8jIuqJj3mJXSr+gAfZY1gwr6iOmD1KVPdRoQFE7niNq8fpIc1AssoEeLk4aMV6GxnTsyr/EIy7OUQamjL56eJQiQZXJalqL2CtkQyLzPj9NB0dvoFAS3EEbNlswCYB/fLVQVeHXzWIw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794360200; c=relaxed/relaxed;
-	bh=me/uMZLei5JIMqJLLPA+JNTv7cc5G55ohXwpfueBK1Y=;
+	t=1794361790; c=relaxed/relaxed;
+	bh=7Kmq+KrqsJVdamEglD05VlODQnyHuuKHPdii9uryj5M=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=WJlsHHTm1UT0GchWF03g8/6wk6lqEE0O0ZkblpwP1V3SWDFzK8z0dfVUyUiu/uwFMcQUjwBZEf1Gg8laonCWU+m6EbOvhkmNNUbRFcRIvAfjHQktTxXUmu//G1IjO5B9PckUF+mORmQ5zyrbBlI/FMfrvb1jvlYK9ZSOKb38P9oKuIChc1cbRZXWeycpfdCw7aD5TtO+5Gir6IqVC/Lzb5MByiGyyloWy2l5Sn/sYv3V0EjbuSeVis5+crNixaVVj4oJkF3Q0oeHlcud1zCn2i3AIDP47t4mxszF7v+LFwm/BETUjj+UKSpV4v5B87UnBvXhIoAdzw41NYq8Brv6ew==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=POJCMNyn; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	 Content-Type:MIME-Version; b=jPUJ46azrojSG1U2ZvNXauxh2w2QqXotnqLtRj9J5TRtU7AgMQ87B6sYnWSMC6zej/R7FoBQu4E/fqrLy6E+V6mR3qI1esG1uBKOz/oCr5UnhoHke13r8qJC6ujGyKRIM8NxUiCGD8hf3Leav9ABz2Wv7sYqhao5ZdIJzVGr5pi4l/wpjKL5vw+nwaDBd3TBlbHwaCf81JxNpdsBl0k+P+9dqzB7ex49nr6TwUBr59sH9l/GUaM8ou2fGWq/iIy2aFeVHiHRryGB82OFX1LqQeGU8I4Ug8uSg4CH5GomuYr0haTowvYhrkqrqYDlm5UM0NwZWebr6RvGzkngb28zZQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=lJPVZ0ab; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=POJCMNyn;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=lJPVZ0ab;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jPQkw0wkYz2xM9
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 11 Nov 2026 12:23:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jPRKS74WWz2xBK
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 11 Nov 2026 12:49:48 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1794360199;
-	bh=me/uMZLei5JIMqJLLPA+JNTv7cc5G55ohXwpfueBK1Y=;
+	d=codeconstruct.com.au; s=2022a; t=1794361788;
+	bh=7Kmq+KrqsJVdamEglD05VlODQnyHuuKHPdii9uryj5M=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=POJCMNyn6snlb4G0e2HDTHoPRzRUBxoRk8jFatnDEtPv1p2ZhwYVCI5L5Vp9rcBwr
-	 PkhiIN366ux6Ed1P4CIyu46MRmf7nbpmJjF9vEK1cAMwWyTYigfD6OnYaKyfb+uEuP
-	 jdqWh1ZQmmwWM084HKuZUwuLmqzF6oDJKHFCTmA4erFENMjLjtZ1SRd1hkpvl36M/4
-	 W4xI9Rh0DZSxbCFdMfUav/0Hof5XgXq7kXMRLCZCuQXgyUh+PJ2T3YCHXBCajW0/55
-	 U3xHPNdpJBZJ8L3tBNv97CHR+DOZAPcy4587TXhp9dNrmq6+e9TRSrbfKVp3ie3oaa
-	 U7G9f7qERxmiQ==
+	b=lJPVZ0abKDf0DLzHSxMmK/yrfDVBM1PSNgzEXP3miyBlLjMlmo/se/vVUwfvQwlcL
+	 VITk+MFatj7sSRTvURtTFEk0ASGPf6xwTmXgeOYp7cuInxpixCQwF97hyrmsR3/zHU
+	 /BHk/NCbxj0MX2USlWM0Gwv3YbLAvPYVpZcDD1o1q3jV83Hcl66r4lMadsuTHhvxul
+	 wwpQ1UKXQTrr0znFz/caCwZqbBe196VL/6ak6l2Ob5QjREQC+7Ih4fKKQuG35TWPxZ
+	 4nopr6vQijOiHR2A9zc2pjMyBw5FBobqhn5zZPYe4cCgLRiiDpAFpekFTdjzmqFZfW
+	 leYmOUgTYQH8g==
 Received: from [192.168.68.117] (unknown [180.150.112.139])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 2B90D64C3C;
-	Wed, 11 Nov 2026 09:23:19 +0800 (AWST)
-Message-ID: <8b78ad45a331231c0dc0d6b459d2bfada521b6f0.camel@codeconstruct.com.au>
-Subject: Re: [PATCH] ARM: dts: aspeed: anacapa: remove unused EEPROM
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 92D0F64C3C;
+	Wed, 11 Nov 2026 09:49:47 +0800 (AWST)
+Message-ID: <a92395610d27fc0f97af3b27b150de61583c2197.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v5 2/3] ARM: dts: aspeed: Add Intel AVCRP BMC
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Carl Lee <carl.lee@amd.com>, Rob Herring <robh@kernel.org>, Krzysztof
- Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel
- Stanley <joel@jms.id.au>,  Ryan Chen <ryan_chen@aspeedtech.com>, Billy Tsai
- <billy_tsai@aspeedtech.com>
+To: Dawid Glazik <dawid.glazik@linux.intel.com>, Rob Herring
+ <robh@kernel.org>,  Krzysztof Kozlowski	 <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Joel Stanley	 <joel@jms.id.au>
 Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
 	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
-	colin.huang2@amd.com
-Date: Wed, 11 Nov 2026 11:53:18 +1030
-In-Reply-To: <20261110-arm-dts-aspeed-anacapa-remove-unused-eeprom-v1-1-e3b5d9cc1a03@amd.com>
-References: 
-	<20261110-arm-dts-aspeed-anacapa-remove-unused-eeprom-v1-1-e3b5d9cc1a03@amd.com>
+	maciej.lawniczak@intel.com, Andrew Lunn <andrew@lunn.ch>
+Date: Wed, 11 Nov 2026 12:19:46 +1030
+In-Reply-To: <599f1b31-f175-47df-b074-1915688eb390@linux.intel.com>
+References: <cover.1794242015.git.dawid.glazik@linux.intel.com>
+	 <ee6958ba4b93cde4719fbac89c4027964c2236bc.1794242015.git.dawid.glazik@linux.intel.com>
+	 <fff90721f7892c0285f4fed7fed460c7c1e183cb.camel@codeconstruct.com.au>
+	 <599f1b31-f175-47df-b074-1915688eb390@linux.intel.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.56.2-0+deb13u1 
@@ -79,20 +80,64 @@ X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi Carl,
+On Tue, 2026-11-10 at 17:42 +0100, Dawid Glazik wrote:
+> On 11/10/2026 6:53 AM, Andrew Jeffery wrote:
+> > On Mon, 2026-11-09 at 18:41 +0100, Dawid Glazik wrote:
+> > > AVCRP is an Intel x86 server platform equipped with an ASPEED
+> > > AST2600 BMC. The BMC is used for out-of-band management, platform
+> > > monitoring, and system control.
+> >=20
+> > It's probably my fault to some degree for not providing a better
+> > explanation of what I was after on v4, and for merging changes from
+> > others in the past that were pretty lax on the description, but what I
+> > was hoping for was something more like e.g:
+> >=20
+> > - f28674fab34f ("ARM: dts: aspeed: Add NVIDIA MSX4 HPM"), or
+> > - bc83b7353d2b ("ARM: dts: aspeed: Add Facebook Anacapa platform")
+> >=20
+> > Are there more details you can provide? If there are, I'm fine if you
+> > reply here with them, and if there are no further concerns I can update
+> > the commit message while applying the patches.
+> >=20
+> > This also applies to the JNCRP patch that follows.
+> >=20
+> > Andrew
+>=20
+> Hi Andrew,
+>=20
+> Thanks, that helps. I also found one more issue in v5 (uart-routing=20
+> issue), so I'll send a v6 with the fuller descriptions below
+> instead of having you edit them. Please hold off applying v5.
+>=20
+> AVCRP is an Intel x86 server platform. The BMC is an ASPEED=20
+> AST2600-based RunBMC module on the platform's DC-SCM. It supports the
+> platform's out-of-band management and exposes board management I/O such=
+=20
+> as the system UARTs, status LEDs and control buttons, while integrating=
+=20
+> with the host's telemetry and management infrastructure.
 
-On Tue, 2026-11-10 at 17:44 +0800, Carl Lee wrote:
-> Remove the unused HPM board ID FRU EEPROM (0x51) from
-> the I2C mux channel 4 device tree node.
+Can you talk more about the division of duties around RunBMC vs DC-SCM?
+Can you describe how components of each spec are used in the design?
 
-This is evident from the patch so in my opinion can be removed.
+What's the motivation for designing this module vs using another? Are
+there any specific target platforms intended for it? If there are, then
+some further details about those would be nice. If not, no problem.
 
 >=20
-> The EEPROM is no longer needed in the Anacapa device tree.
+> JNCRP is an Intel x86 server platform managed by an ASPEED AST2600 BMC.
+> The BMC is the platform management controller for the host system and
+> supports platform power and reset control, while participating in=20
+> out-of-band monitoring and reporting for host faults during bring-up and=
+=20
+> normal operation.
 
-Can you please explain why that is in the commit message?
+You don't mention RunBMC/DC-SCM here, so I assume the BMC is integrated
+into the platform? Can you describe the purpose of the platform itself
+(beyond the purpose of the BMC, which tends to be the same for most
+platforms)?
 
-Thanks,
+Cheers,
 
 Andrew
 
