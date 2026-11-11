@@ -1,39 +1,95 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5155F606A33A
-	for <linux-aspeed@archiver.kernel.org>; Wed, 11 Nov 2026 03:17:04 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 32CEE606A31C
+	for <linux-aspeed@archiver.kernel.org>; Wed, 11 Nov 2026 05:28:23 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=yclevY1d
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jPTG64hNGz2yYY;
-	Wed, 11 Nov 2026 14:17:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794367022;
-	cv=none; b=cZ7ZZ3wi8xo00Nr8fhYmiqAlJv4PHODfblAAvCRUzC9eixoq/JQgtAdvW15nvTwzSKxLLtYxJpXqtBCczTrB7ZNFEpExNm1u6VQeJSitJXG9BJ+p+d6AOAsybC6lvMXcPLBBcZxG/daoSacQbT8w5kU3zGrygDnjOYn4NtMekiZX1lZiWF88l6dIM3jmMM+mms/C5Su6N8cFcN/u2iDO2ZTHQxTC/tuSSzcrY/50HMOqsbBiMtE7hPghwLtBYNNz1p7GN5LtcveItHSjBJ2QeC9lirszeluT+tKRCUzJmuMA+6XuAdN8rrnb5dRFAS0IglPwUdBfMCc+S1QDqgFLOw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794367022; c=relaxed/relaxed;
-	bh=meOhYogBFYndjJYJOHnWj3u2vMsujDAyf/fw+ttqvVc=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
-	 In-Reply-To:To:CC; b=mPNYvp7JCToXHkanTAAVcUpOAjUuSsOVfoqK0fFLxvc1VxC/VxkI7KUCATTLCnzgQtLjzTYoTs9ToobruJ+krN2on1n9HBYpxKlURWDgSh7DccYxqmnEH+2saxkpp0gghaPAOxfQtcBbSP5zywdveZ8n3FSsQpbX2MPAjiuA20vK2KFPs0Eehbg8Zyumg6kb8V0dnZuL0JD36RCgnBXVdAFAbowXQbaLX3+zG1KM6LkN0qJ83qJVFW/BHlMPW/Qrcc7Qy4R9h46Efdn1hHwl7SPWb0oLeSun81jeOKbB592Wq58btfjmC9aZVQLHnN2Y7gbw3YtziwW6gDQk+zrC/A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeedtech.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeedtech.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from twmbx01.aspeedtech.com (mail.aspeedtech.com [211.20.114.72])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jPX9d3Fycz2xWR;
+	Wed, 11 Nov 2026 16:28:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::22b" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794374901;
+	cv=pass; b=mFtETOK/Rb6czcXB3XkscGhwBrEVkEtsiw0MrdyEc9Ofoj3ZKh9fiWVrW8Bq1UiKQJUlIMKZeAtGZ/7S9yDwTymKG5GcuIE5aTZFb1P2qiqqEnjL7xQvs9+v4IW9+yXI2HXZCKJ9tswuJW3TBMmzPPkBk2rH9V95RbbGJgMz1Ga0bUpwtrvkq3+L5MizcUQC/ghu9yuY9TIZgSspWNqCFxEZUF1kHflIc6JlAI3iqzZc6D+kAjXtFXkCAETsTKuOWFAhHoSaguK6BNAmVhRBidc33/v4aENUivlW19U99IbJPr7ykCeWCDbcS++eB02p7hJVF4TveR777YFVy9NWKg==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1794374901; c=relaxed/relaxed;
+	bh=hUPfJWrPKXadZ6OdI2hx5l6Gvu+kVXSB9AVbCboiOB4=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=bXH/42M1EcifuReoKkVo3SqUgH83C5acCDqRlj4vQMCeEIkYZt0zeIGoL9inagEJmWf3rHUBFN/XQr0ykLzvknD4wQEaJSMzJKySmYHlUJuduIk0TiyGHyO0pbefckOPhvAdLhFVkpnemNtc0A6jcUGyUg3ijsDU63pUaLZvJ8G3zqDWoxze7yOTE8a/KVmOPWH8eX3VfBT+8sTiUqM5r0bdJuDeBYSsc/QaRxxe+eGM165JlE+u5wFSoAwAMWvBCcK5tIoC8CkAmez01CIvSHAkJV0GAqCyq5h2QScTEd1tEjv2fUQ32sgVxOj+h0Ov9S4I+v7r8tWUnxCajGTtjw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=yclevY1d; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::22b; helo=mail-lj1-x22b.google.com; envelope-from=kylehsieh1995@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=yclevY1d;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::22b; helo=mail-lj1-x22b.google.com; envelope-from=kylehsieh1995@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-lj1-x22b.google.com (mail-lj1-x22b.google.com [IPv6:2a00:1450:4864:20::22b])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jPTG55xjWz2xMQ
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 11 Nov 2026 14:17:01 +1100 (AEDT)
-Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.39; Wed, 11 Nov
- 2026 11:16:32 +0800
-Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.39 via Frontend
- Transport; Wed, 11 Nov 2026 11:16:32 +0800
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Wed, 11 Nov 2026 11:16:37 +0800
-Subject: [PATCH v2 9/9] i3c: mipi-i3c-hci: Support the AST2700 internal
- pull-ups
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jPX9b4rKqz2xHP
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 11 Nov 2026 16:28:18 +1100 (AEDT)
+Received: by mail-lj1-x22b.google.com with SMTP id 38308e7fff4ca-3ae0eb56ba1so11039011fa.2
+        for <linux-aspeed@lists.ozlabs.org>; Tue, 10 Nov 2026 21:28:18 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1794374894; cv=none;
+        d=google.com; s=arc-20260327;
+        b=heX9e9iaV7kczGrPnw/qIZOsI2u3fFgq9FZYWpgo5XSHl3ToTvnVQjEYXQP9csRXYm
+         5+ktC5TO5eQkgMeFH0+kt3TO/zUFTjubE2tM3wFcRqUenhdzteZbq9lfxz98NScRCXzv
+         tu9zIZiPXQIafpZxsP1/GPOabGclQzcAzV80SPas0DzPSGPfWJrXHAzesNgR2OQcHgwZ
+         p6Ayrn3GUDTu2dEsP4UplSYeP4lFKXlGFeWIvCkqbybwdbDgp7G/uQp4CCU7EE8hejDX
+         q+JXg9h4P3wDYs072L3f4Br/BZBqRx0LznoEeKfmzZ1VDra3E3wDN/ttGcMx+ztv+ZYq
+         kK5Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=hUPfJWrPKXadZ6OdI2hx5l6Gvu+kVXSB9AVbCboiOB4=;
+        fh=S3WqsnQHq3czv2SSBFWuinfhJz5Ni5Lt6EbQyLPQNyg=;
+        b=JIUjYgPLoMIvR0VHIKGdDHv2vQ4MO+Sn9imnxfCFYodmEwG53QCwbgfcfwJLEmCRZB
+         krYJWN5NTSXXsN+1SUxr7lN+5ndD8sU4mBw7r3TM00XrihRLk6iijMNHnIU6dtqbp1XM
+         2sthc7a1wimRjFqboV/TwjKyO9Yhp3jEh0awAD3a9ooNaKjyCAnQbjrmC4wHcTB5aigu
+         6d38NWAdyfGYx5R6O2Mv8rC9X6vH0BQJ3EuaUcyqUKlL+LsybNlmZhRKWMO5u9wv88Ny
+         82Tsk0U/3bDOaVcH1tLDOJLUmwhwMCU9vvF/jiRbpJJtiABiAvAmDuHXIOd9l7vvsAHN
+         Sf8g==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1794374894; x=1794979694; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=hUPfJWrPKXadZ6OdI2hx5l6Gvu+kVXSB9AVbCboiOB4=;
+        b=yclevY1dcE6V05Gj8ZG/UFgF8KMdxD8wgTtqSqytEi5lRlcd6vCiwigLVMPgG3tcKE
+         FIbt0kNUUtasX/VKqw3wlkPdsTQ3/lS0Ol6++caUOn6XpSrKXWYNmi2vH5wgzDU8JgPY
+         xBC13kmGJP/ysPLQEb+VZVTMrk0xukLky9XA/iZnXVU79BkDQ4yGGkpCWh+G5Q4BKhuF
+         FJviZND9mBreT1itUJffc55YPfuqWAnzwz8wdjqRTyBSgD8GxcJkMbnyhJCH8xzGK9eV
+         I7VNib3D2QLTtVHZlYzLVKohc4w0S3/jFSV2Goh32NbAGzXJ/x/tAvm1nOL/fYNk53PH
+         iTjA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794374894; x=1794979694;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=hUPfJWrPKXadZ6OdI2hx5l6Gvu+kVXSB9AVbCboiOB4=;
+        b=BqZ6EVN51CK4xL+e13GRagccWl2NgUNXhSPqo7JB+mWtdqAAw4uX0dKlNwhtPOtPkg
+         Q1e3419ZdI8/QajC/svm29a/lHh66yv+KBij/T7OOuNhz9Dk2KIzDARhCcaQeL0PC6Ah
+         cyYUoxweBSbS5ZT4mKMXRQUzS89BeXvmEt1JOjrOaI0SvZj8hJNYGFG/Aok3auqf2qU3
+         StQtbwlaA3I+BzBqr4JOCXW4MpzG0SGcw2Kuoeo3t7mK3mB+efEbMZLSXL9/37KZbZpZ
+         uupc701BtfPlpjH+9mKdXVWuWzPnYz/bSglFbouVvelxVRAWrU4f/qzz56DSrEgaxwAB
+         e8rQ==
+X-Forwarded-Encrypted: i=1; AL+hErF7iB6QpdK4Xo5H4I9JFpYMpLBoh6iq0i9yNQuF685txAd23IVR26oRbsmZYWcv1Xs3jJbre0u3StYTKfs=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z/+5FpnnxUuvmtrb8sahECHq4lLwnxefqu8V4aK7SFdRdY52mhe
+	tqySiFfu2hCk5y9sJvse3lROMeCFEoLulCWraHuKFlPR3MOANjK0zauQ4em+j/gGddfhvKa3ZGh
+	tXrNJfT3bXnDmB1z6yklBU2nIyrd2thI=
+X-Gm-Gg: AYBFou2sK5VHFXT1mU3jjdEOF4fLr/TLCYfFq0VTYurZiLmyxWCzdKWYMbQRayVNE+6
+	WqPENITb/hHvgwnEZ32CAqxh25mutB7Y9eg/qjk/jL2cHYc056bDTbdrvbm5JJMXB9FglFMI3QK
+	x+xFNGZVENzScu7U/El8kpPal83GMJ0i0NgJdrPiHfszYTcFqaW/XUzLwCuEl0a9aX9YvMPOqxZ
+	hOPZ4F6zU0rVvYrQcthXSWB6XJmvowHZnFuR7s+SCubrM4A/ua3lhflHDwK7ZY7SjrqZ1+ubNUe
+	//8UPKvIuSoZwaSLq3/ft0l4rStqyRlYsEFZBom5E6FgUeq1/B7Ir0bAJ5cuM/zkMpsEe8FHyC6
+	R8kcoj8sqHjKFzJY98pUZZXrMsQ66JN+79KyY9g==
+X-Received: by 2002:a05:651c:885:b0:3ab:3af4:c2d8 with SMTP id
+ 38308e7fff4ca-3ae126de2dfmr1890061fa.28.1794374894004; Tue, 10 Nov 2026
+ 21:28:14 -0800 (PST)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -47,224 +103,39 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-ID: <20261111-b4-i3c-hci-ast2700-v2-9-4d8fff5c5196@aspeedtech.com>
-References: <20261111-b4-i3c-hci-ast2700-v2-0-4d8fff5c5196@aspeedtech.com>
-In-Reply-To: <20261111-b4-i3c-hci-ast2700-v2-0-4d8fff5c5196@aspeedtech.com>
-To: Alexandre Belloni <alexandre.belloni@bootlin.com>, Frank Li
-	<Frank.Li@nxp.com>, Rob Herring <robh@kernel.org>, Krzysztof Kozlowski
-	<krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel Stanley
-	<joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, Philipp Zabel
-	<p.zabel@pengutronix.de>, Miquel Raynal <miquel.raynal@bootlin.com>, "Ryan
- Chen" <ryan_chen@aspeedtech.com>
-CC: <tbevis@amazon.com>, <linux-i3c@lists.infradead.org>,
-	<devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-aspeed@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>, Billy Tsai
-	<billy_tsai@aspeedtech.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1794366991; l=5963;
- i=billy_tsai@aspeedtech.com; s=20251118; h=from:subject:message-id;
- bh=+kGXXSXJX0VtXkxub2tvdKAYW26lF5M0TaZsOE2nZpY=;
- b=hZxmZzQe/z1aSlXnmHlyFoWDcS006utE+vM9s5x1nRR1y42JS0t1RJRM2h7BEooIP51fJKTbt
- BvX01yKmi9hB1UVV2pGJ19gbZvfCxJ2LyQ0k0Id9XprVlGN8v8T4T3W
-X-Developer-Key: i=billy_tsai@aspeedtech.com; a=ed25519;
- pk=/A8qvgZ6CPfnwKgT6/+k+nvXOkN477MshEGJvVdzeeQ=
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=4.0.1
+References: <20261106-ventura2-dts-update-v1-0-b085ece9bf57@gmail.com>
+ <245d0e9d4043c0957716a6a32985b6ea5a8cb9ef.camel@codeconstruct.com.au>
+ <CAF7HswPYb3hOWA7P-d1zASvd1XzaVeuBkoqz5nXHuDeEAXDhrA@mail.gmail.com> <cb3d9f50467089c6b13ea83aeddfb032c046848a.camel@codeconstruct.com.au>
+In-Reply-To: <cb3d9f50467089c6b13ea83aeddfb032c046848a.camel@codeconstruct.com.au>
+From: Kyle Hsieh <kylehsieh1995@gmail.com>
+Date: Wed, 11 Nov 2026 13:32:41 +0800
+X-Gm-Features: AclHuK9X5Dqhm5-z10kEg9eblLbAlNWS5sD8otV-cBTsQml1KPQHVi6FoGfBKpQ
+Message-ID: <CAF7HswNubLB9ZJRsJge5_YEGY4xZJCWaLA9k+My_8HcmC4fRzQ@mail.gmail.com>
+Subject: Re: [PATCH 0/3] ARM: dts: aspeed: ventura2: Add LTC2305 ADCs and GPIO
+ line names
+To: Andrew Jeffery <andrew@codeconstruct.com.au>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
+	Ryan Chen <ryan_chen@aspeedtech.com>, Billy Tsai <billy_tsai@aspeedtech.com>, 
+	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Boards that do not populate external I3C pull-up resistors can use the
-pull-ups built into the AST2700 PHY.
+On Wed, Nov 11, 2026 at 9:21=E2=80=AFAM Andrew Jeffery
+<andrew@codeconstruct.com.au> wrote:
+> Thanks. Can you please let me know when this one has merged?
 
-When bias-pull-up is present, determine the pin voltage domain from
-the pinctrl-0 group already selected for the bus and enable the
-internal pull-ups on both SCL and SDA at the requested strength.
-Currently only pinctrl-0 is inspected; a node selecting its group
-through a different pinctrl state is not yet supported. The controller
-reset clears the SW force control register, so the internal pull-ups
-start disabled unless bias-pull-up requests otherwise. A resistance
-with no entry in the domain's table, or an unrecognized pinctrl-0
-group, is rejected with an error.
+Yes, I will do. It was only posted yesterday and is still waiting for revie=
+w.
+I'll follow up once it has been applied, and send v2 with the reworked
+cover letter at that point.
 
-Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
----
- drivers/i3c/master/mipi-i3c-hci/aspeed.c | 118 +++++++++++++++++++++++++++++++
- drivers/i3c/master/mipi-i3c-hci/aspeed.h |   6 ++
- 2 files changed, 124 insertions(+)
-
-diff --git a/drivers/i3c/master/mipi-i3c-hci/aspeed.c b/drivers/i3c/master/mipi-i3c-hci/aspeed.c
-index 8f2a00a940f7..1e093fb5d9d9 100644
---- a/drivers/i3c/master/mipi-i3c-hci/aspeed.c
-+++ b/drivers/i3c/master/mipi-i3c-hci/aspeed.c
-@@ -15,6 +15,7 @@
- #include <linux/of.h>
- #include <linux/platform_device.h>
- #include <linux/reset.h>
-+#include <linux/string.h>
- 
- #include "hci.h"
- #include "aspeed.h"
-@@ -197,6 +198,100 @@ static u32 aspeed_i3c_get_sdr_ctrl0_reg(struct i3c_hci *hci)
- 	return ASPEED_I3C_PHY_I3C_SDR4_CTRL0;
- }
- 
-+struct aspeed_i3c_pullup_ohms {
-+	u32 ohms;
-+	u8 code;
-+};
-+
-+/* SW_FORCE_CTRL strength selector to resistance, by pin voltage domain */
-+static const struct aspeed_i3c_pullup_ohms aspeed_i3c_pullup_hv[] = {
-+	{ 600, 1 },
-+	{ 470, 2 },
-+	{ 400, 3 },
-+};
-+
-+static const struct aspeed_i3c_pullup_ohms aspeed_i3c_pullup_lv[] = {
-+	{ 750, 1 },
-+	{ 550, 2 },
-+	{ 317, 3 },
-+	{ 400, 4 },
-+	{ 261, 5 },
-+	{ 231, 6 },
-+	{ 177, 7 },
-+};
-+
-+/* pinctrl-0 group names for each pin voltage domain */
-+static const char * const aspeed_i3c_hv_groups[] = {
-+	"HVI3C0", "HVI3C1", "HVI3C2", "HVI3C3",
-+	"HVI3C12", "HVI3C13", "HVI3C14", "HVI3C15",
-+};
-+
-+static const char * const aspeed_i3c_lv_groups[] = {
-+	"I3C4", "I3C5", "I3C6", "I3C7",
-+	"I3C8", "I3C9", "I3C10", "I3C11",
-+};
-+
-+static int aspeed_i3c_pin_is_hv(struct i3c_hci *hci, bool *is_hv)
-+{
-+	struct device_node *np = hci->master.dev.of_node;
-+	struct device_node *state;
-+	const char *group;
-+	int ret, i;
-+
-+	state = of_parse_phandle(np, "pinctrl-0", 0);
-+	if (!state)
-+		return -ENODEV;
-+
-+	ret = of_property_read_string(state, "groups", &group);
-+	if (ret)
-+		goto put_state;
-+
-+	for (i = 0; i < ARRAY_SIZE(aspeed_i3c_hv_groups); i++) {
-+		if (!strcmp(group, aspeed_i3c_hv_groups[i])) {
-+			*is_hv = true;
-+			goto put_state;
-+		}
-+	}
-+
-+	for (i = 0; i < ARRAY_SIZE(aspeed_i3c_lv_groups); i++) {
-+		if (!strcmp(group, aspeed_i3c_lv_groups[i])) {
-+			*is_hv = false;
-+			goto put_state;
-+		}
-+	}
-+
-+	dev_err(&hci->master.dev, "unrecognized pinctrl-0 group \"%s\"\n",
-+		group);
-+	ret = -EINVAL;
-+
-+put_state:
-+	of_node_put(state);
-+	return ret;
-+}
-+
-+static int aspeed_i3c_pullup_code(struct i3c_hci *hci, bool is_hv, u32 ohms)
-+{
-+	const struct aspeed_i3c_pullup_ohms *map;
-+	size_t i, n;
-+
-+	if (is_hv) {
-+		map = aspeed_i3c_pullup_hv;
-+		n = ARRAY_SIZE(aspeed_i3c_pullup_hv);
-+	} else {
-+		map = aspeed_i3c_pullup_lv;
-+		n = ARRAY_SIZE(aspeed_i3c_pullup_lv);
-+	}
-+
-+	for (i = 0; i < n; i++)
-+		if (map[i].ohms == ohms)
-+			return map[i].code;
-+
-+	dev_err(&hci->master.dev,
-+		"unsupported internal pull-up %u ohms for %s-voltage domain\n",
-+		ohms, is_hv ? "high" : "low");
-+	return -EINVAL;
-+}
-+
- int aspeed_i3c_phy_init(struct i3c_hci *hci)
- {
- 	u16 hcnt, lcnt, total_cnt, min_tbit_cnt, cas_lcnt, cas_cnt, cbp_cnt;
-@@ -206,6 +301,7 @@ int aspeed_i3c_phy_init(struct i3c_hci *hci)
- 	struct device_node *np = hci->master.dev.of_node;
- 	u32 sdr_ctrl0_reg, ctrl0, ctrl1, ctrl2;
- 	unsigned long core_rate, period_ns;
-+	u32 pullup_ohms = 0;
- 
- 	core_rate = clk_get_rate(to_aspeed_vendor_data(hci)->clk);
- 	if (!core_rate) {
-@@ -374,6 +470,28 @@ int aspeed_i3c_phy_init(struct i3c_hci *hci)
- 
- 	aspeed_i3c_phy_write(hci, ASPEED_I3C_PHY_PULLUP_EN, 0);
- 
-+	of_property_read_u32(np, "bias-pull-up", &pullup_ohms);
-+	if (pullup_ohms) {
-+		int ret, strength;
-+		bool is_hv;
-+
-+		ret = aspeed_i3c_pin_is_hv(hci, &is_hv);
-+		if (ret)
-+			return ret;
-+
-+		strength = aspeed_i3c_pullup_code(hci, is_hv, pullup_ohms);
-+		if (strength < 0)
-+			return strength;
-+
-+		aspeed_i3c_phy_write(hci, ASPEED_I3C_PHY_SW_FORCE_CTRL,
-+				     ASPEED_I3C_PHY_SW_FORCE_SCL_PU_EN |
-+				     ASPEED_I3C_PHY_SW_FORCE_SDA_PU_EN |
-+				     FIELD_PREP(ASPEED_I3C_PHY_SW_FORCE_SCL_PU_VAL,
-+						strength) |
-+				     FIELD_PREP(ASPEED_I3C_PHY_SW_FORCE_SDA_PU_VAL,
-+						strength));
-+	}
-+
- 	hcnt = aspeed_i3c_ns_to_cnt(ASPEED_I3C_PHY_OD_DAP_NS, period_ns);
- 	aspeed_i3c_phy_write(hci, ASPEED_I3C_PHY_I3C_OD_CTRL4,
- 			     FIELD_PREP(ASPEED_I3C_PHY_I3C_OD_CTRL4_DAP, hcnt));
-diff --git a/drivers/i3c/master/mipi-i3c-hci/aspeed.h b/drivers/i3c/master/mipi-i3c-hci/aspeed.h
-index e80a0dff0dc9..69d7ae92d3c5 100644
---- a/drivers/i3c/master/mipi-i3c-hci/aspeed.h
-+++ b/drivers/i3c/master/mipi-i3c-hci/aspeed.h
-@@ -69,6 +69,12 @@ unsigned int aspeed_i3c_avail_tx_entries(struct i3c_hci *hci);
- #define   ASPEED_INTR_SUM_PIO			BIT(1)
- #define   ASPEED_INTR_SUM_CAP			BIT(0)
- 
-+#define ASPEED_I3C_PHY_SW_FORCE_CTRL		0x04
-+#define   ASPEED_I3C_PHY_SW_FORCE_SCL_PU_EN	BIT(28)
-+#define   ASPEED_I3C_PHY_SW_FORCE_SDA_PU_EN	BIT(24)
-+#define   ASPEED_I3C_PHY_SW_FORCE_SCL_PU_VAL	GENMASK(10, 8)
-+#define   ASPEED_I3C_PHY_SW_FORCE_SDA_PU_VAL	GENMASK(2, 0)
-+
- #define ASPEED_I3C_PHY_I2C_FM_CTRL0		0x08
- #define   ASPEED_I3C_PHY_I2C_FM_CTRL0_CAS	GENMASK(26, 16)
- #define   ASPEED_I3C_PHY_I2C_FM_CTRL0_SU_STO	GENMASK(10, 0)
-
--- 
-2.34.1
-
+Kyle Hsieh
 
