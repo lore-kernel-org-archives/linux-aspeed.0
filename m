@@ -2,82 +2,82 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7B27560A2637
-	for <linux-aspeed@archiver.kernel.org>; Wed, 11 Nov 2026 06:10:58 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5EB3D60A263C
+	for <linux-aspeed@archiver.kernel.org>; Wed, 11 Nov 2026 06:11:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Y1CkEN0C
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=tUo+Fw5m
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jPY6n1ZYdz2yKn;
-	Wed, 11 Nov 2026 17:10:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1030"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794377457;
-	cv=none; b=YF136jBrqnXBlTFlTwA/0457GIa6H+LQclwftVrW8zeG25TX89iHfZ0DiC547mgZglEpOIKQD8XEGFvIJayCw1OgTaoNjxyVQw70NVobkn0i6DcsY+OWfmvAxnuQnXARFauVLQnNJu93Qf0nl9CIBGdXXq6fwejWlLKqn15hAz9hNI/ObXwrbBGQG8t/oHZg5s0L1iCK8N9hZIG9DRAbbm2lNsbH4CyvvcM2ZKgs9n59/SNv5M5czh1PPhpnltTMkpI+FenSBL9WP9xgG8F7SKvsP2DUf345mjAJex3laZdXTsHNh4NX9wi7OHyZ49fl3z+Elmb8p1RHjNhiL7vS4A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jPY6r0hTXz2yLY;
+	Wed, 11 Nov 2026 17:11:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1034"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794377460;
+	cv=none; b=UfVco4NHxn4YxNtcOA7v8JYPtuO6H++sHIBC8ZMRJw02RaP9hJgUrs20gZ9DJ/nSVel/HkMpbE40qje44YWdkRzyPWd5Y7+lSpJdapw7LYyDGbyta/ihc4EydyxVGMO/AJdp4bDUmEFEDAmbG/5HWxLhi1X7KM3OASI41X09fZ8xtfnamRzxfAzNi/m9Wd9CAoYcOIYsc/DGUFVQMUnc5snASs0jZSxHhriSWmldu/nnj8aVo0fm7z1WPtG885aJnRQCK8NajjEdbEHABvDH2Y4/PlCJRyymDOwEvQeNZLaMuQh+S+K6FUjjgHhGFBILE7BIn/2VpyFw5OP5VpX5sw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794377457; c=relaxed/relaxed;
-	bh=adTF7M2gMHj7eJOUoZHUfGntqMgezvSTHYPTjsdEjag=;
+	t=1794377460; c=relaxed/relaxed;
+	bh=fK4euQL/sXyPal5+J+hrdUFIpsb4ZufsR9tCvoLGNPE=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Apq9z+vfgOwmMnuW6veWdNwh2pxUBSkLQ0feH6vfeRjv23wT4aNmSq5NWN+hj+Ip98MqmBZyR2TLE+Kb5wM0208vwD7H8dS7+GzTaCwQv+3Fu3iQpT/Pv9LH2RZuNWG8qpCP0qtdbNnLy6ACRUJ7YGGV5XYcwdg4dHQewJKcDaplemu+COjxvsdEDxgMQ9Q4VmopezaokGlacWJyiayvfV9Q+AwCK+8tV4O/S6WR+jHSOK8iqtMiv4TwSSu9HsHfn5GcPqGghw5wPDvpv/YkWRziIrHNaP0/O1Zg4U8ZgvDbfbZXsbhR7sDPzLVZvoiKt9EQkB4tLZuGtOrLIiYjUw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Y1CkEN0C; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1030; helo=mail-pj1-x1030.google.com; envelope-from=kylehsieh1995@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 In-Reply-To:To:Cc; b=og2ziiFH1/W2ADuPCQCzYSmSW1fGltpY1xlgZikmN4yEbluQ7XHzwMJXpGByFJEVrzoPT2Hi37haY8M/+myKHNvJyOkYMhToqOdKbHzyNwYkVK7yjxkFG8RAaPmEcp/+EoLvN/dufPmdOBl4VhPMBW5QTuH1RtsMzbr6dbwXLEKor1CPua9hXvxHbskvxr30PhQLD5t8psD+3NmqRucVrAXc1frt5duwdA/jCuJBArmDkeGqMQ2P9c4/9bdsuBsIEB7oi7xa4mqYTX1ZWGh+6jySKVjFfR7Vpp+gjul97ww5THyr62ko4wncNFF9jZfA7Ua+J/HtQP6bKFbNLdywAg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=tUo+Fw5m; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1034; helo=mail-pj1-x1034.google.com; envelope-from=kylehsieh1995@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Y1CkEN0C;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=tUo+Fw5m;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1030; helo=mail-pj1-x1030.google.com; envelope-from=kylehsieh1995@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1030.google.com (mail-pj1-x1030.google.com [IPv6:2607:f8b0:4864:20::1030])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1034; helo=mail-pj1-x1034.google.com; envelope-from=kylehsieh1995@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1034.google.com (mail-pj1-x1034.google.com [IPv6:2607:f8b0:4864:20::1034])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jPY6m4cSBz2xGg
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 11 Nov 2026 17:10:56 +1100 (AEDT)
-Received: by mail-pj1-x1030.google.com with SMTP id 98e67ed59e1d1-3ac91ac8924so1674992a91.1
-        for <linux-aspeed@lists.ozlabs.org>; Tue, 10 Nov 2026 22:10:56 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jPY6q2sc8z2xGg
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 11 Nov 2026 17:10:59 +1100 (AEDT)
+Received: by mail-pj1-x1034.google.com with SMTP id 98e67ed59e1d1-3b10ca4e3f9so1626269a91.0
+        for <linux-aspeed@lists.ozlabs.org>; Tue, 10 Nov 2026 22:10:59 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794377454; x=1794982254; darn=lists.ozlabs.org;
+        d=gmail.com; s=20260707; t=1794377457; x=1794982257; darn=lists.ozlabs.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=adTF7M2gMHj7eJOUoZHUfGntqMgezvSTHYPTjsdEjag=;
-        b=Y1CkEN0CqGWbLkWQi1tM1bjnrld3dphozGr48s79+d7TMrGKG28Bb18L30AfLI1gvs
-         iYVFUm2UIsAEHpOApYRgep6GtWf6QqlVVYWGlelaUTdw1LARAc4w93gvtYa2HdicE/dI
-         y2VHBqi6dKGBB2Dq5vFjcSeOcMunZCg+4UNWr81xmJkssE94EtdQhDBcD6o5OtjjATgE
-         KNnjfCI1lmTr9jgM3LlyWxQY9lONoVIcOwAiFBLtOzWO3W63GbiXUN1abNLZcJXJq+cM
-         FwKPafTkQ3Gasmmh2muPI1f3qyFMCW0/vO2hjDVfQ18PgK7CCVJWhmC4BpFb1RzBsesW
-         YRcQ==
+        bh=fK4euQL/sXyPal5+J+hrdUFIpsb4ZufsR9tCvoLGNPE=;
+        b=tUo+Fw5mnbwCDnfFN+iCjIWPR+PNFYPXgelZH8kmT2FAQfcsDr7rst1cT/LAGkhxug
+         j1JrZxoYpt4olqSYCBwoSb+WDq2LGVyaslRQGnG66xQ3XYiJl87ZON5cNW7+6h5LpFsQ
+         LxZK8piF9fDVHNS3b2I8Oh7S9N8kmyIPoGkYxb6HUN8/0h1oofM3o/zDj421+lo7tLMb
+         BbTZE/Z2G5ZrwcTDVAoJX6WUosmG17gr+34XW4S0Pa/GTQsi3jB8dE+dHVzBkug7YC9a
+         jmCu5ER5aoDZsBWzvPVqQaZuTkUmlG7pDGw0DrQVJh5h1bMGDqgls8W6NL0En30e5W9i
+         vHvw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794377454; x=1794982254;
+        d=1e100.net; s=20260707; t=1794377457; x=1794982257;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=adTF7M2gMHj7eJOUoZHUfGntqMgezvSTHYPTjsdEjag=;
-        b=Moge42QRqpM3dgXd0rurhfqMUWu32t6pC9H/rEXV2VQTvczatpkPos5dl+wUXq/dri
-         ZmKqisGZq0LzMPMT3z0ueTR0t/KEkjNg8P0JxFlzZ5iuXnY8+CXAffJZN/Nc1xzoHL3F
-         wrUOJzxZ1nzAnbdtGlvD8qbAUg2X8YbdXnQqucOVj/YT+skUTYXiZgwvX7/M6na2Er3z
-         soSmPCwQO1AxoITyT2hD2dAyXJEPhagDY0pKqOYGIoFaBZ9H+G5cKuV+pmjrMKfnw8JS
-         JdYLMH1HP8jWJJJjgnwTfl5yB+WP8LwwFkfPIuYow8AAvIXc/1Vik58GaVF6+n3XWNXf
-         Blqg==
-X-Forwarded-Encrypted: i=1; AL+hErFmUVETlmRcD9K9bryN4gqzOIqn7RaKKNFeBnmyKakoQyE/wfz/5tAVl8pi9j2nW0izUUyoRwbmtkmSXTk=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z+CB+nhgatTm7EsFYWJ6usK5h102OseioqZx0vk4kJ3gzi7bUbO
-	VL82xhNDEkqaQfbySfdZGLahKcSgn+9+1ovNZGELJOQnQvu/zjFPdtyg
-X-Gm-Gg: AYBFou0Yto5QlTCjoMjkPL6J3eXX8G6lYMQjjYoIkFwvmVIfOXcenjIhoANHmQvb7jH
-	uXpbz6cxcgHOpF9OL5ghmyuD1sjzsOHvFCfTJrnsdltSzBWJ0y2R/IQM1LmKeWVl6+CH+/W3OiA
-	VROjJ0jBq7Jdx4hzJoPvMaztkMJgTTtTGaAUkP1YjcQJJAqWYyKDj+MFI2RkbTM+sW6dlglho93
-	21TTcMa20hys5csysO2VGGQcQwFEvJQ2qiSk63kgCpmZRK6T3d1dgNfBNKjlhVyN90W8HFwlEOV
-	7ZfmrULdvM1M2uktkyksrp4+1D6HAdu6V0TBQfRIu7p42HaFsTdY92N13y6LsLgQOLa4Mam5+Ih
-	r62cuE60JsMR9UEulGLK+hby6F7G0XhUVUHVwlwqVawiJ3PDLDWkwmrdN3gUkPAzYenNIeGcuIh
-	VQC5ivmpMcl/NxN/bPBCAOzJ4kWXija9FkhtGMuqXio1JVyONgTMUSGlY6W7NhHNNZMYt8sqq3c
-	KCUL2exhj3cnnK+8fUKfrE20RSXS8y1irGVnNe1fiaUbeevfWgRA1MhDTLMIIgqTDfr3Xi0vTv7
-	QjRzG/4P/1p7e7bzrW/D2xK/Flu15SY188xX41Gdr1S6Q8c/LP3OlgNOupoezC+UBH1p
-X-Received: by 2002:a17:90b:5910:b0:3ac:9d26:5532 with SMTP id 98e67ed59e1d1-3b182e12787mr1641552a91.3.1794377454347;
-        Tue, 10 Nov 2026 22:10:54 -0800 (PST)
+        bh=fK4euQL/sXyPal5+J+hrdUFIpsb4ZufsR9tCvoLGNPE=;
+        b=tFdrC2Ww0hYLu4vr7yTDldfgE5hWMu3XEayMaNqx//RUt5ngGx6fnM8wkfAdxNHK3/
+         5t37bdWceqPsHQnkDNBvvAAdHWr4TqmGPqJ150d59klBizE8JMhOHtdwdFB0mfDlCC7J
+         QWUSuM2itWrAM1hOaGdtmGi5sizM6gqalP8sPhgcNHeafEtKXJ3aQ5uVa3UfIreAJEUE
+         KkyNLg3tNqDJ+9Y/XU6a6DZAEmz9R1WWxAx9QGX9WvDq7lVsBjppM/VOkQRuUOHIRSUD
+         a/aCT5SlQjv5C1EzYgbpQ6rjU7M+vN9OA9VPBYpqsUHwZKmOZN8yCPNro40xLy2sn/yy
+         Zb5g==
+X-Forwarded-Encrypted: i=1; AL+hErHTA0MM07lVuKTS88rR/n1WpfkoiTNTN+Ovg8Yiovs7sn/Wncp1yfRN8yBfth0sgBu8bHfUQ7kbZiGvvN8=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z+9jhaXjR9K9JIAiw4bQeTQqvLK8zUPloLoAltcqN2NM5dFGN9T
+	wBeOwrel/CSEskIarzOa6o2NB7qTT5r9+6uK/8uQCqNi6ISlT68x/q2i
+X-Gm-Gg: AYBFou3d+eYTIpxyzzr77b5/BQ2tkcwamsFsO2nAO9hJ4c/B0U0JB3It+AVtgz2Z2R1
+	8CUWVANMYuTRgbG8mnAeAxPnCD6pABAQYOveohHGTuPpUsSEYhs98eLqq6twBgmOTAQgNX0eGkd
+	z5b3DPSkL9qDrLmAFt3E3XHrZKSyC7DQhKtdNqKD42xPBdf7wzOnU1MqUjsiExTGs+PCSKft4g/
+	DrpKUlBcffnM25s+ov6xBqNTRMFawdpsys5CNOL6H+Am7+vKJ9pdY1+ml51qgcaUBlS3ycYuLxx
+	7ayYs0ch/iycV+Q3KM/L0pmFvQvp0GpDbxkL9BOtnHYUHlWYArzBGdc8fsoa07HuD11cqcdyXPW
+	LceFX6rnR0Hcrhls2a23bd7he0PQp8Sg8UXS08s0C9SBgq2bPpLo98lN+l0j/GycB0Ngh8zhSQI
+	U8zGhng5TtqYRU8HJAD6yP8RdnJ+RoPyRuLhwzBhQ6DbKFqxMJJcuSTXK1RBacu8xQwMFRVJukk
+	HVvd0oouOBFfRQMMWw4EIe278bIv/N5F9htHuUf8lQug91vlzE2aICAwJwam/dVl4M5eGcKoMfq
+	YtMxqv8RHqCoyDk+1bCkdrOigcyWpLmidlhQjzPzpF2IuvGIx24ucJwTzhu0f1hP/OD8
+X-Received: by 2002:a17:90b:2e46:b0:3ac:aa8d:19eb with SMTP id 98e67ed59e1d1-3b182e0f256mr1318971a91.3.1794377457428;
+        Tue, 10 Nov 2026 22:10:57 -0800 (PST)
 Received: from [127.0.1.1] (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b17db7e8b1sm2978557a91.12.2026.11.10.22.10.51
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b17db7e8b1sm2978557a91.12.2026.11.10.22.10.54
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 10 Nov 2026 22:10:53 -0800 (PST)
+        Tue, 10 Nov 2026 22:10:56 -0800 (PST)
 From: Kyle Hsieh <kylehsieh1995@gmail.com>
-Date: Wed, 11 Nov 2026 14:14:45 +0800
-Subject: [PATCH v2 4/5] ARM: dts: aspeed: ventura2: Name the USB-UART
- bridge reset GPIOs
+Date: Wed, 11 Nov 2026 14:14:46 +0800
+Subject: [PATCH v2 5/5] ARM: dts: aspeed: ventura2: Name the 88E1512 PHY
+ reset GPIO
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -93,7 +93,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261111-ventura2-dts-update-v2-4-bce5b5dafc1f@gmail.com>
+Message-Id: <20261111-ventura2-dts-update-v2-5-bce5b5dafc1f@gmail.com>
 References: <20261111-ventura2-dts-update-v2-0-bce5b5dafc1f@gmail.com>
 In-Reply-To: <20261111-ventura2-dts-update-v2-0-bce5b5dafc1f@gmail.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -105,16 +105,16 @@ Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
  Kyle Hsieh <kylehsieh1995@gmail.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1037;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=993;
  i=kylehsieh1995@gmail.com; h=from:subject:message-id;
- bh=uxlzFpBewTlOUpIvaHC+sQHRHy1iC/2nchos0sKDaSA=;
- b=owEBbQGS/pANAwAKAaWDQrcJVsSBAcsmYgBq9Af1Y75M000yKvj+EmMiYb+D2UqM+Gjo5QTY+
- aYZCRbqbnKJATMEAAEKAB0WIQTJHsaNZOdY+THGqJelg0K3CVbEgQUCavQH9QAKCRClg0K3CVbE
- gVrfCACO+o3U98bHLfj9ft+SUDV7IbCt3mftqCSoznSCfIaMiRMu1dIttWlQN2p/TX6BzUrsEcK
- ax4g91upkLZ/tHwX0pDAHawfcgNbviAQsmglRgvCNxhlk5ZvzQgAYqrDAzZkj/oxX4hx8yrPimE
- UJTsTTFHDLqBAVOGQ5pcPvnnW/j7NM+lOctLzK6kdFPWb7fedDRM10xaj9es9NJLMrx5LNONiD8
- TRq/DBbh4x2C5EOhPo9nfdKuvOsl1JqZo4i7J84arpRwXTVzAMGjlyQgpr6vr5mqd0RPCSd8CaL
- 8xUw8eJFejqLyk0H2J2K0Hd4AtvI/XZknibcG3HHZD9vUdNz
+ bh=xxMp1/Ez1x0+u4gEwcM37HZ9S+6j5lTG4LB8OtJfTVM=;
+ b=owEBbQGS/pANAwAKAaWDQrcJVsSBAcsmYgBq9Af26OzcycIkzFNsHXF4FJMNd5XIH5LUASwIA
+ 6mD6yK5pEWJATMEAAEKAB0WIQTJHsaNZOdY+THGqJelg0K3CVbEgQUCavQH9gAKCRClg0K3CVbE
+ gTq3B/9YCHNGgux2LFrmmQhjhNtjCf3sYPpiQCl+wbB3hl5P18p1+BE5tmoWffF8zEbIEKFp1Hv
+ Muo+kaAZc6Thx/QsJRcIw9MOsWo1b1WSIBjmYzbdc3uw5wB4s3hdzNqxyZVfKShvw6+238sUSyh
+ QLYHpqe7rTQJprLHTtyA9qKJ7EYSckZwx/D7VkPys1Cn3AveHyIChLsITJ/cmhKUFI6bTMTt+J/
+ O1SAOCk4wMJHgCLjMaTptjyC22H+MA61k8WCHvULsm3WWZAz1zWZIOh9hdBF/tegK/YTW29XOY3
+ K8jE3xCp+6coF8UfdN3+njmgO2NoCDOoUYBXeOpg5lxz76Em
 X-Developer-Key: i=kylehsieh1995@gmail.com; a=openpgp;
  fpr=C91EC68D64E758F931C6A897A58342B70956C481
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
@@ -125,30 +125,28 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Lines 2-4 of the PCA9555 at address 0x20 on I2C bus 6 drive the reset
-of the three USB-to-UART bridges. Name them RST_FT4232_{1,2,3}_BMC_N_R
-after the schematic nets so userspace can reset the bridges.
+Line 10 of the PCA9555 at address 0x67 on I2C bus 10 drives the reset
+of the Marvell 88E1512 PHY. Name it FPGA_RST_88E1512_PLD after the
+schematic net so userspace can reset the PHY during network bring-up.
 
 Signed-off-by: Kyle Hsieh <kylehsieh1995@gmail.com>
 ---
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura2.dts | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura2.dts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura2.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura2.dts
-index c683ac19aba3..a5e6cc94b280 100644
+index a5e6cc94b280..aa83233f1710 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura2.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura2.dts
-@@ -1937,8 +1937,8 @@ gpio@20 {
- 
- 		gpio-line-names =
- 			"", "",
+@@ -2486,7 +2486,7 @@ gpio@67 {
+ 			"FPGA_TRAY37_PWRGD_BUF_R", "FPGA_TRAY38_PWRGD_BUF_R",
+ 			"FPGA_TRAY39_PWRGD_BUF_R", "FPGA_TRAY40_PWRGD_BUF_R",
+ 			"FPGA_ISO_CARRIER_BOARD_PWR_OK", "FPGA_UART_MUX_SEL",
 -			"", "",
--			"", "PRSNT_FANBP_0_PWR_N",
-+			"RST_FT4232_1_BMC_N_R", "RST_FT4232_2_BMC_N_R",
-+			"RST_FT4232_3_BMC_N_R", "PRSNT_FANBP_0_PWR_N",
- 			"PRSNT_FANBP_0_SIG_N", "PRSNT_POE_PWR_N",
- 			"PRSNT_POE_SIG_N", "",
- 			"PWRGD_P3V3_ISO_POE_BMC_R", "",
++			"FPGA_RST_88E1512_PLD", "",
+ 			"", "",
+ 			"", "";
+ 	};
 
 -- 
 2.34.1
