@@ -2,80 +2,84 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8680F606A891
-	for <linux-aspeed@archiver.kernel.org>; Wed, 11 Nov 2026 22:46:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5F31E606A321
+	for <linux-aspeed@archiver.kernel.org>; Wed, 11 Nov 2026 22:46:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=erGcS59I
+	dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=mZkYx05t
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jPzCc2PYJz3bX3;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jPzCc4Vs5z3bcf;
 	Thu, 12 Nov 2026 09:46:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=172.105.4.254 arc.chain=kernel.org
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794391448;
-	cv=pass; b=ZKkPwmj2wE5R1teDMhAonTCk6n3gGQWkST9b8gihP2UMJSG3SBqq/A4PO9k8Kbiyb2W+vAGUwrh11PowDmkxRx34YR3EcHYXKHE+4wnEwFeeYX+iF2TS3erJBx8MDfqOV/YznO2PQlvmbbVeCzVWnrXHm8341mXxgh+rtkBolw/2cd1FtimyhvXqOaSCnqxr8LHaKj3sq3HLjXVlqMb3kn1pg4WqvCrqTLcBIF+j4pJrEml3sbNsqRsjyFpVBunR8SPQFiUIg9ub4Bcsuw4y/09f6eKj2nCUWYrREtmF/RScSe46Qe26ejZnxMsWNzzph3utRfZqgUspUDb7XX/aGw==
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::3" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794417700;
+	cv=pass; b=NwerJlBPrksAMotFBtyn78AHPPvBUunq8Cm1ETxXkLyq7dJgJWwtMAZmZV3GmE0pfktHVJwWwrL/C1dJ4C9FD89hQD5ZdCsH+r9m7m32D8uGp+pf38VbKWkc0kX6LARod2rL6ItW1jdzjNJXgaaP7Hz+GGqwRBvw71kGYGm2OuJL4tlJu0oSUnOyXqxf/SVE/fr35VfM7ny/+1bfwFBokw1gCIE0730qIorNHzwNROppAlJhwr7KtWbtZoSiztdIhNMXywgbvhPpfh3qDmif8XrsQM2zIoVhFYHanvgkdlIonB3PSq1PtXOFHeS7NXFlPgRnYrAv1vF1CIMU18znkA==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794391448; c=relaxed/relaxed;
-	bh=LERhbt5Ytdc1ar8GQ07npP5kbNMAPKzHwGZphCtzgew=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=gn2CZlKFYkpIHHy9nlvML7ZU9Q+sK6jR9esu8AeBlnpocLU/bXSorbVZxUjBHBIsCzI9RE5Q3JeB2Y3dk62YcgYivlpxWMvk97KUnBZxCb4fbgaLl7xcC787yFHUA0Jg3ULpBt8OJvGg8oVdM6S4JhfoOBAjt1yw7HmKyTKTdryIiubt/obkmZayfUEIcxbv9hsnOS0O4UOL9CS5oC7WQ+XNsoIEHUdwKKp11SnfYe9NRSWMh8HtHW37HYU67lWHGb8cVmXj1iiZq0/v9bIon+sgP76CJrqs1Q/AZY7A93Ld8PMhKgh5nGArP6zhYjnsOvUWR0H087YD7QiL7DoJoQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=erGcS59I; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=devnull+eric.yang.wiwynn.gmail.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1794417700; c=relaxed/relaxed;
+	bh=sSN1kP1CaB/8fsbefXa3LnME1K/Rku67T2K9S2tGPbU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=oTbX+WqyDHaP1Rd9Z1xAgQ5vdxsERTtaV9MB5G/B387GQC1tCw3jexx+kv1ZIwEfzAmr7qZ6KpGs2cFCqIkiI3zpvj3EOCJN9Gj5Em/Nh2yWvBVwOuWfCnv5oIkTp3mGoU0Yfihe0lnIV85v/Rc/oRe+Ek3MXSfget2VyZc2yvP3nQ24AXccfVtqdmfecdQnNtA9yjfJsvewzI9tl0q6Nvx7PGnVj+EIMntZ8IiPHhqQmnY+PC+gimZs9xRgUX7SKX9TgGeHrqbs5J5bmInzltI3Gf+cvzVxIE23wWPbB0HHwql3Iow5QuwbT02Bnf7LsSbJbkTIYezvu2WUjh7cUw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=mZkYx05t; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::3; helo=as8pr04cu009.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=erGcS59I;
+	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=mZkYx05t;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=devnull+eric.yang.wiwynn.gmail.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c201::3; helo=as8pr04cu009.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org)
+Received: from AS8PR04CU009.outbound.protection.outlook.com (mail-westeuropeazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jPfHq6TPJz2yDD
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 11 Nov 2026 21:04:07 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 09FFD63C1E;
-	Wed, 11 Nov 2026 10:04:05 +0000 (UTC)
-Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
-ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1794391444;
-	b=ENq6XChdbDLF1JaAvQwDGna7DJL5Xd8McgeltnnZqrz/Vxcw3ZAxSsDm+StvFsw/Kqlg
-	 xw+621TPLXl0bX7IafGupbJUclk7URLqxBS6NsfQpCGXke3Cqq8b9URWmvYPZqQU3rDAa
-	 8/5jRZ+kbxvuGGEmsYNkdlJtpqkWlyNCM9+CIyqmG1vHXgS0wsD+unYANFhtVfg3VF9YQ
-	 7g6qvdTKRJILP7l8CQTcTPA4S1k0CY0fqNbYNaf7Ty89QXbAdNclFgsvDgtmrJYxz/U5D
-	 RUFhyK4CGg1dEpx9CASC4V6tYyyS3tZABZnHPUa5ewOpLdwF+yJ8+/C+s8tuTiYPBTg==
-ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1794391444;
-	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding:Message-Id:X-B4-Tracking:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To;
-	bh=LERhbt5Ytdc1ar8GQ07npP5kbNMAPKzHwGZphCtzgew=;
-	b=zVWRF5YLBahFkpHOy27bVTANsVO4rnFZwq/ehsDeZUHeCzQF04/D74AKjPad3DHYsLfY
-	 8axNndbBHKiQVhZRuQshaAAeEXBY79Zpio2VRui7fDq/28JD1LmalfMdP2UcjmnyuS4QH
-	 /tViVCrg6cmxHtK5LvGllTvQdHsOD1zaAhYzOD5f9puWszuCT5TIbuZnkpxkVrQzQNFWA
-	 RYmtBaZWW+ck/g8wuTmlB3bvnxjsYwcNkRgq6nz6j1OazhJFj16bzVMJu+FU779Akun15
-	 jHSqq/cOUjpPzBhwr5d1WjCVaEs0cljBtMP8VFnWuIX/fU+UPRDpgKPpTUrFJ/sugrw==
-ARC-Authentication-Results: i=1; smtp.kernel.org; 
-	arc=none smtp.remote-ip=100.80.115.77
-Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id 293001F00A0E;
-	Wed, 11 Nov 2026 10:04:04 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794391444;
-	bh=LERhbt5Ytdc1ar8GQ07npP5kbNMAPKzHwGZphCtzgew=;
-	h=From:Date:Subject:To:Cc:Reply-To;
-	b=erGcS59ItktfZQvpSga90WTUkr0BM3wtiQdlaPLLxwCA8YjSI5FDbY/8Bbmyp4A8q
-	 muYzMDEj8teuRZURdrm3jZWCQvZVbiiUx7sM8q7wQ+ch/ud7KcTScVqyH4qG/dKEV3
-	 O3p7t5nkttCuCfK9hBfyQjUDPu3z6NIIAkjYPNLIMI3Yw1/aooBuzH0kLZjByhSEZa
-	 qhF5bEscz+b9vDdZjNp4nzeQG7eTkYVgbT1ZELgiWBm/8VWb1qrycnuZq5LS+FVY1w
-	 WPggkOwMxOX45Mh1nJjSYD4T0kBlJdX/feSBv/ASdC9nzeaZwBC2brnY50V1AeR10z
-	 Dsisy3ovVBxEg==
-Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id 714EE48F1A;
-	Wed, 11 Nov 2026 10:04:03 +0000 (UTC)
-From: Eric Yang via B4 Relay <devnull+eric.yang.wiwynn.gmail.com@kernel.org>
-Date: Wed, 11 Nov 2026 10:04:03 +0000
-Subject: [PATCH v2] ARM: dts: aspeed: yosemite4: Remove Floating Falls
- board nodes
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jPr0g6crDz2xLq
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 12 Nov 2026 04:21:39 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=O2zEJwOnCW403iD9v/gOg4+ADwoJdPnslg8hKah94UEMyNWlOVK8Ug/+L/o2L+f75coQoLx1Ia6wNe2VX00D9YmFmNOLz5ZIj4y1iSWMVEzTEZ8GMDgjKOkQAdtQSmTJAwcLrJskxbtgbl14CKVf3bNFiyvEAbFqN6OtxCE2bI9moZuwxkMPEsHAFt35JlD88m+vRMh7pBBfE7XRo62YiPJ5nhg6e615fzo/ZYxDh9yWIJ605n13T5FkEGFYTpHWo3xQvvB8lUI9M1wyM8/AzPPgciq+CWHpthdejO1Hn0g6//nTIUH3dkMJNDd7QxsX3kKRaYP2A1sEBHU4iNTXiw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=sSN1kP1CaB/8fsbefXa3LnME1K/Rku67T2K9S2tGPbU=;
+ b=TT/nTzaDMhHCGKNbTPrrT5dJes5UmirpIvUwVtUCUr37GhJWKCqKEMydBy5L/hoMa+20dCtobIm5k1GcMkIEmbvpBX4f5M7msRH9Ke6VacchwW1Iu4rs+mCTAC/4zbB99jza/MAbmF8l1jm8mGv95XDt05XkLh3IOSvdqqrdMZfSdQYFREA3R3/s252UI2tn8HODQd22G5NXbejF7HLMgoTNlfImGS5pZgCPEbWHIUhFkxWkPmxWFy+88OOUZZU2O/n6bxPlL4y6eg7xbUv2d/rk07WVq59HEgolwrJozVobonUWLlhvdmZs5gjaVt22iqqomMUVJfhjLauD3ZP62A==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector1-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=sSN1kP1CaB/8fsbefXa3LnME1K/Rku67T2K9S2tGPbU=;
+ b=mZkYx05tXx0ocFh/hzGU62jN8eJTmG+WlYOU8AVzSfOK1exaQx/BK8UCd6LUU5H0+f6bJQAlKrBAAQJMchujHwyW7p2uLcHRb3eloJ92GhwTLiPaGC4vi2qpGYSuQZu70gisNovH0lznx9qbu7WUVDZ8vc2M7W2F9yxwJ/S2CunrO3aT6kXbkQpPhw+hVdVRVJCSwEEtJUWJUigZkhCgb+exuThgaDZpS9zgMfx4mSgf5lFXG5pN6RB7vxMKexQsOFqjTcMGP34abiV8qgEG4Q59RxUZv2OKilHOoH8uUvLkeyEZDNAraL/QUHiEKVIx2Lj2/dPWhYAXvnk0zehi/w==
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=oss.nxp.com;
+Received: from MI3PR04MB12438.eurprd04.prod.outlook.com (2603:10a6:290:76::14)
+ by PA4PR04MB9245.eurprd04.prod.outlook.com (2603:10a6:102:2a0::6) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.8; Wed, 11 Nov
+ 2026 17:21:13 +0000
+Received: from MI3PR04MB12438.eurprd04.prod.outlook.com
+ ([fe80::c715:c32:8bb1:b70b]) by MI3PR04MB12438.eurprd04.prod.outlook.com
+ ([fe80::c715:c32:8bb1:b70b%4]) with mapi id 15.21.0615.007; Wed, 11 Nov 2026
+ 17:21:13 +0000
+Date: Wed, 11 Nov 2026 12:21:04 -0500
+From: Frank Li <Frank.li@oss.nxp.com>
+To: Billy Tsai <billy_tsai@aspeedtech.com>
+Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	Frank Li <Frank.Li@nxp.com>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	Miquel Raynal <miquel.raynal@bootlin.com>,
+	Ryan Chen <ryan_chen@aspeedtech.com>, tbevis@amazon.com,
+	linux-i3c@lists.infradead.org, devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 7/9] i3c: mipi-i3c-hci: Program AST2700 IBI
+ termination threshold
+Message-ID: <avSkAIS82rYaLZvH@lizhi-Precision-Tower-5810>
+References: <20261111-b4-i3c-hci-ast2700-v2-0-4d8fff5c5196@aspeedtech.com>
+ <20261111-b4-i3c-hci-ast2700-v2-7-4d8fff5c5196@aspeedtech.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261111-b4-i3c-hci-ast2700-v2-7-4d8fff5c5196@aspeedtech.com>
+X-ClientProxiedBy: PH0PR07CA0034.namprd07.prod.outlook.com
+ (2603:10b6:510:e::9) To MI3PR04MB12438.eurprd04.prod.outlook.com
+ (2603:10a6:290:76::14)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -89,231 +93,84 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261111-yv4-remove-ff-nodes-v2-1-aab5516c4305@gmail.com>
-X-B4-Tracking: v=1; b=H4sIAJI99GoC/22NywrCMBBFf6XM2pEkfYS68j+ki9hM2gHbSCLBU
- vLvxoI7l+fAPXeHSIEpwqXaIVDiyH4toE4VjLNZJ0K2hUEJ1UkpatxSg4EWnwidw9VbitiTElI
- 0VtWdgrJ8BnL8Pqq3ofDM8eXDdpwk+bW/Xvu3lyRKNEYLbfpW67u+Tovhx3n0Cww55w+UQAn4t
- gAAAA==
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- Andrew Jeffery <andrew@codeconstruct.com.au>, 
- Ryan Chen <ryan_chen@aspeedtech.com>, 
- Billy Tsai <billy_tsai@aspeedtech.com>, patrick@stwcx.xyz
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- Sean He <sean.he.wiwynn@gmail.com>, Eric Yang <eric.yang.wiwynn@gmail.com>
-X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1794391442; l=4734;
- i=eric.yang.wiwynn@gmail.com; s=20260911; h=from:subject:message-id;
- bh=jDtTAj/Xi/uCMH8VnoQE52JIB7Rtfet3e3fs7uQ9GG0=;
- b=6j7fFHyE16rD+I6wFBU7rNrZH/Pwk6/JFc/Y3u8ad9ZoOEw7fAPq7vrc5Bz0zsEb6/Y5QpAIa
- 1QFhsb/whLGBRd3X59J73KJHRCK+S8p23PaaS/yGQggi07DZxhbFqCW
-X-Developer-Key: i=eric.yang.wiwynn@gmail.com; a=ed25519;
- pk=XYQiwgPZNUCt1JCbsO7zX8ODEiRKocz7fYwt+aWnXBs=
-X-Endpoint-Received: by B4 Relay for eric.yang.wiwynn@gmail.com/20260911
- with auth_id=1023
-X-Original-From: Eric Yang <eric.yang.wiwynn@gmail.com>
-Reply-To: eric.yang.wiwynn@gmail.com
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=4.0.1
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: MI3PR04MB12438:EE_|PA4PR04MB9245:EE_
+X-MS-Office365-Filtering-Correlation-Id: 404362aa-3071-4570-18a1-08df40182fe9
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|23010399003|7416014|1800799024|366016|19092799006|10067099003|11063799006|4143699003|56012099006|261009223027099003|261026140227099003|261022105027099003|261028144727099003|18002099003|22082099003;
+X-Microsoft-Antispam-Message-Info:
+	3g19CCq/+e0b2Qhspua5XJVgHxebLGPOTvuhKo9kr5RlIWieOu5U+ajlCqRwSLa9nBXPDL26Gu8OyA9ZGddi3tkmbJ8tQ1SFXdFafuBHmyzJE3pGKIWdRpqBhw3CAuxfgPk7QqRFiL4vh6upPAw8iqR1W+eQLjqmJWbvel259KQ2OBGlruCLHXKPDxiAgyqcgSzw9iyZFE6qEyBdACUXYZltjx7vBAUezI72kO31osu27dk5SAWzkRb6sncFZki5KBHj/f8F3cSrIohhDmzxa6lBfDt/HfIlIdq1kJnjcgEkKOJJf9sjHeBWQuFrHbR5tqWpagTA4+3Qsp66kRe4yTubuUD7FRlWQoyjGpJMIeLc3f4F+dnUgGZxl8uOnwMXMQRHUNIUTTUFZ7CRXkJJWuFQL/ocOv9Lap6IGgDm+tDdqQz4WY0zsu1iMQ5eEt367hrjKTs/FDJjXLi1sej7HzRG7p9bMPU94WGlxExFou/3fmfTdkVDWDwGKSjRNdASJIV0lHHfujc4em+OFQ5p9YHtXDjpmkuT/eW5rmPy0fAUOAHWdfQ7vIvg9BY3yEyDpDXoxN6ZpeN0H4mLMWya7QeF3k5ZMucL7TpGoFUonKFObBysk64o153PbKhOFJPO665EYs034OQcCsDfT57w1XO1jcMhktUSssERzIUfswc=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MI3PR04MB12438.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(23010399003)(7416014)(1800799024)(366016)(19092799006)(10067099003)(11063799006)(4143699003)(56012099006)(261009223027099003)(261026140227099003)(261022105027099003)(261028144727099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?MCC/RWgLfTFmmnwytkA74lkPf1RkII28LzXPpZy1cqry+LTwBCQP8FgXVeYW?=
+ =?us-ascii?Q?uNp82zQZmHSQRDoDW7AiMCAlN0PPS7SqVOiQU9bWVa/qI4v25D+cJyC/knRC?=
+ =?us-ascii?Q?9Iq7DVbb7SR/UeZd+F3VqF+XdUIxPdUKUGq8TDp64TSjqmeeJ1qX8t5LBeZ5?=
+ =?us-ascii?Q?jaR3MJ9LbdJMzIhPM4z0SMraw5D+jaYKgMAiSM+GKDsyJFCM/f05aFpUzhzG?=
+ =?us-ascii?Q?IyWdOcehyICCLIFfq+Q6d8f7oOtwcN/WSKSjSI0u5MovRkFDQJo8pmRhb3Nr?=
+ =?us-ascii?Q?HKiN8s0MWZvShbxoHSBBI5QubmB1DiDVjIkwaZRflt3YWhxK7zfzDLg21jWq?=
+ =?us-ascii?Q?lKtXhDN3bs3oDzA33P1pMKrdKzcfVRy3AfwX+IFw+uszCzLmx0vD1GEVfXZw?=
+ =?us-ascii?Q?6x8ILTf0ik4GPGMKTDA5KH8MjFj+BKoH51QCI952VAR9R0EfIle0iAkh6eHg?=
+ =?us-ascii?Q?Du0pMfJpH58ciZrYk4KY343oTIz1+LYnLGZOPyF8eYhU3JHQsqRcOUIc8rgP?=
+ =?us-ascii?Q?EuZLBvG1zUt+z6D/aaTXlXWrv1bUveoJXqurzk1xiyU4WeKq0PfTawIs533e?=
+ =?us-ascii?Q?sAAV7avkTXk++NyGkJxmOew29HeKGgobBt2XENYfTtYJsX21yPqzKr2nXzVe?=
+ =?us-ascii?Q?Wowym0Fn0skG0alyy6A8+CU/bdS8h3mkss1UY44LgxTkXVxSnTqGnLSqWPmm?=
+ =?us-ascii?Q?9uKxxisQQRjMGvADJ36mR4WLnG3fc2szKh4UsnMAVm5cyVScyBJspJZZzBZ2?=
+ =?us-ascii?Q?Gyo5jFPoRw3xCmKRzf3sD7bKGrKweHGVLLIjEAziF1/m4IMruLmJYxd9ZOLs?=
+ =?us-ascii?Q?sHmSCnYX6lsE1y5OVgDCnfHL81NWnR2gFT8AWeVFEkW8q43kvna/KjMwW/9m?=
+ =?us-ascii?Q?Qqoxt+2qquNpbTZRhSLUCo8RQsfBO4Khy0M1fXhoIon5+jFQxDGJPxIwmjPz?=
+ =?us-ascii?Q?6l2cyUf4L5Y/uD3eshG3E8UqaPnIQxFwSRHpOR7bM8HzeqYWtgtJ8gR821Uy?=
+ =?us-ascii?Q?ExuoxMw4Ii4jPKfmwAmp8efBJ+mQ4iJwXHBnK1LPeVmBDC6fzpJ6TD/6WLkw?=
+ =?us-ascii?Q?Hil0b2rrVPmC/pg1s1+h7HyKCSFw+hYggjj1BvxuTVe4Ldx7Dk73WumQV1/u?=
+ =?us-ascii?Q?nw6nuadMQm2NUViBtp95DHPb6EisNDz6yToim4CialYDaF+ci5uQQV4Cg1qG?=
+ =?us-ascii?Q?Efkq9U26kXTlhwt5LhMEMrERKFU5HAH3OvKHsV4C2FKQf2/t3gQpJvorFlxW?=
+ =?us-ascii?Q?cnBtY8ktfhftDjrqo057IVXj1OpPS1IiFcVL9cMsG4MWmc/OyRlfiB3v6jhv?=
+ =?us-ascii?Q?v5r7KwbLEzDEe761sGmIHoAI4IZvypKu1fbfgJcf5FRM2Z2zN29IKAMnplKo?=
+ =?us-ascii?Q?pOyu437+jbwLTO6rl3nLoLzypjZZ3I0onu0TDhfzlqzsxhdAqMZg61zRn0xa?=
+ =?us-ascii?Q?LbTbX8UIYiEHR0TvKD7+c9Fi7E8HWYg+s+6I+T7i2Bs6onjIrzFzB7ITPWmI?=
+ =?us-ascii?Q?SX/cMi8uCZZXBKIK+lm0nNh0eoPHr+fK4Y4xffpeySDdFDNbuvkL+Ml9UNjz?=
+ =?us-ascii?Q?J5Ad9VY3IhdB4e+awLn1p/9OM4eKD4465nFHGJoGXV5IYBiRxJ3Oe7s5DKb6?=
+ =?us-ascii?Q?9DjazYuLRQ3BYEnnTY/ZtnW296oAp0XtvzZLaGYodXeUYJ1sQoQ2N9XYIXC8?=
+ =?us-ascii?Q?XB/Mtj79OMheUaz95gyTX27hJVrZfY/Oqua6YHfZ8gOZZNtFq3KeoypuQgMn?=
+ =?us-ascii?Q?hp7oCTDU43UBX3CZN5yWoeVJ2p8frEJMtbmLiuJRIuiG/JunYg2h?=
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 404362aa-3071-4570-18a1-08df40182fe9
+X-MS-Exchange-CrossTenant-AuthSource: MI3PR04MB12438.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Nov 2026 17:21:13.7740
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: jit8HfNwpb8plgWk6IRLYMdtggZZzxJdAHXXmKaq0qj8d9LwvNvJdiTueV29lsBQyhq7NuUV3Kc0XE6qsUrN9AxM59xlZt98qfdafhNtTl4NtYcVEyBIJNroKX9fyJMo
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PA4PR04MB9245
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-From: Sean He <sean.he.wiwynn@gmail.com>
+On Wed, Nov 11, 2026 at 11:16:35AM +0800, Billy Tsai wrote:
+> For an IBI with payload, it's normally the device that decides when to
+> stop sending payload bytes. A misbehaving device that never terminates
+> can leave the controller stuck waiting on the transfer. AST2700 has an
+> in-house IBI payload length threshold that, once enabled, forces
+> termination once the received payload reaches it.
+>
+> When payload IBIs are requested, grow the AST2700 termination
+> threshold to at least the requested payload length and enable
+> termination on that value. The register is controller-wide while IBI
+> requests for different devices can run in parallel, so the
+> read-modify-write is serialized under the controller lock. Gate this
+> behind HCI_QUIRK_IBI_PAYLOAD_THLD; controllers without the quirk keep
+> the existing behavior.
 
-The Floating Falls (FF) board connects to the Sentinel Dome through a
-connector and carries a PCA9537 GPIO expander at address 0x49 and a FRU
-EEPROM at address 0x50 on each slot I2C bus. No system currently in use
-has an FF board, and its connector on the Sentinel Dome is not populated,
-so these addresses never acknowledge: the pca953x driver fails to probe
-the eight PCA9537 nodes on every boot and the at24 driver does not bind
-to the eight EEPROM nodes. Remove the nodes so that the devicetree
-matches the actual hardware.
+what's happen if device A have payload 4 bytes and device B have payload
+8 bytes, you set payload thld to 8. if device A raise IBI, what's happen
+if device have not sent out earily termniate?
 
-Signed-off-by: Sean He <sean.he.wiwynn@gmail.com>
-Signed-off-by: Eric Yang <eric.yang.wiwynn@gmail.com>
----
-The changelog was drafted with an AI assistant (Claude Code) and
-reviewed by the submitter.
----
-Changes in v2:
-- Reworded the commit message: the FF board is a separate board, no
-  system in use has it, and its connector is not populated
-- Dropped the verification paragraph
-- Link to v1: https://lore.kernel.org/r/20261105-yv4-remove-ff-nodes-v1-1-aa707a9577b7@gmail.com
----
- .../dts/aspeed/aspeed-bmc-facebook-yosemite4.dts   | 96 ----------------------
- 1 file changed, 96 deletions(-)
-
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index e4172be84..4c7c96ce4 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -604,18 +604,6 @@ imux16: i2c@0 {
- 			reg = <0>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
--			gpio@49 {
--				compatible = "nxp,pca9537";
--				reg = <0x49>;
--				gpio-controller;
--				#gpio-cells = <2>;
--			};
--
--			eeprom@50 {
--				compatible = "atmel,24c128";
--				reg = <0x50>;
--			};
--
- 			eeprom@51 {
- 				compatible = "atmel,24c128";
- 				reg = <0x51>;
-@@ -631,18 +619,6 @@ imux17: i2c@1 {
- 			reg = <1>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
--			gpio@49 {
--				compatible = "nxp,pca9537";
--				reg = <0x49>;
--				gpio-controller;
--				#gpio-cells = <2>;
--			};
--
--			eeprom@50 {
--				compatible = "atmel,24c128";
--				reg = <0x50>;
--			};
--
- 			eeprom@51 {
- 				compatible = "atmel,24c128";
- 				reg = <0x51>;
-@@ -658,18 +634,6 @@ imux18: i2c@2 {
- 			reg = <2>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
--			gpio@49 {
--				compatible = "nxp,pca9537";
--				reg = <0x49>;
--				gpio-controller;
--				#gpio-cells = <2>;
--			};
--
--			eeprom@50 {
--				compatible = "atmel,24c128";
--				reg = <0x50>;
--			};
--
- 			eeprom@51 {
- 				compatible = "atmel,24c128";
- 				reg = <0x51>;
-@@ -685,18 +649,6 @@ imux19: i2c@3 {
- 			reg = <3>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
--			gpio@49 {
--				compatible = "nxp,pca9537";
--				reg = <0x49>;
--				gpio-controller;
--				#gpio-cells = <2>;
--			};
--
--			eeprom@50 {
--				compatible = "atmel,24c128";
--				reg = <0x50>;
--			};
--
- 			eeprom@51 {
- 				compatible = "atmel,24c128";
- 				reg = <0x51>;
-@@ -726,18 +678,6 @@ imux20: i2c@0 {
- 			reg = <0>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
--			gpio@49 {
--				compatible = "nxp,pca9537";
--				reg = <0x49>;
--				gpio-controller;
--				#gpio-cells = <2>;
--			};
--
--			eeprom@50 {
--				compatible = "atmel,24c128";
--				reg = <0x50>;
--			};
--
- 			eeprom@51 {
- 				compatible = "atmel,24c128";
- 				reg = <0x51>;
-@@ -753,18 +693,6 @@ imux21: i2c@1 {
- 			reg = <1>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
--			gpio@49 {
--				compatible = "nxp,pca9537";
--				reg = <0x49>;
--				gpio-controller;
--				#gpio-cells = <2>;
--			};
--
--			eeprom@50 {
--				compatible = "atmel,24c128";
--				reg = <0x50>;
--			};
--
- 			eeprom@51 {
- 				compatible = "atmel,24c128";
- 				reg = <0x51>;
-@@ -780,18 +708,6 @@ imux22: i2c@2 {
- 			reg = <2>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
--			gpio@49 {
--				compatible = "nxp,pca9537";
--				reg = <0x49>;
--				gpio-controller;
--				#gpio-cells = <2>;
--			};
--
--			eeprom@50 {
--				compatible = "atmel,24c128";
--				reg = <0x50>;
--			};
--
- 			eeprom@51 {
- 				compatible = "atmel,24c128";
- 				reg = <0x51>;
-@@ -807,18 +723,6 @@ imux23: i2c@3 {
- 			reg = <3>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
--			gpio@49 {
--				compatible = "nxp,pca9537";
--				reg = <0x49>;
--				gpio-controller;
--				#gpio-cells = <2>;
--			};
--
--			eeprom@50 {
--				compatible = "atmel,24c128";
--				reg = <0x50>;
--			};
--
- 			eeprom@51 {
- 				compatible = "atmel,24c128";
- 				reg = <0x51>;
-
----
-base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
-change-id: 20261103-yv4-remove-ff-nodes-9e20104d2362
-
-Best regards,
--- 
-Eric Yang <eric.yang.wiwynn@gmail.com>
-
-
+Frank
 
