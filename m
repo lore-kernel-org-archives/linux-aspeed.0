@@ -2,69 +2,49 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2B615606A330
-	for <linux-aspeed@archiver.kernel.org>; Sat, 14 Nov 2026 16:35:21 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5BC55606A31A
+	for <linux-aspeed@archiver.kernel.org>; Sun, 15 Nov 2026 10:56:30 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=I26gAAPd
+	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=pZ4dd0k2
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jRfqq69dJz3bVW;
-	Sun, 15 Nov 2026 03:35:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=212.227.17.11
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794674119;
-	cv=none; b=YcLuE9cHG24SVYyVmWLk0/h9wPEiL74eruaJsdF86jfmZct5sbNg2u/MTyH3/gcafOeUWThuhK+yMGYsSNXUZGPtu7abV9Xem0mm3VVNLJyzdcYzxWiQEON+O9pmnNzSprX5y0dYBnFae3suQMuFLk/nA7i1V5uzWaUAirGQcwEam0zIdC2iYPxgBFhq5xsBzLgQGgkBQblOoNbg9k2bRAw5IVx2xtc5xcsZvoMvmyYmlSq8B62QFvJGku48Y1ZkgzehSH2jmMeYx3ItaMJ58sq1isx2VRf2ZCzZa6GvyXt3k3XHIdsPfEidG4+LYMl/edlgIom4ZjLiVpJ49HbU5g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jS7GN3KnSz2xBb;
+	Sun, 15 Nov 2026 21:56:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.102
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794668918;
+	cv=none; b=k04ypjO41VKTT60Y9dlp6Iegj/5ylp8ZLIlPQK5VOMEfRpngY+d7imWsayVPkDYwZgvy63j/OS7Ha+g+LCgf1DbYmmBqVOZ2R6rwdwcEJ2vri+6ZJ34EfJBfBOUhpnEDHzP8wxsqLM0NqeCGyaK6KiH44LNxqfnqz4HOyVKp2lSwqG41elAU9WvlMBJ32BlKsdfKN8pw7AVeq0JMR9c6lOK3oo0FDWJAd/bDW/12+rDvF3RsODwV6B6KRBg9Hc7WKz0OTPfW4mkyh8Z053adlfp7uTiPHk12cypfh/3RmJtu7x5lhj3i+7LiWdxzH58liXCu5XjAjljhQna0KaH3ZA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794674119; c=relaxed/relaxed;
-	bh=AcPZdHRdSNsPahoZF47dsbH78l7FWuZxfz//QqM7BiE=;
-	h=Message-ID:Date:MIME-Version:To:Cc:From:Subject:Content-Type; b=Y9jfjz0DHWxENwcjBQVsatEsZ4iuT7Z4IgQVfE4r8Yfj6GIP4L1hKZUqCmF6J2FaMHcRoYHe83D0NhWns4C96PFvuPYH+2UEkeZzF9jtcN9c/XzirpyW0mLxLfOnH9e4sFJTr6X0dL53JDjBDTmOgW9r0Gycl5bKPGCizp+hyiKnqqpE3+sYRGIP8ITJn75aM9KCG4YBTDWFzfRpgVwMEF05DH0owsuFjeXi2K86KHGuCbUGduqEMW/KYvDN6OxCKStSG99qocylec39/su/rZxSPxA7xSlG3ayLbimKyZgvHk4QJIOZAo5LnppEMi6gmIs7tFjcXfb1mL+rOjR3yw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=I26gAAPd; dkim-atps=neutral; spf=pass (client-ip=212.227.17.11; helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=lists.ozlabs.org) smtp.mailfrom=web.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
+	t=1794668918; c=relaxed/relaxed;
+	bh=dRpOUar3/A2OTZl8iBZElNpbYEDjmX2t4VhUaT9mo0w=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=ERMJrLHAFM1AGzptlYS7Xv5HPRgdBaB01lwUjsNeGGoRdbDlMKFy21XoXUCEhGgU232GVRNu58GCcrl1YGD2h6f3oO5E2UwZmG8G2KTLjDIwhrh8FA8mlImPKK1eGgKvuUC5QmANmvwlCGxXC0VEAQ3rcTxjmAyvLl1icc8X3toqZxcMAowFIUz8pRD0lB1eAicD42hJmzL/z3QZkxcdb9nhZgHh6FAZug1uPFKS8PCC+5hrDahN3ZrU12sI29T/mZeWhjWKAv2zfsrwY4oDYHo7Bifv+kYN/C6jFfUYObVqr1UbPdS/f5jyIGcQJANPrjdgcqcU4KWzcaTgUKdXig==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=pZ4dd0k2; dkim-atps=neutral; spf=pass (client-ip=95.215.58.102; helo=mta1.migadu.com; envelope-from=peng.fan@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=I26gAAPd;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=pZ4dd0k2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=web.de (client-ip=212.227.17.11; helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 341 seconds by postgrey-1.37 at boromir; Sun, 15 Nov 2026 03:35:16 AEDT
-Received: from mout.web.de (mout.web.de [212.227.17.11])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.102; helo=mta1.migadu.com; envelope-from=peng.fan@linux.dev; receiver=lists.ozlabs.org)
+X-Greylist: delayed 80 seconds by postgrey-1.37 at boromir; Sun, 15 Nov 2026 02:08:33 AEDT
+Received: from mta1.migadu.com (out-102.mta1.migadu.com [95.215.58.102])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jRfqm4Lyqz30hq
-	for <linux-aspeed@lists.ozlabs.org>; Sun, 15 Nov 2026 03:35:15 +1100 (AEDT)
-DKIM2-Signature:  i=1; m=1; t=1794674111;
- mf=PE1hcmt1cy5FbGZyaW5nQHdlYi5kZT4=;
- rt=PGxpbnV4LWFzcGVlZEBsaXN0cy5vemxhYnMub3JnPg==;
- d=web.de;
- s=s29768273:rsa-sha256:lATMqEprF5Lf9FEvkJH33E/FaWby
-   YCkccvYGnC1MPTl5sjh4iWlfYTsoqKIeh+47wNFj6uT9oJuNvlc3yICE7SQgKB+EuYdZVKRo9AC
-   36bINizJACwbKfsr2kbU5K/YcupQi2hf9+BqHIaRr9smOLV81Z6vk27wyqzOtbBsDm0bh2oMStH
-   Q0ipOj77xnzvyBg26Xw3GLnFKg6hbmkiAAJ1CEc2C3ee1bRhrhcLhxIiVDw0C6X6h9O40pETPwx
-   uzQYkolgBqxvthqov+RpMhrVb85dM812gViEiM2RD4jViEAr9Pbh2yTDo3cpdScx3dPkZaVrry9
-   RTgAaxltIZQ1XQ==;
-Message-Instance:  m=1;
- h=sha256:
-   BlStuCcUESvgkKmi+yen6ZihMjXZlsyyBTbKPX2uw7U=:
-   PDy4DKtgXQr5TwZ4DuYRHtSIuKhXnqHzeanv1sSzNBc=,
-  sha512:
-   5CXHpCV4cPWSIyg2E7wQRdRKHphy8f5eyGroQ6Vn3F53lKg1W8OAsgdTAakVaGsXDocmcKH9x3S2ruu78xfN+g==:
-   x4vAremxFZ9qbjCjk0gISaOW+iyt5r9vFTdeGjVlfoqTPzYa85LQuC2UMUnSoFJ953Vdb3J/QnnTBxv2FlarZQ==;
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
-	s=s29768273; t=1794674111; x=1795278911; i=markus.elfring@web.de;
-	bh=AcPZdHRdSNsPahoZF47dsbH78l7FWuZxfz//QqM7BiE=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:To:Cc:From:
-	 Subject:Content-Type:Content-Transfer-Encoding:cc:
-	 content-transfer-encoding:content-type:date:from:message-id:
-	 mime-version:reply-to:subject:to;
-	b=I26gAAPd/GN7VeKFB7/k4NozXY9pep76hLUwWlAqy/xHc6nq/o4fycNOliDM8lfp
-	 +inHWmKBLMNs4SYTOoGHdFZgdGrMU9kWa782WQNSyM17OEdqMuRpO/9dhRZhEczpH
-	 GWUBYnQeV7Obm/9qAKIM+F+k0qFuDIyQgVMukezrsMVnHGftR05mL/CGj4np87YSw
-	 e+70fK/X6W2gTArCcg3vlQVrcayeuEiv61OE49X3J94hJtS5BdqNfF7HOUAqNHZAo
-	 WxmAdYcye4w/1ZvEKlGmmB0dFGCscqlaP76P+DL+xzSZlQzyNAcYtGINGGXp+L2GI
-	 thO/TyPjILucy7PELw==
-X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
-Received: from client.hidden.invalid by smtp.web.de (mrweb106
- [213.165.67.124]) with ESMTPSA (Nemesis) id 1MdwNg-1wua1X0ab0-00aMcG; Sat, 14
- Nov 2026 17:28:25 +0100
-Message-ID: <bbbc7228-cf98-437d-b240-ad29ee7fb4ac@web.de>
-Date: Sat, 14 Nov 2026 17:28:19 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jRcvj3XXmz3cQP
+	for <linux-aspeed@lists.ozlabs.org>; Sun, 15 Nov 2026 02:08:33 +1100 (AEDT)
+X-Envelope-To: linux-aspeed@lists.ozlabs.org
+DKIM-Signature: a=rsa-sha256; bh=VXvcqBFBmi6kYCeFYxr5ZkHIbJ+sZbwrriCcxAhwqYI=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1794668893; v=1; x=1795273693;
+ b=pZ4dd0k2XNcmtuoydCaVpTKL18v3bbsUITjrg706HPNrq7Z5iT5/79waIdwSe75FA9zt0DSx
+ U8Mah1+pVpcv+T6fvTmhYtLE3UtEchi97pTcZtUbkfiOtqsF4nzshxVZykmavFZtbWpRHe2j4fr
+ jxh2O+jxQhjOt9Yv/6wjwfoA=
+X-Envelope-To: linux-aspeed@lists.ozlabs.org
+Received: by smtp.migadu.com with ESMTPS id 0a5fc133cd58b542;
+	Sat, 14 Nov 2026 15:06:51 +0000
+X-Mizu-Trace-ID: 0a5fc133cd58b542
+X-Migadu-Flow: FLOW_OUT
+From: Peng Fan <peng.fan@linux.dev>
+Date: Sat, 14 Nov 2026 23:06:15 +0800
+Subject: [PATCH] irqchip: Convert chained handlers to guard_chained_irq()
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -78,193 +58,1342 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: linux-aspeed@lists.ozlabs.org, linux-hwmon@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org,
- Andrew Jeffery <andrew@codeconstruct.com.au>,
- Billy Tsai <billy_tsai@aspeedtech.com>, =?UTF-8?B?R8O8bnRlciBSw7Zjaw==?=
- <linux@roeck-us.net>, Joel Stanley <joel@jms.id.au>,
- Philipp Zabel <p.zabel@pengutronix.de>, Ryan Chen
- <ryan_chen@aspeedtech.com>, Tan Siewert <tan.siewert@9elements.com>
-Content-Language: en-GB, de-DE
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org,
- Felix Gu <ustc.gu@gmail.com>
-From: Markus Elfring <Markus.Elfring@web.de>
-Subject: [PATCH] hwmon: (aspeed-g6-pwm-tach) Use
- devm_reset_control_get_exclusive_deasserted() in aspeed_pwm_tach_probe()
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:1pT97BuWi454FNKaCo2ZE4Bc56WgZ5gBMlF9gSjUzfe+zn4fDt/
- e2A7Xxvn5powU/en6gXeySeZEG2NmB/g42UDu6jUE+nVYsLteujMe5ET5ETNJkp/BVu9ZD/
- Vb9etjAtlILvUP/cD70xF+ZnU/a0NQYUXwHv8+kJJ6RQbZixWqKZriVLDhNZYyg42elOiiy
- BmpyAO3RXbYTSEYgnZkIQ==
-UI-OutboundReport: notjunk:1;M01:P0:bWASZDX2mys=;p2Ph5U1CttpPc5Sk6cEdPkWaCmz
- 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
-X-Spam-Status: No, score=-14.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=4.0.1
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261114-irqchip-cleanup-api-v1-1-4a9d598b0bdb@nxp.com>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/x3MQQqAIBBA0avErBtopEK6SrQwm2ogzJQiEO+et
+ HyL/xNEDsIRhipB4EeinK6A6grsbtzGKEsxqEb1RNSihMvu4tEebNzt0XhB1WmrGk3zQgyl9IF
+ Xef/rOOX8Aa/2FdplAAAA
+X-Change-ID: 20261114-irqchip-cleanup-api-258c2081bd1e
+To: Thomas Gleixner <tglx@kernel.org>, Radu Rendec <radu@rendec.net>, 
+ Krzysztof Kozlowski <krzk@kernel.org>, 
+ Peter Griffin <peter.griffin@linaro.org>, 
+ Alim Akhtar <alim.akhtar@samsung.com>, Andrew Lunn <andrew@lunn.ch>, 
+ Gregory Clement <gregory.clement@bootlin.com>, 
+ Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, 
+ Ryan Chen <ryan_chen@aspeedtech.com>, 
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, 
+ Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, 
+ Billy Tsai <billy_tsai@aspeedtech.com>, 
+ Tan Siewert <tan.siewert@9elements.com>, 
+ Eddie James <eajames@linux.ibm.com>, 
+ Florian Fainelli <florian.fainelli@broadcom.com>, 
+ Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, 
+ Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, 
+ Caleb James DeLisle <cjd@cjdns.fr>, Marc Zyngier <maz@kernel.org>, 
+ Miodrag Dinic <miodrag.dinic@mips.com>, Frank Li <Frank.Li@nxp.com>, 
+ Sascha Hauer <s.hauer@pengutronix.de>, 
+ Pengutronix Kernel Team <kernel@pengutronix.de>, 
+ Fabio Estevam <festevam@gmail.com>, Herve Codina <herve.codina@bootlin.com>, 
+ Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
+ Jiaxun Yang <jiaxun.yang@flygoat.com>, Vladimir Zapolskiy <vz@mleia.com>, 
+ Piotr Wojtaszczyk <piotr.wojtaszczyk@timesys.com>, 
+ Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, 
+ Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+ Alexandre Ghiti <alex@ghiti.fr>, Samuel Holland <samuel.holland@sifive.com>, 
+ Qin Jian <qinjian@cqplus1.com>, 
+ Changhuang Liang <changhuang.liang@starfivetech.com>, 
+ Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
+ Alexandre Torgue <alexandre.torgue@foss.st.com>, 
+ Chen-Yu Tsai <wens@kernel.org>, Jernej Skrabec <jernej.skrabec@gmail.com>, 
+ Nishanth Menon <nm@ti.com>, Tero Kristo <kristo@kernel.org>, 
+ Santosh Shilimkar <ssantosh@kernel.org>, Linus Walleij <linusw@kernel.org>, 
+ Michal Simek <michal.simek@amd.com>, 
+ Anirudha Sarangi <anirudha.sarangi@amd.com>, 
+ Tushar Nimkar <tushar.nimkar@amd.com>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-samsung-soc@vger.kernel.org, linux-i2c@vger.kernel.org, 
+ openbmc@lists.ozlabs.org, linux-aspeed@lists.ozlabs.org, 
+ linux-rpi-kernel@lists.infradead.org, linux-mips@vger.kernel.org, 
+ imx@lists.linux.dev, loongarch@lists.linux.dev, 
+ linux-riscv@lists.infradead.org, linux-stm32@st-md-mailman.stormreply.com, 
+ linux-sunxi@lists.linux.dev, git@amd.com, linux-arm-msm@vger.kernel.org, 
+ Peng Fan <peng.fan@nxp.com>
+X-Mailer: b4 0.14.3
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Sat, 14 Nov 2026 17:11:34 +0100
+From: Peng Fan <peng.fan@nxp.com>
 
-Use devm_reset_control_get_exclusive_deasserted() to replace the
-explicit reset acquisition, deassertion, and cleanup action registered
-with devm_add_action_or_reset().
-Simplify reset handling and remove the custom reset assertion callback
-while preserving reset assertion during cleanup.
+Use the scope-based guard_chained_irq() helper in all chained handlers
+under drivers/irqchip/ so that chained_irq_exit() is always invoked when
+the handler returns. Handlers that duplicated the exit call on an error
+path or jumped to a common exit label simply return now and rely on the
+guard.
 
-The source code was transformed by using the Coccinelle software.
+No functional changes.
 
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
-=2D--
- drivers/hwmon/aspeed-g6-pwm-tach.c | 20 ++------------------
- 1 file changed, 2 insertions(+), 18 deletions(-)
+Signed-off-by: Peng Fan <peng.fan@nxp.com>
+---
+With [1] now merged in irq/drivers, convert the chained IRQ handlers in
+drivers/irqchip/ to use guard_chained_irq(). This removes the explicit
+chained_irq_exit() calls and the gotos that only existed to reach them,
+reducing boilerplate.
 
-diff --git a/drivers/hwmon/aspeed-g6-pwm-tach.c b/drivers/hwmon/aspeed-g6-=
-pwm-tach.c
-index f07c9a036b69..a26a0d48dde7 100644
-=2D-- a/drivers/hwmon/aspeed-g6-pwm-tach.c
-+++ b/drivers/hwmon/aspeed-g6-pwm-tach.c
-@@ -448,13 +448,6 @@ static int aspeed_create_fan_monitor(struct device *d=
-ev,
- 	return 0;
+I use a script to do the job, and after that, do mannual checking.
+
+No functional changes.
+
+[1] https://lore.kernel.org/all/179417458323.2093942.14330197609841896598.tip-bot2@tip-bot2/#t
+---
+ drivers/irqchip/exynos-combiner.c          | 7 ++-----
+ drivers/irqchip/irq-aclint-sswi.c          | 4 +---
+ drivers/irqchip/irq-armada-370-xp.c        | 4 +---
+ drivers/irqchip/irq-aspeed-i2c-ic.c        | 4 +---
+ drivers/irqchip/irq-aspeed-scu-ic.c        | 8 ++------
+ drivers/irqchip/irq-ast2700-intc1.c        | 4 +---
+ drivers/irqchip/irq-ath79-misc.c           | 5 +----
+ drivers/irqchip/irq-bcm2836.c              | 4 +---
+ drivers/irqchip/irq-bcm6345-l1.c           | 4 +---
+ drivers/irqchip/irq-bcm7038-l1.c           | 4 +---
+ drivers/irqchip/irq-bcm7120-l2.c           | 4 +---
+ drivers/irqchip/irq-brcmstb-l2.c           | 4 +---
+ drivers/irqchip/irq-dw-apb-ictl.c          | 4 +---
+ drivers/irqchip/irq-econet-en751221.c      | 4 +---
+ drivers/irqchip/irq-gic.c                  | 6 ++----
+ drivers/irqchip/irq-goldfish-pic.c         | 4 +---
+ drivers/irqchip/irq-idt3243x.c             | 4 +---
+ drivers/irqchip/irq-imx-intmux.c           | 4 +---
+ drivers/irqchip/irq-imx-irqsteer.c         | 7 ++-----
+ drivers/irqchip/irq-imx-mu-msi.c           | 3 +--
+ drivers/irqchip/irq-ingenic-tcu.c          | 4 +---
+ drivers/irqchip/irq-lan966x-oic.c          | 3 +--
+ drivers/irqchip/irq-loongarch-avec.c       | 4 +---
+ drivers/irqchip/irq-loongson-eiointc.c     | 4 +---
+ drivers/irqchip/irq-loongson-htpic.c       | 3 +--
+ drivers/irqchip/irq-loongson-htvec.c       | 4 +---
+ drivers/irqchip/irq-loongson-liointc.c     | 4 +---
+ drivers/irqchip/irq-loongson-pch-lpc.c     | 3 +--
+ drivers/irqchip/irq-lpc32xx.c              | 4 +---
+ drivers/irqchip/irq-ls-scfg-msi.c          | 4 +---
+ drivers/irqchip/irq-ls1x.c                 | 4 +---
+ drivers/irqchip/irq-mmp.c                  | 7 ++-----
+ drivers/irqchip/irq-mscc-ocelot.c          | 4 +---
+ drivers/irqchip/irq-mvebu-pic.c            | 4 +---
+ drivers/irqchip/irq-mvebu-sei.c            | 4 +---
+ drivers/irqchip/irq-pruss-intc.c           | 4 +---
+ drivers/irqchip/irq-realtek-rtl.c          | 7 ++-----
+ drivers/irqchip/irq-riscv-aplic-direct.c   | 4 +---
+ drivers/irqchip/irq-riscv-imsic-early.c    | 4 +---
+ drivers/irqchip/irq-sifive-plic.c          | 8 ++------
+ drivers/irqchip/irq-sp7021-intc.c          | 4 +---
+ drivers/irqchip/irq-starfive-jhb100-intc.c | 4 +---
+ drivers/irqchip/irq-stm32-exti.c           | 4 +---
+ drivers/irqchip/irq-sunxi-nmi.c            | 3 +--
+ drivers/irqchip/irq-ti-sci-inta.c          | 4 +---
+ drivers/irqchip/irq-ts4800.c               | 7 ++-----
+ drivers/irqchip/irq-versatile-fpga.c       | 7 ++-----
+ drivers/irqchip/irq-vic.c                  | 4 +---
+ drivers/irqchip/irq-vt8500.c               | 3 +--
+ drivers/irqchip/irq-xilinx-intc.c          | 3 +--
+ drivers/irqchip/irq-xilinx-smmu-csr.c      | 4 +---
+ drivers/irqchip/qcom-irq-combiner.c        | 4 +---
+ 52 files changed, 61 insertions(+), 169 deletions(-)
+
+diff --git a/drivers/irqchip/exynos-combiner.c b/drivers/irqchip/exynos-combiner.c
+index d9d408cb4711..992711639ba7 100644
+--- a/drivers/irqchip/exynos-combiner.c
++++ b/drivers/irqchip/exynos-combiner.c
+@@ -68,21 +68,18 @@ static void combiner_handle_cascade_irq(struct irq_desc *desc)
+ 	unsigned long status;
+ 	int ret;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	status = readl_relaxed(chip_data->base + COMBINER_INT_STATUS);
+ 	status &= chip_data->irq_mask;
+ 
+ 	if (status == 0)
+-		goto out;
++		return;
+ 
+ 	combiner_irq = chip_data->hwirq_offset + __ffs(status);
+ 	ret = generic_handle_domain_irq(combiner_irq_domain, combiner_irq);
+ 	if (unlikely(ret))
+ 		handle_bad_irq(desc);
+-
+- out:
+-	chained_irq_exit(chip, desc);
  }
-=20
--static void aspeed_pwm_tach_reset_assert(void *data)
--{
--	struct reset_control *rst =3D data;
--
--	reset_control_assert(rst);
--}
--
- static int aspeed_pwm_tach_probe(struct platform_device *pdev)
+ 
+ #ifdef CONFIG_SMP
+diff --git a/drivers/irqchip/irq-aclint-sswi.c b/drivers/irqchip/irq-aclint-sswi.c
+index 34572db94f3d..db3d1c642a48 100644
+--- a/drivers/irqchip/irq-aclint-sswi.c
++++ b/drivers/irqchip/irq-aclint-sswi.c
+@@ -33,14 +33,12 @@ static void aclint_sswi_ipi_handle(struct irq_desc *desc)
  {
- 	struct device *dev =3D &pdev->dev, *hwmon;
-@@ -475,19 +468,10 @@ static int aspeed_pwm_tach_probe(struct platform_dev=
-ice *pdev)
- 		return dev_err_probe(dev, PTR_ERR(priv->clk),
- 				     "Couldn't get clock\n");
- 	priv->clk_rate =3D clk_get_rate(priv->clk);
--	priv->reset =3D devm_reset_control_get_exclusive(dev, NULL);
-+	priv->reset =3D devm_reset_control_get_exclusive_deasserted(dev, NULL);
- 	if (IS_ERR(priv->reset))
- 		return dev_err_probe(dev, PTR_ERR(priv->reset),
--				     "Couldn't get reset control\n");
+ 	struct irq_chip *chip = irq_desc_get_chip(desc);
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	csr_clear(CSR_IP, IE_SIE);
+ 	aclint_sswi_ipi_clear();
+ 
+ 	ipi_mux_process();
 -
--	ret =3D reset_control_deassert(priv->reset);
--	if (ret)
--		return dev_err_probe(dev, ret,
--				     "Couldn't deassert reset control\n");
--	ret =3D devm_add_action_or_reset(dev, aspeed_pwm_tach_reset_assert,
--				       priv->reset);
--	if (ret)
--		return ret;
-+				     "failed to get and deassert reset\n");
-=20
- 	chip =3D devm_pwmchip_alloc(dev, PWM_ASPEED_NR_PWMS, 0);
- 	if (IS_ERR(chip))
-=2D-=20
-2.56.0
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static int aclint_sswi_starting_cpu(unsigned int cpu)
+diff --git a/drivers/irqchip/irq-armada-370-xp.c b/drivers/irqchip/irq-armada-370-xp.c
+index 1ba82ac0c26b..c643ce1f4d93 100644
+--- a/drivers/irqchip/irq-armada-370-xp.c
++++ b/drivers/irqchip/irq-armada-370-xp.c
+@@ -675,7 +675,7 @@ static void mpic_handle_cascade_irq(struct irq_desc *desc)
+ 	u32 irqsrc, cpuid;
+ 	irq_hw_number_t i;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	cause = readl_relaxed(mpic->per_cpu + MPIC_PPI_CAUSE);
+ 	cpuid = cpu_logical_map(smp_processor_id());
+@@ -696,8 +696,6 @@ static void mpic_handle_cascade_irq(struct irq_desc *desc)
+ 
+ 		generic_handle_domain_irq(mpic->domain, i);
+ 	}
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static void __exception_irq_entry mpic_handle_irq(struct pt_regs *regs)
+diff --git a/drivers/irqchip/irq-aspeed-i2c-ic.c b/drivers/irqchip/irq-aspeed-i2c-ic.c
+index 7996fd5cbae6..0598d352f543 100644
+--- a/drivers/irqchip/irq-aspeed-i2c-ic.c
++++ b/drivers/irqchip/irq-aspeed-i2c-ic.c
+@@ -35,12 +35,10 @@ static void aspeed_i2c_ic_irq_handler(struct irq_desc *desc)
+ 	struct irq_chip *chip = irq_desc_get_chip(desc);
+ 	unsigned long bit, status;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 	status = readl(i2c_ic->base);
+ 	for_each_set_bit(bit, &status, ASPEED_I2C_IC_NUM_BUS)
+ 		generic_handle_domain_irq(i2c_ic->irq_domain, bit);
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ /*
+diff --git a/drivers/irqchip/irq-aspeed-scu-ic.c b/drivers/irqchip/irq-aspeed-scu-ic.c
+index 097cf45b2126..44b51f1102ef 100644
+--- a/drivers/irqchip/irq-aspeed-scu-ic.c
++++ b/drivers/irqchip/irq-aspeed-scu-ic.c
+@@ -70,7 +70,7 @@ static void aspeed_scu_ic_irq_handler_combined(struct irq_desc *desc)
+ 	unsigned long bit, enabled, max, status;
+ 	unsigned int sts, mask;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	mask = scu_ic->irq_enable << ASPEED_SCU_IC_STATUS_SHIFT;
+ 	/*
+@@ -95,8 +95,6 @@ static void aspeed_scu_ic_irq_handler_combined(struct irq_desc *desc)
+ 		writel((readl(scu_ic->base) & ~mask) | BIT(bit + ASPEED_SCU_IC_STATUS_SHIFT),
+ 		       scu_ic->base);
+ 	}
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static void aspeed_scu_ic_irq_handler_split(struct irq_desc *desc)
+@@ -106,7 +104,7 @@ static void aspeed_scu_ic_irq_handler_split(struct irq_desc *desc)
+ 	unsigned long bit, enabled, max, status;
+ 	unsigned int sts;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	sts = readl(scu_ic->base + scu_ic->isr);
+ 	enabled = sts & scu_ic->irq_enable;
+@@ -121,8 +119,6 @@ static void aspeed_scu_ic_irq_handler_split(struct irq_desc *desc)
+ 		/* Clear interrupt */
+ 		writel(BIT(bit), scu_ic->base + scu_ic->isr);
+ 	}
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static void aspeed_scu_ic_irq_mask_combined(struct irq_data *data)
+diff --git a/drivers/irqchip/irq-ast2700-intc1.c b/drivers/irqchip/irq-ast2700-intc1.c
+index aa5240ce1c57..75d731dd55a5 100644
+--- a/drivers/irqchip/irq-ast2700-intc1.c
++++ b/drivers/irqchip/irq-ast2700-intc1.c
+@@ -54,7 +54,7 @@ static void aspeed_intc1_irq_handler(struct irq_desc *desc)
+ 	struct irq_chip *chip = irq_desc_get_chip(desc);
+ 	unsigned long bit, status;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	for (int bank = 0; bank < INTC1_BANK_NUM; bank++) {
+ 		status = readl(intc1->base + INTC1_ISR + (INTC1_BANK_SIZE * bank));
+@@ -66,8 +66,6 @@ static void aspeed_intc1_irq_handler(struct irq_desc *desc)
+ 			writel(BIT(bit), intc1->base + INTC1_ISR + (INTC1_BANK_SIZE * bank));
+ 		}
+ 	}
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static void aspeed_intc1_irq_mask(struct irq_data *data)
+diff --git a/drivers/irqchip/irq-ath79-misc.c b/drivers/irqchip/irq-ath79-misc.c
+index 258b8e9a2d57..dac0c69da64b 100644
+--- a/drivers/irqchip/irq-ath79-misc.c
++++ b/drivers/irqchip/irq-ath79-misc.c
+@@ -38,14 +38,13 @@ static void ath79_misc_irq_handler(struct irq_desc *desc)
+ 	void __iomem *base = domain->host_data;
+ 	u32 pending;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	pending = __raw_readl(base + AR71XX_RESET_REG_MISC_INT_STATUS) &
+ 		  __raw_readl(base + AR71XX_RESET_REG_MISC_INT_ENABLE);
+ 
+ 	if (!pending) {
+ 		spurious_interrupt();
+-		chained_irq_exit(chip, desc);
+ 		return;
+ 	}
+ 
+@@ -55,8 +54,6 @@ static void ath79_misc_irq_handler(struct irq_desc *desc)
+ 		generic_handle_domain_irq(domain, bit);
+ 		pending &= ~BIT(bit);
+ 	}
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static void ar71xx_misc_irq_unmask(struct irq_data *d)
+diff --git a/drivers/irqchip/irq-bcm2836.c b/drivers/irqchip/irq-bcm2836.c
+index fafd1f71348e..2837ce0e4de8 100644
+--- a/drivers/irqchip/irq-bcm2836.c
++++ b/drivers/irqchip/irq-bcm2836.c
+@@ -159,15 +159,13 @@ static void bcm2836_arm_irqchip_handle_ipi(struct irq_desc *desc)
+ 	int cpu = smp_processor_id();
+ 	u32 mbox_val;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	mbox_val = readl_relaxed(intc.base + LOCAL_MAILBOX0_CLR0 + 16 * cpu);
+ 	if (mbox_val) {
+ 		int hwirq = ffs(mbox_val) - 1;
+ 		generic_handle_domain_irq(ipi_domain, hwirq);
+ 	}
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static void bcm2836_arm_irqchip_ipi_ack(struct irq_data *d)
+diff --git a/drivers/irqchip/irq-bcm6345-l1.c b/drivers/irqchip/irq-bcm6345-l1.c
+index d446d8124a8b..e9a337ced1b1 100644
+--- a/drivers/irqchip/irq-bcm6345-l1.c
++++ b/drivers/irqchip/irq-bcm6345-l1.c
+@@ -120,7 +120,7 @@ static void bcm6345_l1_irq_handle(struct irq_desc *desc)
+ 	struct irq_chip *chip = irq_desc_get_chip(desc);
+ 	unsigned int idx;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	for (idx = 0; idx < intc->n_words; idx++) {
+ 		int base = idx * IRQS_PER_WORD;
+@@ -135,8 +135,6 @@ static void bcm6345_l1_irq_handle(struct irq_desc *desc)
+ 				spurious_interrupt();
+ 		}
+ 	}
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static inline void __bcm6345_l1_unmask(struct irq_data *d)
+diff --git a/drivers/irqchip/irq-bcm7038-l1.c b/drivers/irqchip/irq-bcm7038-l1.c
+index 54a8557ef557..3b24a258e75b 100644
+--- a/drivers/irqchip/irq-bcm7038-l1.c
++++ b/drivers/irqchip/irq-bcm7038-l1.c
+@@ -123,7 +123,7 @@ static void bcm7038_l1_irq_handle(struct irq_desc *desc)
+ 	cpu = intc->cpus[0];
+ #endif
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	for (idx = 0; idx < intc->n_words; idx++) {
+ 		int base = idx * IRQS_PER_WORD;
+@@ -138,8 +138,6 @@ static void bcm7038_l1_irq_handle(struct irq_desc *desc)
+ 		for_each_set_bit(hwirq, &pending, IRQS_PER_WORD)
+ 			generic_handle_domain_irq(intc->domain, base + hwirq);
+ 	}
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static void __bcm7038_l1_unmask(struct irq_data *d, unsigned int cpu_idx)
+diff --git a/drivers/irqchip/irq-bcm7120-l2.c b/drivers/irqchip/irq-bcm7120-l2.c
+index a98f0ee46b6c..3428b5fd29dc 100644
+--- a/drivers/irqchip/irq-bcm7120-l2.c
++++ b/drivers/irqchip/irq-bcm7120-l2.c
+@@ -59,7 +59,7 @@ static void bcm7120_l2_intc_irq_handle(struct irq_desc *desc)
+ 	struct irq_chip *chip = irq_desc_get_chip(desc);
+ 	unsigned int idx;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	for (idx = 0; idx < b->n_words; idx++) {
+ 		int base = idx * IRQS_PER_WORD;
+@@ -76,8 +76,6 @@ static void bcm7120_l2_intc_irq_handle(struct irq_desc *desc)
+ 		for_each_set_bit(hwirq, &pending, IRQS_PER_WORD)
+ 			generic_handle_domain_irq(b->domain, base + hwirq);
+ 	}
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static void bcm7120_l2_intc_suspend(struct irq_chip_generic *gc)
+diff --git a/drivers/irqchip/irq-brcmstb-l2.c b/drivers/irqchip/irq-brcmstb-l2.c
+index d336ac822ea0..cb5365356841 100644
+--- a/drivers/irqchip/irq-brcmstb-l2.c
++++ b/drivers/irqchip/irq-brcmstb-l2.c
+@@ -68,7 +68,7 @@ static void brcmstb_l2_intc_irq_handle(struct irq_desc *desc)
+ 	unsigned int irq;
+ 	u32 status;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	status = irq_reg_readl(b->gc, b->status_offset) &
+ 		~(irq_reg_readl(b->gc, b->mask_offset));
+@@ -88,8 +88,6 @@ static void brcmstb_l2_intc_irq_handle(struct irq_desc *desc)
+ out:
+ 	/* Don't ack parent before all device writes are done */
+ 	wmb();
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static void __brcmstb_l2_intc_suspend(struct irq_data *d, bool save)
+diff --git a/drivers/irqchip/irq-dw-apb-ictl.c b/drivers/irqchip/irq-dw-apb-ictl.c
+index 4240a0dbf627..b3673bc1205c 100644
+--- a/drivers/irqchip/irq-dw-apb-ictl.c
++++ b/drivers/irqchip/irq-dw-apb-ictl.c
+@@ -54,7 +54,7 @@ static void dw_apb_ictl_handle_irq_cascaded(struct irq_desc *desc)
+ 	struct irq_chip *chip = irq_desc_get_chip(desc);
+ 	int n;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	for (n = 0; n < d->revmap_size; n += 32) {
+ 		struct irq_chip_generic *gc = irq_get_domain_generic_chip(d, n);
+@@ -67,8 +67,6 @@ static void dw_apb_ictl_handle_irq_cascaded(struct irq_desc *desc)
+ 			stat &= ~BIT(hwirq);
+ 		}
+ 	}
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static int dw_apb_ictl_irq_domain_alloc(struct irq_domain *domain, unsigned int virq,
+diff --git a/drivers/irqchip/irq-econet-en751221.c b/drivers/irqchip/irq-econet-en751221.c
+index 2ca5d901866f..33726762d269 100644
+--- a/drivers/irqchip/irq-econet-en751221.c
++++ b/drivers/irqchip/irq-econet-en751221.c
+@@ -140,7 +140,7 @@ static void econet_intc_from_parent(struct irq_desc *desc)
+ 	struct irq_domain *domain;
+ 	u32 pending0, pending1;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	pending0 = ioread32(econet_intc.membase + REG_PENDING0);
+ 	pending1 = ioread32(econet_intc.membase + REG_PENDING1);
+@@ -152,8 +152,6 @@ static void econet_intc_from_parent(struct irq_desc *desc)
+ 		econet_intc_handle_pending(domain, pending0, 0);
+ 		econet_intc_handle_pending(domain, pending1, 32);
+ 	}
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ /*
+diff --git a/drivers/irqchip/irq-gic.c b/drivers/irqchip/irq-gic.c
+index 420261208cd0..a66aec6776d4 100644
+--- a/drivers/irqchip/irq-gic.c
++++ b/drivers/irqchip/irq-gic.c
+@@ -379,20 +379,18 @@ static void gic_handle_cascade_irq(struct irq_desc *desc)
+ 	unsigned long status;
+ 	int ret;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	status = readl_relaxed(gic_data_cpu_base(chip_data) + GIC_CPU_INTACK);
+ 
+ 	gic_irq = (status & GICC_IAR_INT_ID_MASK);
+ 	if (gic_irq == GICC_INT_SPURIOUS)
+-		goto out;
++		return;
+ 
+ 	isb();
+ 	ret = generic_handle_domain_irq(chip_data->domain, gic_irq);
+ 	if (unlikely(ret))
+ 		handle_bad_irq(desc);
+- out:
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static void gic_irq_print_chip(struct irq_data *d, struct seq_file *p)
+diff --git a/drivers/irqchip/irq-goldfish-pic.c b/drivers/irqchip/irq-goldfish-pic.c
+index d458cf898f8e..6aa4acd8ab02 100644
+--- a/drivers/irqchip/irq-goldfish-pic.c
++++ b/drivers/irqchip/irq-goldfish-pic.c
+@@ -36,7 +36,7 @@ static void goldfish_pic_cascade(struct irq_desc *desc)
+ 	struct irq_chip *host_chip = irq_desc_get_chip(desc);
+ 	u32 pending, hwirq;
+ 
+-	chained_irq_enter(host_chip, desc);
++	guard_chained_irq(host_chip, desc);
+ 
+ 	pending = readl(gfpic->base + GFPIC_REG_IRQ_PENDING);
+ 	while (pending) {
+@@ -44,8 +44,6 @@ static void goldfish_pic_cascade(struct irq_desc *desc)
+ 		generic_handle_domain_irq(gfpic->irq_domain, hwirq);
+ 		pending &= ~(1 << hwirq);
+ 	}
+-
+-	chained_irq_exit(host_chip, desc);
+ }
+ 
+ static const struct irq_domain_ops goldfish_irq_domain_ops = {
+diff --git a/drivers/irqchip/irq-idt3243x.c b/drivers/irqchip/irq-idt3243x.c
+index 8b150c7f7e46..6af1ddfc0e64 100644
+--- a/drivers/irqchip/irq-idt3243x.c
++++ b/drivers/irqchip/irq-idt3243x.c
+@@ -30,7 +30,7 @@ static void idt_irq_dispatch(struct irq_desc *desc)
+ 	struct irq_chip *host_chip = irq_desc_get_chip(desc);
+ 	u32 pending, hwirq;
+ 
+-	chained_irq_enter(host_chip, desc);
++	guard_chained_irq(host_chip, desc);
+ 
+ 	pending = irq_reg_readl(idtpic->gc, IDT_PIC_IRQ_PEND);
+ 	pending &= ~idtpic->gc->mask_cache;
+@@ -39,8 +39,6 @@ static void idt_irq_dispatch(struct irq_desc *desc)
+ 		generic_handle_domain_irq(idtpic->irq_domain, hwirq);
+ 		pending &= ~(1 << hwirq);
+ 	}
+-
+-	chained_irq_exit(host_chip, desc);
+ }
+ 
+ static int idt_pic_init(struct device_node *of_node, struct device_node *parent)
+diff --git a/drivers/irqchip/irq-imx-intmux.c b/drivers/irqchip/irq-imx-intmux.c
+index c7914fea3d1f..73926dec52ab 100644
+--- a/drivers/irqchip/irq-imx-intmux.c
++++ b/drivers/irqchip/irq-imx-intmux.c
+@@ -187,15 +187,13 @@ static void imx_intmux_irq_handler(struct irq_desc *desc)
+ 	unsigned long irqstat;
+ 	int pos;
+ 
+-	chained_irq_enter(irq_desc_get_chip(desc), desc);
++	guard_chained_irq(irq_desc_get_chip(desc), desc);
+ 
+ 	/* read the interrupt source pending status of this channel */
+ 	irqstat = readl_relaxed(data->regs + CHANIPR(idx));
+ 
+ 	for_each_set_bit(pos, &irqstat, 32)
+ 		generic_handle_domain_irq(irqchip_data->domain, pos);
+-
+-	chained_irq_exit(irq_desc_get_chip(desc), desc);
+ }
+ 
+ static int imx_intmux_probe(struct platform_device *pdev)
+diff --git a/drivers/irqchip/irq-imx-irqsteer.c b/drivers/irqchip/irq-imx-irqsteer.c
+index 4e0f7eac0c8b..e117c8a1102d 100644
+--- a/drivers/irqchip/irq-imx-irqsteer.c
++++ b/drivers/irqchip/irq-imx-irqsteer.c
+@@ -148,14 +148,14 @@ static void imx_irqsteer_irq_handler(struct irq_desc *desc)
+ 	int hwirq;
+ 	int irq, i;
+ 
+-	chained_irq_enter(irq_desc_get_chip(desc), desc);
++	guard_chained_irq(irq_desc_get_chip(desc), desc);
+ 
+ 	irq = irq_desc_get_irq(desc);
+ 	hwirq = imx_irqsteer_get_hwirq_base(data, irq);
+ 	if (hwirq < 0) {
+ 		pr_warn("%s: unable to get hwirq base for irq %d\n",
+ 			__func__, irq);
+-		goto out;
++		return;
+ 	}
+ 
+ 	for (i = 0; i < 2; i++, hwirq += 32) {
+@@ -172,9 +172,6 @@ static void imx_irqsteer_irq_handler(struct irq_desc *desc)
+ 		for_each_set_bit(pos, &irqmap, 32)
+ 			generic_handle_domain_irq(data->domain, pos + hwirq);
+ 	}
+-
+-out:
+-	chained_irq_exit(irq_desc_get_chip(desc), desc);
+ }
+ 
+ static int imx_irqsteer_probe(struct platform_device *pdev)
+diff --git a/drivers/irqchip/irq-imx-mu-msi.c b/drivers/irqchip/irq-imx-mu-msi.c
+index 6d7baeeb2bc8..7b69cba4ba76 100644
+--- a/drivers/irqchip/irq-imx-mu-msi.c
++++ b/drivers/irqchip/irq-imx-mu-msi.c
+@@ -197,12 +197,11 @@ static void imx_mu_msi_irq_handler(struct irq_desc *desc)
+ 
+ 	status = imx_mu_read(msi_data, msi_data->cfg->xSR[IMX_MU_RSR]);
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 	for (i = 0; i < IMX_MU_CHANS; i++) {
+ 		if (status & IMX_MU_xSR_RFn(msi_data, i))
+ 			generic_handle_domain_irq(msi_data->msi_domain, i);
+ 	}
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ #define IMX_MU_MSI_FLAGS_REQUIRED	(MSI_FLAG_USE_DEF_DOM_OPS |	\
+diff --git a/drivers/irqchip/irq-ingenic-tcu.c b/drivers/irqchip/irq-ingenic-tcu.c
+index eebfdf107bd9..0cd0c74e2fc2 100644
+--- a/drivers/irqchip/irq-ingenic-tcu.c
++++ b/drivers/irqchip/irq-ingenic-tcu.c
+@@ -34,15 +34,13 @@ static void ingenic_tcu_intc_cascade(struct irq_desc *desc)
+ 	regmap_read(map, TCU_REG_TFR, &irq_reg);
+ 	regmap_read(map, TCU_REG_TMR, &irq_mask);
+ 
+-	chained_irq_enter(irq_chip, desc);
++	guard_chained_irq(irq_chip, desc);
+ 
+ 	irq_reg &= ~irq_mask;
+ 	bits = irq_reg;
+ 
+ 	for_each_set_bit(i, &bits, 32)
+ 		generic_handle_domain_irq(domain, i);
+-
+-	chained_irq_exit(irq_chip, desc);
+ }
+ 
+ static void ingenic_tcu_gc_unmask_enable_reg(struct irq_data *d)
+diff --git a/drivers/irqchip/irq-lan966x-oic.c b/drivers/irqchip/irq-lan966x-oic.c
+index 40e1f26201da..5b9e2b8d7387 100644
+--- a/drivers/irqchip/irq-lan966x-oic.c
++++ b/drivers/irqchip/irq-lan966x-oic.c
+@@ -131,11 +131,10 @@ static void lan966x_oic_irq_handler(struct irq_desc *desc)
+ 	struct irq_domain *d = irq_desc_get_handler_data(desc);
+ 	struct irq_chip *chip = irq_desc_get_chip(desc);
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 	lan966x_oic_irq_handler_domain(d, 0);
+ 	lan966x_oic_irq_handler_domain(d, 32);
+ 	lan966x_oic_irq_handler_domain(d, 64);
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static struct lan966x_oic_chip_regs lan966x_oic_chip_regs[3] = {
+diff --git a/drivers/irqchip/irq-loongarch-avec.c b/drivers/irqchip/irq-loongarch-avec.c
+index 53d7d23af9bb..8c7316f70930 100644
+--- a/drivers/irqchip/irq-loongarch-avec.c
++++ b/drivers/irqchip/irq-loongarch-avec.c
+@@ -224,7 +224,7 @@ static void avecintc_irq_dispatch(struct irq_desc *desc)
+ 	struct irq_chip *chip = irq_desc_get_chip(desc);
+ 	struct irq_desc *d;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	while (true) {
+ 		unsigned long vector = csr_read(LOONGARCH_CSR_IRR);
+@@ -241,8 +241,6 @@ static void avecintc_irq_dispatch(struct irq_desc *desc)
+ 			pr_warn("Unexpected IRQ occurs on CPU#%d [vector %ld]\n", smp_processor_id(), vector);
+ 		}
+ 	}
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static int avecintc_alloc_vector(struct irq_data *irqd, struct avecintc_data *adata)
+diff --git a/drivers/irqchip/irq-loongson-eiointc.c b/drivers/irqchip/irq-loongson-eiointc.c
+index ba6e8480e383..93f5aba1473d 100644
+--- a/drivers/irqchip/irq-loongson-eiointc.c
++++ b/drivers/irqchip/irq-loongson-eiointc.c
+@@ -313,7 +313,7 @@ static void eiointc_irq_dispatch(struct irq_desc *desc)
+ 	bool handled = false;
+ 	int i;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	/*
+ 	 * If EIOINTC_ROUTE_MULT_IP is set, every 64 interrupt vectors in
+@@ -343,8 +343,6 @@ static void eiointc_irq_dispatch(struct irq_desc *desc)
+ 
+ 	if (!handled)
+ 		spurious_interrupt();
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static void eiointc_ack_irq(struct irq_data *d)
+diff --git a/drivers/irqchip/irq-loongson-htpic.c b/drivers/irqchip/irq-loongson-htpic.c
+index 2d78112f7fc7..896fa1daea26 100644
+--- a/drivers/irqchip/irq-loongson-htpic.c
++++ b/drivers/irqchip/irq-loongson-htpic.c
+@@ -32,7 +32,7 @@ static void htpic_irq_dispatch(struct irq_desc *desc)
+ 	struct irq_chip *chip = irq_desc_get_chip(desc);
+ 	uint32_t pending;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 	pending = readl(priv->base);
+ 	/* Ack all IRQs at once, otherwise IRQ flood might happen */
+ 	writel(pending, priv->base);
+@@ -51,7 +51,6 @@ static void htpic_irq_dispatch(struct irq_desc *desc)
+ 		generic_handle_domain_irq(priv->domain, bit);
+ 		pending &= ~BIT(bit);
+ 	}
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static void htpic_reg_init(void)
+diff --git a/drivers/irqchip/irq-loongson-htvec.c b/drivers/irqchip/irq-loongson-htvec.c
+index 75e40ba6069d..9c23ab234d25 100644
+--- a/drivers/irqchip/irq-loongson-htvec.c
++++ b/drivers/irqchip/irq-loongson-htvec.c
+@@ -44,7 +44,7 @@ static void htvec_irq_dispatch(struct irq_desc *desc)
+ 	struct irq_chip *chip = irq_desc_get_chip(desc);
+ 	struct htvec *priv = irq_desc_get_handler_data(desc);
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	for (i = 0; i < priv->num_parents; i++) {
+ 		pending = readl(priv->base + 4 * i);
+@@ -60,8 +60,6 @@ static void htvec_irq_dispatch(struct irq_desc *desc)
+ 
+ 	if (!handled)
+ 		spurious_interrupt();
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static void htvec_ack_irq(struct irq_data *d)
+diff --git a/drivers/irqchip/irq-loongson-liointc.c b/drivers/irqchip/irq-loongson-liointc.c
+index cf44a333b9c8..a8eac6d53f9b 100644
+--- a/drivers/irqchip/irq-loongson-liointc.c
++++ b/drivers/irqchip/irq-loongson-liointc.c
+@@ -76,7 +76,7 @@ static void liointc_chained_handle_irq(struct irq_desc *desc)
+ 	int core = liointc_core_id % LIOINTC_NUM_CORES;
+ 	u32 pending;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	pending = readl(handler->priv->core_isr[core]);
+ 
+@@ -96,8 +96,6 @@ static void liointc_chained_handle_irq(struct irq_desc *desc)
+ 		generic_handle_domain_irq(gc->domain, bit);
+ 		pending &= ~BIT(bit);
+ 	}
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static void liointc_set_bit(struct irq_chip_generic *gc,
+diff --git a/drivers/irqchip/irq-loongson-pch-lpc.c b/drivers/irqchip/irq-loongson-pch-lpc.c
+index 7117ca6fc2f0..9bcd106de33a 100644
+--- a/drivers/irqchip/irq-loongson-pch-lpc.c
++++ b/drivers/irqchip/irq-loongson-pch-lpc.c
+@@ -110,7 +110,7 @@ static void lpc_irq_dispatch(struct irq_desc *desc)
+ 	struct irq_chip *chip = irq_desc_get_chip(desc);
+ 	struct pch_lpc *priv = irq_desc_get_handler_data(desc);
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	pending = readl(priv->base + LPC_INT_ENA);
+ 	pending &= readl(priv->base + LPC_INT_STS);
+@@ -123,7 +123,6 @@ static void lpc_irq_dispatch(struct irq_desc *desc)
+ 		generic_handle_domain_irq(priv->lpc_domain, bit);
+ 		pending &= ~BIT(bit);
+ 	}
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static int pch_lpc_map(struct irq_domain *d, unsigned int irq,
+diff --git a/drivers/irqchip/irq-lpc32xx.c b/drivers/irqchip/irq-lpc32xx.c
+index 6ff93df614f8..52e790af00f9 100644
+--- a/drivers/irqchip/irq-lpc32xx.c
++++ b/drivers/irqchip/irq-lpc32xx.c
+@@ -155,15 +155,13 @@ static void lpc32xx_sic_handler(struct irq_desc *desc)
+ 	struct irq_chip *chip = irq_desc_get_chip(desc);
+ 	u32 hwirq = lpc32xx_ic_read(ic, LPC32XX_INTC_STAT), irq;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	while (hwirq) {
+ 		irq = __ffs(hwirq);
+ 		hwirq &= ~BIT(irq);
+ 		generic_handle_domain_irq(ic->domain, irq);
+ 	}
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static int lpc32xx_irq_domain_map(struct irq_domain *id, unsigned int virq,
+diff --git a/drivers/irqchip/irq-ls-scfg-msi.c b/drivers/irqchip/irq-ls-scfg-msi.c
+index 50ce01c9cd2d..e94be9d056c4 100644
+--- a/drivers/irqchip/irq-ls-scfg-msi.c
++++ b/drivers/irqchip/irq-ls-scfg-msi.c
+@@ -198,7 +198,7 @@ static void ls_scfg_msi_irq_handler(struct irq_desc *desc)
+ 	unsigned long val;
+ 	int pos, size, hwirq;
+ 
+-	chained_irq_enter(irq_desc_get_chip(desc), desc);
++	guard_chained_irq(irq_desc_get_chip(desc), desc);
+ 
+ 	val = ioread32be(msir->reg);
+ 
+@@ -210,8 +210,6 @@ static void ls_scfg_msi_irq_handler(struct irq_desc *desc)
+ 			msir->srs;
+ 		generic_handle_domain_irq(msi_data->parent, hwirq);
+ 	}
+-
+-	chained_irq_exit(irq_desc_get_chip(desc), desc);
+ }
+ 
+ static int ls_scfg_msi_domains_init(struct ls_scfg_msi *msi_data)
+diff --git a/drivers/irqchip/irq-ls1x.c b/drivers/irqchip/irq-ls1x.c
+index 208f9d4cd99f..9c3a8946674e 100644
+--- a/drivers/irqchip/irq-ls1x.c
++++ b/drivers/irqchip/irq-ls1x.c
+@@ -40,7 +40,7 @@ static void ls1x_chained_handle_irq(struct irq_desc *desc)
+ 	struct irq_chip *chip = irq_desc_get_chip(desc);
+ 	u32 pending;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 	pending = readl(priv->intc_base + LS_REG_INTC_STATUS) &
+ 			readl(priv->intc_base + LS_REG_INTC_EN);
+ 
+@@ -53,8 +53,6 @@ static void ls1x_chained_handle_irq(struct irq_desc *desc)
+ 		generic_handle_domain_irq(priv->domain, bit);
+ 		pending &= ~BIT(bit);
+ 	}
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static void ls_intc_set_bit(struct irq_chip_generic *gc,
+diff --git a/drivers/irqchip/irq-mmp.c b/drivers/irqchip/irq-mmp.c
+index 8e210cb451be..9fe0085106eb 100644
+--- a/drivers/irqchip/irq-mmp.c
++++ b/drivers/irqchip/irq-mmp.c
+@@ -152,7 +152,7 @@ static void icu_mux_irq_demux(struct irq_desc *desc)
+ 	int i;
+ 	unsigned long mask, status, n;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	for (i = 1; i < max_icu_nr; i++) {
+ 		if (irq == icu_data[i].cascade_irq) {
+@@ -163,7 +163,7 @@ static void icu_mux_irq_demux(struct irq_desc *desc)
+ 	}
+ 	if (i >= max_icu_nr) {
+ 		pr_err("Spurious irq %d in MMP INTC\n", irq);
+-		goto out;
++		return;
+ 	}
+ 
+ 	mask = readl_relaxed(data->reg_mask);
+@@ -175,9 +175,6 @@ static void icu_mux_irq_demux(struct irq_desc *desc)
+ 			generic_handle_irq(icu_data[i].virq_base + n);
+ 		}
+ 	}
+-
+-out:
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static int mmp_irq_domain_map(struct irq_domain *d, unsigned int irq,
+diff --git a/drivers/irqchip/irq-mscc-ocelot.c b/drivers/irqchip/irq-mscc-ocelot.c
+index 8cbc191f750b..ced780012591 100644
+--- a/drivers/irqchip/irq-mscc-ocelot.c
++++ b/drivers/irqchip/irq-mscc-ocelot.c
+@@ -107,7 +107,7 @@ static void ocelot_irq_handler(struct irq_desc *desc)
+ 	struct irq_chip_generic *gc = irq_get_domain_generic_chip(d, 0);
+ 	u32 reg = irq_reg_readl(gc, ICPU_CFG_INTR_DST_INTR_IDENT(p, 0));
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	while (reg) {
+ 		u32 hwirq = __fls(reg);
+@@ -115,8 +115,6 @@ static void ocelot_irq_handler(struct irq_desc *desc)
+ 		generic_handle_domain_irq(d, hwirq);
+ 		reg &= ~(BIT(hwirq));
+ 	}
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static int __init vcoreiii_irq_init(struct device_node *node,
+diff --git a/drivers/irqchip/irq-mvebu-pic.c b/drivers/irqchip/irq-mvebu-pic.c
+index 81ea0e79402d..b33f08eed98f 100644
+--- a/drivers/irqchip/irq-mvebu-pic.c
++++ b/drivers/irqchip/irq-mvebu-pic.c
+@@ -107,12 +107,10 @@ static void mvebu_pic_handle_cascade_irq(struct irq_desc *desc)
+ 	unsigned long irqmap, irqn;
+ 
+ 	irqmap = readl_relaxed(pic->base + PIC_CAUSE);
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	for_each_set_bit(irqn, &irqmap, BITS_PER_LONG)
+ 		generic_handle_domain_irq(pic->domain, irqn);
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static void mvebu_pic_enable_percpu_irq(void *data)
+diff --git a/drivers/irqchip/irq-mvebu-sei.c b/drivers/irqchip/irq-mvebu-sei.c
+index 5a6b61b2fb1a..716ef764af6a 100644
+--- a/drivers/irqchip/irq-mvebu-sei.c
++++ b/drivers/irqchip/irq-mvebu-sei.c
+@@ -316,7 +316,7 @@ static void mvebu_sei_handle_cascade_irq(struct irq_desc *desc)
+ 	struct irq_chip *chip = irq_desc_get_chip(desc);
+ 	u32 idx;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	for (idx = 0; idx < SEI_IRQ_REG_COUNT; idx++) {
+ 		unsigned long irqmap;
+@@ -333,8 +333,6 @@ static void mvebu_sei_handle_cascade_irq(struct irq_desc *desc)
+ 				dev_warn(sei->dev, "Spurious IRQ detected (hwirq %lu)\n", hwirq);
+ 		}
+ 	}
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static void mvebu_sei_reset(struct mvebu_sei *sei)
+diff --git a/drivers/irqchip/irq-pruss-intc.c b/drivers/irqchip/irq-pruss-intc.c
+index 9a3efd40790c..fca8e838ccfe 100644
+--- a/drivers/irqchip/irq-pruss-intc.c
++++ b/drivers/irqchip/irq-pruss-intc.c
+@@ -475,7 +475,7 @@ static void pruss_intc_irq_handler(struct irq_desc *desc)
+ 	struct pruss_intc *intc = host_irq_data->intc;
+ 	u8 host_irq = host_irq_data->host_irq + FIRST_PRU_HOST_INT;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	while (true) {
+ 		u32 hipir;
+@@ -496,8 +496,6 @@ static void pruss_intc_irq_handler(struct irq_desc *desc)
+ 		if (WARN_ON_ONCE(err))
+ 			pruss_intc_write_reg(intc, PRU_INTC_SICR, hwirq);
+ 	}
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static const char * const irq_names[MAX_NUM_HOST_IRQS] = {
+diff --git a/drivers/irqchip/irq-realtek-rtl.c b/drivers/irqchip/irq-realtek-rtl.c
+index f1ab5a77dcef..556c87803313 100644
+--- a/drivers/irqchip/irq-realtek-rtl.c
++++ b/drivers/irqchip/irq-realtek-rtl.c
+@@ -163,20 +163,17 @@ static void realtek_irq_dispatch(struct irq_desc *desc)
+ 	unsigned long pending;
+ 	unsigned int hw_irq;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 	pending = readl_be(REG(cpu, RTL_ICTL_GIMR)) &
+ 		  readl_be(REG(cpu, RTL_ICTL_GISR)) & output->mask;
+ 
+ 	if (unlikely(!pending)) {
+ 		spurious_interrupt();
+-		goto out;
++		return;
+ 	}
+ 
+ 	for_each_set_bit(hw_irq, &pending, RTL_ICTL_NUM_INPUTS)
+ 		generic_handle_domain_irq(output->domain, hw_irq);
+-
+-out:
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static int __init realtek_setup_parents(struct device_node *node)
+diff --git a/drivers/irqchip/irq-riscv-aplic-direct.c b/drivers/irqchip/irq-riscv-aplic-direct.c
+index bfd11a884316..545155b0e27c 100644
+--- a/drivers/irqchip/irq-riscv-aplic-direct.c
++++ b/drivers/irqchip/irq-riscv-aplic-direct.c
+@@ -143,7 +143,7 @@ static void aplic_direct_handle_irq(struct irq_desc *desc)
+ 	irq_hw_number_t hw_irq;
+ 	int irq;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	while ((hw_irq = readl(idc->regs + APLIC_IDC_CLAIMI))) {
+ 		hw_irq = hw_irq >> APLIC_IDC_TOPI_ID_SHIFT;
+@@ -156,8 +156,6 @@ static void aplic_direct_handle_irq(struct irq_desc *desc)
+ 			generic_handle_irq(irq);
+ 		}
+ 	}
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static void aplic_idc_set_delivery(struct aplic_idc *idc, bool en)
+diff --git a/drivers/irqchip/irq-riscv-imsic-early.c b/drivers/irqchip/irq-riscv-imsic-early.c
+index 06726a062b75..f16c8d41a90d 100644
+--- a/drivers/irqchip/irq-riscv-imsic-early.c
++++ b/drivers/irqchip/irq-riscv-imsic-early.c
+@@ -102,7 +102,7 @@ static void imsic_handle_irq(struct irq_desc *desc)
+ 	 */
+ 	imsic_local_sync_all(false);
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	while ((local_id = csr_swap(CSR_TOPEI, 0))) {
+ 		local_id >>= TOPEI_ID_SHIFT;
+@@ -120,8 +120,6 @@ static void imsic_handle_irq(struct irq_desc *desc)
+ 
+ 		generic_handle_irq(lpriv->vectors[local_id].irq);
+ 	}
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static void imsic_hw_states_init(void)
+diff --git a/drivers/irqchip/irq-sifive-plic.c b/drivers/irqchip/irq-sifive-plic.c
+index fdfbf1a9add9..ea7f916ba901 100644
+--- a/drivers/irqchip/irq-sifive-plic.c
++++ b/drivers/irqchip/irq-sifive-plic.c
+@@ -388,7 +388,7 @@ static void plic_handle_irq(struct irq_desc *desc)
+ 
+ 	WARN_ON_ONCE(!handler->present);
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	while ((hwirq = readl(claim))) {
+ 		int err = generic_handle_domain_irq(handler->priv->irqdomain,
+@@ -398,8 +398,6 @@ static void plic_handle_irq(struct irq_desc *desc)
+ 					    handler->priv->fwnode, hwirq);
+ 		}
+ 	}
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static u32 cp100_isolate_pending_irq(int nr_irq_groups, struct plic_handler *handler)
+@@ -480,7 +478,7 @@ static void plic_handle_irq_cp100(struct irq_desc *desc)
+ 
+ 	WARN_ON_ONCE(!handler->present);
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	while ((hwirq = cp100_get_hwirq(handler, claim))) {
+ 		int err = generic_handle_domain_irq(handler->priv->irqdomain, hwirq);
+@@ -490,8 +488,6 @@ static void plic_handle_irq_cp100(struct irq_desc *desc)
+ 					    handler->priv->fwnode, hwirq);
+ 		}
+ 	}
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static void plic_set_threshold(struct plic_handler *handler, u32 threshold)
+diff --git a/drivers/irqchip/irq-sp7021-intc.c b/drivers/irqchip/irq-sp7021-intc.c
+index 2a6eda9ab62e..d6b271c2b901 100644
+--- a/drivers/irqchip/irq-sp7021-intc.c
++++ b/drivers/irqchip/irq-sp7021-intc.c
+@@ -170,7 +170,7 @@ static void sp_intc_handle_ext_cascaded(struct irq_desc *desc)
+ 	int ext_num = (uintptr_t)irq_desc_get_handler_data(desc);
+ 	int hwirq;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	while ((hwirq = sp_intc_get_ext_irq(ext_num)) >= 0) {
+ 		if (unlikely(IS_GPIO_INT(hwirq) && TEST_STATE(hwirq, _IS_ACTIVE))) { // WORKAROUND
+@@ -180,8 +180,6 @@ static void sp_intc_handle_ext_cascaded(struct irq_desc *desc)
+ 			generic_handle_domain_irq(sp_intc.domain, hwirq);
+ 		}
+ 	}
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static struct irq_chip sp_intc_chip = {
+diff --git a/drivers/irqchip/irq-starfive-jhb100-intc.c b/drivers/irqchip/irq-starfive-jhb100-intc.c
+index 838885b02f34..f08247f57145 100644
+--- a/drivers/irqchip/irq-starfive-jhb100-intc.c
++++ b/drivers/irqchip/irq-starfive-jhb100-intc.c
+@@ -176,7 +176,7 @@ static void starfive_intc_irq_handler(struct irq_desc *desc)
+ 	unsigned long value;
+ 	int hwirq;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	for (int i = 0; i < STARFIVE_INTC_NUM; i++) {
+ 		value = ioread32(irqc->base + STARFIVE_INTC_SRC_INT(i));
+@@ -192,8 +192,6 @@ static void starfive_intc_irq_handler(struct irq_desc *desc)
+ 			__clear_bit(hwirq, &value);
+ 		}
+ 	}
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static int starfive_intc_probe(struct platform_device *pdev, struct device_node *parent)
+diff --git a/drivers/irqchip/irq-stm32-exti.c b/drivers/irqchip/irq-stm32-exti.c
+index 5fdf335acb46..1a1d9fd67de4 100644
+--- a/drivers/irqchip/irq-stm32-exti.c
++++ b/drivers/irqchip/irq-stm32-exti.c
+@@ -122,7 +122,7 @@ static void stm32_irq_handler(struct irq_desc *desc)
+ 	unsigned long pending;
+ 	int n, i, irq_base = 0;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	for (i = 0; i < nbanks; i++, irq_base += IRQS_PER_BANK) {
+ 		gc = irq_get_domain_generic_chip(domain, irq_base);
+@@ -132,8 +132,6 @@ static void stm32_irq_handler(struct irq_desc *desc)
+ 				generic_handle_domain_irq(domain, irq_base + n);
+ 		}
+ 	}
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static int stm32_exti_set_type(struct irq_data *d,
+diff --git a/drivers/irqchip/irq-sunxi-nmi.c b/drivers/irqchip/irq-sunxi-nmi.c
+index fe32dfdc2dd0..3a5e81ddcb7c 100644
+--- a/drivers/irqchip/irq-sunxi-nmi.c
++++ b/drivers/irqchip/irq-sunxi-nmi.c
+@@ -97,9 +97,8 @@ static void sunxi_sc_nmi_handle_irq(struct irq_desc *desc)
+ 	struct irq_domain *domain = irq_desc_get_handler_data(desc);
+ 	struct irq_chip *chip = irq_desc_get_chip(desc);
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 	generic_handle_domain_irq(domain, 0);
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static int sunxi_sc_nmi_set_type(struct irq_data *data, unsigned int flow_type)
+diff --git a/drivers/irqchip/irq-ti-sci-inta.c b/drivers/irqchip/irq-ti-sci-inta.c
+index 0039d0a44154..c2d99c09359f 100644
+--- a/drivers/irqchip/irq-ti-sci-inta.c
++++ b/drivers/irqchip/irq-ti-sci-inta.c
+@@ -154,15 +154,13 @@ static void ti_sci_inta_irq_handler(struct irq_desc *desc)
+ 	domain = vint_desc->domain;
+ 	inta = domain->host_data;
+ 
+-	chained_irq_enter(irq_desc_get_chip(desc), desc);
++	guard_chained_irq(irq_desc_get_chip(desc), desc);
+ 
+ 	val = readq_relaxed(inta->base + vint_desc->vint_id * 0x1000 +
+ 			    VINT_STATUS_MASKED_OFFSET);
+ 
+ 	for_each_set_bit(bit, &val, MAX_EVENTS_PER_VINT)
+ 		generic_handle_domain_irq(domain, vint_desc->events[bit].hwirq);
+-
+-	chained_irq_exit(irq_desc_get_chip(desc), desc);
+ }
+ 
+ /**
+diff --git a/drivers/irqchip/irq-ts4800.c b/drivers/irqchip/irq-ts4800.c
+index 6fc57d664df8..1698cd8a43a4 100644
+--- a/drivers/irqchip/irq-ts4800.c
++++ b/drivers/irqchip/irq-ts4800.c
+@@ -85,11 +85,11 @@ static void ts4800_ic_chained_handle_irq(struct irq_desc *desc)
+ 	struct irq_chip *chip = irq_desc_get_chip(desc);
+ 	u16 status = readw(data->base + IRQ_STATUS);
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	if (unlikely(status == 0)) {
+ 		handle_bad_irq(desc);
+-		goto out;
++		return;
+ 	}
+ 
+ 	do {
+@@ -98,9 +98,6 @@ static void ts4800_ic_chained_handle_irq(struct irq_desc *desc)
+ 		generic_handle_domain_irq(data->domain, bit);
+ 		status &= ~(1 << bit);
+ 	} while (status);
+-
+-out:
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static int ts4800_ic_probe(struct platform_device *pdev)
+diff --git a/drivers/irqchip/irq-versatile-fpga.c b/drivers/irqchip/irq-versatile-fpga.c
+index 6eaad836d9ff..e78ac0fc602b 100644
+--- a/drivers/irqchip/irq-versatile-fpga.c
++++ b/drivers/irqchip/irq-versatile-fpga.c
+@@ -85,12 +85,12 @@ static void fpga_irq_handle(struct irq_desc *desc)
+ 	struct fpga_irq_data *f = irq_desc_get_handler_data(desc);
+ 	u32 status;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	status = readl(f->base + IRQ_STATUS);
+ 	if (status == 0) {
+ 		handle_bad_irq(desc);
+-		goto out;
++		return;
+ 	}
+ 
+ 	do {
+@@ -99,9 +99,6 @@ static void fpga_irq_handle(struct irq_desc *desc)
+ 		status &= ~(1 << irq);
+ 		generic_handle_domain_irq(f->domain, irq);
+ 	} while (status);
+-
+-out:
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ /*
+diff --git a/drivers/irqchip/irq-vic.c b/drivers/irqchip/irq-vic.c
+index 607e3284f700..78779b302050 100644
+--- a/drivers/irqchip/irq-vic.c
++++ b/drivers/irqchip/irq-vic.c
+@@ -224,14 +224,12 @@ static void vic_handle_irq_cascaded(struct irq_desc *desc)
+ 	struct irq_chip *host_chip = irq_desc_get_chip(desc);
+ 	struct vic_device *vic = irq_desc_get_handler_data(desc);
+ 
+-	chained_irq_enter(host_chip, desc);
++	guard_chained_irq(host_chip, desc);
+ 
+ 	while ((stat = readl_relaxed(vic->base + VIC_IRQ_STATUS))) {
+ 		hwirq = ffs(stat) - 1;
+ 		generic_handle_domain_irq(vic->domain, hwirq);
+ 	}
+-
+-	chained_irq_exit(host_chip, desc);
+ }
+ 
+ /*
+diff --git a/drivers/irqchip/irq-vt8500.c b/drivers/irqchip/irq-vt8500.c
+index b159e17ed1df..ca548a3fdb7e 100644
+--- a/drivers/irqchip/irq-vt8500.c
++++ b/drivers/irqchip/irq-vt8500.c
+@@ -192,9 +192,8 @@ static void vt8500_handle_irq_chained(struct irq_desc *desc)
+ 	struct irq_chip *chip = irq_desc_get_chip(desc);
+ 	struct vt8500_irq_data *intc = d->host_data;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 	vt8500_handle_irq_common(intc);
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static int __init vt8500_irq_init(struct device_node *node,
+diff --git a/drivers/irqchip/irq-xilinx-intc.c b/drivers/irqchip/irq-xilinx-intc.c
+index bba6f6dc405e..56246da62374 100644
+--- a/drivers/irqchip/irq-xilinx-intc.c
++++ b/drivers/irqchip/irq-xilinx-intc.c
+@@ -140,7 +140,7 @@ static void xil_intc_irq_handler(struct irq_desc *desc)
+ 	struct xintc_irq_chip *irqc;
+ 
+ 	irqc = irq_data_get_irq_handler_data(&desc->irq_data);
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 	do {
+ 		u32 hwirq = xintc_read(irqc, IVR);
+ 
+@@ -149,7 +149,6 @@ static void xil_intc_irq_handler(struct irq_desc *desc)
+ 
+ 		generic_handle_domain_irq(irqc->root_domain, hwirq);
+ 	} while (true);
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static void xil_intc_handle_irq(struct pt_regs *regs)
+diff --git a/drivers/irqchip/irq-xilinx-smmu-csr.c b/drivers/irqchip/irq-xilinx-smmu-csr.c
+index 58a1555699f5..b22cb191aad1 100644
+--- a/drivers/irqchip/irq-xilinx-smmu-csr.c
++++ b/drivers/irqchip/irq-xilinx-smmu-csr.c
+@@ -115,7 +115,7 @@ static void xilinx_smmu_csr_irq_handler(struct irq_desc *desc)
+ 	struct irq_chip *chip = irq_desc_get_chip(desc);
+ 	u32 status, mask, active, pending, spurious;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	/*
+ 	 * SMMU_CSR_ISR latches raw, pre-mask status, so gate it with the mask
+@@ -152,8 +152,6 @@ static void xilinx_smmu_csr_irq_handler(struct irq_desc *desc)
+ 
+ 		pending &= ~BIT(hwirq);
+ 	}
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static int xilinx_smmu_csr_domain_map(struct irq_domain *d, unsigned int virq,
+diff --git a/drivers/irqchip/qcom-irq-combiner.c b/drivers/irqchip/qcom-irq-combiner.c
+index 57ff4177edb9..8fe2138c85ed 100644
+--- a/drivers/irqchip/qcom-irq-combiner.c
++++ b/drivers/irqchip/qcom-irq-combiner.c
+@@ -50,7 +50,7 @@ static void combiner_handle_irq(struct irq_desc *desc)
+ 	struct irq_chip *chip = irq_desc_get_chip(desc);
+ 	u32 reg;
+ 
+-	chained_irq_enter(chip, desc);
++	guard_chained_irq(chip, desc);
+ 
+ 	for (reg = 0; reg < combiner->nregs; reg++) {
+ 		int hwirq;
+@@ -72,8 +72,6 @@ static void combiner_handle_irq(struct irq_desc *desc)
+ 			generic_handle_domain_irq(combiner->domain, hwirq);
+ 		}
+ 	}
+-
+-	chained_irq_exit(chip, desc);
+ }
+ 
+ static void combiner_irq_chip_mask_irq(struct irq_data *data)
+
+---
+base-commit: 84abb955b1015477aa11a96e2f3ac1b938b77f48
+change-id: 20261114-irqchip-cleanup-api-258c2081bd1e
+
+Best regards,
+-- 
+Peng Fan <peng.fan@nxp.com>
 
 
