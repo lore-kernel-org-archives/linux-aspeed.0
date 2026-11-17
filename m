@@ -1,94 +1,38 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D2F17606A334
-	for <linux-aspeed@archiver.kernel.org>; Mon, 16 Nov 2026 23:13:15 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.a=rsa-sha256 header.s=google header.b=HMg2XDQR
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 96CFD606A32A
+	for <linux-aspeed@archiver.kernel.org>; Tue, 17 Nov 2026 09:27:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jT3Z23Ddmz2xyB;
-	Tue, 17 Nov 2026 10:13:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1062"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794870794;
-	cv=none; b=X1JFZRiNXX0ghpVGhqBHWVMMoI+2nYhUGnLvp1qs1RtgaTM/SslU7SRXVyIFZKnefP4ZJxFIFJFsY9Z/vCDuy71He5QxOQ9xc/Yz7S3mKQ9LqQDAFWQHMBH1yhR5tOROVXQxaN0ioIKf+mSBvJwATG06EHIdPs/xRvRvvc1J9Tk/CCOxHzRPWRF1oYIEKyb0qQkK8Pgye5NfYqnFydYhzOl15HyoT5mUL+gvJ+V+a0FVGT52mX0czSMv5w4G8DOxCxI+g5Kb+VDm4erbYv2B9oXmr6CVBPilxKfXeXCwnKKvQbPikpe9+Tlt8GNc2e6hj05nJwfzUoICC0OZKjUvCA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jTKBC20F7z2xlY;
+	Tue, 17 Nov 2026 20:26:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794907619;
+	cv=none; b=gqpGTJN3X8A9RmMy65SmYKyA+ntr2m4LK6yq6osHsT2dLdMWZZOGi5OpfNAKAWa8ENALhAHIX9LsaQbxV555B5Q4W/bcu0BCVfBOvKhQcIuIUvFqqZA4ncMlxahI8d9ffrWgKgRtTa3BzElTlthusIpduKrmDNP8BeXUQ0KedY42HQFwOXMdpav0VBpoNVUJv5m+Bu5y0EarPjDCoGTWjBTwO4KE5EFHdMidMX8o5DvCyiGR3nfaiE57Ejnp6N1yWIxTmQiD2KcVYI+aeblC8SGCmt9e4mtxNQr/ycOE37pYrFZPWakwp6HA7Lxhd6OwY0/BuH0I6dFYb9lOx55WTw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794870794; c=relaxed/relaxed;
-	bh=39KnhmpTvzW3NJqrAH4c7S3DWPwV9FJJvA+CtiAQvpY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Q1TmiWAubkqZMiksrOiFKcbzVR4bWd49suO/ZLFZt/JI5YbbU4XGf2USQWLe6bKOnOjSTUfstKOzMa8mto8btkTsI5nkhBWxHiHD5spRgv8wCgWuvU5VXKCGJ5VrTAEbxuwr5JP5AiB9o/Xrm0wADhhYgk9DDEonhgIwxt777MxJ1ZqyBSGUMpfsXq1yXLRDCQUzO/yqMe9KXUY9EpxkV7HVoRTU90Tgl57K7I8IIgHAdaCsH6LMj6FXeeFCdVmfyz/LiekLBJHMpS3IM6xQhEdiP8KX2FbUXURjPdfevd8EqCwDBQJPr07RljQr51T83D7dF8Nf1c3YjDsWSHRtJQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=broadcom.com; dkim=pass (1024-bit key; unprotected) header.d=broadcom.com header.i=@broadcom.com header.a=rsa-sha256 header.s=google header.b=HMg2XDQR; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1062; helo=mail-pj1-x1062.google.com; envelope-from=florian.fainelli@broadcom.com; receiver=lists.ozlabs.org) smtp.mailfrom=broadcom.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=broadcom.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=broadcom.com header.i=@broadcom.com header.a=rsa-sha256 header.s=google header.b=HMg2XDQR;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=broadcom.com (client-ip=2607:f8b0:4864:20::1062; helo=mail-pj1-x1062.google.com; envelope-from=florian.fainelli@broadcom.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1062.google.com (mail-pj1-x1062.google.com [IPv6:2607:f8b0:4864:20::1062])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1794907619; c=relaxed/relaxed;
+	bh=UU8LnXWi7SOAhTu8hL9ezXqRNkuSckzICbco40F7TEs=;
+	h=From:Subject:Date:Message-ID:MIME-Version:Content-Type:To:CC; b=djXAwt1o7r5Homae8iTS6ZluP7WrjL3+hlwUfVYss1rsoU2kP+IXAfEuo/infPDI/y8YZXEA4ZUBI/rGvmWEsACixkA+J8tqtFlfgphze+Vo+IbY2Csi9mYW82+Q9amD5SqIlb3LLhycZIYI0gaH9P5ogelE7e4VgdDStYrlMmJCioumHERJq09mKNVo19HKcyGBd7x8F+vyhsVsHUeA2heex4PuLOlemYBAEL1XN0yg9uk0qhRgyjIUjxk81pxXm5h1L0zMOi3hxNuxlZctLNXO/xvXJKkBvu+JdhdsT8QIUT5S4KJyt6yKDYvZZ3dx6924KbXWtshA0GDmm0AYvg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeedtech.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeedtech.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from twmbx01.aspeedtech.com (mail.aspeedtech.com [211.20.114.72])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jT3Z02q2Mz2xtC
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 17 Nov 2026 10:13:11 +1100 (AEDT)
-Received: by mail-pj1-x1062.google.com with SMTP id 98e67ed59e1d1-3b094e649d3so3397891a91.0
-        for <linux-aspeed@lists.ozlabs.org>; Mon, 16 Nov 2026 15:13:10 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794870789; x=1795475589;
-        h=content-transfer-encoding:content-type:in-reply-to:autocrypt:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:dkim-signature:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=39KnhmpTvzW3NJqrAH4c7S3DWPwV9FJJvA+CtiAQvpY=;
-        b=WSvm+RRNq8JHeaB/OdT7QS4zdAW1K4tng3FJ6NgNiX1WxJyg5C+HcQ/BtUlIpEx+oz
-         GfygMvYgs0CoM9UJxcbIg+hXCEPY5qoFL08zU+QeLfOG+j1ADw5lObx0DLj2s7AuaAf7
-         N4eOLKQPe9r1YWnF5LVmzZgslJAUmEmuFqATiGSCvPISyV87P9U3yLTQAzYjCfE3HLrW
-         axCHTzEHGNz3EsqSnhj6Hh7lKVjpJXFUqB/vhvZbxQMktBT2vAQC+tNEqprzEq92eSk2
-         Itq8IXgkffqAfw1lNoOrmKhE9BJFRGwmjS5p4UBgF+FbrxhmLdAG5qqZ0YIk/Ta9UA4X
-         l2Lw==
-X-Forwarded-Encrypted: i=1; AL+hErHQLuVrz2EfcqjJBlDh9NySybAe/m+t6k8hAlu6JC2RHxBY1j4I2axq8oEN88WHJUKObRu6IEj2/96OuQI=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z+yX/e9wGeyqBQnH8x/tQouLFk8gnRjLHIrhKvDE+kDnF4xF9ZT
-	E+rQI4eJUAf6cNld5MPNH3uOhgIvQjYJwNun0HDCNKDudlzIGET6oijSD/f3GPM8ujksEiDO+jt
-	YTGgDoDJ90QaQzXm/YD0/XFLXAX2Bsm1KnBAjicAsUI0l1dWHgkcXsqNnSDBN/H9ipTUEdhTlfa
-	iYvxb1reCdAUGm01EVz1t0VAKeDD+LiWZ8NxXYjnPTyXdTGmTizcUmxydg4BixQRCiIWbk/QHz/
-	+tQAdnPvApBUv5+xmbINby8Ug==
-X-Gm-Gg: AZFdTZdc4OeRArgVokaYqc5ItPg9QuqOfS5lGdekmNaR8ZZ0lJU5rzOGwBXZtLAm/U6
-	83J145BGoGt3AdrN7NCFot2mMyunakDyd0rdPVb19UaD3Po5vlEtKPQgpAQbDA2MhfgUea2sTim
-	geiBt8dYV4BUgU4snaojh4oLR6l2i/sTRp0SxnbPhmCJKeSxy4Mhjwct04dnrwQaXmzVp9G2Jsu
-	tXtpaimuLCeZo5/DG40Xk7rf9QmYKiOVGX52zhKYMjJc00a0uLmaZdEdU2Z2DlpECMlatlMyInu
-	sFYu/oYweQikWJuSb4oAtIOszELwZXvimzssXdhFVTGw1AQej1tJfSAyIIaSI/EcSOUBncybJnX
-	oWKcAKQ9vADp0r1F1/OcO7d5vAuvyKjGHnJUcHn0OLRQy972zpER8DSY/AM9lZl+qPgufRZ/kwz
-	UfEh0KtXetOq/CwJ+vLx1SV6hcbKUMqLCnK8kfQ2M8
-X-Received: by 2002:a17:90b:1d52:b0:3a0:9640:803a with SMTP id 98e67ed59e1d1-3b1b087b350mr11836943a91.5.1794870788822;
-        Mon, 16 Nov 2026 15:13:08 -0800 (PST)
-Received: from smtp-us-east1-p01-i01-si01.dlp.protect.broadcom.com (address-144-49-247-26.dlp.protect.broadcom.com. [144.49.247.26])
-        by smtp-relay.gmail.com with ESMTPS id 98e67ed59e1d1-3b3abeb5fa2sm531260a91.7.2026.11.16.15.13.08
-        for <linux-aspeed@lists.ozlabs.org>
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 16 Nov 2026 15:13:08 -0800 (PST)
-X-Relaying-Domain: broadcom.com
-X-CFilter-Loop: Reflected
-Received: by mail-qv1-f70.google.com with SMTP id 6a1803df08f44-91ebb902eebso33214656d6.3
-        for <linux-aspeed@lists.ozlabs.org>; Mon, 16 Nov 2026 15:13:07 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=broadcom.com; s=google; t=1794870787; x=1795475587; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:in-reply-to:autocrypt:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=39KnhmpTvzW3NJqrAH4c7S3DWPwV9FJJvA+CtiAQvpY=;
-        b=HMg2XDQRBh1xrlukTnuk+yXjno5crSBivSYoWsiJtU78L9bbR8TyEFr+T75Wqgr2cY
-         KBYJ54bMxIW2Ku+XaYe01S92rqAyBfNUW/lrcxmABW+sRLYZklSBfBADLrAzkCRhByzf
-         gHR1wrEEPPCjVvMIyUkQPn+PzfO27mVddnglU=
-X-Forwarded-Encrypted: i=1; AL+hErHRvGtbT07kBHif9434g1lYlzzty1i0GG/YsRgtA9MmhXi5zVaXW87dbe5uJoo+KaLlxHFuZNGFCOZxZks=@lists.ozlabs.org
-X-Received: by 2002:a05:6214:2623:b0:921:201:e835 with SMTP id 6a1803df08f44-9210201ebefmr2038116d6.27.1794870786538;
-        Mon, 16 Nov 2026 15:13:06 -0800 (PST)
-X-Received: by 2002:a05:6214:2623:b0:921:201:e835 with SMTP id 6a1803df08f44-9210201ebefmr2037266d6.27.1794870785971;
-        Mon, 16 Nov 2026 15:13:05 -0800 (PST)
-Received: from [10.67.48.245] ([192.19.223.252])
-        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-91f23d7ba48sm96715216d6.28.2026.11.16.15.12.59
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 16 Nov 2026 15:13:05 -0800 (PST)
-Message-ID: <2ad1cc65-0381-478c-959e-9bee1a597110@broadcom.com>
-Date: Mon, 16 Nov 2026 15:12:57 -0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTKB96zxPz2xNT
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 17 Nov 2026 20:26:57 +1100 (AEDT)
+Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.39; Tue, 17 Nov
+ 2026 17:26:39 +0800
+Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.39 via Frontend
+ Transport; Tue, 17 Nov 2026 17:26:39 +0800
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Subject: [PATCH v6 0/4] Add Aspeed AST2700 SDRAM EDAC support
+Date: Tue, 17 Nov 2026 17:26:37 +0800
+Message-ID: <20261117-edac-v6-0-a2a747b95c3f@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -102,132 +46,152 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] irqchip: Convert chained handlers to guard_chained_irq()
-To: Peng Fan <peng.fan@linux.dev>, Thomas Gleixner <tglx@kernel.org>,
- Radu Rendec <radu@rendec.net>, Krzysztof Kozlowski <krzk@kernel.org>,
- Peter Griffin <peter.griffin@linaro.org>,
- Alim Akhtar <alim.akhtar@samsung.com>, Andrew Lunn <andrew@lunn.ch>,
- Gregory Clement <gregory.clement@bootlin.com>,
- Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
- Ryan Chen <ryan_chen@aspeedtech.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>,
- Billy Tsai <billy_tsai@aspeedtech.com>,
- Tan Siewert <tan.siewert@9elements.com>, Eddie James
- <eajames@linux.ibm.com>, Ray Jui <rjui@broadcom.com>,
- Scott Branden <sbranden@broadcom.com>,
- Broadcom internal kernel review list
- <bcm-kernel-feedback-list@broadcom.com>, Caleb James DeLisle <cjd@cjdns.fr>,
- Marc Zyngier <maz@kernel.org>, Miodrag Dinic <miodrag.dinic@mips.com>,
- Frank Li <Frank.Li@nxp.com>, Sascha Hauer <s.hauer@pengutronix.de>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Fabio Estevam <festevam@gmail.com>, Herve Codina <herve.codina@bootlin.com>,
- Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
- Jiaxun Yang <jiaxun.yang@flygoat.com>, Vladimir Zapolskiy <vz@mleia.com>,
- Piotr Wojtaszczyk <piotr.wojtaszczyk@timesys.com>,
- Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Alexandre Ghiti <alex@ghiti.fr>, Samuel Holland <samuel.holland@sifive.com>,
- Qin Jian <qinjian@cqplus1.com>,
- Changhuang Liang <changhuang.liang@starfivetech.com>,
- Maxime Coquelin <mcoquelin.stm32@gmail.com>,
- Alexandre Torgue <alexandre.torgue@foss.st.com>,
- Chen-Yu Tsai <wens@kernel.org>, Jernej Skrabec <jernej.skrabec@gmail.com>,
- Nishanth Menon <nm@ti.com>, Tero Kristo <kristo@kernel.org>,
- Santosh Shilimkar <ssantosh@kernel.org>, Linus Walleij <linusw@kernel.org>,
- Michal Simek <michal.simek@amd.com>,
- Anirudha Sarangi <anirudha.sarangi@amd.com>,
- Tushar Nimkar <tushar.nimkar@amd.com>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-samsung-soc@vger.kernel.org, linux-i2c@vger.kernel.org,
- openbmc@lists.ozlabs.org, linux-aspeed@lists.ozlabs.org,
- linux-rpi-kernel@lists.infradead.org, linux-mips@vger.kernel.org,
- imx@lists.linux.dev, loongarch@lists.linux.dev,
- linux-riscv@lists.infradead.org, linux-stm32@st-md-mailman.stormreply.com,
- linux-sunxi@lists.linux.dev, git@amd.com, linux-arm-msm@vger.kernel.org,
- Peng Fan <peng.fan@nxp.com>
-References: <20261114-irqchip-cleanup-api-v1-1-4a9d598b0bdb@nxp.com>
-Content-Language: en-US, fr-FR
-From: Florian Fainelli <florian.fainelli@broadcom.com>
-Autocrypt: addr=florian.fainelli@broadcom.com; keydata=
- xsBNBFPAG8ABCAC3EO02urEwipgbUNJ1r6oI2Vr/+uE389lSEShN2PmL3MVnzhViSAtrYxeT
- M0Txqn1tOWoIc4QUl6Ggqf5KP6FoRkCrgMMTnUAINsINYXK+3OLe7HjP10h2jDRX4Ajs4Ghs
- JrZOBru6rH0YrgAhr6O5gG7NE1jhly+EsOa2MpwOiXO4DE/YKZGuVe6Bh87WqmILs9KvnNrQ
- PcycQnYKTVpqE95d4M824M5cuRB6D1GrYovCsjA9uxo22kPdOoQRAu5gBBn3AdtALFyQj9DQ
- KQuc39/i/Kt6XLZ/RsBc6qLs+p+JnEuPJngTSfWvzGjpx0nkwCMi4yBb+xk7Hki4kEslABEB
- AAHNMEZsb3JpYW4gRmFpbmVsbGkgPGZsb3JpYW4uZmFpbmVsbGlAYnJvYWRjb20uY29tPsLB
- IQQQAQgAywUCZWl41AUJI+Jo+hcKAAG/SMv+fS3xUQWa0NryPuoRGjsA3SAUAAAAAAAWAAFr
- ZXktdXNhZ2UtbWFza0BwZ3AuY29tjDAUgAAAAAAgAAdwcmVmZXJyZWQtZW1haWwtZW5jb2Rp
- bmdAcGdwLmNvbXBncG1pbWUICwkIBwMCAQoFF4AAAAAZGGxkYXA6Ly9rZXlzLmJyb2FkY29t
- Lm5ldAUbAwAAAAMWAgEFHgEAAAAEFQgJChYhBNXZKpfnkVze1+R8aIExtcQpvGagAAoJEIEx
- tcQpvGagWPEH/2l0DNr9QkTwJUxOoP9wgHfmVhqc0ZlDsBFv91I3BbhGKI5UATbipKNqG13Z
- TsBrJHcrnCqnTRS+8n9/myOF0ng2A4YT0EJnayzHugXm+hrkO5O9UEPJ8a+0553VqyoFhHqA
- zjxj8fUu1px5cbb4R9G4UAySqyeLLeqnYLCKb4+GklGSBGsLMYvLmIDNYlkhMdnnzsSUAS61
- WJYW6jjnzMwuKJ0ZHv7xZvSHyhIsFRiYiEs44kiYjbUUMcXor/uLEuTIazGrE3MahuGdjpT2
- IOjoMiTsbMc0yfhHp6G/2E769oDXMVxCCbMVpA+LUtVIQEA+8Zr6mX0Yk4nDS7OiBlvOwE0E
- U8AbwQEIAKxr71oqe+0+MYCc7WafWEcpQHFUwvYLcdBoOnmJPxDwDRpvU5LhqSPvk/yJdh9k
- 4xUDQu3rm1qIW2I9Puk5n/Jz/lZsqGw8T13DKyu8eMcvaA/irm9lX9El27DPHy/0qsxmxVmU
- pu9y9S+BmaMb2CM9IuyxMWEl9ruWFS2jAWh/R8CrdnL6+zLk60R7XGzmSJqF09vYNlJ6Bdbs
- MWDXkYWWP5Ub1ZJGNJQ4qT7g8IN0qXxzLQsmz6tbgLMEHYBGx80bBF8AkdThd6SLhreCN7Uh
- IR/5NXGqotAZao2xlDpJLuOMQtoH9WVNuuxQQZHVd8if+yp6yRJ5DAmIUt5CCPcAEQEAAcLB
- gQQYAQIBKwUCU8AbwgUbDAAAAMBdIAQZAQgABgUCU8AbwQAKCRCTYAaomC8PVQ0VCACWk3n+
- obFABEp5Rg6Qvspi9kWXcwCcfZV41OIYWhXMoc57ssjCand5noZi8bKg0bxw4qsg+9cNgZ3P
- N/DFWcNKcAT3Z2/4fTnJqdJS//YcEhlr8uGs+ZWFcqAPbteFCM4dGDRruo69IrHfyyQGx16s
- CcFlrN8vD066RKevFepb/ml7eYEdN5SRALyEdQMKeCSf3mectdoECEqdF/MWpfWIYQ1hEfdm
- C2Kztm+h3Nkt9ZQLqc3wsPJZmbD9T0c9Rphfypgw/SfTf2/CHoYVkKqwUIzI59itl5Lze+R5
- wDByhWHx2Ud2R7SudmT9XK1e0x7W7a5z11Q6vrzuED5nQvkhAAoJEIExtcQpvGagugcIAJd5
- EYe6KM6Y6RvI6TvHp+QgbU5dxvjqSiSvam0Ms3QrLidCtantcGT2Wz/2PlbZqkoJxMQc40rb
- fXa4xQSvJYj0GWpadrDJUvUu3LEsunDCxdWrmbmwGRKqZraV2oG7YEddmDqOe0Xm/NxeSobc
- MIlnaE6V0U8f5zNHB7Y46yJjjYT/Ds1TJo3pvwevDWPvv6rdBeV07D9s43frUS6xYd1uFxHC
- 7dZYWJjZmyUf5evr1W1gCgwLXG0PEi9n3qmz1lelQ8lSocmvxBKtMbX/OKhAfuP/iIwnTsww
- 95A2SaPiQZA51NywV8OFgsN0ITl2PlZ4Tp9hHERDe6nQCsNI/Us=
-In-Reply-To: <20261114-irqchip-cleanup-api-v1-1-4a9d598b0bdb@nxp.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-DetectorID-Processed: b00c1d49-9d2e-4205-b15f-d015386d3d5e
-X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
-	version=4.0.1
+X-B4-Tracking: v=1; b=H4sIAM4d/GoC/23NTW7CMBCG4asgrzEaj+O/rnqPikXiGTdeQFCMo
+ iKUu9eBqCA1y2/k5/VdFB4zF/Gxu4uRp1zycK7D7nci9u35m2WmugUCWrBoJFMbpedggQHZJSf
+ q08vIKf88Ml/HuvtcrsN4e1QntVyfAa/wGZiUBAk6BGTiFoP7bMuFma4c+0McTmKpTPgmsVklV
+ hk9+a6zQRtvN6V+yaDsKnWVqDkwYeoohU3ZvEkNq2yWP5EN2qSZ3LY0f1IBuFWaKk3UKkVDqYn
+ pn5zn+RfnAueLhQEAAA==
+X-Change-ID: 20260625-edac-8e960e02e7f7
+To: Stefan Schaeckeler <sschaeck@cisco.com>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
+	Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Borislav Petkov <bp@alien8.de>, Tony Luck <tony.luck@intel.com>, Billy Tsai
+	<billy_tsai@aspeedtech.com>
+CC: <devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-aspeed@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+	<linux-edac@vger.kernel.org>, Borislav Petkov <bp@suse.de>, Ryan Chen
+	<ryan_chen@aspeedtech.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1794907599; l=5749;
+ i=ryan_chen@aspeedtech.com; s=20251126; h=from:subject:message-id;
+ bh=ST0L4QPW1A8R34qKK1TI0LPc6bCG1Beinf9ovjbd4cE=;
+ b=0SRJVt7ZmBC3Kk48RuhvVrTUu8AjRUM3jdXjmq9yLv4Y3n1Ltz0AHac4F6ITY/Iews1TY8kpV
+ LZmztnzXsUzC80YDO21bEqBnCHNUl0OaLyZAZi28DZqDZTrFpQ6IlMS
+X-Developer-Key: i=ryan_chen@aspeedtech.com; a=ed25519;
+ pk=Xe73xY6tcnkuRjjbVAB/oU30KdB3FvG4nuJuILj7ZVc=
+X-Spam-Status: No, score=-21.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 11/14/26 07:06, Peng Fan wrote:
-> From: Peng Fan <peng.fan@nxp.com>
-> 
-> Use the scope-based guard_chained_irq() helper in all chained handlers
-> under drivers/irqchip/ so that chained_irq_exit() is always invoked when
-> the handler returns. Handlers that duplicated the exit call on an error
-> path or jumped to a common exit label simply return now and rely on the
-> guard.
-> 
-> No functional changes.
-> 
-> Signed-off-by: Peng Fan <peng.fan@nxp.com>
-> ---
-> With [1] now merged in irq/drivers, convert the chained IRQ handlers in
-> drivers/irqchip/ to use guard_chained_irq(). This removes the explicit
-> chained_irq_exit() calls and the gotos that only existed to reach them,
-> reducing boilerplate.
-> 
-> I use a script to do the job, and after that, do mannual checking.
-> 
-> No functional changes.
-> 
-> [1] https://lore.kernel.org/all/179417458323.2093942.14330197609841896598.tip-bot2@tip-bot2/#t
-> ---
+Add ECC error reporting for the Aspeed AST2700 SoC to the existing
+aspeed_edac driver.
 
->   drivers/irqchip/irq-bcm2836.c              | 4 +---
->   drivers/irqchip/irq-bcm6345-l1.c           | 4 +---
->   drivers/irqchip/irq-bcm7038-l1.c           | 4 +---
->   drivers/irqchip/irq-bcm7120-l2.c           | 4 +---
->   drivers/irqchip/irq-brcmstb-l2.c           | 4 +---
+The AST2700 memory controller keeps the same overall EDAC programming
+model as the earlier Aspeed BMC SoCs, but uses a different register
+layout, a split interrupt status/clear/mask scheme and DDR4/DDR5 memory.
+Rather than fork the driver, the existing code is first generalised,
+then the AST2700 is added as one more per-SoC variant.
 
-For those drivers above:
+The bug fixes, cleanups and AST2700 binding from v5 (v5 patches 1-5)
+have been applied to the edac-drivers-aspeed branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/bp/bp.git, and this
+series is based on that branch.
 
-Reviewed-by: Florian Fainelli <florian.fainelli@broadcom.com>
+Patches 1 and 2 rework the implementation to accommodate the AST2700:
+patch 1 replaces the driver's private regmap with direct register
+access, and patch 2 moves the SoC-specific details behind per-SoC chip
+data. Patch 3 adds the AST2700 support itself. Patch 4 is Stefan's
+step-down patch, amended to leave the entry in place with me as its
+reviewer.
+
+Claude, an AI coding assistant, was used in developing patches 1-3.
+It drafted parts of the code and of the changelogs, and proposed the
+locking changes in this revision. I reviewed every change, and the
+AST2600 and AST2700 test results are in patches 2 and 3.
+
+Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+---
+Changes in v6:
+- Rebase onto the edac-drivers-aspeed branch of bp.git and drop the five
+  v5 patches applied there (v5 patches 1-5). v5 patches 6-9 are now
+  patches 1-4.
+- Patch 1: use a spinlock_t rather than a raw_spinlock_t for the
+  register lock, as regmap did; the interrupt handler is not
+  IRQF_NO_THREAD. Patches 2 and 3 follow.
+- Patch 1: drop the __guarded_by() annotations and the context analysis
+  opt-in, and assign the register base in probe without taking the
+  lock, so aspeed_probe() no longer mixes scoped_guard() with goto
+  unwinding.
+- Link to v5: https://lore.kernel.org/r/20261007-edac-v5-0-5c31fc5df4cf@aspeedtech.com
+
+Changes in v5:
+- v5 patch 2: register the ECC interrupt with request_irq() instead of
+  devm_request_irq() followed by an explicit free, and keep the
+  interrupt number alongside the driver's other state so
+  aspeed_remove() does not have to call platform_get_irq() again.
+- Link to v4: https://lore.kernel.org/r/20260930-edac-v4-0-c2e526f3ed79@aspeedtech.com
+
+Changes in v4:
+- Put the bug fixes first: the two fixes became v4 patches 1 and 2, the
+  cleanups v4 patches 3 and 4, and the bindings patch moved to v4
+  patch 5 ahead of the AST2700 work.
+- Explain in v4 patch 1 where the grain value comes from, rather than
+  the warning it silences.
+- Drop the Cc: stable tags from the two fixes. Neither meets the bar in
+  Documentation/process/stable-kernel-rules.rst; the Fixes: tags stay.
+- Merge Stefan's step-down patch into v4 patch 9 (now patch 4),
+  keeping the MAINTAINERS entry alive with a reviewer instead of
+  removing it.
+- Link to v3: https://lore.kernel.org/r/20260916-edac-v3-0-23e9ed2fbdf9@aspeedtech.com
+
+Changes in v3:
+- Establish the AST2700 interrupt mask in the driver rather than
+  deriving it from the register's contents: ast2700_set_irq() now
+  writes the mask outright, masking every source and unmasking only
+  the ECC ones, and the mask is established before the interrupt is
+  requested.
+- New patch: add myself as a reviewer for the driver in MAINTAINERS.
+- Tested on an AST2600 with CONFIG_PROVE_LOCKING=y; injected correctable
+  errors are reported from the interrupt handler with no lockdep reports.
+- Link to v2: https://lore.kernel.org/r/20260824-edac-v2-0-c8d8bb693586@aspeedtech.com
+
+Changes in v2:
+- New patch (v5 patch 2, now applied): free the ECC interrupt before
+  the mem_ctl_info in aspeed_remove(). The interrupt is requested with
+  devm_request_irq() and is only released after .remove() has returned,
+  so edac_mc_free() could free the handler's context while the handler
+  was still running on another CPU.
+- Acquire the register lock with the irqsave variant in init_csrows() and
+  in aspeed_probe(). The interrupt handler takes the same lock in hardirq
+  context.
+- Move the dev_dbg() of the interrupt status register out of the
+  raw_spinlock critical section in the interrupt handler.
+- Opt aspeed_edac.o into context analysis in drivers/edac/Makefile. The
+  check is opt-in per object, so without it the __guarded_by() annotation
+  added by the same patch was never actually verified.
+- Return IRQ_NONE from ast2700_dramc_isr() when no ECC interrupt status
+  bit is set; the handler clears only the ECC bits, so unconditionally
+  claiming the interrupt could livelock the level-triggered line.
+- Tested v2 on both AST2600 and AST2700 by injecting a correctable
+  error with the memory controller's ECC error injection; each is
+  reported as a CE with the expected failure address.
+- Link to v1: https://lore.kernel.org/r/20260812-edac-v1-0-03992edea297@aspeedtech.com
+
+---
+Ryan Chen (3):
+      EDAC/aspeed: Replace regmap with direct register access
+      EDAC/aspeed: Abstract SoC differences behind chip data
+      EDAC/aspeed: Add AST2700 support
+
+Stefan M Schaeckeler (1):
+      MAINTAINERS: Step down as Aspeed AST2500 EDAC driver maintainer
+
+ CREDITS                                            |   8 +
+ .../bindings/edac/aspeed,ast2400-sdram-edac.yaml   |   2 +-
+ MAINTAINERS                                        |   2 +-
+ drivers/edac/aspeed_edac.c                         | 385 ++++++++++++++-------
+ 4 files changed, 273 insertions(+), 124 deletions(-)
+---
+base-commit: 65d0a904696bae7e99a2c6eef61d4df03bac025f
+change-id: 20260625-edac-8e960e02e7f7
+
+Best regards,
 -- 
-Florian
+Ryan Chen <ryan_chen@aspeedtech.com>
+
 
