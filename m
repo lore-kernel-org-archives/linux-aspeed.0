@@ -2,141 +2,83 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B974D606A32A
-	for <linux-aspeed@archiver.kernel.org>; Wed, 18 Nov 2026 08:53:55 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 76AED60A260E
+	for <linux-aspeed@archiver.kernel.org>; Wed, 18 Nov 2026 10:32:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=nozlw3HW
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=htPkcCe9
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jTwPZ0bNGz2xMt;
-	Wed, 18 Nov 2026 19:53:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c406::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794992033;
-	cv=pass; b=jI+aEvFoxbVfrLqnTUjvTIiIlQmaNZmy5PZWfbyuSYhN6g8F/5RquERYicQkOY0KlrmfLft171DoAp0XrySA6YvDTy/OcIpeEOdj4yyLNKuRRGqa5crArnRlZQRDVWgv/p5CVA6nu8r6CfQCEvKrhDINAEfs1Rl+VV11ZEX9PoCfM1lbJDKIi3IyomjxlQvqkb/B2dNzyo+k9v/Rw6YNoG4ceO2F6MCaWAMVuqyyS3ww0j7FCwTKrsrTSCfORSmN6bQt+22xOul+h97Ln/QzG82QQ8DT3DK75NgZwtiYrEU5+eTt6dIe/hTnasR9gorpvYQ2pHuvhZR0rTFpGIH5Hg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794992033; c=relaxed/relaxed;
-	bh=h1GgFLRUx1cvdoTY87mzPoZ97TjD4mTSFEnrv/1R5jU=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=UHzpMTM+/Fn9r2jzP12kfEudNjwvj27429inM3y/SHyYRtaOq7lJf6x2mxrCwTaEiEtyz7bsRhfg2f/pQhh4qQkkLxmDbeq/OzGMVdBjqASXDclJ+l+5UaUP7xq1t/U8WcJ1Lod97j64utWncZhkaYw2mZmDMbz+Gg91QDVV+mp3kRFQiJ5pOU/gc3ENCjgBESoOK3HgxiJmWZZfpb8LVcfXEZGC+XnzW3hd6jy5fe/ZFSvO/XmVnctiqzxQDFmuCsBKq97B/23baDzYYnnBeAahKxMsGGRKwI69s6vG8BzQGuZ9OaGwP8IXbwxxvga6FetMgdSuBe4i0K8du9VZRQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=nozlw3HW; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c406::3; helo=os8pr02cu002.outbound.protection.outlook.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jTyZk6S3Wz2y32;
+	Wed, 18 Nov 2026 21:31:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.12
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794997918;
+	cv=none; b=fnIpOiM+GTVWpxhG0zoK2FYbKLOBQ6TcAl+d63G+H3iB/OlPe9HTx9qefWBwkoxBNCmp3uIOFsBVz5jz2/hXXBH+NZBq+z4+AYYs2SGq5m5T7rZRXiDic/cCFz8JSWLcbkpqzziI0WjJcES42hZPvdl6MUEm/CcYyNz8mr8pw1pXYyD2q1PsxMOY+UbPv+VnZZjmXkSxlZYxMCm4YyXYaiDt+5XG8/PkA0UHJnhSYPnQwM1ynZGshCzuIY3A/zn4ybaJfyEy+eZbwBlubq4w6sLWIcxqd0c5o7VgEJC+dlEOO7efX+vwe1gt9Vtu5LaIQAJu/RbIF5P5aKiN3ChTaA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1794997918; c=relaxed/relaxed;
+	bh=nH5gEdl3D5/4uObgUP9+ggGHh8o+1reBAcP3hqYWwcI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=e8Jj3M8qdGXtKV1bTJHlsPysAgh17buf7IkfKwRUUJRuY9bb+XKwfdnOxEO5iZ7vvlWhrmfs2jZMBdImjqnCB2DbuCDKUR9iRbZESTpw4tWC97Cp0cBePVChBYD3IvMTPLGUziMxQS4OgZcXPP3oqkUZQZKqH6tzDLBENBB8hebz/SmNr93BqE7hDBYtvRQonicdyKZqTW4Puvr7S71UzvCerBbVdWkw4xLtglhuQhvN1G9Eokc8cgeIXfTH4aj6HRYfBa6RB1b9XnrKz6AFxlH85Qa+EhvTiG18d+uCF9Eqz+b3tFbKuab+LzDg5/tVyEuuM7kyi/uWDj8KHLq9Uw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=htPkcCe9; dkim-atps=neutral; spf=pass (client-ip=192.198.163.12; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=nozlw3HW;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=htPkcCe9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:c406::3; helo=os8pr02cu002.outbound.protection.outlook.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from OS8PR02CU002.outbound.protection.outlook.com (mail-japanwestazlp170120003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c406::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.12; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 65 seconds by postgrey-1.37 at boromir; Wed, 18 Nov 2026 21:31:55 AEDT
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTwPY1FQWz2xL4;
-	Wed, 18 Nov 2026 19:53:52 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=JTW0GXFch5bxMYMCtfI/zEFTUEUH67CoeB1TXdVkr0o1A+y9xkb0dl3TtiSO5VoXbG05sJ9pAjMuLgOxVMk7TGhGqT396DkUSvf0yYqzZNcZ5JjAierzirl0qVHWo+EI9WC5RnDEasfWMn/3lq7pKiXHdlQAVBDY8ulvh95MV3UrQvNqKCGcJ15BMQwX/2kAVDrIvWsZgeDRfyNY50Djr+tuAU8K1EXcGvCeDwtg/nta315xvgVoniR1IIPzpzA/yhE4+1LW6TZzM5MiZ5NpOdSl1KwUzq9dMkotBKrePznNJ/ex/yUVxGH/BnFWRiA+U/IgKnOH7xDwQ/pAPhNdMA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=h1GgFLRUx1cvdoTY87mzPoZ97TjD4mTSFEnrv/1R5jU=;
- b=XRmCu7qtF3mbIzuYyWtRATFD3smzLrdP26IM6BOGIhLgcCej9jG3Yu8TyuK4f1dcoB2zbRzXWC8uNXDXApR6A2jZsZVv45DWyFijFy17RIp5Ge8WqzEOvYTGMK87oR27ApUIY3vs1JpHoCR2pJiDtLI5J7rCGUNdFl3tqEiDf0E7gMFdG3SSb5WZWmn9AqALfe8qPKXk2d4HEAV93bbSpktzyrhA0vGx9EN9RkUeHTaJW2catBItNj6xSVO+GXbT+yhvKVvUO+Pi7RkUu74+j3hzHQ24ge9BkYOhmhD2C8LGT2a8kd72+EgkgRPuJfSRrEtWz+eQ0O5WpbwsKmQ8cA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
- header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=h1GgFLRUx1cvdoTY87mzPoZ97TjD4mTSFEnrv/1R5jU=;
- b=nozlw3HWXFcIR9MyF0aXukCbqQSRtEIoVVyqBLn0qTOg6m6dblYBdAqx3wuFJFfxDzv0G7V+cEJc4gGx3fLYx4v2MZQUQiGx8DQmbXef+meEeSXQ3PmMtEFTOlDseYIVjtMh3zgi07GdOlFy9WbLoiySEH12Md4pDG6eNam/KrfRlyik5NhHt36cbUCPog0k5Apy6qKWS5cuAxV9pnIrbRtz9CIjn39bJr3Wkdq0cJpR3dhI89KHBcBbTjeIdw/aY9FMT4Frhqh2DOowlg08pp4S/C9z6aSv6fgw3jw9BtCvvFqhz2BshPgr9haSeqhqjdelmFR+G+G1LHugsaS8ew==
-Received: from TYZPR06MB7920.apcprd06.prod.outlook.com (2603:1096:405:24::8)
- by SE3PR06MB9162.apcprd06.prod.outlook.com with HTTP via P2P; Wed, 18 Nov
- 2026 08:53:36 +0000
-Received: from TYZPR06MB7920.apcprd06.prod.outlook.com
- ([fe80::f787:b04e:6ef9:c0d9]) by TYZPR06MB7920.apcprd06.prod.outlook.com
- ([fe80::f787:b04e:6ef9:c0d9%5]) with mapi id 15.21.0639.006; Wed, 18 Nov 2026
- 08:53:36 +0000
-From: Ryan Chen <ryan_chen@aspeedtech.com>
-To: "andriy.shevchenko@linux.intel.com" <andriy.shevchenko@linux.intel.com>
-CC: "jk@codeconstruct.com.au" <jk@codeconstruct.com.au>, Andi Shyti
-	<andi.shyti@kernel.org>, Rob Herring <robh@kernel.org>, Krzysztof Kozlowski
-	<krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel Stanley
-	<joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, Benjamin
- Herrenschmidt <benh@kernel.crashing.org>, Philipp Zabel
-	<p.zabel@pengutronix.de>, "linux-i2c@vger.kernel.org"
-	<linux-i2c@vger.kernel.org>, "devicetree@vger.kernel.org"
-	<devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
-	<linux-aspeed@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, "openbmc@lists.ozlabs.org"
-	<openbmc@lists.ozlabs.org>, Conor Dooley <conor.dooley@microchip.com>
-Subject: RE: [PATCH v33 0/5] Add ASPEED AST2600 I2C controller driver
-Thread-Topic: [PATCH v33 0/5] Add ASPEED AST2600 I2C controller driver
-Thread-Index: AQHdAq3Y4LlkAtnJjUyKcR4sCPhwVLc0NhOggAA3pwCAAADi0A==
-Date: Wed, 18 Nov 2026 08:53:36 +0000
-Message-ID:
- <TYZPR06MB7920EE43F93A37A61E139CD4F27A2@TYZPR06MB7920.apcprd06.prod.outlook.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTyZg1VTvz2y2B;
+	Wed, 18 Nov 2026 21:31:54 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1794997916; x=1826533916;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=Uowatdy9kwN6q0cDgYxR39/boEiV8TiNmIQ/16Ndc6c=;
+  b=htPkcCe977Xj8ifZ75KTsDWlPQF28hcLqcerkJTGUBMZ+Q+WDVyYePeC
+   dFv7yE1EN2edg7uvZMdvWAtACdNAZ/94PRYt4medTRLeoSSZVzUZ8+Uzk
+   yMLVJM3TOJ49WzGpQdLM+siGwjA/7zh/X1zKKpucUwqBr6AKm0hRnyzvA
+   Z8WeUT1tkozosqKUprDCDb1LPcEyscjGSlRPIQeF9wmEatsrHzvO3Lq8j
+   aetXZdRcOvGJp5uV1i44uLZ0rKWPX/2br7/AczaapVfbuCn+8SeoX2NkS
+   lkdlPRzRo0Mtn/f6DdC3E0H/UZZxTnuAgOHBg2Nq/SYLzigtaAZkGs3jG
+   w==;
+X-CSE-ConnectionGUID: f74tliT+SkKemsbGNN5zZA==
+X-CSE-MsgGUID: 78GGbj44Tcy/dj45wn1KRQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11969"; a="3701499"
+X-IronPort-AV: E=Sophos;i="6.27,219,1787036400"; 
+   d="scan'208";a="3701499"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2026 02:30:46 -0800
+X-CSE-ConnectionGUID: jSpDPBd2RUuwCG2wexdIbg==
+X-CSE-MsgGUID: sgEv5KGrQ3SzCnCFRq3NGw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,219,1787036400"; 
+   d="scan'208";a="10351746"
+Received: from mkosciow-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.157])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2026 02:30:42 -0800
+Date: Wed, 18 Nov 2026 12:30:40 +0200
+From: "andriy.shevchenko@linux.intel.com" <andriy.shevchenko@linux.intel.com>
+To: Ryan Chen <ryan_chen@aspeedtech.com>
+Cc: "jk@codeconstruct.com.au" <jk@codeconstruct.com.au>,
+	Andi Shyti <andi.shyti@kernel.org>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	"linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
+	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"openbmc@lists.ozlabs.org" <openbmc@lists.ozlabs.org>,
+	Conor Dooley <conor.dooley@microchip.com>
+Subject: Re: [PATCH v33 0/5] Add ASPEED AST2600 I2C controller driver
+Message-ID: <av1-UNzN0bwW2Oo6@ashevche-desk.local>
 References: <20260623-upstream_i2c-v33-0-6d5338fc56ed@aspeedtech.com>
  <TYZPR06MB79202A00572E81CBC29399F4F27A2@TYZPR06MB7920.apcprd06.prod.outlook.com>
  <av1mTEtWCf8zFbjp@ashevche-desk.local>
-In-Reply-To: <av1mTEtWCf8zFbjp@ashevche-desk.local>
-Accept-Language: zh-TW, en-US
-Content-Language: zh-TW
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-authentication-results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=aspeedtech.com;
-x-ms-traffictypediagnostic: TYZPR06MB7920:EE_|SE3PR06MB9162:EE_
-x-ms-publictraffictype: Email
-client-request-id: 60367972-d26c-457f-9c43-23115050dc1c
-request-id: d20bff39-15fb-4325-6ba0-08df45516ef4
-x-ms-office365-filtering-correlation-id: d20bff39-15fb-4325-6ba0-08df45516ef4
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|23010399003|1800799024|366016|376014|7416014|261028144727099003|261102123227099003|261021121427099003|261026140227099003|261026121527099003|38070700021|4143699003|261022105027099003|261022075727099003|56012099006|10067099003|18092099006|22082099003|18002099003|6133799003;
-x-microsoft-antispam-message-info:
- LpLkjXgs1sc6pJGEB2N9kTBgwUvQDNX75xpV8ONUVp/vyZMLdfePz7/gk2I3gF0BM9CyM2mPbeMnQuSwscCjuju2raP2wClrcI3xwrD973g1EFyti/UXWU/uEI3IrMlUeZUv7ISDBFxylwhv6vdkcrUfp1VMFlMMHP7d6Ixx+WKdUgU2W3QdCZiSsVQAT/50Hm5JR1q5EAYbPP4WkKKb8PDgYubbCLCUffTV7HIcHvniVP4aTJIQhdRQ+Z+Vi0S3FuPgA42FOYd7f5K63dMfNiSV43OhZYIJYp+89wbTNQvLdQ7AqztL7GLy7aehBnGCXkmsqapdhBvboVfrFMi0neIeT5LPGm27vlJnHUOGHHnRSvL8rmB6ShN9OYufhITKy4KykWe8MxdKxkA8MfUBQrrWrsQ8gYje4WK3EMuqdLZ5GY0UN9wjbBEB/g45ZqWsApuThNXZ0kENC0SeeZ8CKsCTF9afnQ79tgKtwu/gdO+9AoCgG123pDyS0WHiJrjq8QwR3qPB2ewgn95QTjqWPEtrYTz3jq63XWLujB755eiGUotkqhzupJI0JtBrTkJXNIKJW7pgH54KmCelEwJ8FM2Ss6iVgWaJlBKaBPqXCGV3nQCI3q4qRnaONGWU49P2oIlvsur86jHzOCUNSkqq7ymg6J6uQgwqoSOJ995TS+khyIp8aDWy0odf7v3q5soPcKrw4jn8DwLryqg+55fdOKtxI07Km6J9kXHQFXYpd60=
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:zh-tw;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(1800799024)(366016)(376014)(7416014)(261028144727099003)(261102123227099003)(261021121427099003)(261026140227099003)(261026121527099003)(38070700021)(4143699003)(261022105027099003)(261022075727099003)(56012099006)(10067099003)(18092099006)(22082099003)(18002099003)(6133799003);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?utf-8?B?WWpjL2p1VmhURWlLTk0xdzBOY3RTSDNnazMrN3FZZStWb1I5a01TWWQvZHZX?=
- =?utf-8?B?U2hPNnJPVVdwZDEvcFBBalloczIwVUJqRHQ2RmUzVzZObFp0NWJYaFVXMDVI?=
- =?utf-8?B?Z05ieDR4YWlXN2ZRMmYvUmNPNVRJbU1Fc2xNOFJDZFo1K1lGZTc0R1dKYm1U?=
- =?utf-8?B?Rk85TUlxb0tINGRaTnZqSldnM1VKQU56Tmh5UUJ6THc2ZlhuOUpvYzJKQVJ2?=
- =?utf-8?B?V2JJUEdJb1lSdk9JVnhKOU5SdUZBL3JVMXF5N1FzT1ZYUzN6NmdJdWJMWmpN?=
- =?utf-8?B?UFBqMlZhVU9EaDRzSXlyRFNpM1M3V216M1J2UGRYYTBrRjl5MjMvMjV0S0pk?=
- =?utf-8?B?N3U0N0c1NDl4RXJHMmU0UExPVUdpVS9UVXVBQi8xUGNaVCtUSnJVY1ZJUkVm?=
- =?utf-8?B?NGFxSFdqUnBPK2FBR1M4Nkpyam1NajQzaXVFNWJ1QmtCN0xsUW04NjYvOXB3?=
- =?utf-8?B?Vm5xOVVnQXZZbkc0Q09FR21OSjRzRUExS0s4ZTMyeFNuT01mY3E0SE1lL1hJ?=
- =?utf-8?B?Mk93U0pFakpKcHBQUG91bmFCSW44bmkyZ2dBMVN1dHk2dzJHYjJEK3I2MHRP?=
- =?utf-8?B?SjNVNGdJaHFpRy9jeUNjVnJBM09ybFFwTGZhbHVuaVlzRmxsTUtDMWtmamxt?=
- =?utf-8?B?Q1FOcnNwcCtWTkpNc1E0ZWsrb1RQTWVQRXV0WGgwWWtuS0tUQ2dQSlBybGxy?=
- =?utf-8?B?MUQySHY1aWg1WFR4ZkowcXBwcVF6UHBOWVpCc3B6M2lsSm1rNkJ4NHFjQmJa?=
- =?utf-8?B?ME1peEw2MUdHSUJlRzBGQzJ0aXh2bGxYS3l6eVUweFZxZmlpeGJuc2NDSUNr?=
- =?utf-8?B?TFdmUndSaWo1bHl1c2FrdFZsK2dQekd1MWQvVWxycFpzWmtFU2JuYU9taE9E?=
- =?utf-8?B?ZXlUeFFZVVBPaHg1aW5WSGRCWWRhVEgzWUhHaDBPY3Bzc2gyWXdyaTJKNlkz?=
- =?utf-8?B?ak01RTRsWStuTS9oM3J1dExjc1hUY21vVnptbjgzWjFuem15a2lwUGNNcDFZ?=
- =?utf-8?B?UC9EcXVmcmp6VUhmM2Z1Y2o2dVI4OWN6Q0NIVXNsUmdzREVNTTdoMm9LbUxG?=
- =?utf-8?B?MWJpNFZrajRJMHY2cXgvcTNraVZLRmt0RkxITEVmRmo2cURnUk9ta09vTnZm?=
- =?utf-8?B?UFZTUWNXdlR1TzhTSjJ6cGQ4V3Y5UG9ROERaQ2Vnc05YVU81akw1anVzWGNC?=
- =?utf-8?B?VytpYUVJdHY3cmM3Q2p1ZHJJbUlVdkxJZm9lWDFDSG5zcUNwcE90TCs0YjQ2?=
- =?utf-8?B?aTNRTHdOMDVDQmVaMVFHdWQ0OEhyVU45YTRXcUFONUZ6blhWSGRtVXZkZTg0?=
- =?utf-8?B?ZlVJVU5pZXVZTUVlOWsvajNGNjNVWE5DUStBMWx1WURaWnNqUTk4ZzhOZVpZ?=
- =?utf-8?B?MEI4K2lVdWd4MURDMzhtekZwR1d0WmFheG5EM21QbkkrVU8ra0x4UWdRTk8x?=
- =?utf-8?B?SzAzdUFjY1dDV1FWTGtHc2M5Vk04WFNsYStiS04wOXBrSTVDQmZTNSszTTF6?=
- =?utf-8?B?U29zNkhIc2J1LzlqT2tGUXBDWWlyeVZRMjI3WGRkQnRDbWZvNUd3aTgvNlFN?=
- =?utf-8?B?Mk9wbncrNmRaYWZaa2JFT0lLd2grb2NTeUNxYWo1Uzk4RDI1K0EvS3p4dXNu?=
- =?utf-8?B?WDRwSVhKWkhzUEZsc1haR1VhVlA1YktnWVF5em45N0pFV0k2cG5MdmNzR25R?=
- =?utf-8?B?cEZQa3IzajloUWV2cnJCdlY4alJwaDdwWjgva1VkL1NhWFhsMnhadTZmYWNE?=
- =?utf-8?B?MDdjZXAyWmlrbTVZa0NhRkYwRHdnYlV4WFlPWWk0ejZIZzVmeXRHRTR4emRl?=
- =?utf-8?B?UjRsSjlKc0g1QzNQdzltRHdPdEdnRDIrSHZyRnJHZVhucHppSlcrTmg4Zklx?=
- =?utf-8?B?ZDBPWEszdzY0MUNJcU40MHlBZWxPaEJiZEVlY0ZOWTQvZElBZXJoaHJIbGh1?=
- =?utf-8?B?QU9QVUxLU0RpME9VdXdNRFNTVHlwTGNPNGswZDNmMlFnNjdIdnJPd2xxMzZY?=
- =?utf-8?B?K0EweUJzMEM0NG5tcHdGNW5pZU9GZWx3ZXdEbUxVRnU1SDl0NU5wZGhobFdC?=
- =?utf-8?B?NjQxeS81dDFGWTNvSEFFR1RwTG9IcHp0YXlPTXFYZm1wakpRUUp6ZXA0d0Yy?=
- =?utf-8?B?ZndNOFI4eDUwTkxTZC9qUFZRSitCYUw0UUp4dWF4a0JwZ2dKdXloVjN5OTll?=
- =?utf-8?B?cXVPR1R0bVV4UDJTTnJVa3BUNk9OcjZHZEpiZThld0N2RUo4SXpVMFlCbHcr?=
- =?utf-8?B?NmIyVG9ZbGpvbk5lSFlnZGNoeFV2dnhZUWZ4QnBZei9EbE9CL3ZlSlFTQTdi?=
- =?utf-8?B?dlNnWCtaTFpQdDRMWU9HbXBzTStWSlZBandnK0V6c1FsTWtOeGM4UT09?=
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+ <TYZPR06MB7920EE43F93A37A61E139CD4F27A2@TYZPR06MB7920.apcprd06.prod.outlook.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -150,77 +92,120 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-OriginatorOrg: aspeedtech.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: TYZPR06MB7920.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: d20bff39-15fb-4325-6ba0-08df45516ef4
-X-MS-Exchange-CrossTenant-originalarrivaltime: 18 Nov 2026 08:53:36.5918
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: 0IietHEDRqY+0dej/puJGIN1F89xqW1a5s8yUIOQtbIQGyBLNF7o0wiAbutj8lirIOf/3ACOSkBuMYSczwatCUqYfgDAy+IwJiPY9shTFUI=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SE3PR06MB9162
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
-	autolearn_force=no version=4.0.1
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <TYZPR06MB7920EE43F93A37A61E139CD4F27A2@TYZPR06MB7920.apcprd06.prod.outlook.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-PiBTdWJqZWN0OiBSZTogW1BBVENIIHYzMyAwLzVdIEFkZCBBU1BFRUQgQVNUMjYwMCBJMkMgY29u
-dHJvbGxlciBkcml2ZXINCj4gDQo+IE9uIFdlZCwgTm92IDE4LCAyMDI2IGF0IDA4OjE0OjUxQU0g
-KzAwMDAsIFJ5YW4gQ2hlbiB3cm90ZToNCj4gPiBIaSBBbmR5LA0KPiA+DQo+ID4gVGhpcyBwYXRj
-aCBzZXJpZXMgaGFzIGJlZW4gc3RhYmxlIGluIG91ciB0ZXN0aW5nIG9uIEFTVDI2MDAgaGFyZHdh
-cmUsDQo+ID4gYW5kIHdlIGhhdmUgYWxzbyByZWNlaXZlZCBwb3NpdGl2ZSBmZWVkYmFjayBmcm9t
-IGN1c3RvbWVyIHRlc3RpbmcuDQo+ID4gVGhlIGlzc3VlcyBpZGVudGlmaWVkIGJ5IFNhc2hpa28g
-aGF2ZSBhbHNvIGJlZW4gYWRkcmVzc2VkLg0KPiA+IEkgcGxhbiB0byByZWJhc2UgdGhlIHNlcmll
-cyBvbnRvIHRoZSBsYXRlc3QgdXBzdHJlYW0ga2VybmVsIGFuZCBzdWJtaXQgdjM0Lg0KPiA+IEJl
-Zm9yZSBkb2luZyBzbywgSSB3b3VsZCBhcHByZWNpYXRlIHlvdXIgZmVlZGJhY2sgb24gd2hldGhl
-ciB0aGVyZSBhcmUNCj4gPiBhbnkgcmVtYWluaW5nIGNvbmNlcm5zIG9yIGJsb2NrZXJzIHRoYXQg
-d2Ugc2hvdWxkIGFkZHJlc3MuDQo+ID4NCj4gPiBJZiB0aGVyZSBhcmUgbm8gb3V0c3RhbmRpbmcg
-aXNzdWVzLCBJIGhvcGUgdGhlIHNlcmllcyBjYW4gYmUNCj4gPiBjb25zaWRlcmVkIGZvciBtZXJn
-aW5nIGFmdGVyIHRoZSBuZXh0IHJldmlldy4NCj4gPg0KPiA+IFRoYW5rcyBmb3IgeW91ciB0aW1l
-IGFuZCBzdXBwb3J0Lg0KPiANCj4gQXJlIHlvdSBhc2tpbmcgbWUgb3IgQW5kaSBTaHl0aT8NCj4g
-SWYgaXQgd2FzIHRvIG1lLCBJIGhhdmUgbm8gdGltZSBmb3IgdGhpcyByaWdodCBub3csIHNvcnJ5
-Lg0KDQpUaGFua3MgZm9yIHlvdXIgcmVzcG9uc2UuDQpXb3VsZCB5b3UgaGFwcGVuIHRvIGtub3cg
-YW55b25lIGVsc2Ugd2hvIG1pZ2h0IGhhdmUgdGltZSB0byByZXZpZXcgaXQ/DQoNCkJlc3QgcmVn
-YXJkcywNClJ5YW4NCg0KPiANCj4gPiA+IFN1YmplY3Q6IFtQQVRDSCB2MzMgMC81XSBBZGQgQVNQ
-RUVEIEFTVDI2MDAgSTJDIGNvbnRyb2xsZXIgZHJpdmVyDQo+ID4gPg0KPiA+ID4gVGhpcyBzZXJp
-ZXMgYWRkcyBzdXBwb3J0IGZvciB0aGUgQVNUMjYwMCBJMkMgY29udHJvbGxlciDigJxuZXcgcmVn
-aXN0ZXIgc2V04oCdDQo+ID4gPiBpbXBsZW1lbnRhdGlvbi4NCj4gPiA+DQo+ID4gPiBUaGUgQVNU
-MjYwMCBJMkMgY29udHJvbGxlciBpbnRyb2R1Y2VzIGEgcmV2aXNlZCByZWdpc3RlciBsYXlvdXQN
-Cj4gPiA+IHdoaWNoIHNlcGFyYXRlcyBjb250cm9sbGVyIGFuZCB0YXJnZXQgZnVuY3Rpb25hbGl0
-eSBpbnRvIGRpc3RpbmN0DQo+ID4gPiByZWdpc3RlciBibG9ja3MsIGFuZCBleHRlbmRzIGNsb2Nr
-IGRpdmlkZXIgY29uZmlndXJhdGlvbiBhbmQNCj4gPiA+IHBhY2tldC1iYXNlZCB0cmFuc2ZlciBz
-dXBwb3J0IGNvbXBhcmVkIHRvIHRoZSBsZWdhY3kgbWl4ZWQgcmVnaXN0ZXINCj4gbGF5b3V0IHVz
-ZWQgb24gZWFybGllciBBU1BFRUQgU29Dcy4NCj4gPiA+DQo+ID4gPiBUaGUgY3VycmVudCBkcml2
-ZXIgaW1wbGVtZW50YXRpb24gZm9yIHRoZSBBU1QyNjAwIEkyQyBwZXJpcGhlcmFsIGlzDQo+ID4g
-PiB0aHJvdWdoIHRoZSBoYXJkd2FyZSdzICJjb21wYXRpYmlsaXR5IG1vZGUiLCB3aGljaCBleHBv
-c2VzIGENCj4gPiA+IHJlZ2lzdGVyIHNldCB0aGF0IG1hdGNoZXMgdGhlIHByZXZpb3VzIGdlbmVy
-YXRpb24gaGFyZHdhcmUgKEFTVDI1MDAgYW5kDQo+IGVhcmxpZXIpLg0KPiA+ID4NCj4gPiA+IElu
-c3RlYWQsIGFkZCBhIGRyaXZlciB0aGF0IHdvcmtzIGluIG5ldy1yZWdpc3Rlci1zZXQgbW9kZSwg
-dG8gYWxsb3cNCj4gPiA+IHRoZSBuZXcgZmVhdHVyZXMsIGFuZCB3aWxsIHByb3ZpZGUgc3VwcG9y
-dCBmb3IgZnV0dXJlIGhhcmR3YXJlIHRoYXQNCj4gPiA+IHdpbGwgbm90IGltcGxlbWVudCBjb21w
-YXRpYmlsaXR5IG1vZGUuDQo+ID4gPg0KPiA+ID4gSW4gb3JkZXIgdG8gc3VwcG9ydCB0aGUgbmV3
-IG1vZGUsIHdlIG5lZWQgYSBEVCBiaW5kaW5nIGNoYW5nZSB0bw0KPiA+ID4gcmVmbGVjdCB0aGUg
-cmVmZXJlbmNlIHRvIHRoZSBnbG9iYWwgcmVnaXN0ZXIgc2V0LiBTaW5jZSB0aGUgYmluZGluZw0K
-PiA+ID4gc3RpbGwgcmVwcmVzZW50cyB0aGUgc2FtZQ0KPiA+ID4gKEFTVDI2MDAgU29DKSBwaHlz
-aWNhbCBoYXJkd2FyZSwgd2UgY29udGludWUgdG8gdXNlIHRoZSBleGlzdGluZw0KPiA+ID4gY29t
-cGF0aWJsZSBzdHJpbmcgb2YgImFzcGVlZCxhc3QyNjAwLWkyYy1idXMiLg0KPiA+ID4NCj4gPiA+
-IEhvd2V2ZXI6IHNpbmNlIHdlJ3JlIGNoYW5naW5nIHNlbWFudGljcyBmb3IgYW4gZXhpc3Rpbmcg
-YmluZGluZywgd2UNCj4gPiA+IGFsbG93IGJhY2t3YXJkcyBjb21wYXRpYmlsaXR5IGJ5IHNlbGVj
-dGluZyBvbiBwcmVzZW5jZS9hYnNlbmNlIG9mDQo+ID4gPiB0aGUgbmV3bHktYWRkZWQgcHJvcGVy
-dGllcywgYW5kIGZhbGwgYmFjayB0byB0aGUgb2xkIGRyaXZlciAoaWUuLCBpbg0KPiA+ID4gY29t
-cGF0aWJpbGl0eSBtb2RlKSB3aGVuIHdlIGRldGVjdCBhIERUIHVzaW5nIHRoZSBvbGQgYmluZGlu
-ZyBzcGVjLg0KPiA+ID4NCj4gPiA+IFNwZWNpZmljYWxseToNCj4gPiA+DQo+ID4gPiAtIGFzdDI2
-MDAtaTJjLWJ1cyBub2RlcyB0aGF0IHByb3ZpZGUgdGhlIGBhc3BlZWQsZ2xvYmFsLXJlZ3NgIHBy
-b3BlcnR5DQo+ID4gPiAgIChwcmVzZW50IGluIHRoZSBuZXcgYmluZGluZyBhbmQgYWJzZW50IGlu
-IHRoZSBsZWdhY3kgYmluZGluZykgd2lsbCBiZQ0KPiA+ID4gICBzdWNjZXNzZnVsbHkgcHJvYmVk
-IGJ5IHRoZSBuZXcgZHJpdmVyDQo+ID4gPg0KPiA+ID4gLSBhc3QyNjAwLWkyYy1idXMgbm9kZXMg
-d2l0aG91dCBgYXNwZWVkLGdsb2JhbC1yZWdzYCBjb250aW51ZSB0byB1c2UgdGhlDQo+ID4gPiAg
-IGV4aXN0aW5nIGRyaXZlciAoaW4gbGVnYWN5IHJlZ2lzdGVyIG1vZGUpLCBlbnN1cmluZyB0aGF0
-IHBsYXRmb3Jtcw0KPiA+ID4gICB3aXRoIHRoZSBjdXJyZW50IERUQnMgcmVtYWluIGZ1bmN0aW9u
-YWwNCj4gDQo+IC0tDQo+IFdpdGggQmVzdCBSZWdhcmRzLA0KPiBBbmR5IFNoZXZjaGVua28NCj4g
-DQoNCg==
+On Wed, Nov 18, 2026 at 08:53:36AM +0000, Ryan Chen wrote:
+> > On Wed, Nov 18, 2026 at 08:14:51AM +0000, Ryan Chen wrote:
+> > >
+> > > This patch series has been stable in our testing on AST2600 hardware,
+> > > and we have also received positive feedback from customer testing.
+> > > The issues identified by Sashiko have also been addressed.
+> > > I plan to rebase the series onto the latest upstream kernel and submit v34.
+> > > Before doing so, I would appreciate your feedback on whether there are
+> > > any remaining concerns or blockers that we should address.
+> > >
+> > > If there are no outstanding issues, I hope the series can be
+> > > considered for merging after the next review.
+> > >
+> > > Thanks for your time and support.
+> > 
+> > Are you asking me or Andi Shyti?
+> > If it was to me, I have no time for this right now, sorry.
+> 
+> Thanks for your response.
+> Would you happen to know anyone else who might have time to review it?
+
+Not of my knowledge. The general practice is to help maintainers to review
+their queue(s) and in response somebody else hopefully reviews yours. If you
+completely rely on maintainer to allocate a time to review your stuff, you
+might wait for months these days (mostly because tons of AI slops attacking
+the LKML). I might be mistaken, but I haven't seen match of @aspeedtech.com
+in the Reviewed-by: tags. Probably that's what you should do better?
+
+That's what I got for the entire history of Linux kernel
+
+$ git log --no-merges --oneline --grep 'Reviewed-by:.*@aspeedtech.com'
+
+51d0f5020dee crypto: aspeed - Use memcpy_from_sglist() in aspeed_ahash_dma_prepare()
+dba7567c2fbb usb: gadget: aspeed_udc: fix device address configuration
+aba59ce109de peci: aspeed: Clear clock_divider value before setting it
+4dc44aec28c8 crypto: aspeed-hace - Use device_get_match_data()
+9ee8fbc05ef0 spi: aspeed: Use helper function devm_clk_get_enabled()
+eb33108858b6 crypto: aspeed - Fix modular aspeed-acry
+7484a5bc153e drm/ast: Fix start address computation
+aaf16cdca641 crypto: aspeed - change aspeed_acry_akcipher_algs to static
+f104b2169e68 crypto: aspeed - Replace zero-length array with flexible-array member
+83045e19feae usb: gadget: aspeed: fix buffer overflow
+70513e1d6559 crypto: aspeed - Fix check for platform_get_irq() errors
+dc377e013bec crypto: aspeed - fix return value check in aspeed_hace_probe()
+efc96d43ec38 crypto: aspeed - Fix sparse warnings
+31b39755e325 crypto: aspeed - Enable compile testing
+9deb10cf160e ARM: dts: aspeed: ast2600-evb: Update I2C devices
+70cdb930f7e9 usb: gadget: aspeed_udc: fix handling of tx_len == 0
+3d393f0303b5 usb: gadget: aspeed_udc: fix missing spin_unlock_irqrestore in ast_udc_ep_queue
+6fd45e79e8b9 net: ftgmac100: Disable hardware checksum on AST2600
+fea289467608 ARM: dts: aspeed: Add secure boot controller node
+8812dff6459d soc: aspeed: socinfo: Add AST2625 variant
+d0ec795c8c27 ipmi: kcs_bmc_aspeed: Optionally apply status address
+
+But even them are "aspeed" cases, so you looked at the code written inside your
+company which does NOT count as help to the maintainers with their queues
+(okay, it counts, but with low priority as these are not 3rd party reviews).
+
+
+> > > > This series adds support for the AST2600 I2C controller “new register set”
+> > > > implementation.
+> > > >
+> > > > The AST2600 I2C controller introduces a revised register layout
+> > > > which separates controller and target functionality into distinct
+> > > > register blocks, and extends clock divider configuration and
+> > > > packet-based transfer support compared to the legacy mixed register
+> > layout used on earlier ASPEED SoCs.
+> > > >
+> > > > The current driver implementation for the AST2600 I2C peripheral is
+> > > > through the hardware's "compatibility mode", which exposes a
+> > > > register set that matches the previous generation hardware (AST2500 and
+> > earlier).
+> > > >
+> > > > Instead, add a driver that works in new-register-set mode, to allow
+> > > > the new features, and will provide support for future hardware that
+> > > > will not implement compatibility mode.
+> > > >
+> > > > In order to support the new mode, we need a DT binding change to
+> > > > reflect the reference to the global register set. Since the binding
+> > > > still represents the same
+> > > > (AST2600 SoC) physical hardware, we continue to use the existing
+> > > > compatible string of "aspeed,ast2600-i2c-bus".
+> > > >
+> > > > However: since we're changing semantics for an existing binding, we
+> > > > allow backwards compatibility by selecting on presence/absence of
+> > > > the newly-added properties, and fall back to the old driver (ie., in
+> > > > compatibility mode) when we detect a DT using the old binding spec.
+> > > >
+> > > > Specifically:
+> > > >
+> > > > - ast2600-i2c-bus nodes that provide the `aspeed,global-regs` property
+> > > >   (present in the new binding and absent in the legacy binding) will be
+> > > >   successfully probed by the new driver
+> > > >
+> > > > - ast2600-i2c-bus nodes without `aspeed,global-regs` continue to use the
+> > > >   existing driver (in legacy register mode), ensuring that platforms
+> > > >   with the current DTBs remain functional
+
+-- 
+With Best Regards,
+Andy Shevchenko
+
+
 
