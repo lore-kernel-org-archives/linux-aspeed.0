@@ -2,90 +2,92 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5969760A3809
-	for <linux-aspeed@archiver.kernel.org>; Wed, 18 Nov 2026 16:51:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4A4D160A6F62
+	for <linux-aspeed@archiver.kernel.org>; Wed, 18 Nov 2026 22:38:14 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=MR+cqIhP
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Ibs2CC+D
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jV70b0Jskz2xSl;
-	Thu, 19 Nov 2026 03:51:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.7
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795020686;
-	cv=none; b=Gm8+bsW//6rP303rjlXpuGiUI09S6ugIrtjSrXoNk7FCn/Z7Efju3umSIZWdxhJd+lKRd4rBBKAOToVvdh1a82MqMN61GxtBI28Hnb/P6ABT+OTRMZ4js+/urzj6/hPE4dsgxgMLjTJAfzytVt9YXmQIyZKu6YVrTy7WlZHZf1T9LQvvA5/a5ZP7ODIRDUu4DsTIIapYrqBET5q4szB98J0d+9/BB3Y78ag5DQhyKJ8zbQEIVT9c6YGSwWayFCXbFwbDvNtjqktd7RbUZ5V4ltsMozYsYX/aoYLjQxZ5Y6OxxItW6i2wpXPdcid+yiMgH2H6YBKS8gURh5YeFATL/w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jVGfW54CHz2yQn;
+	Thu, 19 Nov 2026 09:36:19 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::535"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795015199;
+	cv=none; b=XamkGi46W1+nGT/JyBjvGKQpEblzdyf1Oxx+09x/tZJpfAA3HJLwKA/Mh65ATCCyqVJf3NG9tsbfJtqBjjRu8R3k+nwVn/2pLsuindIGDz1eaFez+xRts8rKNrrvvsQ1IDkytg87uSEXFSksZ8qc1cDQrghnunZikJ6+2EsCpJVGSSH7LD2sQ4ObaPf93NohTXCeM3h49ossAEmbatPqiNy7MrEKdtgBPbR7nRTYh1fX3GXpH81PjSBPEkaJIZPmAcZ8BIrOE9D7wPe9QkhLMrn6E79FiG9RenKer4NwqAYoJdOzT+hocnP9ASI3Qf1iNraPdPpDXn3Fba3lkUR6Gw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795020686; c=relaxed/relaxed;
-	bh=/cUldU1e2XAI/ZxV0Ch4uDE5FUyxfirjC3SAjGA4JrA=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=JHMFSqld/98cwzWlVYSunl7nFbsjILmWtXajvHl9J/qYCelBhG/ZV0YzQnfQ3CkXLMp3DIoyUq4a490CdaXeOfjBXB7Vd6ytu/0/RUNPv7ULaI/FjlPTmAiyk6Ph5SwceMUds9fXwbHj/LFNHzTdie4gUJBd1RhJ0cM6CV1F+twPX3TzgWTWhK2FPqLiNyFBkE4kohsfFkb+BtsbXWgXKG+u4WJVc2cS6puWapcvy/1sR4MfOGQxO4kKJaVEqLZiXRxox79sRLbgn/NQNE1DpqnbnKAkss+1+4aL1KiyPpbDRdpBSH987uBzRCZ9NFlA6A2P4ulKBSlI75AZKasXOw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=MR+cqIhP; dkim-atps=neutral; spf=pass (client-ip=192.198.163.7; helo=mgamail.intel.com; envelope-from=jani.nikula@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	t=1795015199; c=relaxed/relaxed;
+	bh=3q3WBayPBlbewt1E1eNRkQsJMusptNxG4L6m1LCm1Ic=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=GZtv1b3H8yg2wyPnRKtqkvCbbY2eqmqfm/sgRuS6g1iHomOgSPsj99s+a8sprlkSrN+2LlPC+/ORZ19kUEW1GReet/Rb7EjEj/EMNWICeVGH2zbeo2MHUSxfC9Jj/rP7XrwhgnY67vzWH+ps3DOSeSlvJt1XnKD1ToqfK2XtQAlepaff2hJFaP28nSkGKwfU//omhtGNsRjY4KGJoeoTDn2Z1fLNAPWmRHdSMKuDVvJ/X3cLHx59yr26FSd7R0E6gH8du6Q4Dn/csphuJdCTxB1FbEUK1xQDuo/5LhW5lRaZotAEATNTKpKhPkyVrv2I3kwixIHaamZ/4BVa12e0wg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Ibs2CC+D; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::535; helo=mail-pg1-x535.google.com; envelope-from=ericyunlinchiang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=MR+cqIhP;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Ibs2CC+D;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.7; helo=mgamail.intel.com; envelope-from=jani.nikula@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::535; helo=mail-pg1-x535.google.com; envelope-from=ericyunlinchiang@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x535.google.com (mail-pg1-x535.google.com [IPv6:2607:f8b0:4864:20::535])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jV70X1X8Pz2xMt
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 19 Nov 2026 03:51:21 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1795020684; x=1826556684;
-  h=from:to:cc:subject:in-reply-to:references:date:
-   message-id:mime-version:content-transfer-encoding;
-  bh=ajDnh0zw+64dcFPrEUfvS5sWfWZYQWJZbcQwO+AcVNs=;
-  b=MR+cqIhPvcv9ENCgwgQp+w136q5E5ZrF8Gr2k1oHAStv3nmORyTsYhIx
-   dmB4ZhZA3RiHYKpQT9jX+b9oATSksOCgpupoAqcVsB6qiO987bQJCdp2+
-   RvFFOvAEPIQYhayUD6l7g0YziH62AmA1xbRHANVmNBNhDrsm/sT62LZ+1
-   los1cgShguo+tNWVMW5YTqnOFCf+4MI3IP5FktQFdubs9TNg5rw1x2kLt
-   aT7NzqI44nrUxjFq72/wodsiZN9iPoQtNnoJphJCdqCJTFjpYQLcPxwr0
-   +ppilDS7nihsZEZvDQnpPZxEFDxvsIXNunqPfO47sNuWDzZSwx77IZqCQ
-   Q==;
-X-CSE-ConnectionGUID: xqtIaZagRpGCd/Kv1tkEMg==
-X-CSE-MsgGUID: CTgc0CVgRdKQViZfkvXYaQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11970"; a="3699704"
-X-IronPort-AV: E=Sophos;i="6.27,219,1787036400"; 
-   d="scan'208";a="3699704"
-Received: from orviesa008.jf.intel.com ([10.64.159.148])
-  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2026 08:50:31 -0800
-X-CSE-ConnectionGUID: k/DCmaX/Qp2q9S20vakyDw==
-X-CSE-MsgGUID: YVFQiz1BSVmcIhLrCJbvrQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,219,1787036400"; 
-   d="scan'208";a="9985477"
-Received: from mkosciow-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.187])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2026 08:50:21 -0800
-From: Jani Nikula <jani.nikula@linux.intel.com>
-To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
-Cc: David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Sasha
- Finkelstein <k@chaosmail.tech>, Maarten Lankhorst
- <maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>,
- Thomas Zimmermann <tzimmermann@suse.de>, Andrzej Hajda
- <andrzej.hajda@intel.com>, Neil Armstrong <neil.armstrong@linaro.org>,
- Robert Foss <rfoss@kernel.org>, dri-devel@lists.freedesktop.org,
- asahi@lists.linux.dev, linux-aspeed@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev,
- linux-riscv@lists.infradead.org, etnaviv@lists.freedesktop.org,
- linux-samsung-soc@vger.kernel.org, intel-gfx@lists.freedesktop.org,
- intel-xe@lists.freedesktop.org, imagination@lists.freedesktop.org,
- linux-mips@vger.kernel.org, lima@lists.freedesktop.org,
- linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
- linux-amlogic@lists.infradead.org, linux-arm-msm@vger.kernel.org,
- freedreno@lists.freedesktop.org, nouveau@lists.freedesktop.org,
- virtualization@lists.linux.dev, spice-devel@lists.freedesktop.org,
- linux-renesas-soc@vger.kernel.org, linux-rockchip@lists.infradead.org,
- linux-stm32@st-md-mailman.stormreply.com, linux-sunxi@lists.linux.dev,
- linux-tegra@vger.kernel.org
-Subject: Re: [PATCH v1 9/9] drm: Unify coding style for *_device_id arrays
-In-Reply-To: <av2rKJQ0AKU9CFZI@monoceros>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park,
- 6 krs Bertel Jungin Aukio 5, 02600 Espoo, Finland
-References: <cover.1795002467.git.ukleinek@kernel.org>
- <a2d5ce256b8ec150de4a6494c177b19693a33222.1795002467.git.ukleinek@kernel.org>
- <7692c160e418e7ad0528739fcc879b11fbac8ab0@intel.com>
- <av2rKJQ0AKU9CFZI@monoceros>
-Date: Wed, 18 Nov 2026 18:50:19 +0200
-Message-ID: <8ebe3b7219ffd963a498cccbcfe6cefc92717f0c@intel.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jV4z24Bq3z2xMt
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 19 Nov 2026 02:19:57 +1100 (AEDT)
+Received: by mail-pg1-x535.google.com with SMTP id 41be03b00d2f7-cd62c570b5dso908341a12.2
+        for <linux-aspeed@lists.ozlabs.org>; Wed, 18 Nov 2026 07:19:57 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1795015195; x=1795619995; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=3q3WBayPBlbewt1E1eNRkQsJMusptNxG4L6m1LCm1Ic=;
+        b=Ibs2CC+D/4g8uWrkw25OWfMcz6I8x+yVNjX7OGYFiqLQN34d73fRgtuPkQB/ZbVkQM
+         7HVgcOY/cp3XmB5zHuHm7IIXcPDt1OrOfeUMdfHadPqHME9HopN2m5cvCQ4VkGQqoqxh
+         oVECDWNOplyKPrjB2kYJrwvfKNdveSwNRV3bjJ36D3zoJ1g3y1J13mfsF1rjfmx0cY4+
+         /wJnl6o/yiiV+PrbkUXmiQZL8pp7ktDQcJZT7q4te9tNa54wArQx0Pmo1NXIpzlCU6ct
+         nQiaME7He30mq4PYQ8KCDTSzB8GvgGhMaTpUUovl6q44R9K7dKeWiCtZM2GhIFA0DNOT
+         CRXQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795015195; x=1795619995;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=3q3WBayPBlbewt1E1eNRkQsJMusptNxG4L6m1LCm1Ic=;
+        b=Ao8JMqgntVh76qWe/Ejsbf+Iqml6igNNCC9C0PV859ysYSVsWzSl+03MycAnw+H/79
+         doE4Vajn3g6/roPnYFQh/gyxviaBuvY0/0uN2Fedaku0KVAL0q2vXXvj5eaigLEwYwGs
+         JUt8hLgOGTFnIMl20qXWG18JKEvixNhVOkNCkZd+GoUQwd7Ks2iybZ9Um9u4q1b5WVWc
+         mBDwDDY/y0Iqx5fhsYsJhG07+U47Kv0iSi4UW5BU2tWyHWq02vxTAf03J7ejdm4J0jIb
+         xafZ4oREW5ubVjm9JL72rQaAm2c4TTJYIp8nGD/HwxB6144uzX3/d0D22TuwGkVjmCWr
+         pNaQ==
+X-Forwarded-Encrypted: i=1; AL+hErHtWkI6Dt4jf7dULfSB9NovvZtFCgnkG7qKkxpzZCWYibtmNjP15Rq+FEfLD0r8POOVxd9N1hlKLpZ/FW4=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z/tXjLxgEKvmepyVOpPAGFBxXvVOkSbnY3mGtLQ1ks2L1lsQnZ/
+	D1hw87FgoOFSMb7jPLwy5WJxsSy6eDFNk/KM/dYQ6kBsLDaamYIYtoC+
+X-Gm-Gg: AYBFou0ecc3dU+8o6W11RYaNIbM1yOMb2lSl04sgdRjAXoredmHnwqEA/m+rgySnKd+
+	lauIdvFsvfe6j9alLtLXc+zusuzM8SGdbD6D9QptRHPMAYYSn5hk1OIxsc5M0MwSXccMXn8GcbD
+	MDPqehQ9X47AMg5cxBv43gLiLf2t6Strf3wlRbQBvyfG8W13IbFcb1R3eTynhC3EZtDUWOqX9Lb
+	BnQdGMJWd5knhBr+shPoyKIe5NNaOYsbsUlw/fCLWrpeC9UwgbWcGmljBqtnzaQjs7HLFyLOy7r
+	c8PBocb/kOM4RPBCzVBbT5yDvJSRmWcTCARmrh879gWfCEBE8lyC4REhjaVP9bxH6a3ymJo63Sc
+	KmMa0nOkb7x7YlN5clpKokV2swlx64o0DHxoHoGC1D1RxZ7F/P1qFOlG9ETo9HvursdJsOAvm8t
+	rJXvV90Di/9J992/s91UWe5X6aEWebXDVAHGujXpXqgP/kOA2ZM0tQT7lMDXp1SSeufQj0wDXzn
+	cammsyjn42WlyQwxnKH5NHdlmuYeU1zFrAVAGWM3ae6O5eMp5c8bdiJ5lx+1d1UXXOtdx/Qk8HP
+	+55G3LAQiES0YP+RkzBm0WsHgPTEUJKMzUore0kstqBtmYrg+9WNU7YXw1mDxrU+H80I9g==
+X-Received: by 2002:a05:6a21:32a2:b0:3eb:98d2:cd89 with SMTP id adf61e73a8af0-3fe892fd694mr3439498637.25.1795015194581;
+        Wed, 18 Nov 2026 07:19:54 -0800 (PST)
+Received: from eric-N-A (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8c5ca7aa27dsm1408559b3a.19.2026.11.18.07.19.51
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 18 Nov 2026 07:19:54 -0800 (PST)
+From: Eric Yun Lin Chiang <ericyunlinchiang@gmail.com>
+To: Stefan Schaeckeler <sschaeck@cisco.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Tony Luck <tony.luck@intel.com>
+Cc: Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Ryan Chen <ryan_chen@aspeedtech.com>,
+	Billy Tsai <billy_tsai@aspeedtech.com>,
+	linux-edac@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	Eric Yun Lin Chiang <ericyunlinchiang@gmail.com>
+Subject: [PATCH] EDAC/aspeed: do not fail probe when ECC is disabled
+Date: Wed, 18 Nov 2026 23:19:07 +0800
+Message-ID: <20261118151907.3949719-1-ericyunlinchiang@gmail.com>
+X-Mailer: git-send-email 2.53.0
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -99,99 +101,70 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
-	autolearn_force=no version=4.0.1
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Wed, 18 Nov 2026, Uwe Kleine-K=C3=B6nig <u.kleine-koenig@baylibre.com> w=
-rote:
-> Hello Jani,
->
-> On Wed, Nov 18, 2026 at 03:27:40PM +0200, Jani Nikula wrote:
->> > [...]
->> >  drivers/gpu/ipu-v3/ipu-common.c               |   8 +-
->> >  drivers/gpu/ipu-v3/ipu-pre.c                  |   4 +-
->> >  drivers/gpu/ipu-v3/ipu-prg.c                  |   4 +-
->> >  254 files changed, 1155 insertions(+), 940 deletions(-)
->>=20
->> How do you expect a patch of this size be merged?
->
-> Using b4 am :-) Honestly, in the cover letter I wrote about an immutable
-> branch and offered to rebase to 7.4-rc1. When trying to apply this
-> series on top ov 7.4-rc1 there are only 6 conflicts (1x modify/delete
-> and 5x content); these are all not so hard to resolve (and even dropping
-> the respective hunks (i.e. resolving using `git checkout HEAD`) is fine
-> for me.)
->
->> > diff --git a/drivers/gpu/drm/i915/i915_pci.c b/drivers/gpu/drm/i915/i9=
-15_pci.c
->> > index 84a7dc6ab5db..faceb3de4fa3 100644
->> > --- a/drivers/gpu/drm/i915/i915_pci.c
->> > +++ b/drivers/gpu/drm/i915/i915_pci.c
->> > @@ -870,7 +870,7 @@ static const struct pci_device_id pciidlist[] =3D {
->> >  	INTEL_ATS_M_IDS(INTEL_VGA_DEVICE, &ats_m_info),
->> >  	INTEL_ARL_IDS(INTEL_VGA_DEVICE, &mtl_info),
->> >  	INTEL_MTL_IDS(INTEL_VGA_DEVICE, &mtl_info),
->> > -	{}
->> > +	{ }
->>=20
->> Personally, I would *always* use {} instead of { }, and would rather not
->> change.
->>=20
->> Across the tree, {} is slightly more common than { }. IMO changing them
->> is pointless churn.
->
-> It depends on how you count. My statistic looks as follows (on top of
-> next-20261117):
->
-> 	$ git grep -l device_id | xargs -n 1 perl -g -n -e 'print "$1\n" if m/de=
-vice_id\s*[a-zA-Z_0-9]*\[\]\s*=3D\s*{(?:\s*{[^}]*},\s*({\s*}))/' | sort | u=
-niq -c
-> 	      2 	}
-> 	      2 {
-> 	      6 {  }
-> 	   2598 { }
-> 	   1262 {}
->
-> So over all *_device_id { } is more common by a factor of > 2. This
-> series fixes one {  } and reduces the number of {} by 37. For only
-> pci_device_id it's:
->
-> 	$ git grep -l pci_device_id | xargs -n 1 perl -g -n -e 'print "$1\n" if =
-m/pci_device_id\s*[a-zA-Z_0-9]*\[\]\s*=3D\s*{(?:\s*{[^}]*},\s*({\s*}))/' | =
-sort | uniq -c
-> 	    159 { }
-> 	     32 {}
->
-> Without the context of an array initializer there are many empty
-> code blocks (function bodys or `do {} while (0)`), empty dt nodes, and
-> {} in Rust code, which IMHO have to be considered off-topic for this
-> statistic.
+The AST2600 memory-controller EDAC node is enabled by default in
+aspeed-g6.dtsi (it has no status property), so aspeed_edac binds on
+every AST2600 board. aspeed_probe() reads the memory-controller
+configuration and, when DRAM ECC was not turned on by firmware,
+prints an error and returns -EPERM:
 
-I realize my phrasing was careless.
+  aspeed-edac 1e6e0000.sdram: ECC mode is not configured in u-boot
+  aspeed-edac 1e6e0000.sdram: probe with driver aspeed-edac failed with error -1
 
-My point was not so much about one being more common than the other, but
-rather that there are *thousands* of instances of both, specifically as
-C compound literals with empty initializer list. I think it's pointless
-to convert one to other, regardless of whether you're adding or removing
-a space.
+Running without DRAM ECC is a normal platform choice, not a failure.
+-EPERM is both the wrong errno (this is not a permission problem) and
+one the driver core reports as a probe error, so every non-ECC AST2600
+board logs a spurious "failed with error -1" at boot.
 
-I mentioned my preference, because if I were to go on a style fixing
-spree, I'd go the other direction. But I think that too would be
-pointless.
+Return -ENODEV instead, which the driver core treats as "no device to
+bind" and does not log as an error, and lower the message to dev_info so
+the reason EDAC did not register is still visible once without looking
+like a fault. The AST2500 node is disabled by default, so only boards
+that explicitly enable it are affected there. No other error path is
+changed.
 
-I suggest to just accept either.
+This change was prepared with the help of an AI coding assistant, which
+analysed the probe path and drafted this changelog; the author has
+reviewed it and stands behind the change.
 
+Fixes: 9b7e6242ee4e ("EDAC, aspeed: Add an Aspeed AST2500 EDAC driver")
+Signed-off-by: Eric Yun Lin Chiang <ericyunlinchiang@gmail.com>
+---
+Tested: the pre-fix "failed with error -1" was reproduced on an AST2600
+(Facebook Bletchley) BMC by triggering the aspeed-edac probe over sysfs;
+the fixed driver builds (W=1, no new warnings) and passes checkpatch,
+and the resulting behaviour -- aspeed_probe() now returns -ENODEV, which
+the driver core does not log as an error -- was confirmed by disassembly
+of the built object. NOT boot-tested on hardware (the kernel was not
+booted).
 
-BR,
-Jani.
+ drivers/edac/aspeed_edac.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/edac/aspeed_edac.c b/drivers/edac/aspeed_edac.c
+index 6e069b255..e6f8cf78a 100644
+--- a/drivers/edac/aspeed_edac.c
++++ b/drivers/edac/aspeed_edac.c
+@@ -295,8 +295,8 @@ static int aspeed_probe(struct platform_device *pdev)
+ 	/* bail out if ECC mode is not configured */
+ 	regmap_read(aspeed_regmap, ASPEED_MCR_CONF, &reg04);
+ 	if (!(reg04 & ASPEED_MCR_CONF_ECC)) {
+-		dev_err(&pdev->dev, "ECC mode is not configured in u-boot\n");
+-		return -EPERM;
++		dev_info(&pdev->dev, "ECC mode is not configured in u-boot\n");
++		return -ENODEV;
+ 	}
+ 
+ 	edac_op_state = EDAC_OPSTATE_INT;
+-- 
+2.53.0
 
---=20
-Jani Nikula, Intel
 
