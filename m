@@ -2,157 +2,78 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C4C6B606A324
-	for <linux-aspeed@archiver.kernel.org>; Thu, 19 Nov 2026 15:05:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EA3E7606A33F
+	for <linux-aspeed@archiver.kernel.org>; Thu, 19 Nov 2026 18:27:06 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=bpi2vh60;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=bpi2vh60;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=bpi2vh60
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=G6sOAb6L
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jVhbp0Rj9z2xLr;
-	Fri, 20 Nov 2026 02:05:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795100725;
-	cv=none; b=aLFkkBcjIbHAA+U1mL2kgB56Y2Sqiq8AGyS4iV2yA9ikU3NqYDJ7oo4Qklb79Wi3eKdVw7zs68M3s4VlLUENOaD45mpHFB85GVwxlpO3z8HkA2lmCjVjH/UZQOpicZAa78na/Na1rLQSv+0fyaOP/qgNFCcsZtO3F+CHQuptpUW6I3OZB7tb8foLWCvReIQbwNbV7uVwwsS2gztiD4JUrLmRl0Lh33RZLgZL1db5koDnFud6b8JzQGdaYDVA9mDGSu7EQayKU4IHYKBjzqehS1rzB+Pf2mFHsOEz+NqUyraMuQeFErgrKHi1LXSkyJfK5lkyy8tlLz0yiVWTDDpYYA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jVn4T0MVdz2xGr;
+	Fri, 20 Nov 2026 05:27:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.9
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795112824;
+	cv=none; b=j5mey2vXc35qbkEUbZ4qgeEOUHMH6s4mazMfeFPtDGKhcmsFMi5p5hAIjt3JyOt+whcaR/2tE0HCqPIe4KbAvuVyM7XEBM1BGwlr5+kvKs151qSFlUlr69k6lilwkxVcBdj1Ajceyp7O9tHAJz52jQU7XruC8gSLhdcDHc5yaOtw9DO+RhrbzSKz1Vu/YZ68Ap1f9x1E2+IC6bZ4/9Ym4srE09MJupcHDMNxjdbIAv5R360Y4Oymy2oD8TTSwYcr85ekH0dzVLMGL/SCoHoP/X3Fa+24mQBCfkQq17uvDWIySuwrHlmAP4MOmFcK86NpS2LR6LXBmA7/e2MDpoN1lQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795100725; c=relaxed/relaxed;
-	bh=cra6Vs20NtPqxX9EfP/IC1RWThkucYohNUCRfJABY3A=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 In-Reply-To:Content-Type:Content-Disposition; b=SPZO0udCo47BcAtb89jsm1wPjzE5fxh9Ahi4YD/bDE9/5cMRgjzF42iqUy1CNR2aPkeCeZ0ERDtRJjqrtlybjvi7V/AidpIvC4ykk0Hmg6K8CuHd3Jc/piDHgk2i03ATA72VDFkQOoAv4RjP7kp9XtrATb3hBqn/7PEbwrnG/IouqfBEPJRysHHMilGXohIHaEBNJyTXLnDdrrsBWqwkTb7zpEmYaDav3S4/cRkAJCxRQUXPsvWmwAxe3rT0+O4A0kjQbVcv78hVeqDnq+09oRCkSjDmd9vw6ZinZ7VFTlycHe4WNGx4cwrh4oXATzGBIY1baQDGz0l7dlN3AQ1sWQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=bpi2vh60; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=bpi2vh60; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=bpi2vh60; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=mst@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	t=1795112824; c=relaxed/relaxed;
+	bh=NIPo6JsHwPi3PMuDnG/ItHqGkr2IVR0/o1OghE79lDo=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=UHfUneeghSReyLpn0kmeJuWmSg5ynkd9otluDsIdQacucZLGLsnKlQ2HjMHa5OdiI5b0G9V05wWC2LKc8FTbcgzAErB/XVDlq+DZsyToO/Qez4qIu8XKPgLQGLxYCEBbeSi4Xte3uSuuD4I6BFPwNck3XrGaECCaBEKy6y8vR6zVAqtTanU2kYdcGskKLMvPWJWrOYLkNg9yU3nv7Gf580Yl5+aMxynRpOCxXmlmBJ2EnSsXduaYoh6D0lNgyopnycILO+0SVGuqzsfZj617f13BdfhFJoCRD/xGlI0ZgsbogH9oI1rFEmljoqHYaNu3RwNaMTsC4DBpLM5h83hvQw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=G6sOAb6L; dkim-atps=neutral; spf=pass (client-ip=192.198.163.9; helo=mgamail.intel.com; envelope-from=dawid.glazik@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=bpi2vh60;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=bpi2vh60;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=bpi2vh60;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=G6sOAb6L;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=mst@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.9; helo=mgamail.intel.com; envelope-from=dawid.glazik@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVhbm3RJFz2x9N
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 20 Nov 2026 02:05:22 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1795100718;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=cra6Vs20NtPqxX9EfP/IC1RWThkucYohNUCRfJABY3A=;
-	b=bpi2vh60xpvl5EGhMPTXOLvzgPqZZdGqCg0GyCAFSeHYeMAe6OtDarzKONIDkq2ly98yvc
-	6MoKM145XOgKQJ5aVO64FHJq4a1zkKRwcRzmByXB77VwR4+krIe4KvTCLv4/C/QdiWCYZY
-	fT2mC2fHWmYoWlLd7toKJcVDqYCsrDc=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1795100718;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=cra6Vs20NtPqxX9EfP/IC1RWThkucYohNUCRfJABY3A=;
-	b=bpi2vh60xpvl5EGhMPTXOLvzgPqZZdGqCg0GyCAFSeHYeMAe6OtDarzKONIDkq2ly98yvc
-	6MoKM145XOgKQJ5aVO64FHJq4a1zkKRwcRzmByXB77VwR4+krIe4KvTCLv4/C/QdiWCYZY
-	fT2mC2fHWmYoWlLd7toKJcVDqYCsrDc=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1795100718;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=cra6Vs20NtPqxX9EfP/IC1RWThkucYohNUCRfJABY3A=;
-	b=bpi2vh60xpvl5EGhMPTXOLvzgPqZZdGqCg0GyCAFSeHYeMAe6OtDarzKONIDkq2ly98yvc
-	6MoKM145XOgKQJ5aVO64FHJq4a1zkKRwcRzmByXB77VwR4+krIe4KvTCLv4/C/QdiWCYZY
-	fT2mC2fHWmYoWlLd7toKJcVDqYCsrDc=
-Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
- [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-173-w06MaB3kOIC4Q6czDavnbA-1; Thu, 19 Nov 2026 10:05:14 -0500
-X-MC-Unique: w06MaB3kOIC4Q6czDavnbA-1
-X-Mimecast-MFC-AGG-ID: w06MaB3kOIC4Q6czDavnbA_1795100713
-Received: by mail-wr1-f70.google.com with SMTP id ffacd0b85a97d-49337a224a8so1603352f8f.3
-        for <linux-aspeed@lists.ozlabs.org>; Thu, 19 Nov 2026 07:05:14 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795100713; x=1795705513;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=cra6Vs20NtPqxX9EfP/IC1RWThkucYohNUCRfJABY3A=;
-        b=dbczrglX55uYZYu4amwLQI6X1lTVWE6wkzvn4wEQmzCsisA9bzGHu/YtLtiyLzc2/f
-         Rap46K6VLAP3WmEMvqpi4mOhyYrwo2u2mwNlHSJ3nag3bzWDTUW9haN8mQ2yCEJy/WbM
-         n1a6saR2c8k59mSAOZTg8QgzaTjnGhrofsGwVQyL9LQH6YLvcxjKXMT35ZaL+cnft2Mr
-         9znLDRu2h7OuxhajMMriu39JnsP/HCJOemmlmrdv8x8uXRSzripoIM4qnN9+hB2ZcM9C
-         ZNTi4ZBFUCbDeRdJoWrpxOistASQHTwzMLrrwg1a5mXUnVzX34/24iWMXVmrm9NFRMLd
-         Xkmg==
-X-Forwarded-Encrypted: i=1; AL+hErFHEaitpH3MJ04+7CDfFgW3TrCI3PbwwtbNf8Kg16KLhmEk5H6KIVQTsua6RAF/pUvcXbY3C2fx/lF3j0Y=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z/C18ki2u9p1JtNMYDdVjTMu0ALHkAOs643+2MllvheYnQwmWET
-	/rf4/A+yRfNg3njKkiUq2OfuFuc2BmkFVmNh3+5a9zK8bIZujgH+O3/ulV7b/z0cLZ0X7M9cXml
-	MUfn+8Cw9rvobGi68RTYVkbSx7ULcezlOJ+zvKD62d1FpOUZQTLS5L6Hidftto2WWB/0=
-X-Gm-Gg: AZFdTZcq12SdRmHyLBmwHUdZ0h/u4c1gW368MW5nZ9vE+XEQsUMz0cIE4TEH1wwS5RP
-	yLLi3sfDbmK5fK5tSiuBCdZvWc+pptTkra/8qRkE1qE8Q1/OKlPuyrjvaMe10A51JpRh7/7b1ll
-	9qpZFvGmDTpghkIs8fcracRttp9nACHRZsScM262e3GFHwqwTFBhWAOX+6e/ZTZjb63Oez7vM3u
-	frZUjZXejgPxG+/ckcbRe3ldrzLym6fcfzRgS0iiGueebWtzJgHBq56vcdAzo06/Zty5muVyJU9
-	uFZtNXj/WC/zzsH5UDwTiRI9KDKkcy6u9y1vwMcEzn/3Mr9CcdquxiPHTaaQudWqwOfgvAZvxoY
-	1632r9za0noTzS7ZDE0Co0vQ9/l2KsiXkFIlXvMTU/g==
-X-Received: by 2002:a05:6000:2608:b0:4a9:2728:fdfc with SMTP id ffacd0b85a97d-4a92728ff7amr4686376f8f.28.1795100713236;
-        Thu, 19 Nov 2026 07:05:13 -0800 (PST)
-X-Received: by 2002:a05:6000:2608:b0:4a9:2728:fdfc with SMTP id ffacd0b85a97d-4a92728ff7amr4686266f8f.28.1795100712535;
-        Thu, 19 Nov 2026 07:05:12 -0800 (PST)
-Received: from redhat.com ([2a0d:6fc0:1522:6500:ac93:c62:f076:48c6])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4ab6c61e53asm61225f8f.59.2026.11.19.07.05.06
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 19 Nov 2026 07:05:11 -0800 (PST)
-Date: Thu, 19 Nov 2026 10:05:05 -0500
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Cc: Juergen Gross <jgross@suse.com>,
-	Stefano Stabellini <sstabellini@kernel.org>,
-	Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Haiyang Zhang <haiyangz@microsoft.com>,
-	Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>,
-	Jason Wang <jasowangio@gmail.com>,
-	Eugenio =?iso-8859-1?Q?P=E9rez?= <eperezma@redhat.com>,
-	Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
-	Jarkko Sakkinen <jarkko@kernel.org>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>, x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>, Jan Kara <jack@suse.com>,
-	Paul Moore <paul@paul-moore.com>,
-	Stephen Smalley <stephen.smalley.work@gmail.com>,
-	Ondrej =?utf-8?B?TW9zbsOhxI1law==?= <omosnacek@gmail.com>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVn4R3MlZz2xLF
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 20 Nov 2026 05:27:02 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1795112824; x=1826648824;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=xDL2Dk0Ehk9c53PjJYhK7J4/wUrTV1V6DVnMm+9gFOw=;
+  b=G6sOAb6Lnyrmb/Zv1HlWChNT/KglaOgR5EuexkBB25bZXUAQToM95Mte
+   1LNQOQbnWa1aKuh+pSx8wHLGl7V5ETE6pbwmq70nVEAraW3Q5uZYAP1lE
+   7l7+D+B24TpcT+wwydA2CBZBBp0er0X4I8w8n1yFe6+Gni2HJfdOvZBoC
+   q0hxjN2Wl+i4CFhukQYvtjN25DRHt+OI9ra8MTAhhmpafC5tzFqcNfLnU
+   gJlFkOzUG13ewMW+w1dEDUwzPLwUlZxrEN1wyITl4qUmO6yRMSl7j12QD
+   BO2SLb+54xfxpY2pd5DFe2Vg1DuJiRqav//Vqqcc9dDfxEYx8Pi+Yft4y
+   g==;
+X-CSE-ConnectionGUID: YIYTKTR0Q4eo4UPc6QbLtg==
+X-CSE-MsgGUID: 1rPEdTYdSVGt24grTSXiog==
+X-IronPort-AV: E=McAfee;i="6800,10657,11971"; a="3861791"
+X-IronPort-AV: E=Sophos;i="6.27,221,1787036400"; 
+   d="scan'208";a="3861791"
+Received: from fmviesa013.fm.intel.com ([10.60.135.153])
+  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Nov 2026 10:27:01 -0800
+X-CSE-ConnectionGUID: k8tXrjp6Tp6R82gItRzlZQ==
+X-CSE-MsgGUID: e4O2IkxGSp6RXbLfzI07Bw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,221,1787036400"; 
+   d="scan'208";a="12479484"
+Received: from gklab-103a-129.igk.intel.com ([10.91.103.129])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Nov 2026 10:26:58 -0800
+From: Dawid Glazik <dawid.glazik@linux.intel.com>
+To: Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
 	Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Ryan Chen <ryan_chen@aspeedtech.com>,
-	Billy Tsai <billy_tsai@aspeedtech.com>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	Abel Vesa <abelvesa@kernel.org>, Jens Wiklander <jenswi@kernel.org>,
-	Sumit Garg <sumit.garg@kernel.org>,
-	Scott Branden <scott.branden@broadcom.com>,
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Richard Cochran <richardcochran@gmail.com>,
-	David Woodhouse <dwmw2@infradead.org>,
-	Andrew Lunn <andrew+netdev@lunn.ch>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@kernel.org>,
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
-	xen-devel@lists.xenproject.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
-	linux-hyperv@vger.kernel.org, virtualization@lists.linux.dev,
-	linux-sgx@vger.kernel.org, selinux@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
-	linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org,
-	netdev@vger.kernel.org
-Subject: Re: [PATCH 14/14] vhost-vdpa: convert mmap hook to mmap_prepare
-Message-ID: <20261119100450-mutt-send-email-mst@kernel.org>
-References: <20261105-late-2026-mmap_prepare-v1-0-c56aadfbab8a@kernel.org>
- <20261105-late-2026-mmap_prepare-v1-14-c56aadfbab8a@kernel.org>
+	Andrew Jeffery <andrew@codeconstruct.com.au>
+Cc: devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	maciej.lawniczak@intel.com,
+	Dawid Glazik <dawid.glazik@linux.intel.com>,
+	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Subject: [PATCH v6 1/3] dt-bindings: arm: aspeed: Add Intel AVCRP and JNCRP boards
+Date: Thu, 19 Nov 2026 20:19:38 +0100
+Message-ID: <76493a8263cfaee7f700d497f6af475a44e2e85e.1795114204.git.dawid.glazik@linux.intel.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <cover.1795114204.git.dawid.glazik@linux.intel.com>
+References: <cover.1795114204.git.dawid.glazik@linux.intel.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -166,92 +87,50 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <20261105-late-2026-mmap_prepare-v1-14-c56aadfbab8a@kernel.org>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: wY9PjfqkPC1Bswg9M7wrckq6n_QEPSf7rtf4CiwSorc_1795100713
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
+Organization: Intel Technology Poland sp. z o.o. - ul. Slowackiego 173, 80-298 Gdansk - KRS 101882 - NIP 957-07-52-316
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-21.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Thu, Nov 05, 2026 at 09:05:45PM +0000, Lorenzo Stoakes (ARM) wrote:
-> Move from the deprecated mmap hook to the new mmap_prepare hook. The hook
-> only validates the request and sets the VMA flags, operations and page
-> protection.
-> 
-> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+Add compatible strings for the Intel AVCRP and JNCRP BMC boards.
 
+Signed-off-by: Dawid Glazik <dawid.glazik@linux.intel.com>
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+---
+v6:
+ - Rebased onto the current aspeed/arm/dt, no other changes
+v5:
+ - Rebased onto the current aspeed/arm/dt, no other changes
+v4:
+ - Rebased onto aspeed/arm/dt of bmc/linux.git, no other changes
+v2:
+ - Squash the separate AVCRP and JNCRP commits from v1 into a single
+   commit, since the changes are small and closely related
+ - Fix compatible string ordering so the new entries stay in
+   alphabetical order within the enum
+---
+ Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 2 ++
+ 1 file changed, 2 insertions(+)
 
-feel free to merge with rest of this.
-
-> ---
->  drivers/vhost/vdpa.c | 23 ++++++++++++-----------
->  1 file changed, 12 insertions(+), 11 deletions(-)
-> 
-> diff --git a/drivers/vhost/vdpa.c b/drivers/vhost/vdpa.c
-> index ff7d90719171..993b2d7c8927 100644
-> --- a/drivers/vhost/vdpa.c
-> +++ b/drivers/vhost/vdpa.c
-> @@ -1573,19 +1573,19 @@ static const struct vm_operations_struct vhost_vdpa_vm_ops = {
->  	.fault = vhost_vdpa_fault,
->  };
->  
-> -static int vhost_vdpa_mmap(struct file *file, struct vm_area_struct *vma)
-> +static int vhost_vdpa_mmap_prepare(struct vm_area_desc *desc)
->  {
-> -	struct vhost_vdpa *v = vma->vm_file->private_data;
-> +	struct vhost_vdpa *v = desc->file->private_data;
->  	struct vdpa_device *vdpa = v->vdpa;
->  	const struct vdpa_config_ops *ops = vdpa->config;
->  	struct vdpa_notification_area notify;
-> -	unsigned long index = vma->vm_pgoff;
-> +	unsigned long index = desc->pgoff;
->  
-> -	if (vma->vm_end - vma->vm_start != PAGE_SIZE)
-> +	if (vma_desc_size(desc) != PAGE_SIZE)
->  		return -EINVAL;
-> -	if ((vma->vm_flags & VM_SHARED) == 0)
-> +	if (!vma_desc_test(desc, VMA_SHARED_BIT))
->  		return -EINVAL;
-> -	if (vma->vm_flags & VM_READ)
-> +	if (vma_desc_test(desc, VMA_READ_BIT))
->  		return -EINVAL;
->  	if (!ops->get_vq_notification)
->  		return -ENOTSUPP;
-> @@ -1598,12 +1598,13 @@ static int vhost_vdpa_mmap(struct file *file, struct vm_area_struct *vma)
->  		return -EINVAL;
->  	if (notify.addr & (PAGE_SIZE - 1))
->  		return -EINVAL;
-> -	if (vma->vm_end - vma->vm_start != notify.size)
-> +	if (vma_desc_size(desc) != notify.size)
->  		return -ENOTSUPP;
->  
-> -	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-> -	vm_flags_set(vma, VM_IO | VM_PFNMAP | VM_DONTEXPAND | VM_DONTDUMP);
-> -	vma->vm_ops = &vhost_vdpa_vm_ops;
-> +	desc->page_prot = pgprot_noncached(desc->page_prot);
-> +	vma_desc_set_flags(desc, VMA_IO_BIT, VMA_PFNMAP_BIT, VMA_DONTEXPAND_BIT,
-> +			   VMA_DONTDUMP_BIT);
-> +	desc->vm_ops = &vhost_vdpa_vm_ops;
->  	return 0;
->  }
->  #endif /* CONFIG_MMU */
-> @@ -1615,7 +1616,7 @@ static const struct file_operations vhost_vdpa_fops = {
->  	.write_iter	= vhost_vdpa_chr_write_iter,
->  	.unlocked_ioctl	= vhost_vdpa_unlocked_ioctl,
->  #ifdef CONFIG_MMU
-> -	.mmap		= vhost_vdpa_mmap,
-> +	.mmap_prepare	= vhost_vdpa_mmap_prepare,
->  #endif /* CONFIG_MMU */
->  	.compat_ioctl	= compat_ptr_ioctl,
->  };
-> 
-> -- 
-> 2.56.0
+diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+index 9ac4a7a8ede0..41a0a4af9e76 100644
+--- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
++++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+@@ -112,6 +112,8 @@ properties:
+               - ibm,sbp1-bmc
+               - ibm,system1-bmc
+               - ibm,tacoma-bmc
++              - intel,avcrp-bmc
++              - intel,jncrp-bmc
+               - inventec,starscream-bmc
+               - inventec,transformer-bmc
+               - jabil,rbp-bmc
+-- 
+2.43.0
 
 
