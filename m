@@ -1,76 +1,78 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CE4C0606A6B8
-	for <linux-aspeed@archiver.kernel.org>; Sat, 21 Nov 2026 03:41:37 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E3A9E606A33F
+	for <linux-aspeed@archiver.kernel.org>; Sat, 21 Nov 2026 03:41:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=HshYOSXw
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=tgoll3Ub
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jWdKr0fmzz2xXB;
-	Sat, 21 Nov 2026 14:41:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1331"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795232495;
-	cv=none; b=JLQLlDDzIprZ56zQE6bYLIZxILkpW1VivA7zJTSAIUFl/moCDgcnYG2XCbthxzBkUFL86CAYnW7TWoXIKuTQg+tSwf/jcB2l+EjCD/0E6d23w3maOKufs/v8ro0RGzn7Cym9Dox+izSKqmRrJfbTZxxWhAfHM+JNdQU1uVP0fwr4252cjPrvR4gLer4YKuO3gOClrQrwQNQFIPVCHemfNLFHMhMX8hyfEdwjj9EtmRvxAMWxMvwykE2ZmO3cy40VzhkbCfiMk560rI09zWc1+Xr6wXyIoEq1H4KqlWmJGj/ILuL2Q4AF9nisaySFja3QifStwfFZnOes0yCtCdzuwQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jWdKx4jhNz2xmh;
+	Sat, 21 Nov 2026 14:41:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::122b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795232501;
+	cv=none; b=deN6KRrVv91AN8kz6HU4TaneFZbLZph4b8IYstFAY305G6NppuRGIjqMvUkP1swz2Zn9TyaDLls8Af8U9W7M5nm6jxqsjqnUhDVu2Zbz1MHznCYv0JIGGNhMcV3WwJCI/b9seSqJpu+67PirhsL2F8QrPO/9n9q5wWS7WEe6qU7P/RkKTcgjLyYfp0hswDFBqmmoVEP79B6Cw9G/bXjZrcNMN2re6Hn6P3mV3ZMzJQ5bFSPSP1hzl6VfxkCq79Hk0VfW7SToMQAvDD2gmYp8sFEEWwKn3n8gtFkje9w6Vq8N4pqGESrk32X/pGMaDQqfeuijN87u38JhWtk0qd0IqA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795232495; c=relaxed/relaxed;
-	bh=asqkoYbz82hEaVuDlqAKtg9A95Bx0CAB6i8FMp3RVm4=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Irod9ZGGPo7mx490Ee/Jd2STx4K3nkJcKA+9j2FE1t/C32M+Bbp+O0Q+k/02OByzGRjeXIy7SVOVuPCeaXd/xWPBTBQWVSDBU7yxlqpWjeALYwSfGDWcNouYP0cwIrA6kvYBAmqz4ubeSqGL8lZYvTh4mVQwEF+JsW4U7Z3gCXwzCSa1XPFU4hcWsak2W/XJJQmZmo+5Q6WB6Z7C78r1QqyWOa3bQywoy22fh3JhvGJecYY65yg9eCcJfPAFtcG7GO9K8ITZKF0Cyy92lBjw4i+CQKqj5T8ac3Xw0XcHzdTwxWq7QQofQawkh36DeBvpZ7wli0sfQlYorlFFQsyA+A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=HshYOSXw; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1331; helo=mail-dy1-x1331.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1795232501; c=relaxed/relaxed;
+	bh=Ah3lmmwTO4kTFu9w/FRtwILA0EF2N9TZsivGOFrxvGE=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=OLpT8rIc9VrNAw9rsr1wryFr+H40GK3Bodzv5gXW5p1Y3LmJx4exCX/WBVlP/+ApwhfPYxJs8WTlUlaQc3FN3n8wTcbA/K96I497qjc2wyd8NUd8/tJyMnYy3gmTDGpXt9Q7ODCTx0k2L8Dwb5uIPYtY4+yVJRbDobcCk7SKLHAPvTr6o3G1id1BEAQt8dACswl5djzibfsbc6MPH+fYYoFRMar6owuyH23znyiNwej9qQLA7TK6DQPQLzEwwjOEISmdVX00aIlefGAl3KSBKiW3VDgW/qwFU6KH0Kg/iatXynNnSOfrLd28JmbBIHHg4dZazklR+KWxFV16vyZkvA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=tgoll3Ub; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::122b; helo=mail-dl1-x122b.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=HshYOSXw;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=tgoll3Ub;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1331; helo=mail-dy1-x1331.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x1331.google.com (mail-dy1-x1331.google.com [IPv6:2607:f8b0:4864:20::1331])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::122b; helo=mail-dl1-x122b.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dl1-x122b.google.com (mail-dl1-x122b.google.com [IPv6:2607:f8b0:4864:20::122b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jWdKp3nbxz2xLt
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 21 Nov 2026 14:41:33 +1100 (AEDT)
-Received: by mail-dy1-x1331.google.com with SMTP id 5a478bee46e88-382f4710a17so2585553eec.0
-        for <linux-aspeed@lists.ozlabs.org>; Fri, 20 Nov 2026 19:41:33 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jWdKx08Nrz2xLt
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 21 Nov 2026 14:41:40 +1100 (AEDT)
+Received: by mail-dl1-x122b.google.com with SMTP id a92af1059eb24-15dd124bbe7so3483079c88.1
+        for <linux-aspeed@lists.ozlabs.org>; Fri, 20 Nov 2026 19:41:40 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795232491; x=1795837291; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=asqkoYbz82hEaVuDlqAKtg9A95Bx0CAB6i8FMp3RVm4=;
-        b=HshYOSXwk6HlOm7TuYfU+QHq6aL5XxfPJ+JmY5ECgZsIue0H6AyPp+rXYCWXxyXw+M
-         t2QVBlpKHK0BVNTscyRULKd9+/qVD8vnRRTnnY6r07cZth9dfIs6IYZQSr1H8I9Ax5cp
-         eS0fqisn4b97hiO3Tb129R+NZRX4RvXfDoW26Vw92PTUpfv/NKwsB5HZgprWn5ba8Qjg
-         GVQb0My883pmqe1Fg+tZMH42vVN29261bT9q2t5V29qJVfe41HU10xrUBnChd127/IV6
-         32TJF93LX0kmFYIINWAbc5i0INcUNbU+nilq31ZHKhrxQdZ4jyrXyg2n0W4MF7Zc04Su
-         CSkQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795232491; x=1795837291;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20260707; t=1795232499; x=1795837299; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=asqkoYbz82hEaVuDlqAKtg9A95Bx0CAB6i8FMp3RVm4=;
-        b=yhXxD2FLvxuzxU069DQ/gPT0C3pYSiHuDZk/8xqPz4B7lp7L8TT0MtlPOKXftNiRdV
-         rCwHswLYJ+2DrG8LQk3G2aTGdQ0UmPaMPNsu+AwU/1gVl5ESpMRpiWUbC8LAgRSUV1rq
-         53tLzJVKv3yJSpgVTqbOvIuFi1+cDmCZ5SdO35352O+o8zc/nfHZx8zsPdmTOMglmeVw
-         f0PIcbVK+LgcQwdYv5Jd1+FnxqmDhFkUxhClpp1e7iYIsxpOGUBEfI+urF4DwWbL81Up
-         dMr5aNNM/AW5Nfa5Ud70CYX+MsVvzOy7jhl7DpRQoeTenKyug17IfXFWfeZpwN74vpts
-         0lew==
-X-Forwarded-Encrypted: i=1; AL+hErG31fNjwjpWeRcSXdkpw5uGpi7yt0ZWrtSXgfGNw9j/hcKK0kE53vzh0MDl0vAMP6aDB/dVYavrKdk3Jdo=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z896K7ZB7NaDWAL9QqYvZVzRTjK1x1f/4KU0bB4Zfz0pVij6GVZ
-	cpwmQc9vsBhA6ykysOUm4Vf3m/gn1WoUSALh46IEWB7AFuO1M+z7S1Zq
-X-Gm-Gg: AZFdTZcus+E1/ba5lMYVS25e9scKxUSbiEmFr8UeJ7dF316xrtq/Bi0gC1vQQfCsVA6
-	Vab4xpr0VadmY5ZpOElrMCHI2plaFJAC3HzHvAdj5RyhuV5EFsKFUinW0+dsphfVkNU7BKeRi/k
-	mKMK5c1bZhooWkjkBiniiFq8iOOr4vTa4WGQ0XfgMflbeD0bZ0xORfAd36r/LqBbTxdXvd8T5fr
-	22CMrC9P48jTSpr1gj4F0kIXrnpFj7Cy+gZGFadHAcrJum9Z2VoZXblAGDzooAZEz+7XlJXk9L3
-	oBW97b2TsNyTlnmN/N5aqke/tnPjiAFGVi6Nt3sc5tOYTjsgfFbVN2UKVXMr6KVyF8x8eQ8i+24
-	rKo9A6lXSdutJ7qvjH/5xOTUlP4skTOmmEo1f0pwK+jWZrxhkPqinD1X0RDvZY52RgTXryZTa5z
-	dsFsX6GG06IM7kTuyKPEoHyfOdGVvd0ZuHevlkBK2T4GYx0WNQdSN5mWntk1SvHJWvbPjaCIGuN
-	XyXleCpyGSEcsnv/fNQY9qMabClb+D+9nk5rQzwi7y31QuXrLuN3dDpSpeCEH6BaqT2jVTYiLIZ
-	qAEudN8t5U9xNX+Jj8mLPywk4W0LA20h1gSHR6w8K8p8aA==
-X-Received: by 2002:a05:7300:ce8f:b0:375:7be3:1bbd with SMTP id 5a478bee46e88-38570b336f4mr4071171eec.23.1795232491106;
-        Fri, 20 Nov 2026 19:41:31 -0800 (PST)
+        bh=Ah3lmmwTO4kTFu9w/FRtwILA0EF2N9TZsivGOFrxvGE=;
+        b=tgoll3UbUOw8IT8SHKEbADUCm6w6hxnv2zbviHNU8djNdvVfaoQBJs54dcP/yxI3Ow
+         IOvrtX+XnOUMy9pSqqxe95b9JSgWP/LWg8G2R6gRM0xq3bPRg8p25c2uKdVMNIkWY0eS
+         NZ+pqr3Orx0paFsovpHqtwCndtAdh37rGfWKd3miiVT0bwisYeq7fx0Pn/NtOdivJdDs
+         SbacEkP5DC5rFM2LpPj2eu1SlRc0qYIviFK3twjqgd8u2c+7dPj8+imjvRv6QrmVd57S
+         dRtNfXaBbuZBpfdxMmbQRKg779fvbPVYkyWm4rvCK0qBm2Ivq9FIktBuI8XehnQTQef3
+         nbAg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795232499; x=1795837299;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=Ah3lmmwTO4kTFu9w/FRtwILA0EF2N9TZsivGOFrxvGE=;
+        b=FAf+kMC0IVlt7cx7SkzV/Z2ELwDRjgo4024WYCwgLFmydyS8jj1VuIjyGzkMG7UxUK
+         XtN9Xk64YuBaL218QHTIjYuqTyTD73mGJJ/9vqgc8z1nWS3m2J8fiOJZdUR9Wm1yO1pH
+         QelqLOvjwccrfBcY1uSHeAwYhbyKSEb800xfPRgqfo+bE6nXT2pMySC1qR1n9lONfwQ3
+         XacPNQejbVde265hNy+rNQ7ypyH9Q+AinOD2CP+N/nA71JSndSuRsR1Ir2d7jwIAPEAl
+         yMGJkVjA7FOru2xFhxDsCOmeMXjc9eAUsZ5yE5xORONGDROMy7QHZmlAV0diWoApYmyf
+         FjCw==
+X-Forwarded-Encrypted: i=1; AL+hErFUWNWs8ndJYz3j4lvb0xv2BSg/DuR4xr+aFct9INFb57sBmE/cx99ubbCHQtKIYG6XKSYIQJa6g/1B5qU=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z/4iUsUJ8gwAXgMRo5xhURqo0bxgWjaIu9lx2RVsDrmigSJ+Yfy
+	5jSaeiGdrRDwv3QhskG9nDu1Y1oXvxzQBvlIklSn8aej7SrJLfvi0aHb
+X-Gm-Gg: AZFdTZdi0sditlfdCl7gGoDY5FRZQVc/AkuTxRSfLHMMyZkduIsbTFQvO60cWQsrdDz
+	Bi2kJm05chRxSZ9ylGYas295UQfxHihhb5lkcw2RylKMitG2zlsEhDI/By51YlogIBU/GtbLIJe
+	hKFc86Eibjb5fVqFmnb9nnNxF/eFBhFUKnVLPD17LLcIzsuKFFww2EPoSn0tQhjJ1FSBpEfa37c
+	bZybzBETU0Aim4kClo3sV9QEs7MRxJi4EaKVZjFj9lca+9BckoRterfdh/ki5VgHKrTS8tMjlut
+	EE7uxUEON41urkshODMHpVxtGeLREDSZOvETFUyB+Tzew2G6orPtHJA5cQP9blVw8qopFplgxXD
+	nUd0B3dcY+3w/SygYe8+RICrZlHkQLCMxITit3QaGUKWsh1wnTbbt8wGPKFVYge2GL3dRBZU94M
+	B0Y/JuoXszfQYGpbsXnyXSK9Aw/st9297aTZFVtPSRfRXjt4/yLvIO9bXphHOqCGfHysiUja44w
+	kCaQkj81+CNw0rEBeFptMRvmRDnkzR2yz6yqWpVA+cKMZ5ywVPjXUwKlxwf8w1iQQXw+VodGIn1
+	DHp0a7YetetaJRfVxGGJzjvAYkEzAmBeZPdsIclL/dLGBg==
+X-Received: by 2002:a05:7300:2209:b0:386:8d2:929b with SMTP id 5a478bee46e88-38608d2945emr5305042eec.23.1795232498643;
+        Fri, 20 Nov 2026 19:41:38 -0800 (PST)
 Received: from debian.prasanth ([103.177.82.216])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-385646633d0sm20891464eec.3.2026.11.20.19.41.25
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-385646633d0sm20891464eec.3.2026.11.20.19.41.33
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 20 Nov 2026 19:41:30 -0800 (PST)
+        Fri, 20 Nov 2026 19:41:38 -0800 (PST)
 From: Prasanth Kumar Padarthi <prasanth.padarthi10@gmail.com>
 To: srini@kernel.org
 Cc: robh@kernel.org,
@@ -87,10 +89,12 @@ Cc: robh@kernel.org,
 	linux-aspeed@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org,
 	Prasanth Kumar Padarthi <prasanth.padarthi10@gmail.com>
-Subject: [PATCH v3 0/2] nvmem: aspeed: Add read-only AST2600 OTP support
-Date: Sat, 21 Nov 2026 09:10:51 +0530
-Message-ID: <20261121034053.39878-1-prasanth.padarthi10@gmail.com>
+Subject: [PATCH v3 1/2] dt-bindings: arm: aspeed: sbc: Describe OTP NVMEM provider
+Date: Sat, 21 Nov 2026 09:10:52 +0530
+Message-ID: <20261121034053.39878-2-prasanth.padarthi10@gmail.com>
 X-Mailer: git-send-email 2.47.3
+In-Reply-To: <20261121034053.39878-1-prasanth.padarthi10@gmail.com>
+References: <20261121034053.39878-1-prasanth.padarthi10@gmail.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -105,75 +109,65 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=4.0.1
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi,
+The AST2600 secure boot controller also provides access to its OTP data
+region. Reference the NVMEM provider schema and use unevaluatedProperties
+so common NVMEM properties are accepted while unknown properties remain
+rejected. Cell offsets address OTP data rather than controller registers.
 
-Add an NVMEM binding and read-only access to permitted AST2600 OTP words
-for userspace BMC bring-up diagnostics.
+Signed-off-by: Prasanth Kumar Padarthi <prasanth.padarthi10@gmail.com>
 
-AST2600 accesses OTP through shared command and result registers, so reads
-must be serialized. Earlier firmware may leave the macro in programming
-mode, requiring read-mode initialization. The protected prefix can grow
-during operation, requiring live protection checks. A timeout leaves
-command completion uncertain, so further commands are blocked because no
-safe retry sequence is documented.
+---
+Validation: dt-doc-validate and the selected dt_binding_check target passed.
+The binding target used dtschema 2026.4 with a local diagnostic lookup fix
+for trailing # in schema IDs. No validation rules were disabled. Two
+unrelated TI type diagnostics remain; no SBC diagnostics were emitted.
+The valid example passed, and an unknown-property negative control failed
+as expected.
 
-Supplementary design notes:
-https://github.com/prasanthp20/asrock-b650d4u-bmc-support/blob/main/docs/security/ast2600-otp-nvmem-design.md
+ .../devicetree/bindings/arm/aspeed/aspeed,sbc.yaml     | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-Changes since v2:
-- Explain hardware constraints; put test results below the commit separator.
-- Use generic ASPEED naming and named mode-register addresses.
-- Share unlock/relock helpers without mixing scoped locking and goto.
-- Return EIO for unlock failure; simplify pair copying and registration.
-- Drop redundant MAINTAINERS matching, zero assignments and probe readback.
+diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed,sbc.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed,sbc.yaml
+index b8c5cac..d8e19c2 100644
+--- a/Documentation/devicetree/bindings/arm/aspeed/aspeed,sbc.yaml
++++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed,sbc.yaml
+@@ -13,7 +13,12 @@ maintainers:
+ 
+ description: |
+   The ASPEED SoCs have a register bank for interacting with the secure boot
+-  controller.
++  controller. The controller also provides access to the OTP data region
++  through NVMEM. NVMEM cell offsets are byte offsets within the OTP data
++  region, not offsets within the controller register bank.
++
++allOf:
++  - $ref: /schemas/nvmem/nvmem.yaml#
+ 
+ properties:
+   compatible:
+@@ -27,11 +32,12 @@ required:
+   - compatible
+   - reg
+ 
+-additionalProperties: false
++unevaluatedProperties: false
+ 
+ examples:
+   - |
+     sbc: secure-boot-controller@1e6f2000 {
+             compatible = "aspeed,ast2600-sbc";
+             reg = <0x1e6f2000 0x1000>;
++            read-only;
+     };
+-- 
+2.47.3
 
-Changes since v1 (introduced in v2):
-- Add the separate SBC/NVMEM binding patch; rename the source and module.
-- Replace double polling with one bounded poll after an initial 1-us delay.
-- Initialize read mode and read CONF0 once at probe; use a fixed keepout.
-- Check the live SEC54 range on each hardware read in confirmed 128-byte units.
-- Simplify word copying with unaligned-safe LE stores; accept empty reads.
-- Adopt scoped mutex locking and managed initialization; simplify Kconfig.
-
-Tested on B650D4U (AST2600 A3) with upstream-based Linux 7.4-rc1:
-repeated reads, cross-pair/final-pair comparisons, 40 concurrent reads and
-a 12-byte ASPEED-derived reference comparison passed. The RAM boot used
-the working OpenBMC DTB and initramfs. The ARM kernel build used W=1.
-
-The selected dt_binding_check target passed using dtschema 2026.4 with a
-local diagnostic-crash fix; no checks were disabled. Two unrelated TI
-type diagnostics remain, with no SBC errors. Host-model range, copying
-and timeout checks also passed.
-
-AI assistance was used for driver revisions, validation tooling and patch
-text, based on the downstream driver, review comments and Neal's guidance.
-Hardware tests were run by the submitter.
-
-Previous revision (v2 cover letter):
-https://lore.kernel.org/all/20261120174440.123487-1-prasanth.padarthi10@gmail.com/
-
-Patch and review history:
-v1 1/1 - original OTP driver and review:
-https://patchwork.ozlabs.org/project/linux-aspeed/patch/20261113034213.158390-2-prasanth.padarthi10@gmail.com/
-v2 1/2 - SBC/NVMEM binding:
-https://patchwork.ozlabs.org/project/linux-aspeed/patch/20261120174440.123487-2-prasanth.padarthi10@gmail.com/
-v2 2/2 - revised OTP driver and review:
-https://patchwork.ozlabs.org/project/linux-aspeed/patch/20261120174440.123487-3-prasanth.padarthi10@gmail.com/
-
-ASPEED hardware clarification - Neal Liu:
-https://lore.kernel.org/linux-aspeed/KL1PR0601MB3986A356BD06F98D0FF9AD5E80792@KL1PR0601MB3986.apcprd06.prod.outlook.com/
-
-Prasanth Kumar Padarthi (2):
-  dt-bindings: arm: aspeed: sbc: Describe OTP NVMEM provider
-  nvmem: aspeed: Add read-only AST2600 OTP support
-
-base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
 
