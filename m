@@ -2,91 +2,93 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ECD77606A321
-	for <linux-aspeed@archiver.kernel.org>; Mon, 23 Nov 2026 09:15:24 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 718CD606A31E
+	for <linux-aspeed@archiver.kernel.org>; Mon, 23 Nov 2026 09:30:30 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.a=rsa-sha256 header.s=google header.b=B8jB9zTS
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=WT1mmyjh
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jY0f34RnXz2xyj;
-	Mon, 23 Nov 2026 20:15:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::336"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795425323;
-	cv=none; b=cXDxmiJzq52PXYmK4C/7gskeDznekIHuA29lWMNEPgufVY0g1lbOMJmIa8PK9duh3TMOIedXNbXw/vjIUvbxAn8+xC39PydLAGzRUstMDQyjs+laEaV1UlNF1367iIMhVAkKUN1LPYViigAEEQoKXEdE1gx9bNSLJm7YEZijJIMDF9o3SQpvzf5uWscTl/dv39HClzeMZ4HqFaNbPiqT55KYScT1VBPF2QwihWtgZRC/8A0B/fhLOG6qjwJeHVIhvIorocoVxzBWagR/KTxQzHwgIscVX7k3gDZvJ501Lb+tUi8p+hR1DzrZciqUdfg42E0kKQX/KX4vYnfeUp5WiA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795425323; c=relaxed/relaxed;
-	bh=87mz9PA+CW/7E4uRqcEgoSgLyusH584rSyT2Z/HLo8k=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=LOh4Y0eo0xytEByXVBCUhrMw2Os334daHwmFpH539VANwozeEz1ZDoQ3iS8sq2Zql/1AwjqRUOCUvYHf0tGBcpaeOdpBe6FJYALzpLuuLeiOv0NaY+jZC0lw69eOE3YgsCAc2XwyLdoYJFI5cMQ/jl1eYfJRUK+9NFZDTwzznmRXEtByB6YRIpZjt7keCe2C88EezO2Ne9XtL68CdR28zD9BLXMMsH7b1w8+GsAcXjFMSfRBED6siJqQ0vAqvXnObmcvESaLeN10OhKc3oALzob5unKcbHQN7R+JMsBLBGKBcDD69CyGuYHMFYFMQ7ODAEKhpuY1nFD0rWl/WwhDkQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=baylibre.com; dkim=pass (2048-bit key; secure) header.d=baylibre.com header.i=@baylibre.com header.a=rsa-sha256 header.s=google header.b=B8jB9zTS; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::336; helo=mail-wm1-x336.google.com; envelope-from=ukleinek@baylibre.com; receiver=lists.ozlabs.org) smtp.mailfrom=baylibre.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=baylibre.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jY0zS4lpdz2y7p;
+	Mon, 23 Nov 2026 20:30:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::b131" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795426228;
+	cv=pass; b=Y053n+8Svpyuqww6DOyr3sUU+R5lweV4md9qJPh4MHBgJPZfuS9Z9qOLr6TsibFX+pHAzN2uWFqF2xXg39iBScO4/rwGA6L9fRc2Bk7rd4SjAPDcLGoFhsIFaGfhVK1KQY2de2JDr5ifqkeFyVBJJCci3tE2M4os49lZhcOCiwcYToiI9oDOCTdPRnABR4N4k3oSVYpBixDusaCVKQrbs8mfbu+H9zs1PjTTwkX1hp0mVxXXImOgtzg0e3VKV0TYG21Jm+yB9U2836mhNE8WD/Of8TWliUmGl89e+UUQfLtkOh2SsJleDa9BHJG4KInEwWvxB17h0YFIkybhhnbqkQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1795426228; c=relaxed/relaxed;
+	bh=TfuZUX8mfvP1wlJZ5oBsp8JU8zB5VTHYrC1NJB4pEqA=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=ke1uNKglD1jN+5V58P4wcyG6EjdbuqyG7fKemvqZa2LL6tvJ/e83/1V/JnyhekArD3Z/sX75sKNn4R6n0OF4SFU8NlOgvm2L/NJekywMyybZeX3e0wCI4R10bbQOYe3haSWJ5fFmYQXYmsu6IxPuUzbaONat/uDP+5b0BmaiqMh6PZsTfaCXXwkcsQzam9n3hzlDR5GqfN7k+q6+NLTXu3idURJScBU61fNRfCPI+431oLz5IlJUTyPlbKOKBL40n0GF/KyYjwemvEAC33zTYHBkQe822Tb02MQDmSQD8QLEiL2NvgEbPJtO8oVlKwGKLqKt1ErIyZWS668e362JYg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=WT1mmyjh; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b131; helo=mail-yx1-xb131.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=baylibre.com header.i=@baylibre.com header.a=rsa-sha256 header.s=google header.b=B8jB9zTS;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=WT1mmyjh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=baylibre.com (client-ip=2a00:1450:4864:20::336; helo=mail-wm1-x336.google.com; envelope-from=ukleinek@baylibre.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com [IPv6:2a00:1450:4864:20::336])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b131; helo=mail-yx1-xb131.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yx1-xb131.google.com (mail-yx1-xb131.google.com [IPv6:2607:f8b0:4864:20::b131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jY0dz6dTJz2xBb
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 23 Nov 2026 20:15:18 +1100 (AEDT)
-Received: by mail-wm1-x336.google.com with SMTP id 5b1f17b1804b1-4b467581b98so27682065e9.0
-        for <linux-aspeed@lists.ozlabs.org>; Mon, 23 Nov 2026 01:15:17 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jY0zR21yQz2xyj
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 23 Nov 2026 20:30:26 +1100 (AEDT)
+Received: by mail-yx1-xb131.google.com with SMTP id 956f58d0204a3-67db1f6f50eso3025230d50.0
+        for <linux-aspeed@lists.ozlabs.org>; Mon, 23 Nov 2026 01:30:26 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1795426222; cv=none;
+        d=google.com; s=arc-20260327;
+        b=lMgWAYkeCSFvVdIa0Um82DzSj39AzZSFyhKSB//mIychFmiD6YiHd4Mr6Nrg0Uueow
+         AiXyRzb8InllL++pnBsuGKTACn5T2OIla7/dpCOCGaIxA8YYr+H4mxARaSROHOAJkFu1
+         9JAsP71qkkBjeg7ISjGotXIw8Z8q5tX2rHI4HDRhO7ZW4VbxtZKHrPOV6p6+3kFmkwOF
+         6nxSRzoUdd1b7dtyxtTjZCqmk2bMcLtql34spyehZsJc5WICY3loah/PyvxD14/OAzUn
+         +5nGmxNCo/NZmf+ZAXFS0cHXVjhtPPS2d74dkkrmHVt7jOp2ida786vTqM1ENT0vQLA8
+         pgLg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=TfuZUX8mfvP1wlJZ5oBsp8JU8zB5VTHYrC1NJB4pEqA=;
+        fh=4Gl06Yu1PxFYrHU3eRS2zEhlhvwiMlGhJ96N/AuCu5k=;
+        b=borffQ9vf/UHunDNXhRysz/oQ/FCSUOm9HTGE4Mz6/k53qdCN17agqcssBdGtgdA+w
+         jHJOR5vnlaQmqHQtCckon7AiojWPplPh0IpzaHcYjWdM4/q2jaZ26fWu0ckjQ8xBUu2K
+         QsXsN9vMaJXgQZFI7KpNihCnU+eBXjggEhNRKx++JecP3gaRNkVOg0MaZAsnrlp34936
+         /Q+S5XUkY7lyiVWrSKG6k1ZiTwOS+jjpRcfdHCH9A8TZG0rJvewzumICuT1J6+7S2LP4
+         iJjlQ68920+z3KKGrmuzksAEK7Yanh5xNDH1GO0v6yfJoqagC22H8nLYyrgMxQNWHPNn
+         S1Ag==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre.com; s=google; t=1795425314; x=1796030114; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=87mz9PA+CW/7E4uRqcEgoSgLyusH584rSyT2Z/HLo8k=;
-        b=B8jB9zTSwfhmVDQBM5QsBhI4RMegTq+iJqmMzJtXuvygokFEGAjL1kmWUEKTGFBbDm
-         zocEBfX8es8gmOqhwecJIkMfYxrT8i2c0zX2skTZNEjfvk/kYmU8U1qiupMOiQh9FFs8
-         M9u4JRB3ihhrRVNPy+pdHdKfjHouzWe1bKwXt6EVFT33qjoJqspFy73QfsEqgU7BhuLe
-         /RWGmCJKcJCASRRxTeZN6A2N43DurpO31TtbPSCTUXxA8bxhGkuCqbztka6gfYdleA2+
-         peL/4UzpdjFGMQ8Mmn0uI+wzNlgA7SN/zxBckd+jwTZK3DWjmZoN/JD6BNXpKM2z/J5H
-         ll8w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795425314; x=1796030114;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=gmail.com; s=20260707; t=1795426222; x=1796031022; darn=lists.ozlabs.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=87mz9PA+CW/7E4uRqcEgoSgLyusH584rSyT2Z/HLo8k=;
-        b=YjeZK/avlebpE1VbBwK6RbLYm/GyeKKYZvbhjzglAF9ftZjAI5t1MlFXe4BxoU3e34
-         HmAKO9zYi+vlaGJyCZUEZCoR1NO4w9wmjrDLt/KQYpACcij6kdk48kYQPntkF9hT9BTX
-         tcVUM10GJX4xeDFcDQ+gmgCS8tppW3A6Alt8VrXlu0muT+Ueuo50GcWVewhTn30CE7hB
-         gOrGu0jwdfMQalosITAOr1ll5YaBcmfsCxJOdGb8beVnIL7NY6uvWT3CzP7lYBYZFAXL
-         0ZbnYL2e93101Q1zlsUfM+y/71jLBi+HfNOVQF4niTKLOAn7Y6bCzxNG3PNtQEyD2T3O
-         DdKA==
-X-Forwarded-Encrypted: i=1; AL+hErHswGJnK7+kUJspIFXK/sLGPf2CTz2nTZI/kSt+pDaFGgiP5pccw8oQ4DpNITQ9aMW7xQSsvbk7o6RQ1qg=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z804lH96kgAqYRKdiTyq5wPZ9myL/iFVCFS5NoUN4BdXr5PVJvk
-	KDWdgF++FtGb1VhMw5zWMGcMBEfAvwImgw9GX7pcKyl9jvq1CDuWHl3HOfW9UhgxuLg=
-X-Gm-Gg: AZFdTZfwrg2sbUzbYCDsduZeS94i/OZ8G44buPtM2/1c2bdJTOdwY7gIlFzC8LeTkgO
-	EuSvY10vuDx4t7tj2vo2AK6UKT6py8NMpVO4Qlat01L8MPX2mVLunl9pJSar1Y9IpcG0ISPT3Yy
-	iS8ZilQMg43kszGCCKefeQOTU/Nzcq10SB5gyS4HFYUdxscrqxRkG/26GYq7gvET/wjjqNjZu1V
-	34MIzfeyq9mkHas0U+blH+gN2UYqH2TAJ8iIHUJIYg3nwifvJ3blYKqNBO214+CLRpjGiOhx0NC
-	B2mi7bqeOy+gUb5Al2Se3VbR9ll92Av99IUwi7lnp2qWlqoT7H4qSmACpGX9UCoOyAtdI6ynyF0
-	8pzf0pjPBBRjbkk9fdWEYA+bxIKmTFb201cAat0kwfn0ic8Zj3hhvshcRd0Q9mPPrL4JUlrMTsM
-	yOJ+rMWXCumD2Uu5BXrnNfPgFOXWNldbsiSnczsS9X3rSfirTWIG1BzeI8oUNYkKz9JsvUunYcr
-	mI0i/30jwpOBHHFCqNBzq5Vu1pp5xLsv/lp3CDyYDXzJjSdIMq5JaiAohHgaDFUH8m2Oi8T4PVt
-	f2ElmFmLeT7OFVMDoVc48vNwDpGJU/Ah98M3nwX3AY7qNYV5P91TyMzj4WA/HUn+SZ3DaU37wtF
-	n+IaUSLCxtRANJ7LQ
-X-Received: by 2002:a05:600c:190d:b0:4ba:2bfc:c8b5 with SMTP id 5b1f17b1804b1-4bb888267aemr218391455e9.10.1795425314064;
-        Mon, 23 Nov 2026 01:15:14 -0800 (PST)
-Received: from localhost (p200300f65f19a90438645cebc2ee104e.dip0.t-ipconnect.de. [2003:f6:5f19:a904:3864:5ceb:c2ee:104e])
-        by smtp.gmail.com with UTF8SMTPSA id 5b1f17b1804b1-4bb8538b09bsm626178365e9.4.2026.11.23.01.15.13
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 23 Nov 2026 01:15:13 -0800 (PST)
-Date: Mon, 23 Nov 2026 10:15:12 +0100
-From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
-To: Prasanth Kumar Padarthi <prasanth.padarthi10@gmail.com>
-Cc: srini@kernel.org, robh@kernel.org, krzk+dt@kernel.org, 
-	conor+dt@kernel.org, joel@jms.id.au, andrew@codeconstruct.com.au, 
-	ryan_chen@aspeedtech.com, billy_tsai@aspeedtech.com, neal_liu@aspeedtech.com, 
-	tan.siewert@9elements.com, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 2/2] nvmem: aspeed: Add read-only AST2600 OTP support
-Message-ID: <awQDxB-09pHSgfJ_@monoceros>
-References: <20261121034053.39878-1-prasanth.padarthi10@gmail.com>
- <20261121034053.39878-3-prasanth.padarthi10@gmail.com>
+        bh=TfuZUX8mfvP1wlJZ5oBsp8JU8zB5VTHYrC1NJB4pEqA=;
+        b=WT1mmyjhinlJDMCqgcCfD5UxpprdJ9CAnxP/3JPBPnDYudw/xhQKICoFGXlWykf0Ek
+         NZIR/clUKbOgXsbVlQP/tqyBhjme37iJsaV5D8ZrBZbtznEC68e7g3iyNgcrlbeQzSfv
+         GueAVAefQZRoQTxT0SyNqln/7Kltxv+oOK4S1CV8Hwufvrz4Fn9Wi8vb6cuvpqcmX+IX
+         a2nLGMZvSKmodjXLwTc2YJLwpPmw3HzpfySVPWC/eU/bOOJ9OKUm4h6Pdcq/BpWM8e67
+         qmLtEMmGxVsZNnGn86U0jL4R0bYXdlgIrWdLyjQ8YxWlBZJ59tEFto54RSPXLoXhadGb
+         4Kzw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795426222; x=1796031022;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=TfuZUX8mfvP1wlJZ5oBsp8JU8zB5VTHYrC1NJB4pEqA=;
+        b=u5n2YwNO/RZqqZXLAoY5t5LSQUfR6lmWzac23aFrimMDaDZLtCKfgxiA0imXq4+RJW
+         KxI/qaFeKYJg94g0cqmc+83OR9vsmDPT+dZMS/ZMKNYA+2YgDUsHV39XaAMni2X4JpZa
+         f2OlLam64XN5iEMYu77f88G19BSxJ7nQut/cCFlnVlKRHqf0bP+ptsS7/ifJlIi4hncc
+         +030DhQODe15qrcq0TtZBwMRfn4yF5ytmspEAQemoda3LAGuoYSuucNZDk1MgLUsGhML
+         cyViMYwbbCMuhmiW+SVoRLatTwQRX7WlBohDy8U+aPBjYs+GtpdXqzJg2DfF6GKLNb3O
+         v4sQ==
+X-Forwarded-Encrypted: i=1; AL+hErEY8PKM6fuGCvHneYHJDZ/5EhpTHDJ0aMN1qGuWV9lXbBwCk9abPiUPzP8hOQz5v6cZyNwUgXiJyKohPJY=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z9KSsUIimYciLurOPc7w0rY8IRR7YpUnAASNMmU+tilUfmj10ep
+	7m97OC5a7RsXy3QUVReYjbA0BYJbImlxmjWqqBJ+41ySp5vt146LQ7bam4q34NW41yhGby2Yu2I
+	oyCJW9iyp96TN2uL4FRYLdvJIOUqBTyg=
+X-Gm-Gg: AZFdTZeQeyopRRcpfRyfMVLPzDdCHeCMGdK0mmNVTn/KTvrmi1J0juv7JbnDxd/VR2n
+	wvlE0X4ukcgOA1bjcyznH/Jv3NHEoeDEaxdLmAZZw4aXnH1QNiWfeBYcHLiNhAfhYy92EVmbuwa
+	TesG6Gx4UvN8KRd85Vmf5K2IAV0yOFlMl46R+uCkxQWpjVz+wJSeNHnN039rhHl8A8Qe/2EwzpD
+	Z6RWVpAbxwsPECxYpdwMGjXvB6/2TpLUeQDCJDiEJNq4Y3CZ5wytr7ColZsrYRmOEk5RXVUL+pt
+	M9Asb5NkSTIQiqjrOaHTADEny3r9qr+XgM058HGpJWjFAkPDv5gj9XFn3r+3pXSIZJ+pHeYbJqa
+	ZzH/TQHf8DVuqpxsZ1dnrcv4aK0K2uxxEj4WmmdV5S93X9LQzJRvTd5P0e48=
+X-Received: by 2002:a05:690e:bcc:b0:675:3f33:b183 with SMTP id
+ 956f58d0204a3-67df43ce1bamr4794506d50.24.1795426222603; Mon, 23 Nov 2026
+ 01:30:22 -0800 (PST)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -100,59 +102,97 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="v6s5d2pxosvbykll"
-Content-Disposition: inline
-In-Reply-To: <20261121034053.39878-3-prasanth.padarthi10@gmail.com>
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
-	autolearn_force=no version=4.0.1
+References: <20261121034053.39878-1-prasanth.padarthi10@gmail.com>
+ <20261121034053.39878-3-prasanth.padarthi10@gmail.com> <awQDxB-09pHSgfJ_@monoceros>
+In-Reply-To: <awQDxB-09pHSgfJ_@monoceros>
+From: Prasanth <prasanth.padarthi10@gmail.com>
+Date: Mon, 23 Nov 2026 15:00:10 +0530
+X-Gm-Features: Aa3M54p2Tg3Xn3_mGIg8UrqjUBdm1BTWQzb3Jw475KREmNKAwgQOwvk1PFUKFkE
+Message-ID: <CAMFFDGiW5PAxd509=v6fLpXR4mzr+PJUD5JGN1iYgBB4hT_H8A@mail.gmail.com>
+Subject: Re: [PATCH v3 2/2] nvmem: aspeed: Add read-only AST2600 OTP support
+To: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+Cc: srini@kernel.org, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
+	Andrew Jeffery <andrew@codeconstruct.com.au>, Ryan Chen <ryan_chen@aspeedtech.com>, 
+	Billy Tsai <billy_tsai@aspeedtech.com>, Neal Liu <neal_liu@aspeedtech.com>, 
+	Tan Siewert <tan.siewert@9elements.com>, devicetree@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, 
+	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>, linux-kernel@vger.kernel.org
+Content-Type: multipart/alternative; boundary="0000000000003800e80660ee3ea5"
+X-Spam-Status: No, score=0.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
+--0000000000003800e80660ee3ea5
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
---v6s5d2pxosvbykll
-Content-Type: text/plain; protected-headers=v1; charset=us-ascii
-Content-Disposition: inline
-Subject: Re: [PATCH v3 2/2] nvmem: aspeed: Add read-only AST2600 OTP support
-MIME-Version: 1.0
+Thanks, Uwe. I=E2=80=99ll drop the linux/mod_devicetable.h include in the n=
+ext
+revision.
 
-Hello,
+On Mon, 23 Nov, 2026, 2:45=E2=80=AFpm Uwe Kleine-K=C3=B6nig, <
+u.kleine-koenig@baylibre.com> wrote:
 
-On Sat, Nov 21, 2026 at 09:10:53AM +0530, Prasanth Kumar Padarthi wrote:
-> +#include <linux/bitfield.h>
-> +#include <linux/cleanup.h>
-> +#include <linux/io.h>
-> +#include <linux/iopoll.h>
-> +#include <linux/mod_devicetable.h>
-> +#include <linux/module.h>
-> +#include <linux/mutex.h>
-> +#include <linux/nvmem-provider.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/unaligned.h>
+> Hello,
+>
+> On Sat, Nov 21, 2026 at 09:10:53AM +0530, Prasanth Kumar Padarthi wrote:
+> > +#include <linux/bitfield.h>
+> > +#include <linux/cleanup.h>
+> > +#include <linux/io.h>
+> > +#include <linux/iopoll.h>
+> > +#include <linux/mod_devicetable.h>
+> > +#include <linux/module.h>
+> > +#include <linux/mutex.h>
+> > +#include <linux/nvmem-provider.h>
+> > +#include <linux/platform_device.h>
+> > +#include <linux/unaligned.h>
+>
+> <linux/platform_device.h> already provides of_device_id without all the
+> dependencies that are implied by using <linux/mod_devicetable.h>. So
+> please drop the latter.
+>
+> Best regards
+> Uwe
+>
 
-<linux/platform_device.h> already provides of_device_id without all the
-dependencies that are implied by using <linux/mod_devicetable.h>. So
-please drop the latter.
+--0000000000003800e80660ee3ea5
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Best regards
-Uwe
+<div dir=3D"auto">Thanks, Uwe. I=E2=80=99ll drop the linux/mod_devicetable.=
+h include in the next revision.</div><br><div class=3D"gmail_quote gmail_qu=
+ote_container"><div dir=3D"ltr" class=3D"gmail_attr">On Mon, 23 Nov, 2026, =
+2:45=E2=80=AFpm Uwe Kleine-K=C3=B6nig, &lt;<a href=3D"mailto:u.kleine-koeni=
+g@baylibre.com">u.kleine-koenig@baylibre.com</a>&gt; wrote:<br></div><block=
+quote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc=
+ solid;padding-left:1ex">Hello,<br>
+<br>
+On Sat, Nov 21, 2026 at 09:10:53AM +0530, Prasanth Kumar Padarthi wrote:<br=
+>
+&gt; +#include &lt;linux/bitfield.h&gt;<br>
+&gt; +#include &lt;linux/cleanup.h&gt;<br>
+&gt; +#include &lt;linux/io.h&gt;<br>
+&gt; +#include &lt;linux/iopoll.h&gt;<br>
+&gt; +#include &lt;linux/mod_devicetable.h&gt;<br>
+&gt; +#include &lt;linux/module.h&gt;<br>
+&gt; +#include &lt;linux/mutex.h&gt;<br>
+&gt; +#include &lt;linux/nvmem-provider.h&gt;<br>
+&gt; +#include &lt;linux/platform_device.h&gt;<br>
+&gt; +#include &lt;linux/unaligned.h&gt;<br>
+<br>
+&lt;linux/platform_device.h&gt; already provides of_device_id without all t=
+he<br>
+dependencies that are implied by using &lt;linux/mod_devicetable.h&gt;. So<=
+br>
+please drop the latter.<br>
+<br>
+Best regards<br>
+Uwe<br>
+</blockquote></div>
 
---v6s5d2pxosvbykll
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmsEBB0ACgkQj4D7WH0S
-/k7Hxwf9H/8q38Ueri9XT0N4hYnYWo22+INjgZLMlUEbSlxNQBDn1IF2w7mkk8Xv
-BdxmX9P9vtKw5T3eYt0Ay8rnTIvrpCTlqxLAdjeAG35Y9i0teVdHBZ2NoruLywJe
-o+SMd+vKFQGJIaPZpqZ+8l9UVMX7cw2f63hV8DDB/qOQGLOxUp+8+SMlTSh/0vpb
-tdDetsWfXf3zXpUhcdm94FD344QDgGcl4xldzIYrZH3YFr+1yZhRgrSzHEWlg+GK
-LazzxZYuxXq1ViTVixTB1tYWNiQjv/4vl/Vwe8zcAcpBwo1usnJXrObYY1gG+00g
-g80CYxg/efXxv1fI8Yd2zVP5nAVxKQ==
-=C1hc
------END PGP SIGNATURE-----
-
---v6s5d2pxosvbykll--
+--0000000000003800e80660ee3ea5--
 
