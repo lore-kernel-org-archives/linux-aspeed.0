@@ -1,78 +1,152 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A08AD606A31E
-	for <linux-aspeed@archiver.kernel.org>; Tue, 24 Nov 2026 00:31:46 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 36BFE606A32A
+	for <linux-aspeed@archiver.kernel.org>; Tue, 24 Nov 2026 06:08:45 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (4096-bit key) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=alien8 header.b=dxtTMzrI
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Mu+lZvdL;
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=fgKeFyUl
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jYNzP0rk9z2xfX;
-	Tue, 24 Nov 2026 11:31:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f9:3051:3f93::2"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795480305;
-	cv=none; b=jLolP2z+blIH6nYO/tM+GI0s/JEW4KcgcZVcy+k0iqw94Gyf74n5gOkwD8xOY4bx2jhHkoVKxNYBrEhGcFukZBxuzEIBgd1zJ7XhoF3rBqTRohODpEkUGW7OlqYROClq+xsCQaQnwEAufDFnMDU5H21H0kuD5mpZHHP93Uqb7xHK2twpRYZFkztsZWhYVQhuV9AelAJVETe6RI6RlMseoNlZ9MiMNPuHYzwA6vXSxQIJdDY9iAFEQ7dL9MigWdFjZ1qt8EfU8tdL12iXUrWt6h7vsmGpVfilsNEHhxZvHQFqJb7ditPF2+5M3iNqzVTTuAD6akF0t6iXphcci2THuQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jYXSC3dJsz2yCP;
+	Tue, 24 Nov 2026 17:08:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.168.131
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795500523;
+	cv=none; b=kfkTpA6cPVsWUWUmSu8CRRsFpU/mLpQaB6Z8BV4YvmCvhMZ2pQXfTLSG2hvHo8UzDfDbxbGLuzX2xB6xiZ1BohaJ/CS4cjJeBnOF8XXOuEl9fHUVrkSF0pOxwHpNl6QCS7mci+NN+QTvsNj/qSEoDMnC7Lkx/uF0FfHGWP09NrYW+Ji3/a+6P3182j+Q0aFqGIjmhRYnzqGNEeZKh6/OLfCxHT3FSsChh5Bw6H19hx+YCkOeGboWODO1H8XSonM334THA4rGNudgEDuK1Ks8ydaFfFAolToV8pF/gbjS86bEllgiiEJ+v4LGKjIj6W2eirQ3bechDHt0P8RCfRpqTQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795480305; c=relaxed/relaxed;
-	bh=7IpkPkVFHEadLY409nUalcnMRClqdAQR7VTRSz1ZcO8=;
+	t=1795500523; c=relaxed/relaxed;
+	bh=dvY4KBfiISm+CQm5KIDUrtb6uzBgUaP0PFQaZpqv52w=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=DOGVT0U+05rU8K5wkayqHcIk24D1njG8/AGhjVdWBvOFXYzNFlIv1Cz2ndnpYsKyfS1hhSK66CMLbtqVnXr0aizfWT292eyOVZHX0c0TOIpl83aeqwtXPkDtWP0IwISIfnNVupkvLJ5Iv6lZ7oUA3gsWIx/NOgp7s55UJnFzmyAvkszDKcdLAyuduPP1tIsra5wIfRBDa1L5qzRdRY1t12/FEJ/DZ3r3dsDyQadORT/25d5CRDsUyn5TbZUEap6ThCYO2pvw1XqBEuCcGyWBfWu+mwhSoIOg0tkfIH24+b3mJY+xmT6cOhk1nNVDr/+lF5V43wxy/Lhw43+gMXHSmQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=alien8.de; dkim=pass (4096-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=alien8 header.b=dxtTMzrI; dkim-atps=neutral; spf=pass (client-ip=2a01:4f9:3051:3f93::2; helo=mail.alien8.de; envelope-from=bp@alien8.de; receiver=lists.ozlabs.org) smtp.mailfrom=alien8.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=alien8.de
+	 Content-Type:Content-Disposition:In-Reply-To; b=PMitgDu0IKqcxv14eFyCbUXmB2AzzF+moyWLGszOkdEJPCGoURxnOTkev0WTg0S8oMf8QvJmqzWnwkYrGA2LI4LxMWXwEfZ5HU2WmPZuSHQxjccH6tmtlYzOTIc1oeKR7l8ezbeBCfQbEZJZa1Qhp2u41VWiBiAM1zf7v8xXSlZ3GkJxPmt2zxxzCJVlbB131viHEOs6wQlv+zazJId9hHud33EDrNWPMZXZc4u+6tlvk6amGyqa0laa8/fAQXoj7rd6b2MffOHsFzutqely9g7hC07puGgo0r0W++2NFl7IXFXJ4/sSIliNWw9RddWbu7u5nyFi5PQjL/kXIdwKsQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Mu+lZvdL; dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=fgKeFyUl; dkim-atps=neutral; spf=pass (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=abel.vesa@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (4096-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=alien8 header.b=dxtTMzrI;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Mu+lZvdL;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=fgKeFyUl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=alien8.de (client-ip=2a01:4f9:3051:3f93::2; helo=mail.alien8.de; envelope-from=bp@alien8.de; receiver=lists.ozlabs.org)
-Received: from mail.alien8.de (mail.alien8.de [IPv6:2a01:4f9:3051:3f93::2])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=abel.vesa@oss.qualcomm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jYNzL1GgTz2xf8
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 24 Nov 2026 11:31:40 +1100 (AEDT)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by mail.alien8.de (SuperMail on ZX Spectrum 128k) with ESMTP id 025B340E02AA;
-	Tue, 24 Nov 2026 00:31:35 +0000 (UTC)
-X-Virus-Scanned: Debian amavisd-new at mail.alien8.de
-Authentication-Results: mail.alien8.de (amavisd-new); dkim=pass (4096-bit key)
-	header.d=alien8.de
-Received: from mail.alien8.de ([127.0.0.1])
-	by localhost (mail.alien8.de [127.0.0.1]) (amavisd-new, port 10026)
-	with ESMTP id xKx_-KTIfSpn; Tue, 24 Nov 2026 00:31:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=alien8;
-	t=1795480289; bh=7IpkPkVFHEadLY409nUalcnMRClqdAQR7VTRSz1ZcO8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=dxtTMzrIL2fiuW2uuAg3o2TZ7OmmjPyRs4XTm6+40JI43cDYin4TG1Ke8hvvdeOE3
-	 6VG7vmghoywou2l3QfBlsSZU5jaKZwecLlfOjb/FNHgxaYyBvWTRdNjlBqQlNXBn0f
-	 V6QGk4z05IY5zZMYcoWYkMnjBmIXdyoCoJ7DYF2R7rPJY7QSObTY5zBZigUEH203Ys
-	 tXd5zqDVZA5syLn/Zh3fu+xApkDk1GBT5soKeVyvicfMGZ3RqLZhpkf8DSGmgWhzqg
-	 RwDFltz3o9zqd2Jt1MlK/Bqm/OlH1BZ0ZAkIzIcEUMjaf0j+fSsmEufdA1a2qG74fl
-	 SPKkcYEOplQX7bntkepvRlsTHKrYWUGIxh86h69Zjb0olSEsXO8M1BLxnpbqtQNOjt
-	 qvpnfeWTlaYTckcl1ggafe8aCh9mMzbf3/+etfuyv9BhcvUaK3gHV2KA49g2cV/A5Z
-	 rlZx9W+idJ2eEFHHWOWSo+13fZM+3L0F4+Zm43SI/6RTzonngU4uZxRKoCHjgjt+4k
-	 2avTfLz7xn0sKUaTteGBWjNYj8INDKK9ddwqE3Y5xZdNCZ1u+JT4D7saRDTkjIaGJ6
-	 AHYoXdF9Rrqdu6xQtkEKC7XeRX3ZMCt0Dlp0bijOwauJ2ycqiAq3+BJWSH6FGnNxH3
-	 wetm2jf087EkhHzioUWE3XQw=
-Received: from stx.tnic (unknown [IPv6:2600:1700:38ca:c00::2b])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature ECDSA (P-256) server-digest SHA256)
-	(No client certificate requested)
-	by mail.alien8.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id E18E140E0240;
-	Tue, 24 Nov 2026 00:31:13 +0000 (UTC)
-Date: Mon, 23 Nov 2026 16:31:10 -0800
-From: Borislav Petkov <bp@alien8.de>
-To: Ryan Chen <ryan_chen@aspeedtech.com>
-Cc: Stefan Schaeckeler <sschaeck@cisco.com>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Tony Luck <tony.luck@intel.com>,
-	Billy Tsai <billy_tsai@aspeedtech.com>, devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, linux-edac@vger.kernel.org,
-	Borislav Petkov <bp@suse.de>
-Subject: Re: [PATCH v6 0/4] Add Aspeed AST2700 SDRAM EDAC support
-Message-ID: <20261124003110.GHawTazmnfEiwzjh-0@fat_crate.local>
-References: <20261117-edac-v6-0-a2a747b95c3f@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jYXS93p7Mz2y2b
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 24 Nov 2026 17:08:39 +1100 (AEDT)
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AO2k5Li901797
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 24 Nov 2026 06:08:35 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=qcppdkim1; bh=dvY4KBfiISm+CQm5KIDUrtb6
+	uzBgUaP0PFQaZpqv52w=; b=Mu+lZvdLXuWGpOkRTkHFjM/i3/zxBEn62CaGxwiM
+	4QAwVoT9XEi4yAVQyTS/Hdf4oK6g4Bc9UAYdPk+DRdycbrtCTJCG8mMPRAhd8Itr
+	YJhqFMUPxIvAUoO28f/gr9kwh8uoUQMFVNIJ4mHntvWYoUNjLLZJkNIL9C5NO8j5
+	4wzwAtnHxt9pAGjuHvdm/dL4ZGq7SYRNZIslZ6b/jAPWSWpvoexho/kIjWyCe8Go
+	XEM9WzZZfx7YDi8VBJiRGkruQKiQYtAWiuR5g/M2YJX70BEeqYi1vnUAfiYQx25H
+	1Q6Q3rvSf1diwPrHavfw3ko6BktLi1o93wWElVUR6hp2Ww==
+Received: from mail-qk1-f198.google.com (mail-qk1-f198.google.com [209.85.222.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4j4w6sspr7-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 24 Nov 2026 06:08:35 +0000 (GMT)
+Received: by mail-qk1-f198.google.com with SMTP id af79cd13be357-93f26dd2165so1039065385a.3
+        for <linux-aspeed@lists.ozlabs.org>; Mon, 23 Nov 2026 22:08:35 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1795500515; x=1796105315; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=dvY4KBfiISm+CQm5KIDUrtb6uzBgUaP0PFQaZpqv52w=;
+        b=fgKeFyUloZz+4RhvVfbCtNIKV6icyOjE4L2mgLs/w6wXQvTutee3+hNMa8CNzP8/N1
+         6uWrzN86OOyMGHv1IKZYkdAq6gpN0k2hvXm4xf0MlfKNaHihKwM8F+Uy/soEZOgxJG1+
+         xa/z/OjiD0sh1kWkBqjTBpvQNnXyUHasw4I/BD1xl2eTNT0WqRkz32NOsW+lSWsSSo9m
+         OsZV53cpImzwG6nxbzZVCdjlzLqEwgggU+MWfcvxToB52d8Ig3ps9YFzE9zL/ReFDpcl
+         d04QStMK4Gc8wFqaymj0b9G2n/r8SBRQfpQShmUe+i5Wpdytharw3fmlbcRmEgH/MdhH
+         oo0w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795500515; x=1796105315;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=dvY4KBfiISm+CQm5KIDUrtb6uzBgUaP0PFQaZpqv52w=;
+        b=eI25TBAJDiYeBPwbBf0lZMrQXp5BCAj6d+LXHlUZPSyfZzsjF46Ruxgyx0E0YfrZi1
+         kM/ic2Ms8yy5Dw/ofVgpjuJBQVzabf3tsLpvam/ZqBIJnL5Qo2a1LdyRx9bIVpLNLFGs
+         YwSbHRDv2UtLGyedSStawEyEmIgWyQ94A9NntD7Vy2yfNvXyrdIkhi1ShJ1iOptsBGmx
+         kmURMhCk+BKB08AMD2gSnQ4eZ7QUrSoHm88GB/nm67KRQYwd5ASc3uC/6+gmdm7dK/XE
+         Jv7QMzh2ucNuBDIkQqB7VCg0zamSNH/9CXgXma0T3zt4AZTRMnSFOOYcJc9XRa6RhGjL
+         mfhw==
+X-Forwarded-Encrypted: i=1; AL+hErGtK0IJRXc3FBFqdvoLnxWSxUtXUCxHl6HEy+tBoYvInCyPNgZG9B7VMQtR4YpSKol209VccptY4brJWOI=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z/jICfa4DlKv/soaxMo+WigrmDmHNFvsjmLoPEt/xgF7OhjW5Wr
+	k5Pu77FG5zwVmiLJzvR8oPojX53iOJqa7VS52OB6AaLsgeGtq2dA0R5n0Z0AAknX9Eftz2mq1Md
+	nC/6scy3r2x2geFLK4jfmNdLsmYH+EnQWUgtE8D1oTnnO065jY6IDJ55zqy/qt0rQcnGj
+X-Gm-Gg: AZFdTZdVOCD40XgwNg+iBYNANZ49611KaBtK+gFl3C/zVkOHOlqAXUoFqW/qfwrDBN7
+	DFD/UWHQkrq4oG6mwPUMMO2UMbvWFRh3s1r6MKVD4PapKIfALn7uG8iQztmLpXvXyC8cFeMNbMU
+	RuC9o5dSZYDQcw1ez0y3+a3AjMMpsab5XWmGlDUC3wns76Q3BYbVgH2UxbScnGaWXI1vvl6/Atq
+	1zUhLOYuMUFlqSqqnWqffzVLTRlk4WSPDqfZk6aVyq4VtlI1t7HIZbgXYKUs6AejwS7zOAYSio0
+	TyIF9W3Ra37S/2i37HExJGn2xHPYwVCikdYLRRuTbZ1docozlAOib7dSaTCjdwNW3qt4vOsSe4O
+	VN6s3lFhSFYaNDjwPBxn06+19vkP9uwZzj79ysNu6lMOslDjfb4mT7IaIhVnoEt4=
+X-Received: by 2002:a05:620a:3185:b0:93e:94a4:a97d with SMTP id af79cd13be357-949ba683204mr2433052885a.0.1795500514549;
+        Mon, 23 Nov 2026 22:08:34 -0800 (PST)
+X-Received: by 2002:a05:620a:3185:b0:93e:94a4:a97d with SMTP id af79cd13be357-949ba683204mr2433050285a.0.1795500514001;
+        Mon, 23 Nov 2026 22:08:34 -0800 (PST)
+Received: from oss.qualcomm.com ([188.27.161.77])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4ad644140b5sm23005124f8f.17.2026.11.23.22.08.29
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 23 Nov 2026 22:08:33 -0800 (PST)
+Date: Tue, 24 Nov 2026 08:08:29 +0200
+From: Abel Vesa <abel.vesa@oss.qualcomm.com>
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+Cc: Juergen Gross <jgross@suse.com>,
+        Stefano Stabellini <sstabellini@kernel.org>,
+        Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        Shrikanth Hegde <sshegde@linux.ibm.com>,
+        Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>,
+        Dexuan Cui <decui@microsoft.com>,
+        "Michael S. Tsirkin" <mst@redhat.com>,
+        Jason Wang <jasowangio@gmail.com>,
+        Eugenio =?utf-8?B?UMOpcmV6?= <eperezma@redhat.com>,
+        Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
+        Jarkko Sakkinen <jarkko@kernel.org>,
+        Dave Hansen <dave.hansen@linux.intel.com>,
+        Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+        Borislav Petkov <bp@alien8.de>, x86@kernel.org,
+        "H. Peter Anvin" <hpa@zytor.com>, Jan Kara <jack@suse.com>,
+        Paul Moore <paul@paul-moore.com>,
+        Stephen Smalley <stephen.smalley.work@gmail.com>,
+        Ondrej =?utf-8?B?TW9zbsOhxI1law==?= <omosnacek@gmail.com>,
+        Joel Stanley <joel@jms.id.au>,
+        Andrew Jeffery <andrew@codeconstruct.com.au>,
+        Ryan Chen <ryan_chen@aspeedtech.com>,
+        Billy Tsai <billy_tsai@aspeedtech.com>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        Abel Vesa <abelvesa@kernel.org>, Jens Wiklander <jenswi@kernel.org>,
+        Sumit Garg <sumit.garg@kernel.org>,
+        Scott Branden <scott.branden@broadcom.com>,
+        Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Richard Cochran <richardcochran@gmail.com>,
+        David Woodhouse <dwmw2@infradead.org>,
+        Andrew Lunn <andrew+netdev@lunn.ch>,
+        "David S. Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@kernel.org>, Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>, xen-devel@lists.xenproject.org,
+        linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        kvm@vger.kernel.org, linux-hyperv@vger.kernel.org,
+        virtualization@lists.linux.dev, linux-sgx@vger.kernel.org,
+        selinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-aspeed@lists.ozlabs.org, linux-arm-msm@vger.kernel.org,
+        op-tee@lists.trustedfirmware.org, netdev@vger.kernel.org
+Subject: Re: [PATCH 10/14] soc: qcom: rmtfs_mem: convert mmap hook to
+ mmap_prepare
+Message-ID: <7zkdydihgjnqxerwzbebrcryry37hcqc47dpzqmoxdgc7qt3i6@uanst4lmvvkn>
+References: <20261105-late-2026-mmap_prepare-v1-0-c56aadfbab8a@kernel.org>
+ <20261105-late-2026-mmap_prepare-v1-10-c56aadfbab8a@kernel.org>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -86,52 +160,51 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20261117-edac-v6-0-a2a747b95c3f@aspeedtech.com>
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+In-Reply-To: <20261105-late-2026-mmap_prepare-v1-10-c56aadfbab8a@kernel.org>
+X-Proofpoint-GUID: oTdR2mb2rvLAUKXfTUAe1p6wmND_tr-a
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTI0MDAyNCBTYWx0ZWRfX80+d28borgmy
+ GTRT7+mUFk3ApVJGrX3HBovibhi73B/ar+gWzyuqjAS9YGkYk4zxDDz08uSmC+CSH8hXEVgQlRc
+ btVVx9OMBEw9JsgaiRrhi7l47x8fV6E=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTI0MDAyNCBTYWx0ZWRfX7LThCiMf8TqK
+ yB1ztxKkjaf+wqjL693bxJ9hvRA6pX0VlcutWE9IHGTpKXqffQZzWshCtHiWGFNRubwYdAOpPFn
+ C0BtZMy0ajh2uddzZQVY4pwXTUwbjeet9QRgCKyRxReJAfxJbsuwvDXaGKab5iV3cXybLdF/cPx
+ AYrY+g+K2yE83HI3geEBfJmtVFV6WiCg71575oH8pzZcioM3YGzyFMX8FuRcOpUWifoIowAy0KT
+ PBqXOsOgS4ooF+Z/3EO1ru0drWd6oc7q125MrR73xx4mTQyAbgXOUl0zLCzddp4eGEcw0iPczmu
+ zXEriGjru5zYNciuAp2ADy4aa+rZowdqp6U+uOaqGLIkMvZRXnR921Rquyco3xIRx/RR9WiWbPw
+ y7hwpG/pJvOD+JC0S/W1wMamMN/z6f277sgemfJPiuIVdr/b3PUX0vGIcH2ypvCpPIKkcBb5SaN
+ 3GulcbALlQtP6xKI24g==
+X-Proofpoint-ORIG-GUID: oTdR2mb2rvLAUKXfTUAe1p6wmND_tr-a
+X-Authority-Analysis: v=2.4 cv=V8DoQuni c=1 sm=1 tr=0 ts=6b0529e3 cx=c_pps
+ a=qKBjSQ1v91RyAK45QCPf5w==:117 a=asF+/XNaGoxFafzDDLC1GQ==:17
+ a=kj9zAlcOel0A:10 a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=eoimf2acIAo5FJnRuUoq:22
+ a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8 a=2UNkV1bVvYdQOko7pskA:9 a=CjuIK1q_8ugA:10
+ a=QtEvL3ry9E0A:10 a=NFOGd7dJGGMPyQGDc5-O:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-24_01,2026-11-23_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 suspectscore=0 bulkscore=0 spamscore=0 impostorscore=0
+ lowpriorityscore=0 adultscore=0 priorityscore=1501 phishscore=0
+ malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2611040001
+ definitions=main-2611240024
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
-	autolearn_force=no version=4.0.1
+	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
+	autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Tue, Nov 17, 2026 at 05:26:37PM +0800, Ryan Chen wrote:
-> Add ECC error reporting for the Aspeed AST2700 SoC to the existing
-> aspeed_edac driver.
+On 26-11-05 21:05:41, Lorenzo Stoakes (ARM) wrote:
+> Move from the deprecated mmap hook to the new mmap_prepare hook, using the
+> PFN remap mmap action to map the region.
+> 
+> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 
-Ok, I thought I can fix up small things while applying but there are waaay too
-many issues.
+LGTM, so:
 
-1. Split the biggish patches - a patch should do one logical change but yours
-   are doing more. Do not do any drive-by changes while adding driver support
-   for some new chip. They need to be in a separate patch. If not sure, refer
-   to the documentation I pointed you to.
-
-2. Write your commit messages in English do not use made up terms like "DRAMC"
-   and "isr()" and so on. Those should be readable by humans.
-
-3. Do not explain the code in your commit messages - only the non-obvious
-   stuff.
-
-4. Do not put in the commit message how a patch has been tested - that goes
-   below the "---" line. I think I mentioned that to you already.
-
-5. Drop the "aspeed_" prefix from all static functions - they don't need it.
-   That can be a final patch ontop if it is easier. One logical thing per
-   patch.
-
-In any case, tell your Claude to do those things because there's a human on
-the other end reading and human does not like it when Claude does a stinking
-pile.
-
-:)
-
-Thx.
-
--- 
-Regards/Gruss,
-    Boris.
-
-https://people.kernel.org/tglx/notes-about-netiquette
+Reviewed-by: Abel Vesa <abel.vesa@oss.qualcomm.com>
 
